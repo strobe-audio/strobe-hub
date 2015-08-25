@@ -3,7 +3,7 @@ defmodule Otis.Zone do
   defstruct name:          "A Zone",
             id:            nil,
             source_stream: nil,
-            receivers:     [],
+            receivers:     HashSet.new,
             state:         :stop,
             broadcaster:   nil,
             audio_stream:  nil
@@ -87,15 +87,15 @@ defmodule Otis.Zone do
   end
 
   def handle_call(:receivers, _from, %Zone{receivers: receivers} = zone) do
-    {:reply, {:ok, receivers}, zone}
+    {:reply, {:ok, Set.to_list(receivers)}, zone}
   end
 
   def handle_call({:add_receiver, receiver}, _from, %Zone{ receivers: receivers} = zone) do
-    {:reply, :ok, %Zone{ zone | receivers: ( receivers ++ [receiver] ) }}
+    {:reply, :ok, %Zone{ zone | receivers: Set.put(receivers, receiver) }}
   end
 
   def handle_call({:remove_receiver, receiver}, _from, %Zone{ receivers: receivers} = zone) do
-    {:reply, :ok, %Zone{ zone | receivers: List.delete(receivers, receiver) }}
+    {:reply, :ok, %Zone{ zone | receivers: Set.delete(receivers, receiver) }}
   end
 
   def handle_call(:play_pause, _from, zone) do

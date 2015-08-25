@@ -65,6 +65,14 @@ defmodule Otis.ZoneTest do
     {:ok, receivers} = Otis.Zone.receivers(zone)
     assert receivers == [receiver]
   end
+
+  test "ignores duplicate receivers", %{zone: zone, receiver: receiver} do
+    :ok = Otis.Zone.add_receiver(zone, receiver)
+    :ok = Otis.Zone.add_receiver(zone, receiver)
+    {:ok, receivers} = Otis.Zone.receivers(zone)
+    assert receivers == [receiver]
+  end
+
   test "allows you to remove a receiver", %{zone: zone, receiver: receiver} do
     :ok = Otis.Zone.add_receiver(zone, receiver)
     :ok = Otis.Zone.remove_receiver(zone, receiver)
