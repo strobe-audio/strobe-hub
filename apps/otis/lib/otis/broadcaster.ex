@@ -11,7 +11,6 @@ defmodule Otis.Broadcaster do
   end
 
   def init(%{ interval: interval } = state) do
-    IO.inspect [:broadcaster, :init, state]
     _schedule(self, interval)
     {:ok, state}
   end
@@ -25,7 +24,6 @@ defmodule Otis.Broadcaster do
   end
 
   def handle_cast(:play, %{interval: interval, state: :stop} = bc) do
-    # start loop
     _schedule(self, interval)
     {:noreply, %{ bc | state: :play  }}
   end
@@ -36,6 +34,7 @@ defmodule Otis.Broadcaster do
   end
 
   def handle_cast(:stop, bc) do
+    IO.inspect [:broadcaster, :stop]
     {:stop, :normal, %{ bc | state: :stop  }}
   end
 
