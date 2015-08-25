@@ -123,7 +123,8 @@ defmodule Otis.Zone do
 
   def broadcast_frame({:ok, data}, [r | t], zone) do
     # IO.inspect [:send, r, data]
-    send(r, {:frame, data})
+    # send(r, {:frame, data})
+    Otis.Receiver.receive_frame(r, data)
     broadcast_frame({:ok, data}, t, zone)
   end
 
@@ -131,10 +132,10 @@ defmodule Otis.Zone do
     zone
   end
 
-  def broadcast_frame(:done,  zone) do
+  def broadcast_frame(:done,  _recs, zone) do
     IO.inspect [:audio_stream, :done]
     # set zone state to stop
-    zone
+    set_state(zone, :stop)
   end
 
   def handle_cast(:broadcast, %Zone{ state: :stop} = zone) do
@@ -143,11 +144,15 @@ defmodule Otis.Zone do
   end
 
   defp toggle_state(%Zone{state: :play} = zone) do
-    %Zone{ zone | state: :stop }
+    set_state(zone, :stop)
   end
 
   defp toggle_state(%Zone{state: :stop} = zone) do
-    %Zone{ zone | state: :play }
+    set_state(zone, :play)
+  end
+
+  defp set_state(zone, state) do
+    %Zone{ zone | state: state }
   end
 
   defp change_state(%Zone{state: :play} = zone) do

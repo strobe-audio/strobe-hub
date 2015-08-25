@@ -28,8 +28,18 @@ defmodule Otis.Receiver do
     GenServer.call(pid, :id)
   end
 
+  def receive_frame(pid, data) do
+    GenServer.cast(pid, {:receive_frame, data})
+  end
+
+
   def handle_call(:id, _from, %Receiver{id: id} = receiver) do
     {:reply, {:ok, id}, receiver}
+  end
+
+  def handle_cast({:receive_frame, data}, %Receiver{conn: conn} = receiver) do
+    send(conn, {:audio_frame, data})
+    {:noreply, receiver}
   end
 
   def terminate(reason, receiver) do

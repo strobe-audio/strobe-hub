@@ -9,11 +9,9 @@ defmodule Elvis.ReceiverController do
   end
 
   defp stream(conn) do
-    IO.inspect [:connection, self]
     receive do
-      {:frame, data} ->
+      {:audio_frame, data} ->
         # send data
-        IO.inspect [:frame, data]
         {:ok, conn} = chunk(conn, data)
       _ = msg ->
         # don't know!
