@@ -116,14 +116,12 @@ defmodule Otis.Zone do
   end
 
   def handle_cast(:broadcast, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers} = zone) do
-    # IO.inspect ["zone broadcast", :play, :erlang.monotonic_time(:milli_seconds), audio_stream]
-    zone = broadcast_frame(Otis.AudioStream.frame(audio_stream), receivers, zone)
+    zone = Otis.AudioStream.frame(audio_stream) |>
+      broadcast_frame(receivers, zone)
     {:noreply, zone}
   end
 
   def broadcast_frame({:ok, data}, [r | t], zone) do
-    # IO.inspect [:send, r, data]
-    # send(r, {:frame, data})
     Otis.Receiver.receive_frame(r, data)
     broadcast_frame({:ok, data}, t, zone)
   end
@@ -134,12 +132,10 @@ defmodule Otis.Zone do
 
   def broadcast_frame(:done,  _recs, zone) do
     IO.inspect [:audio_stream, :done]
-    # set zone state to stop
     set_state(zone, :stop)
   end
 
   def handle_cast(:broadcast, %Zone{ state: :stop} = zone) do
-    IO.inspect ["zone broadcast", :stop]
     {:noreply, zone}
   end
 
@@ -152,23 +148,27 @@ defmodule Otis.Zone do
   end
 
   defp set_state(zone, state) do
-    %Zone{ zone | state: state }
+    %Zone{ zone | state: state } |> change_state
   end
 
-  defp change_state(%Zone{state: :play} = zone) do
-    IO.inspect :launch
-    IO.inspect self
-    {:ok, pid } = Otis.Broadcaster.start_link(self, Otis.stream_interval_ms)
+  defp change_state(%Zone{state: :play, broadcaster: nil} = zone) do
+    {:ok, pid } = start_broadcaster
     %Zone{ zone | broadcaster: pid }
   end
 
+  defp start_broadcaster do
+    Otis.Broadcaster.start_link(self, Otis.stream_interval_ms)
+  end
+
+  defp change_state(%Zone{state: :play} = zone) do
+    zone
+  end
+
   defp change_state(%Zone{state: :stop, broadcaster: nil} = zone) do
-    IO.inspect :no_Broadcaster
     zone
   end
 
   defp change_state(%Zone{state: :stop, broadcaster: broadcaster} = zone) do
-    IO.inspect [:this_stop, broadcaster]
     Otis.Broadcaster.stop(broadcaster)
     %Zone{ zone | broadcaster: nil }
   end
