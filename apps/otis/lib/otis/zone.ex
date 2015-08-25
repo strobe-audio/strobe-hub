@@ -117,7 +117,7 @@ defmodule Otis.Zone do
 
   def handle_cast(:broadcast, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers} = zone) do
     zone = Otis.AudioStream.frame(audio_stream) |>
-      broadcast_frame(receivers, zone)
+      broadcast_frame(Set.to_list(receivers), zone)
     {:noreply, zone}
   end
 
