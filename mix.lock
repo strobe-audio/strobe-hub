@@ -1,0 +1,12 @@
+%{"decimal": {:hex, :decimal, "1.1.2", "79a769d4657b2d537b51ef3c02d29ab7141d2b486b516c109642d453ee08e00c", [:mix], []},
+  "ecto": {:hex, :ecto, "1.1.9", "6f30e4662d540c794048e62a04926c1d3c892a2ba4704fe1e19d4a9b5b2f881e", [:mix], [{:decimal, "~> 1.0", [hex: :decimal, optional: false]}, {:mariaex, "~> 0.5.0 or ~> 0.6.0", [hex: :mariaex, optional: true]}, {:poison, "~> 1.0 or ~> 2.0", [hex: :poison, optional: true]}, {:poolboy, "~> 1.4", [hex: :poolboy, optional: false]}, {:postgrex, "~> 0.11.0", [hex: :postgrex, optional: true]}, {:sbroker, "~> 0.7", [hex: :sbroker, optional: true]}]},
+  "esqlite": {:hex, :esqlite, "0.2.2", "e4e8b39062a075e0bd4756b894dd2aa8edbf94c9081c1fb5c72dc705bf2f2d88", [:rebar, :make], []},
+  "exlibris": {:hex, :exlibris, "0.0.1", "be4c638021a4e1da950d6daf1f9a7a72c2d3715ceaf26c0f016a9cfc4ce3af13", [:mix], []},
+  "otis_library": {:git, "git@gitlab.com:magnetised/otis_library.git", "19d8d2005601ee55a287865383ddeb6692d50384", []},
+  "pipe": {:hex, :pipe, "0.0.2", "eff98a868b426745acef103081581093ff5c1b88100f8ff5949b4a30e81d0d9f", [:mix], []},
+  "poison": {:hex, :poison, "1.5.2", "560bdfb7449e3ddd23a096929fb9fc2122f709bcc758b2d5d5a5c7d0ea848910", [:mix], []},
+  "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []},
+  "sqlite_ecto": {:git, "https://github.com/magnetised/sqlite_ecto.git", "d607d31c5f0ba8f6560e104d51df46b1a772d993", []},
+  "sqlitex": {:hex, :sqlitex, "0.8.3", "226901fe73fb9d74a5bc742594074dc3cac725ee632d595a704dd8bf92661044", [:mix], [{:decimal, "~> 1.1.0", [hex: :decimal, optional: false]}, {:esqlite, "~> 0.2.0", [hex: :esqlite, optional: false]}, {:pipe, "~> 0.0.2", [hex: :pipe, optional: false]}]},
+  "uuid": {:hex, :uuid, "1.1.4", "36c7734e4c8e357f2f67ba57fb61799d60c20a7f817b104896cca64b857e3686", [:mix], []},
+  "work_queue": {:git, "https://github.com/pragdave/work_queue.git", "b0763d6e2419825ce6ccd15ba741f6d68757cf15", []}}
