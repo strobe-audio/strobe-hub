@@ -5,19 +5,23 @@ defmodule Elvis.ReceiverController do
 
   def receive(conn, %{"id" => id} = _params) do
     Otis.Receivers.start_receiver(id, "Some name", self)
-    conn |> send_chunked(200) |> stream
+    conn |> send_chunked(200) |> stream(id)
   end
 
-  defp stream(conn) do
+  defp stream(conn, id) do
     receive do
       {:audio_frame, data} ->
         # send data
-        {:ok, conn} = chunk(conn, data)
+        case chunk(conn, data) do
+          {:error, :closed} ->
+            Otis.Receivers.stop_receiver(id)
+          {:ok, conn} ->
+        end
       _ = msg ->
         # don't know!
         IO.inspect [:message, msg]
     end
-    stream(conn)
+    stream(conn, id)
   end
 
   def terminate(reason, state) do
