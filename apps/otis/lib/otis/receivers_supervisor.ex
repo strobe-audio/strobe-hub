@@ -7,12 +7,12 @@ defmodule Otis.Receivers.Supervisor do
     Supervisor.start_link(__MODULE__, :ok, name: @supervisor_name)
   end
 
-  def start_receiver(id, name, conn) do
-    start_receiver(@supervisor_name, id, name, conn)
+  def start_receiver(id, node) do
+    start_receiver(@supervisor_name, id, node)
   end
 
-  def start_receiver(supervisor, id, name, conn) do
-    Supervisor.start_child(supervisor, [id, name, conn])
+  def start_receiver(supervisor, id, node) do
+    Supervisor.start_child(supervisor, [id, node])
   end
 
   def init(:ok) do

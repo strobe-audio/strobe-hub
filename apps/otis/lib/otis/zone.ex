@@ -6,7 +6,8 @@ defmodule Otis.Zone do
             receivers:     HashSet.new,
             state:         :stop,
             broadcaster:   nil,
-            audio_stream:  nil
+            audio_stream:  nil,
+            timestamp:     0
 
   use GenServer
 
@@ -116,23 +117,48 @@ defmodule Otis.Zone do
   end
 
   def handle_cast(:broadcast, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers} = zone) do
-    zone = Otis.AudioStream.frame(audio_stream) |>
-      broadcast_frame(Set.to_list(receivers), zone)
+    frame = Otis.AudioStream.frame(audio_stream)
+    zone = start_broadcast_frame(frame, Set.to_list(receivers), zone)
     {:noreply, zone}
   end
 
-  def broadcast_frame({:ok, data}, [r | t], zone) do
-    Otis.Receiver.receive_frame(r, data)
-    broadcast_frame({:ok, data}, t, zone)
+  def start_broadcast_frame({:ok, data} = frame, recs, %Zone{timestamp: timestamp} = zone) do
+    timestamp = next_timestamp(timestamp, recs)
+    broadcast_frame({:ok, data, timestamp}, recs, %Zone{zone | timestamp: timestamp})
   end
 
-  def broadcast_frame({:ok, data}, [], zone) do
-    zone
-  end
-
-  def broadcast_frame(:done,  _recs, zone) do
+  def start_broadcast_frame(:done,  _recs, zone) do
     IO.inspect [:audio_stream, :done]
     set_state(zone, :stop)
+  end
+
+  # def next_timestamp(0, recs) do
+  #   Otis.microseconds + (100 * 1000 * Otis.stream_interval_ms)
+  # end
+
+  def next_timestamp(timestamp, recs) do
+    offset = Enum.map(recs, fn(rec) ->
+      {:ok, delay} = Otis.Receiver.delay(rec)
+      delay
+    end) |> Enum.max
+    next_timestamp_with_offset(timestamp, offset)
+  end
+
+  def next_timestamp_with_offset(0, offset) do
+    Otis.microseconds + (1000 * Otis.stream_interval_ms) + offset
+  end
+
+  def next_timestamp_with_offset(timestamp, offset) do
+    timestamp + (1000 * Otis.stream_interval_ms)
+  end
+
+  def broadcast_frame({:ok, data, timestamp}, [r | t], zone) do
+    Otis.Receiver.receive_frame(r, data, timestamp)
+    broadcast_frame({:ok, data, timestamp}, t, zone)
+  end
+
+  def broadcast_frame({:ok, data, timestamp}, [], zone) do
+    zone
   end
 
   def handle_cast(:broadcast, %Zone{ state: :stop} = zone) do

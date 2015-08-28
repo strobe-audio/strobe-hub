@@ -9,12 +9,12 @@ defmodule Otis.Receivers do
     GenServer.start_link(__MODULE__, [], name: @registry_name)
   end
 
-  def start_receiver(id, name, conn) do
-    start_receiver(@registry_name, id, name, conn)
+  def start_receiver(id, node) do
+    start_receiver(@registry_name, id, node)
   end
 
-  def start_receiver(receivers, id, name, conn) do
-    {:ok, receiver} = response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, id, name, conn)
+  def start_receiver(receivers, id, node) do
+    {:ok, receiver} = response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, id, node)
     add(receivers, receiver)
     response
   end
