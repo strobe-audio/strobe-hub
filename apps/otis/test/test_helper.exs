@@ -32,4 +32,5 @@ defmodule FakeMonitor do
   end
 end
 
+{:ok, _monitor} = FakeMonitor.start
 ExUnit.start()

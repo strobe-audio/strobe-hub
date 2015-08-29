@@ -1,12 +1,7 @@
 defmodule ZonesTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   @moduletag :zones
-
-  setup_all do
-    {:ok, _monitor} = FakeMonitor.start
-    :ok
-  end
 
   setup do
     {:ok, zones} = Otis.Zones.start_link(:test_zones)
@@ -44,24 +39,19 @@ end
 
 
 defmodule Otis.ZoneTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   @moduletag :zone
 
-  setup_all do
-    {:ok, _monitor} = FakeMonitor.start
-    :ok
-  end
   setup do
-    name = "Downstairs"
-    {:ok, zone} = Otis.Zone.start_link(:zone_1, name)
+    {:ok, zone} = Otis.Zone.start_link(:zone_1, "Downstairs")
     {:ok, receiver} = Otis.Receiver.start_link(:receiver_1, node)
-    {:ok, zone: zone, name: name, receiver: receiver}
+    {:ok, zone: zone, receiver: receiver}
   end
 
-  test "gives its name", %{zone: zone, name: name} do
+  test "gives its name", %{zone: zone} do
     {:ok, _name} = Otis.Zone.name(zone)
-    assert _name == name
+    assert _name == "Downstairs"
   end
 
   test "gives its id", %{zone: zone} do

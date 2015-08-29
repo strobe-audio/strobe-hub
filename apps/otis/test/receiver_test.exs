@@ -1,10 +1,9 @@
 defmodule RecieversTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case
 
   setup do
-    {:ok, monitor} = FakeMonitor.start
     {:ok, recs} = Otis.Receivers.start_link(:receivers_test)
-    {:ok, recs: recs, monitor: monitor}
+    {:ok, recs: recs}
   end
 
   alias Otis.Receiver
@@ -37,27 +36,3 @@ defmodule RecieversTest do
   end
 end
 
-defmodule FakeConnection do
-  use GenServer
-  def start_link do
-    GenServer.start_link(__MODULE__, :ok, [])
-  end
-
-  def start do
-    GenServer.start(__MODULE__, :ok, [])
-  end
-
-  def stop(pid) do
-    GenServer.call(pid, :stop)
-  end
-
-  def handle_call(:stop, _from, state) do
-    # IO.inspect [:stopping_conn]
-    {:stop, :normal, :ok, state}
-  end
-
-  def terminate(reason, _state) do
-    IO.inspect [:conn_terminate, reason]
-    :ok
-  end
-end
