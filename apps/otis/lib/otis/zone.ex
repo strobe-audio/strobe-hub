@@ -1,4 +1,5 @@
 defmodule Otis.Zone do
+  require Logger
 
   defstruct name:          "A Zone",
             id:            nil,
@@ -182,20 +183,25 @@ defmodule Otis.Zone do
     %Zone{ zone | broadcaster: pid }
   end
 
-  defp start_broadcaster do
-    Otis.Broadcaster.start_link(self, Otis.stream_interval_ms)
-  end
-
   defp change_state(%Zone{state: :play} = zone) do
     zone
   end
 
   defp change_state(%Zone{state: :stop, broadcaster: nil} = zone) do
-    zone
+    Logger.debug("Zone stopped")
+    zone_is_stopped(zone)
   end
 
-  defp change_state(%Zone{state: :stop, broadcaster: broadcaster} = zone) do
+  defp change_state(%Zone{id: id, state: :stop, broadcaster: broadcaster} = zone) do
     Otis.Broadcaster.stop(broadcaster)
-    %Zone{ zone | broadcaster: nil }
+    change_state(%Zone{ zone | broadcaster: nil })
+  end
+
+  defp zone_is_stopped(zone) do
+    %Zone{ zone | timestamp: 0, broadcaster: nil}
+  end
+
+  defp start_broadcaster do
+    Otis.Broadcaster.start_link(self, Otis.stream_interval_ms)
   end
 end
