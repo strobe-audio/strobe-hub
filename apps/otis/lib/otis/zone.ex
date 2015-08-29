@@ -116,6 +116,11 @@ defmodule Otis.Zone do
     {:reply, {:ok, source_stream}, zone}
   end
 
+  def handle_cast(:broadcast, %Zone{ state: :play, receivers: []} = zone) do
+    Logger.info "Zone has no configured receivers"
+    {:noreply, set_state(zone, :stop)}
+  end
+
   def handle_cast(:broadcast, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers} = zone) do
     frame = Otis.AudioStream.frame(audio_stream)
     zone = start_broadcast_frame(frame, Set.to_list(receivers), zone)
@@ -128,13 +133,8 @@ defmodule Otis.Zone do
   end
 
   def start_broadcast_frame(:done,  _recs, zone) do
-    IO.inspect [:audio_stream, :done]
     set_state(zone, :stop)
   end
-
-  # def next_timestamp(0, recs) do
-  #   Otis.microseconds + (100 * 1000 * Otis.stream_interval_ms)
-  # end
 
   def next_timestamp(timestamp, recs) do
     offset = Enum.map(recs, fn(rec) ->
