@@ -35,8 +35,7 @@ defmodule Otis.Receiver do
     sorted_measurements = Enum.sort_by measurements, fn({delay, _diff}) -> delay end
     {:ok, median} = Enum.fetch sorted_measurements, round(Float.floor(length(measurements)/2))
     {median_delay, _} = median
-    variance = Enum.reduce(sorted_measurements, 0, fn({delay, _diff}, acc) -> acc + :math.pow(delay - median_delay, 2) end) / length(sorted_measurements)
-    std_deviation = :math.sqrt(variance)
+    std_deviation = std_deviation(sorted_measurements, median_delay)
     discard_limit = median_delay + std_deviation
     valid_measurements = Enum.reject sorted_measurements, fn({delay, _diff}) -> delay > discard_limit end
     { max_delay, _diff } = Enum.max_by valid_measurements, fn({delay, _diff}) -> delay end
@@ -44,6 +43,12 @@ defmodule Otis.Receiver do
     IO.inspect { round(max_delay), round(average_diff) }
   end
 
+  defp std_deviation(measurements, median_delay) do
+    variance = Enum.reduce(measurements, 0, fn({delay, _diff}, acc) ->
+      acc + :math.pow(delay - median_delay, 2)
+    end) / length(measurements)
+    :math.sqrt(variance)
+  end
 
   # Replace this with Cumulative moving average see:
   # https://en.wikipedia.org/wiki/Moving_average
@@ -54,8 +59,6 @@ defmodule Otis.Receiver do
     delay = (finish - start) / 2
     # https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm
     diff = round(((receipt - start) + (receipt - finish)) / 2)
-    # start + delay = receipt + diff
-    # diff = round(receipt - finish + delay)
     :timer.sleep(wait)
     get_sync(node, [{delay, diff} | measurements], wait, count - 1)
   end
