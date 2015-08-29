@@ -21,12 +21,15 @@ defmodule Otis do
   @stream_frames_per_step 147  * @multiplier
   @stream_bytes_per_step  3528 * @multiplier
   @stream_interval_ms     20   * @multiplier
+  # Used a lot by the broadcasting system
+  @stream_interval_us     1000 * @stream_interval_ms
 
   def sample_freq, do: @sample_freq
   def sample_bits, do: @sample_bits
   def sample_channels, do: @sample_channels
 
   def stream_interval_ms, do: @stream_interval_ms
+  def stream_interval_us, do: @stream_interval_us
   def stream_bytes_per_step, do: @stream_bytes_per_step
 
   def start(_type, _args) do

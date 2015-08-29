@@ -145,11 +145,11 @@ defmodule Otis.Zone do
   end
 
   def next_timestamp_with_offset(0, offset) do
-    Otis.microseconds + (1000 * Otis.stream_interval_ms) + offset
+    Otis.microseconds + Otis.stream_interval_us + offset
   end
 
-  def next_timestamp_with_offset(timestamp, offset) do
-    timestamp + (1000 * Otis.stream_interval_ms)
+  def next_timestamp_with_offset(timestamp, _offset) do
+    timestamp + Otis.stream_interval_us
   end
 
   def broadcast_frame({:ok, data, timestamp}, [r | t], zone) do
