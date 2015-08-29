@@ -6,6 +6,7 @@ defmodule Otis.AudioStream do
 
   alias Otis.AudioStream, as: AS
   use GenServer
+  require Logger
 
   defstruct source_stream: nil, source: nil, buffer: <<>>, chunk_size: 3528, state: :playing
 
