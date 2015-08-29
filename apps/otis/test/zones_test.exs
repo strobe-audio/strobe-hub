@@ -1,12 +1,13 @@
 defmodule ZonesTest do
   use ExUnit.Case, async: true
 
+  @moduletag :zones
+
   setup do
-    # {:ok, sup} = Otis.Zones.Supervisor.start_link(name: Otis.Zones.Supervisor)
-    # {:ok, zones} = Otis.Zones.start_link
-    zones = Otis.Zones
+    {:ok, zones} = Otis.Zones.start_link(:test_zones)
     {:ok, zones: zones}
   end
+
 
   alias Otis.Zone
 

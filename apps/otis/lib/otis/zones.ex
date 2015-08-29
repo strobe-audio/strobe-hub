@@ -5,8 +5,8 @@ defmodule Otis.Zones do
 
   @registry_name Otis.Zones
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: @registry_name)
+  def start_link( name \\ @registry_name ) do
+    GenServer.start_link(__MODULE__, [], name: name)
   end
 
   def start_zone(id, name) do
