@@ -2,7 +2,7 @@ defmodule Otis.Receiver do
   use GenServer
 
   defmodule S do
-    defstruct id: "receiver-1", name: "Receiver", node: nil, time_diff: 0, delay: 0
+    defstruct id: :receiver, node: nil, name: "Receiver", time_diff: 0, delay: 0
   end
 
   def start_link(id, node) do
@@ -45,6 +45,8 @@ defmodule Otis.Receiver do
   end
 
 
+  # Replace this with Cumulative moving average see:
+  # https://en.wikipedia.org/wiki/Moving_average
   defp get_sync(node, measurements, wait, count) when count > 0  do
     start = Otis.microseconds
     {_, receipt} = sync_exchange(node, start)
