@@ -2,32 +2,32 @@ defmodule RecieversTest do
   use ExUnit.Case, async: true
 
   setup do
-    {:ok, recs} = Otis.Receivers.start_link
-    {:ok, conn} = FakeConnection.start_link
-    {:ok, recs: recs, conn: conn}
+    {:ok, monitor} = FakeMonitor.start
+    {:ok, recs} = Otis.Receivers.start_link(:receivers_test)
+    {:ok, recs: recs, monitor: monitor}
   end
 
   alias Otis.Receiver
 
-  test "allows for the adding of a receiver", %{recs: recs, conn: conn} do
-    {:ok, rec} = Receiver.start_link("receiver-1", "Downstairs", conn)
+  test "allows for the adding of a receiver", %{recs: recs} do
+    {:ok, rec} = Receiver.start_link(:receiver_1, node)
     Otis.Receivers.add(recs, rec)
     {:ok, list } = Otis.Receivers.list(recs)
     assert list == [rec]
   end
 
-  test "lets you retrieve a receiver by id", %{recs: recs, conn: conn} do
-    {:ok, rec} = Receiver.start_link("receiver-1", "Downstairs", conn)
+  test "lets you retrieve a receiver by id", %{recs: recs} do
+    {:ok, rec} = Receiver.start_link(:receiver_1, node)
     Otis.Receivers.add(recs, rec)
-    {:ok, found } = Otis.Receivers.find(recs, "receiver-1")
+    {:ok, found } = Otis.Receivers.find(recs, "receiver_1")
     assert found == rec
   end
 
-  test "lets you remove a receiver by id", %{recs: recs, conn: conn} do
-    {:ok, rec} = Receiver.start_link("receiver-1", "Downstairs", conn)
+  test "lets you remove a receiver by id", %{recs: recs} do
+    {:ok, rec} = Receiver.start_link(:receiver_1, node)
     Otis.Receivers.add(recs, rec)
     Otis.Receivers.remove(recs, rec)
-    result = Otis.Receivers.find(recs, "receiver-1")
+    result = Otis.Receivers.find(recs, :receiver_1)
     assert result == :error
   end
 
@@ -56,31 +56,8 @@ defmodule FakeConnection do
     {:stop, :normal, :ok, state}
   end
 
-  def terminate(reason, state) do
+  def terminate(reason, _state) do
     IO.inspect [:conn_terminate, reason]
     :ok
-  end
-end
-defmodule ReceiverTest do
-  use ExUnit.Case, async: true
-
-  alias Otis.Receiver
-
-  setup do
-    {:ok, recs} = Otis.Receivers.start_link(name: Otis.Receivers)
-    {:ok, conn} = FakeConnection.start
-    {:ok, rec} = Receiver.start_link("receiver-1", "Downstairs", conn)
-    Otis.Receivers.add(recs, rec)
-    {:ok, recs: recs, rec: rec, conn: conn}
-  end
-
-  test "stops the receiver process when the connection ends", %{recs: recs, rec: rec, conn: conn} do
-    assert Process.alive?(conn)
-    assert Process.alive?(rec)
-
-    Process.exit(conn, :shutdown)
-    assert Process.alive?(conn) == false
-    result = Otis.Receivers.find(recs, "receiver-1")
-    assert result == :error
   end
 end

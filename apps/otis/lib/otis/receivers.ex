@@ -5,8 +5,8 @@ defmodule Otis.Receivers do
 
   @registry_name Otis.Receivers
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: @registry_name)
+  def start_link(name \\ @registry_name) do
+    GenServer.start_link(__MODULE__, [], name: name)
   end
 
   def start_receiver(id, node) do
@@ -47,6 +47,10 @@ defmodule Otis.Receivers do
     find(@registry_name, id)
   end
 
+  def find(pid, id) when is_atom(id) do
+    GenServer.call(pid, {:find, Atom.to_string(id)})
+  end
+
   def find(pid, id) do
     GenServer.call(pid, {:find, id})
   end
@@ -74,7 +78,13 @@ defmodule Otis.Receivers do
 
   defp find_by_id(receivers, id) do
     receivers |>
-    Enum.find(fn({rid, _zone}) -> rid == id end) |>
+    Enum.find(fn({rid, _zone}) -> Atom.to_string(rid) == id end) |>
+    find_result
+  end
+
+  defp find_by_id(receivers, id) do
+    receivers |>
+    Enum.find(fn({rid, _zone}) -> Atom.to_string(rid) == id end) |>
     find_result
   end
 

@@ -3,6 +3,11 @@ defmodule ZonesTest do
 
   @moduletag :zones
 
+  setup_all do
+    {:ok, _monitor} = FakeMonitor.start
+    :ok
+  end
+
   setup do
     {:ok, zones} = Otis.Zones.start_link(:test_zones)
     {:ok, zones: zones}
@@ -37,38 +42,18 @@ defmodule ZonesTest do
   end
 end
 
-defmodule FakeMonitor do
-  @moduledoc """
-  Accepts all the messages that the real player status module does.
-  """
-
-  use GenServer
-  defmodule S do
-    # pretend to have these values
-    defstruct time_diff: 22222222, delay: 1000 # both in us
-  end
-
-  def init( :ok ) do
-    {:ok, %S{}}
-  end
-
-  def handle_call({:sync, {originate_ts} = packet}, _from, state) do
-    {:reply, {originate_ts, fake_time(originate_ts, state)}, state}
-  end
-
-  def fake_time(originate_ts, %S{time_diff: time_diff, delay: delay} = _state) do
-    originate_ts - (delay*0) + time_diff
-  end
-end
 
 defmodule Otis.ZoneTest do
   use ExUnit.Case, async: true
 
   @moduletag :zone
 
+  setup_all do
+    {:ok, _monitor} = FakeMonitor.start
+    :ok
+  end
   setup do
     name = "Downstairs"
-    {:ok, monitor} = GenServer.start_link(FakeMonitor, :ok, name: Janis.Monitor)
     {:ok, zone} = Otis.Zone.start_link(:zone_1, name)
     {:ok, receiver} = Otis.Receiver.start_link(:receiver_1, node)
     {:ok, zone: zone, name: name, receiver: receiver}
