@@ -39,8 +39,7 @@ defmodule Otis.AudioStream do
   end
 
   defp audio_frame(%S{source: nil, state: :starting} = state) do
-    state = current_source(state)
-    audio_frame(state)
+    audio_frame(enumerate_source(state))
   end
 
   defp audio_frame(%S{ state: :stopped, buffer: buffer } = state) when byte_size(buffer) > 0 do
@@ -52,7 +51,7 @@ defmodule Otis.AudioStream do
   end
 
   defp audio_frame(%S{ source: nil, buffer: buffer, chunk_size: chunk_size} = state) when byte_size(buffer) < chunk_size do
-    audio_frame(current_source(state))
+    audio_frame(enumerate_source(state))
   end
 
   defp audio_frame(%S{ source: source, buffer: buffer, chunk_size: chunk_size} = state) when byte_size(buffer) < chunk_size do
@@ -73,7 +72,7 @@ defmodule Otis.AudioStream do
     audio_frame(%S{state | source: nil})
   end
 
-  defp current_source(%S{source_stream: source_stream, source: nil} = state) do
+  defp enumerate_source(%S{source_stream: source_stream, source: nil} = state) do
     case Otis.SourceStream.next(source_stream) do
       {:ok, source } ->
         %S{ state | source: source, state: :playing }
@@ -82,7 +81,7 @@ defmodule Otis.AudioStream do
     end
   end
 
-  defp current_source(state) do
+  defp enumerate_source(state) do
     state
   end
 end
