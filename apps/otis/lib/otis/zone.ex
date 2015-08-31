@@ -146,7 +146,7 @@ defmodule Otis.Zone do
   end
 
   def next_timestamp_with_offset(0, offset) do
-    Otis.microseconds + Otis.stream_interval_us + offset
+    Otis.microseconds + (2 * Otis.stream_interval_us) + offset
   end
 
   def next_timestamp_with_offset(timestamp, _offset) do
