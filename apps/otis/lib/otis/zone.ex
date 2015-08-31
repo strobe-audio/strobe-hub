@@ -133,7 +133,7 @@ defmodule Otis.Zone do
     broadcast_frame({:ok, data, timestamp}, recs, %Zone{zone | timestamp: timestamp})
   end
 
-  def start_broadcast_frame(:done,  _recs, zone) do
+  def start_broadcast_frame(:stopped,  _recs, zone) do
     set_state(zone, :stop)
   end
 
