@@ -139,8 +139,8 @@ defmodule Otis.Zone do
 
   def next_timestamp(timestamp, recs) do
     offset = Enum.map(recs, fn(rec) ->
-      {:ok, delay} = Otis.Receiver.delay(rec)
-      delay
+      {:ok, latency} = Otis.Receiver.latency(rec)
+      latency
     end) |> Enum.max
     next_timestamp_with_offset(timestamp, offset)
   end
