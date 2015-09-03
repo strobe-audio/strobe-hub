@@ -25,3 +25,7 @@ config :logger, :console,
 
 config :porcelain, :driver, Porcelain.Driver.Goon
 config :porcelain, :goon_driver_path, "#{__DIR__}/../bin/goon"
+
+config :resource_discovery, :heartbeat_frequency, 0
+
+

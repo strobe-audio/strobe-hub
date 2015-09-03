@@ -14,7 +14,19 @@ Synchronised Player
 
 [NTP algo]: http://www.ntp.org/ntpfaq/NTP-s-algo.htm#Q-ALGO-BASIC-SYNC
 
+TODO
+----
+
+- [ ] automatically add player to zone once it's online & synced
+- [ ] play a startup sound to boot audio hardware when janis comes online
+
 Bugs
 ----
 
-- [ ] adding sources to a source stream after all sources have played won't start again
+- [ ] can't read aac files (m4a). Replace sox with avconv/ffmpeg (see here re [converting to raw/pcm][])
+- [x] adding sources to a source stream after all sources have played won't start again
+- [ ] can't replay a source
+- [ ] zone should call audio stream for most api functions
+
+[converting to raw/pcm]: http://stackoverflow.com/questions/4854513/can-ffmpeg-convert-audio-to-raw-pcm-if-so-how
+

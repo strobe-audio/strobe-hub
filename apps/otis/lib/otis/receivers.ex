@@ -82,12 +82,6 @@ defmodule Otis.Receivers do
     find_result
   end
 
-  defp find_by_id(receivers, id) do
-    receivers |>
-    Enum.find(fn({rid, _zone}) -> Atom.to_string(rid) == id end) |>
-    find_result
-  end
-
   defp find_result(nil) do
     :error
   end

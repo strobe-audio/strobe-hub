@@ -6,12 +6,14 @@ defmodule Otis.Supervisor do
   end
 
   def init(:ok) do
-    IO.inspect [:Otis_Supervisor, :init]
     children = [
-      supervisor(Otis.Zones.Supervisor, [[name: Otis.Zones.Supervisor]]),
+      worker(Otis.State, []),
+      supervisor(Otis.Zones.Supervisor, []),
       worker(Otis.Zones, []),
       supervisor(Otis.Receivers.Supervisor, []),
-      worker(Otis.Receivers, [])
+      worker(Otis.Receivers, []),
+      worker(Otis.Resources, []),
+      worker(Otis.Startup, [Otis.State, Otis.Zones, Otis.Receivers], restart: :transient)
     ]
     supervise(children, strategy: :one_for_one)
   end

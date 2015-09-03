@@ -1,13 +1,10 @@
 defmodule Otis.Zones.Supervisor do
   use Supervisor
 
-  def start_link(opts) do
-    IO.inspect [:zone, :supervisor, opts]
-    Supervisor.start_link(__MODULE__, :ok, opts)
-  end
+  @supervisor_name Otis.Zones.Supervisor
 
-  def start_zone(supervisor, id, name) do
-    Supervisor.start_child(supervisor, [id, name])
+  def start_link do
+    Supervisor.start_link(__MODULE__, :ok, name: @supervisor_name)
   end
 
   def init(:ok) do
@@ -15,5 +12,13 @@ defmodule Otis.Zones.Supervisor do
       worker(Otis.Zone, [])
     ]
     supervise(children, strategy: :simple_one_for_one)
+  end
+
+  def start_zone(id, name) do
+    start_zone(@supervisor_name, id, name)
+  end
+
+  def start_zone(supervisor, id, name) do
+    Supervisor.start_child(supervisor, [id, name])
   end
 end

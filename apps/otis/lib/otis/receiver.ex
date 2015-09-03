@@ -3,7 +3,7 @@ defmodule Otis.Receiver do
   require Logger
 
   defmodule S do
-    defstruct id: :receiver, node: nil, name: "Receiver", time_delta: 0, latency: 0
+    defstruct id: :receiver, node: nil, name: "Receiver", time_delta: nil, latency: nil
   end
 
   def start_link(id, node) do
@@ -34,6 +34,9 @@ defmodule Otis.Receiver do
     GenServer.cast(pid, {:receive_frame, data, timestamp})
   end
 
+  def restore_state(pid, id) do
+    Otis.State.restore_receiver(pid, id)
+  end
 
   def handle_call(:id, _from, %S{id: id} = receiver) do
     {:reply, {:ok, id}, receiver}
@@ -50,8 +53,14 @@ defmodule Otis.Receiver do
     {:noreply, rec}
   end
 
-  def handle_cast({:update_synchronisation, latency, delta}, %S{id: id} = state) do
-    Logger.debug "New player sychronisation #{id}: latency: #{latency}; delta: #{delta}"
+  def handle_cast({:update_synchronisation, latency, delta} = _sync, %S{id: id, time_delta: nil, latency: nil} = state) do
+    Logger.info "New player ready #{id}: time_delta: #{delta}; latency: #{latency}"
+    Otis.Receiver.restore_state(self, id)
+    {:noreply, %S{ state | time_delta: delta, latency: latency }}
+  end
+
+  def handle_cast({:update_synchronisation, latency, delta}, %S{id: _id} = state) do
+    # Logger.debug "New player sychronisation #{id}: latency: #{latency}; delta: #{delta}"
     {:noreply, %S{ state | time_delta: delta, latency: latency }}
   end
 

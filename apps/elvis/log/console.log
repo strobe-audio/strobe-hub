@@ -1,0 +1,15 @@
+2015-08-31 17:10:28.044 [info] <0.343.0> trade_resources, got remotes [{receiver,'pi@192.168.2.129'}]: deleted: []
+2015-08-31 17:10:28.044 [info] <0.343.0> got remotes and filtered [{receiver,'pi@192.168.2.129'}]
+2015-08-31 17:10:28.044 [info] <0.343.0> trade_resources, deleting []
+2015-08-31 17:10:28.355 [info] <0.7.0> Application logger exited with reason: stopped
+2015-08-31 17:10:28.358 [info] <0.7.0> Application logger started on node 'peep@192.168.2.173'
+2015-08-31 17:10:28.358 [info] <0.7.0> Application phoenix_html started on node 'peep@192.168.2.173'
+2015-08-31 17:10:28.371 [info] <0.7.0> Application ranch started on node 'peep@192.168.2.173'
+2015-08-31 17:10:28.376 [info] <0.7.0> Application cowlib started on node 'peep@192.168.2.173'
+2015-08-31 17:10:28.389 [info] <0.7.0> Application cowboy started on node 'peep@192.168.2.173'
+2015-08-31 17:23:12.095 [info] <0.7.0> Application logger exited with reason: stopped
+2015-08-31 17:23:12.099 [info] <0.7.0> Application logger started on node 'peep@192.168.2.173'
+2015-08-31 17:23:12.099 [info] <0.7.0> Application phoenix_html started on node 'peep@192.168.2.173'
+2015-08-31 17:23:12.112 [info] <0.7.0> Application ranch started on node 'peep@192.168.2.173'
+2015-08-31 17:23:12.118 [info] <0.7.0> Application cowlib started on node 'peep@192.168.2.173'
+2015-08-31 17:23:12.131 [info] <0.7.0> Application cowboy started on node 'peep@192.168.2.173'

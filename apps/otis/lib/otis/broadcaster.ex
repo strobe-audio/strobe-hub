@@ -7,7 +7,7 @@ defmodule Otis.Broadcaster do
   use GenServer
 
   def start_link(zone, interval) do
-    GenServer.start_link(__MODULE__, %{ zone: zone, target_interval: interval, interval: interval, state: :play, last_signal: nil })
+    GenServer.start_link(__MODULE__, %{ zone: zone, target_interval: interval - 1, interval: interval - 1, state: :play, last_signal: nil })
   end
 
   def init(%{ interval: interval } = state) do
