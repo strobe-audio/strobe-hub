@@ -60,16 +60,14 @@ defmodule Otis.Zones do
   end
 
   defp find_by_id(zone_list, id) do
-    zone_list |>
-    Enum.find(fn({zone_id, _zone}) -> zone_id == id end) |>
-    zone_find_result
+    zone_list[id] |> zone_find_result
   end
 
   defp zone_find_result(nil) do
     :error
   end
 
-  defp zone_find_result({_id, zone}) do
+  defp zone_find_result(zone) do
     {:ok, zone}
   end
 end

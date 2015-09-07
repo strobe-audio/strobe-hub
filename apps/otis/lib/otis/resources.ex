@@ -1,4 +1,6 @@
 defmodule Otis.Resources do
+  require Logger
+
   @name     Otis.Resources
   @interval 1000
 
@@ -7,6 +9,7 @@ defmodule Otis.Resources do
   end
 
   def init(:ok) do
+    Logger.debug "New Otis.Resources"
     Process.flag(:trap_exit, true)
     :resource_discovery.add_local_resource_tuple({:broadcaster, node()})
     :resource_discovery.add_target_resource_types([:receiver])
@@ -56,7 +59,6 @@ defmodule Otis.Resources do
 
   def discover_resources(%{receivers: receivers} = state) do
     receivers = :reconnaissance.discover |> ping_resources(receivers)
-    Process.send_after(self, :discover_resources, 1000)
     %{ state | receivers: receivers }
   end
 
@@ -80,7 +82,6 @@ defmodule Otis.Resources do
   end
 
   def ping_resources([], existing_receivers, _new_receivers) do
-    IO.inspect [:trading_resources]
     :resource_discovery.trade_resources()
     existing_receivers
     # receivers = Enum.reduce new_receivers, existing_receivers, fn(r, e) -> Set.put e, r end
@@ -102,10 +103,10 @@ defmodule Otis.Resources do
   #   remove_receivers(receivers, offline)
   # end
 
-  def add_receiver(id, false = _is_member, receivers) do
-    IO.inspect [:new_receiver_up, id]
-    [name, _host] = Atom.to_string(id) |> String.split("@")
-    String.to_atom(name) |> Otis.Receivers.start_receiver(id)
+  def add_receiver(node_name, false = _is_member, receivers) do
+    IO.inspect [:new_receiver_up, node_name]
+    id = Otis.Receiver.id_from_node(node_name)
+    Otis.Receivers.start_receiver(id, node_name)
     Set.put(receivers, id)
   end
 
@@ -123,6 +124,7 @@ defmodule Otis.Resources do
   end
 
   def terminate(_reason, _state) do
+    IO.inspect [:resources, :terminate]
     # :resource_discovery.delete_local_resource_tuples(:resource_discovery.get_local_resource_tuples())
     # :resource_discovery.sync_resources()
     :ok

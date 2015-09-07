@@ -1,14 +1,17 @@
 defmodule Otis.Zone do
   require Logger
 
-  defstruct name:          "A Zone",
-            id:            nil,
-            source_stream: nil,
-            receivers:     HashSet.new,
-            state:         :stop,
-            broadcaster:   nil,
-            audio_stream:  nil,
-            timestamp:     0
+  defstruct name:              "A Zone",
+            id:                nil,
+            source_stream:     nil,
+            receivers:         HashSet.new,
+            state:             :stop,
+            broadcaster:       nil,
+            audio_stream:      nil,
+            timestamp:         0,
+            last_broadcast:    0,
+            broadcast_address: nil,
+            socket:         nil
 
   use GenServer
 
@@ -27,13 +30,21 @@ defmodule Otis.Zone do
   end
 
   def start_link(id, name, source_stream) do
-    IO.inspect [:starting, :zone, id, name]
     GenServer.start_link(__MODULE__, %Zone{ id: id, name: name, source_stream: source_stream, broadcaster: nil }, name: id)
   end
 
   def init(%Zone{ source_stream: source_stream } = zone) do
+    {:ok, ip, port} = Otis.IPPool.next_address
+    {:ok, socket} = Otis.Zone.Socket.start_link({ip, port})
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_stream, Otis.stream_bytes_per_step)
-    {:ok, %Zone{ zone | audio_stream: audio_stream }}
+    {:ok, %Zone{ zone | audio_stream: audio_stream, socket: socket, broadcast_address: {ip, port} }}
+  end
+
+  def get_broadcast_address do
+    case Otis.IPPool.next_address do
+      {:ok, ip, port} -> {ip, port}
+      _ = response -> raise "bad ip #{inspect response}"
+    end
   end
 
   def id(zone) do
@@ -72,6 +83,10 @@ defmodule Otis.Zone do
     GenServer.call(zone, :get_audio_stream)
   end
 
+  def broadcast_address(zone) do
+    GenServer.call(zone, :get_broadcast_address)
+  end
+
   # Things we can do to zones:
   # - list receivers
   # - add receiver
@@ -105,6 +120,7 @@ defmodule Otis.Zone do
 
   def handle_call({:add_receiver, receiver}, _from, %Zone{ id: id, receivers: receivers} = zone) do
     Logger.info "Adding receiver to zone #{id}"
+    Otis.Receiver.join_zone(receiver, self)
     {:reply, :ok, %Zone{ zone | receivers: Set.put(receivers, receiver) }}
   end
 
@@ -129,14 +145,19 @@ defmodule Otis.Zone do
     {:reply, {:ok, source_stream}, zone}
   end
 
+  def handle_call(:get_broadcast_address, _from, %Zone{broadcast_address: broadcast_address} = zone) do
+    {:reply, {:ok, broadcast_address}, zone}
+  end
+
   def handle_cast(:broadcast, %Zone{ state: :play, receivers: []} = zone) do
     Logger.info "Zone has no configured receivers"
     {:noreply, set_state(zone, :stop)}
   end
 
-  def handle_cast(:broadcast, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers} = zone) do
+  def handle_cast(:broadcast, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers, last_broadcast: last_broadcast} = zone) do
     frame = Otis.AudioStream.frame(audio_stream)
     zone = start_broadcast_frame(frame, Set.to_list(receivers), zone)
+    # Logger.debug "Gap #{ms - last_broadcast} #{Otis.stream_interval_ms}"
     {:noreply, zone}
   end
 
@@ -146,7 +167,7 @@ defmodule Otis.Zone do
 
   def start_broadcast_frame({:ok, data} = _frame, recs, %Zone{timestamp: timestamp} = zone) do
     timestamp = next_timestamp(timestamp, recs)
-    broadcast_frame({:ok, data, timestamp}, recs, %Zone{zone | timestamp: timestamp})
+    broadcast_frame({:ok, data, timestamp}, %Zone{zone | timestamp: timestamp})
   end
 
   def start_broadcast_frame(:stopped,  _recs, zone) do
@@ -154,28 +175,27 @@ defmodule Otis.Zone do
   end
 
   def next_timestamp(timestamp, recs) do
-    offset = Enum.map(recs, fn(rec) ->
+    next_timestamp_with_offset(timestamp, receiver_latency(recs))
+  end
+
+  def receiver_latency(recs) do
+    Enum.map(recs, fn(rec) ->
       {:ok, latency} = Otis.Receiver.latency(rec)
       latency
     end) |> Enum.max
-    next_timestamp_with_offset(timestamp, offset)
   end
 
   def next_timestamp_with_offset(0, offset) do
-    Otis.microseconds + (1 * Otis.stream_interval_us) + offset
+    Otis.microseconds + (Otis.stream_interval_us) + offset
   end
 
   def next_timestamp_with_offset(timestamp, _offset) do
     timestamp + Otis.stream_interval_us
   end
 
-  def broadcast_frame({:ok, data, timestamp}, [r | t], zone) do
-    Otis.Receiver.receive_frame(r, data, timestamp)
-    broadcast_frame({:ok, data, timestamp}, t, zone)
-  end
-
-  def broadcast_frame({:ok, _data, _timestamp}, [], zone) do
-    zone
+  def broadcast_frame({:ok, data, timestamp}, %Zone{socket: socket} = zone) do
+    Otis.Zone.Socket.send(socket, timestamp, data)
+    %Zone{zone | last_broadcast: Otis.milliseconds}
   end
 
   defp toggle_state(%Zone{state: :play} = zone) do

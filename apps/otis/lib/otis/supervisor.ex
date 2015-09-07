@@ -8,6 +8,7 @@ defmodule Otis.Supervisor do
   def init(:ok) do
     children = [
       worker(Otis.State, []),
+      worker(Otis.IPPool, [{224,24,4,0}]),
       supervisor(Otis.Zones.Supervisor, []),
       worker(Otis.Zones, []),
       supervisor(Otis.Receivers.Supervisor, []),

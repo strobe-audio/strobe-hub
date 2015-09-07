@@ -2,15 +2,16 @@
 defmodule Janis.Looper do
   require Logger
 
-  def start_link do
-    :proc_lib.start_link(__MODULE__, :init, [self, Janis.Looper, []])
+  def start_link(buffer, interval) do
+    :proc_lib.start_link(__MODULE__, :init, [self, buffer, interval, Janis.Looper, []])
   end
 
-  def init(parent, name, opts) do
+  def init(player, buffer, interval, name, opts) do
     :erlang.register(name, self)
     Process.flag(:trap_exit, true)
     :proc_lib.init_ack({:ok, self})
-    loop({Janis.milliseconds, 0, 0, random_timestamp})
+    state = next_frame({Janis.milliseconds, 0, 0, nil, <<>>, buffer, player})
+    loop(state)
   end
 
   def random_timestamp(time \\ 20) do
@@ -20,7 +21,7 @@ defmodule Janis.Looper do
   def loop(state) do
     receive do
     after 2 ->
-      {now, _, d, timestamp} = state = new_state(state)
+      {now, _, d, timestamp, _data, _buffer, _player} = state = new_state(state)
       case timestamp - now do
         x when x <= 1 ->
           play_frame(state)
@@ -34,8 +35,8 @@ defmodule Janis.Looper do
 
   @jitter 2
 
-  def loop_tight({t, n, d, timestamp}) do
-    {now, _, _, _} = state = {Janis.milliseconds, n, d, timestamp}
+  def loop_tight({t, n, d, timestamp, _data, _buffer, _player}) do
+    {now, _, _, _, _, _, _} = state = {Janis.milliseconds, n, d, timestamp, _data, _buffer, _player}
     case timestamp - now do
       x when x <= @jitter ->
         play_frame(state)
@@ -45,13 +46,26 @@ defmodule Janis.Looper do
     end
   end
 
-  def play_frame({t, n, d, timestamp} = state) do
-    case Janis.milliseconds - timestamp do
-      d when d <= 0 -> :ok
+  def play_frame({_t, _n, _d, timestamp, data, _buffer, player} = state) do
+    Logger.debug "Play frame.."
+    send_data = case Janis.milliseconds - timestamp do
+      d when d <= 0 -> data
       d ->
         # do I skip from the beginning or the end...
         Logger.debug "Late #{d} skipping #{skip_bytes(d)} bytes"
+        case skip_bytes(d) do
+          s when s > byte_size(data) ->
+            <<>>
+          s ->
+            << skip :: binary-size(s), rest :: binary >> = data
+            rest
+        end
     end
+
+    if byte_size(send_data) > 0 do
+      GenServer.cast(player, {:play, send_data})
+    end
+
     loop(next_frame(state))
   end
 
@@ -63,16 +77,19 @@ defmodule Janis.Looper do
     round(Float.ceil(@frames_per_ms * ms)) * @bytes_per_frame
   end
 
-  def next_frame({t, n, d, _timestamp}) do
-    # Call to the stream receiver to get next frame timestamp & data
-    {t, n+1, d, random_timestamp}
+  def next_frame({t, n, d, _timestamp, _data, buffer, player}) do
+    {:ok, {timestamp, data}} = Janis.Player.Buffer.get(buffer)
+    {:ok, delta} = Janis.Monitor.time_delta
+    Logger.debug "next_frame #{inspect timestamp} #{inspect delta}"
+    {t, n+1, d, round((timestamp + delta)/1000), data, buffer, player}
   end
 
-  def new_state_tight({t, n, d, timestamp}) do
-    {Janis.milliseconds, n, d, timestamp}
+
+  def new_state_tight({t, n, d, timestamp, data, buffer, _player}) do
+    {Janis.milliseconds, n, d, timestamp, data, buffer, _player}
   end
 
-  def new_state({t, n, d, timestamp}) do
+  def new_state({t, n, d, timestamp, data, buffer, _player}) do
     m = n+1
     now = Janis.milliseconds
     delay = case d do
@@ -82,6 +99,6 @@ defmodule Janis.Looper do
     if rem(m, 1000) == 0 do
       Logger.debug "#{now}, #{m}, #{delay}"
     end
-    {now, m, delay, timestamp}
+    {now, m, delay, timestamp, data, buffer, _player}
   end
 end

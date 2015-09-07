@@ -66,11 +66,12 @@ defmodule Otis.State do
   end
 
   def attach_receiver_to_zone(zone_id, receiver) do
+    IO.inspect [:attach_receiver_to_zone, zone_id]
     case Otis.Zones.find(zone_id) do
       {:ok, zone} ->
         Otis.Zone.add_receiver(zone, receiver)
-      {:error, _} ->
-        Logger.warn "Zone id #{zone_id} not found"
+      _ = msg ->
+        Logger.warn "Error: #{inspect msg} :: Zone id #{zone_id} not found"
     end
   end
 end

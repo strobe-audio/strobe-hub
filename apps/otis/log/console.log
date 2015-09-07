@@ -1,0 +1,50 @@
+2015-08-31 17:10:27.082 [info] <0.7.0> Application lager started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.096 [info] <0.338.0>@mdns_net:socket_options:74 Multicast interface is {0,0,0,0}.
+2015-08-31 17:10:27.096 [info] <0.338.0>@mdns_net:socket_options:75 Listen address is {224,0,0,251}.
+2015-08-31 17:10:27.108 [info] <0.7.0> Application mdns started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.121 [info] <0.344.0> pinging node: 'peep@192.168.2.173'
+2015-08-31 17:10:27.121 [info] <0.344.0> contact node has ['janis@192.168.2.173','pi@192.168.2.129']
+2015-08-31 17:10:27.121 [info] <0.344.0> stoppping resource discovery hearbeat normal
+2015-08-31 17:10:27.121 [info] <0.7.0> Application resource_discovery started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.121 [info] <0.7.0> Application logger started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.179 [info] <0.343.0> trade_resources, got remotes [{broadcaster,'peep@192.168.2.173'}]: deleted: []
+2015-08-31 17:10:27.179 [info] <0.343.0> got remotes and filtered []
+2015-08-31 17:10:27.179 [info] <0.343.0> trade_resources, deleting []
+2015-08-31 17:10:27.180 [info] <0.343.0> trade_resources, got remotes [{broadcaster,'peep@192.168.2.173'}]: deleted: []
+2015-08-31 17:10:27.188 [info] <0.343.0> got remotes and filtered []
+2015-08-31 17:10:27.188 [info] <0.343.0> trade_resources, deleting []
+2015-08-31 17:10:27.188 [error] <0.366.0> ** System running to use fully qualified hostnames **
+** Hostname nohost is illegal **
+2015-08-31 17:10:27.188 [info] <0.343.0> trade_resources, got remotes [{receiver,'janis@192.168.2.173'}]: deleted: []
+2015-08-31 17:10:27.188 [info] <0.343.0> got remotes and filtered [{receiver,'janis@192.168.2.173'}]
+2015-08-31 17:10:27.188 [info] <0.343.0> trade_resources, deleting []
+2015-08-31 17:10:27.189 [info] <0.343.0> trade_resources, got remotes [{receiver,'pi@192.168.2.129'}]: deleted: []
+2015-08-31 17:10:27.189 [info] <0.343.0> got remotes and filtered [{receiver,'pi@192.168.2.129'}]
+2015-08-31 17:10:27.189 [info] <0.343.0> trade_resources, deleting []
+2015-08-31 17:10:27.189 [info] <0.7.0> Application otis started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.525 [info] <0.7.0> Application plug started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.527 [info] <0.7.0> Application poison started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.536 [info] <0.7.0> Application eex started on node 'peep@192.168.2.173'
+2015-08-31 17:10:27.554 [info] <0.7.0> Application phoenix started on node 'peep@192.168.2.173'
+2015-08-31 17:23:10.901 [info] <0.7.0> Application lager started on node 'peep@192.168.2.173'
+2015-08-31 17:23:10.911 [info] <0.331.0>@mdns_net:socket_options:74 Multicast interface is {0,0,0,0}.
+2015-08-31 17:23:10.911 [info] <0.331.0>@mdns_net:socket_options:75 Listen address is {224,0,0,251}.
+2015-08-31 17:23:10.921 [info] <0.7.0> Application mdns started on node 'peep@192.168.2.173'
+2015-08-31 17:23:10.935 [info] <0.337.0> pinging node: 'peep@192.168.2.173'
+2015-08-31 17:23:10.935 [info] <0.337.0> contact node has []
+2015-08-31 17:23:10.935 [info] <0.337.0> stoppping resource discovery hearbeat normal
+2015-08-31 17:23:10.935 [info] <0.7.0> Application resource_discovery started on node 'peep@192.168.2.173'
+2015-08-31 17:23:10.936 [info] <0.7.0> Application logger started on node 'peep@192.168.2.173'
+2015-08-31 17:23:10.989 [info] <0.336.0> trade_resources, got remotes [{broadcaster,'peep@192.168.2.173'}]: deleted: []
+2015-08-31 17:23:10.995 [info] <0.336.0> got remotes and filtered []
+2015-08-31 17:23:10.995 [info] <0.336.0> trade_resources, deleting []
+2015-08-31 17:23:10.995 [info] <0.336.0> trade_resources, got remotes [{broadcaster,'peep@192.168.2.173'}]: deleted: []
+2015-08-31 17:23:10.995 [info] <0.336.0> got remotes and filtered []
+2015-08-31 17:23:10.995 [info] <0.336.0> trade_resources, deleting []
+2015-08-31 17:23:10.995 [error] <0.359.0> ** System running to use fully qualified hostnames **
+** Hostname nohost is illegal **
+2015-08-31 17:23:11.006 [info] <0.7.0> Application otis started on node 'peep@192.168.2.173'
+2015-08-31 17:23:11.341 [info] <0.7.0> Application plug started on node 'peep@192.168.2.173'
+2015-08-31 17:23:11.343 [info] <0.7.0> Application poison started on node 'peep@192.168.2.173'
+2015-08-31 17:23:11.350 [info] <0.7.0> Application eex started on node 'peep@192.168.2.173'
+2015-08-31 17:23:11.366 [info] <0.7.0> Application phoenix started on node 'peep@192.168.2.173'

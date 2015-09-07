@@ -1,7 +1,8 @@
 defmodule Otis.Receivers do
-  use GenServer
+  use     GenServer
+  require Logger
 
-  alias Otis.Receiver
+  alias   Otis.Receiver
 
   @registry_name Otis.Receivers
 
@@ -13,10 +14,16 @@ defmodule Otis.Receivers do
     start_receiver(@registry_name, id, node)
   end
 
-  def start_receiver(receivers, id, node) do
-    {:ok, receiver} = response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, id, node)
-    add(receivers, receiver)
-    response
+  def start_receiver(receivers, id, node_name) do
+    Logger.debug "Start receiver #{inspect id} #{inspect(node_name)}"
+    response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, id, node_name)
+    case response do
+      {:ok, receiver} ->
+        add(receivers, receiver)
+        response
+      {:error, {:already_started, receiver}} ->
+        {:ok, receiver}
+    end
   end
 
   def add(receiver) do
@@ -66,6 +73,10 @@ defmodule Otis.Receivers do
     {:reply, find_by_id(receivers, id), receivers}
   end
 
+  def handle_call({:time_sync, {start}}, _from, receivers) do
+    {:reply, {:ok, {start, Otis.microseconds}}, receivers}
+  end
+
   def handle_cast({:add, receiver}, receivers) do
     {:ok, id} = Receiver.id(receiver)
     {:noreply, [{id, receiver} | receivers]}
@@ -76,17 +87,23 @@ defmodule Otis.Receivers do
     {:noreply, Enum.reject(receivers, fn({rid, _rec}) -> rid == id end) }
   end
 
+  def handle_cast({:receiver_latency, node_name, latency}, receivers) do
+    Logger.debug "Update latency #{node_name} : #{latency}"
+    id = Otis.Receiver.id_from_node(node_name)
+    {:ok, receiver} = find_by_id(receivers, id)
+    GenServer.cast(receiver, {:update_latency, latency})
+    {:noreply, receivers}
+  end
+
   defp find_by_id(receivers, id) do
-    receivers |>
-    Enum.find(fn({rid, _zone}) -> Atom.to_string(rid) == id end) |>
-    find_result
+    receivers[id] |> find_result
   end
 
   defp find_result(nil) do
     :error
   end
 
-  defp find_result({_id, receiver}) do
+  defp find_result(receiver) do
     {:ok, receiver}
   end
 end

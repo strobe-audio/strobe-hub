@@ -19,6 +19,30 @@ Otis.SourceStream.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
 #############
+
+{:ok, zone} = Otis.Zones.find :office
+
+{:ok, ss} = Otis.Zone.source_stream(zone)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/SongMaven-Click-Track-120-BPM.mp3")
+Otis.SourceStream.append_source(ss, source)
+
+Otis.Zone.play_pause(zone)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Music/iTunes/iTunes Media/Music/Unknown Artist/Unknown Album/Lady Sovereign - All Eyes On Me (garage).mp3")
+Otis.SourceStream.append_source(ss, source)
+#############
+
+{:ok, zone} = Otis.Zones.find :downstairs
+
+{:ok, ss} = Otis.Zone.source_stream(zone)
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/SongMaven-Click-Track-120-BPM.mp3")
+Otis.SourceStream.append_source(ss, source)
+
+Otis.Zone.play_pause(zone)
+
+
+#############
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/rag.mp3")
 Otis.SourceStream.append_source(ss, source)
 
@@ -33,4 +57,37 @@ Otis.SourceStream.append_source(ss, source)
 
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/Snake_Rag.mp3")
 Otis.SourceStream.append_source(ss, source)
+
+###############
+
+
+{:ok, zone} = Otis.Zones.start_zone("office", "Office")
+
+{:ok, mac} = Otis.Receiver.start_link("mac", :"janis@garry-macpro-11")
+
+Otis.Zone.add_receiver(zone, mac)
+
+{:ok, ss} = Otis.Zone.source_stream(zone)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/rag.mp3")
+Otis.SourceStream.append_source(ss, source)
+
+Otis.Zone.play_pause(zone)
+
+###############
+
+
+{:ok, zone} = Otis.Zones.start_zone("office", "Office")
+
+{:ok, mac} = Otis.Receiver.start_link("mac", :"janis@garry-macpro-11")
+
+Otis.Zone.add_receiver(zone, mac)
+
+{:ok, ss} = Otis.Zone.source_stream(zone)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/rag.mp3")
+Otis.SourceStream.append_source(ss, source)
+
+Otis.Zone.play_pause(zone)
+
 ```

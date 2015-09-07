@@ -17,7 +17,7 @@ defmodule Otis do
   # the gap between frames, the less work the server has to do and (probably)
   # the more reliable and the stream is *but* the longer the gap between
   # pressing stop and hearing the music stop
-  @multiplier             4
+  @multiplier             2
   @stream_frames_per_step 147  * @multiplier
   @stream_bytes_per_step  3528 * @multiplier
   @stream_interval_ms     20   * @multiplier
@@ -39,6 +39,10 @@ defmodule Otis do
   def init(_args) do
     IO.inspect [:starting, Otis, _args]
     :ok
+  end
+
+  def milliseconds do
+    :erlang.monotonic_time(:milli_seconds)
   end
 
   def microseconds do
