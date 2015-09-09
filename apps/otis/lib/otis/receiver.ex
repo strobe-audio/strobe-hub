@@ -80,7 +80,7 @@ defmodule Otis.Receiver do
     # Now I want to send the ip:port info to the receiver which should cause it
     # to launch a player instance attached to that udp address (along with the
     # necessary linked processes)
-    GenServer.cast({Janis.Monitor, node}, {:join_zone, {ip, port}})
+    GenServer.cast({Janis.Monitor, node}, {:join_zone, {ip, port}, Otis.stream_interval_ms, Otis.stream_bytes_per_step})
     {:noreply, state}
   end
 
