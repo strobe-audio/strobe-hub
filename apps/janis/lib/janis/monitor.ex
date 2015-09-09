@@ -35,7 +35,8 @@ defmodule Janis.Monitor do
 
   defp collect_measurements(%S{measurement_count: count, broadcaster: broadcaster} = state) do
     {interval, sample_size} = case count do
-      _ when count == 0  -> { 100, 31}
+      # _ when count == 0  -> { 100, 31}
+      _ when count == 0  -> { 100, 11} # debugging value -- saves me a bit of waiting
       _ when count  < 10 -> { 100, 11}
       _ when count >= 20 -> {1000, 11}
       _ when count >= 10 -> { 500, 11}
@@ -44,9 +45,9 @@ defmodule Janis.Monitor do
     state
   end
 
-  def handle_cast({:join_zone, {ip, port}}, state) do
-    Logger.info "Joining zone #{inspect {ip, port}}"
-    {:ok, pid} = Janis.Player.Supervisor.start_link({ip, port})
+  def handle_cast({:join_zone, {ip, port}, packet_interval, packet_size}, state) do
+    Logger.info "Joining zone #{inspect {ip, port}} interval: #{packet_interval}ms; size: #{packet_size}bytes"
+    {:ok, pid} = Janis.Player.Supervisor.start_link({ip, port}, {packet_interval, packet_size})
     {:noreply, %S{state | player: pid}}
   end
 

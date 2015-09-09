@@ -88,7 +88,7 @@ defmodule Otis.Receivers do
   end
 
   def handle_cast({:receiver_latency, node_name, latency}, receivers) do
-    Logger.debug "Update latency #{node_name} : #{latency}"
+    # Logger.debug "Update latency #{node_name} : #{latency}"
     id = Otis.Receiver.id_from_node(node_name)
     {:ok, receiver} = find_by_id(receivers, id)
     GenServer.cast(receiver, {:update_latency, latency})

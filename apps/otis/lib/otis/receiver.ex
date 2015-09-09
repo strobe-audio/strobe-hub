@@ -70,7 +70,7 @@ defmodule Otis.Receiver do
 
   def handle_cast({:update_latency, latency}, %S{latency: old_latency} = state) do
     l = Enum.max [latency, old_latency]
-    Logger.debug "Update latency #{old_latency} -> #{latency} = #{l}"
+    # Logger.debug "Update latency #{old_latency} -> #{latency} = #{l}"
     {:noreply, %S{state | latency: l}}
   end
 
