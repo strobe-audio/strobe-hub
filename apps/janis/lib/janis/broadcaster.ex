@@ -15,8 +15,8 @@ defmodule Janis.Broadcaster do
   end
 
   def handle_cast({:receiver_latency, latency}, %{broadcaster: broadcaster} = state) do
-    Logger.debug "Broadcaster new latency #{latency} #{inspect broadcaster}"
-    IO.inspect GenServer.cast({Otis.Receivers, broadcaster}, {:receiver_latency, node, latency})
+    # Logger.debug "Broadcaster new latency #{latency} #{inspect broadcaster}"
+    GenServer.cast({Otis.Receivers, broadcaster}, {:receiver_latency, node, latency})
     {:noreply, state}
   end
 
