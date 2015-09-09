@@ -7,10 +7,8 @@ defmodule Janis.Supervisor do
 
   def init(:ok) do
     children = [
-      # worker(Janis.Player, []),
-      # worker(Janis.Monitor, []),
+      # worker(Janis.Player.Output, []),
       worker(Janis.Resources, []),
-      # worker(Janis.Looper, [])
     ]
     supervise(children, strategy: :one_for_one)
   end

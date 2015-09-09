@@ -154,11 +154,11 @@ defmodule Otis.Zone do
     {:noreply, set_state(zone, :stop)}
   end
 
-  def handle_cast(:broadcast, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers, last_broadcast: last_broadcast} = zone) do
+  def handle_call(:broadcast, _from, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers, last_broadcast: last_broadcast} = zone) do
     frame = Otis.AudioStream.frame(audio_stream)
     zone = start_broadcast_frame(frame, Set.to_list(receivers), zone)
     # Logger.debug "Gap #{ms - last_broadcast} #{Otis.stream_interval_ms}"
-    {:noreply, zone}
+    {:reply, :ok, zone}
   end
 
   def handle_cast(:broadcast, %Zone{ state: :stop} = zone) do
@@ -186,7 +186,7 @@ defmodule Otis.Zone do
   end
 
   def next_timestamp_with_offset(0, offset) do
-    Otis.microseconds + (Otis.stream_interval_us) + offset
+    Otis.microseconds + (3 * Otis.stream_interval_us) + offset
   end
 
   def next_timestamp_with_offset(timestamp, _offset) do

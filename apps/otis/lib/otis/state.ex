@@ -23,7 +23,7 @@ defmodule Otis.State do
   def init(:ok) do
     Logger.info "Starting state..."
     zones = [
-      %Zone{id: :office, name: "The Office", receiver_ids: [:pi, :janis]},
+      %Zone{id: :office, name: "The Office", receiver_ids: [:pi, :janis, :arch]},
       %Zone{id: :downstairs, name: "Downstairs", receiver_ids: [:aine, :garry]}
     ]
     {:ok, %S{zones: zones}}
