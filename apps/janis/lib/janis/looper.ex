@@ -2,11 +2,12 @@
 defmodule Janis.Looper do
   require Logger
 
-  def start_link(buffer, interval) do
+  def start_link(buffer, interval, _size) do
     :proc_lib.start_link(__MODULE__, :init, [self, buffer, interval, Janis.Looper, []])
   end
 
   def init(player, buffer, interval, name, opts) do
+    Logger.debug "starting looper with interval #{interval}"
     :erlang.register(name, self)
     Process.flag(:trap_exit, true)
     :proc_lib.init_ack({:ok, self})
@@ -25,7 +26,7 @@ defmodule Janis.Looper do
       case timestamp - now do
         x when x <= 1 ->
           play_frame(state)
-        x when x <= d+1 ->
+        x when x <= d ->
           loop_tight(state)
         _ ->
           loop(state)
@@ -33,7 +34,7 @@ defmodule Janis.Looper do
     end
   end
 
-  @jitter 2
+  @jitter 1
 
   def loop_tight({t, n, d, timestamp, _data, _buffer, _player}) do
     {now, _, _, _, _, _, _} = state = {Janis.milliseconds, n, d, timestamp, _data, _buffer, _player}
@@ -47,12 +48,12 @@ defmodule Janis.Looper do
   end
 
   def play_frame({_t, _n, _d, timestamp, data, _buffer, player} = state) do
-    Logger.debug "Play frame.."
+    # Logger.debug "Play frame.."
     send_data = case Janis.milliseconds - timestamp do
       d when d <= 0 -> data
       d ->
         # do I skip from the beginning or the end...
-        Logger.debug "Late #{d} skipping #{skip_bytes(d)} bytes"
+        Logger.warn "Late #{d} skipping #{skip_bytes(d)} bytes"
         case skip_bytes(d) do
           s when s > byte_size(data) ->
             <<>>
@@ -80,8 +81,10 @@ defmodule Janis.Looper do
   def next_frame({t, n, d, _timestamp, _data, buffer, player}) do
     {:ok, {timestamp, data}} = Janis.Player.Buffer.get(buffer)
     {:ok, delta} = Janis.Monitor.time_delta
-    Logger.debug "next_frame #{inspect timestamp} #{inspect delta}"
-    {t, n+1, d, round((timestamp + delta)/1000), data, buffer, player}
+    time = round((timestamp - delta)/1000)
+    now = Janis.milliseconds
+    # Logger.debug "next_frame #{inspect time} #{time - now}"
+    {t, n+1, d, time, data, buffer, player}
   end
 
 
@@ -97,7 +100,7 @@ defmodule Janis.Looper do
       _ -> (((n * d) + (now - t)) / m)# |> Float.ceil# |> round
     end
     if rem(m, 1000) == 0 do
-      Logger.debug "#{now}, #{m}, #{delay}"
+      # Logger.debug "#{now}, #{m}, #{delay}"
     end
     {now, m, delay, timestamp, data, buffer, _player}
   end
