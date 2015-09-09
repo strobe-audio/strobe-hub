@@ -15,7 +15,8 @@ config :logger, :console,
   format: "$date $time [$level] $metadata$message\n",
   # I don't want 'back pressure' from the logger
   sync_threshold: 10_000,
-  metadata: []
+  metadata: [],
+  colors: [info: :green]
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
