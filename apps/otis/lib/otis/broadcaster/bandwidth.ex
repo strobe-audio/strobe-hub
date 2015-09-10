@@ -50,7 +50,7 @@ defmodule Otis.Broadcaster.Bandwidth do
         _ ->
           next_interval
       end
-      IO.inspect [:bandwidth, bandwidth, target, bandwidth/target, last - first, length(events), interval]
+      # IO.inspect [:bandwidth, bandwidth, target, bandwidth/target, last - first, length(events), interval]
     end
     queue = :queue.from_list(events)
     {:ok, {config, queue, stats}, interval}
