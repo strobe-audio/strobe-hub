@@ -21,8 +21,8 @@ defmodule Janis.Player.Socket do
   end
 
   def handle_info({:udp, __socket, __addr, __port, data}, {_socket, buffer, _stream_info} = state) do
-    {timestamp, _packet} = packet = :erlang.binary_to_term(data)
-    Janis.Player.Buffer.put(buffer, packet)
+    << _count::size(64)-little-unsigned-integer, timestamp::size(64)-little-signed-integer, audio::binary >> = data
+    Janis.Player.Buffer.put(buffer, {timestamp, audio})
     {:noreply, state}
   end
 

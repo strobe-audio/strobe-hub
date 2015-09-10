@@ -9,16 +9,16 @@ defmodule Otis.Zone.Socket do
   def init({ip, port} = _address) do
     Logger.debug "Starting socket with ip #{inspect ip}:#{port}"
     {:ok, socket} = :gen_udp.open 0, [:binary, ip: {0, 0, 0, 0}, multicast_ttl: 255, reuseaddr: true]
-    {:ok, {socket, ip, port}}
+    {:ok, {socket, ip, port, 1}}
   end
 
   def send(pid, timestamp, data) do
     GenServer.cast(pid, {:send, timestamp, data})
   end
 
-  def handle_cast({:send, timestamp, data}, {socket, ip, port} = state) do
-    packet = :erlang.term_to_binary({timestamp, data})
+  def handle_cast({:send, timestamp, audio}, {socket, ip, port, count} = state) do
+    packet = << count::size(64)-little-unsigned-integer, timestamp::size(64)-little-signed-integer, audio::binary >>
     :gen_udp.send socket,  ip, port, packet
-    {:noreply, state}
+    {:noreply, {socket, ip, port, count + 1}}
   end
 end
