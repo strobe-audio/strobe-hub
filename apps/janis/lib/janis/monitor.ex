@@ -87,11 +87,6 @@ defmodule Janis.Monitor do
       {:ok, %{monitor: monitor, broadcaster: broadcaster, interval: interval, count: count, measurements: []}}
     end
 
-    def terminate(reason, state) do
-      Logger.debug "Monitor terminate #{inspect reason} #{inspect state}"
-      :ok
-    end
-
     def handle_info(:measure, %{count: count, interval: interval} = state) when count > 0 do
       Process.send_after(self, :measure, interval)
       {:noreply, measure_sync(state)}
@@ -139,8 +134,8 @@ defmodule Janis.Monitor do
       GenServer.call(broadcaster, :measure_latency)
     end
 
-    def terminate(_reason, _state) do
-      IO.inspect [:monitor, :terminate]
+    def terminate(reason, state) do
+      Logger.debug "Monitor terminate #{inspect reason} #{inspect state}"
       :ok
     end
   end
