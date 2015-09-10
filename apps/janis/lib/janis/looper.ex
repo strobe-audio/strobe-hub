@@ -37,7 +37,8 @@ defmodule Janis.Looper do
   @jitter 1
 
   def loop_tight({t, n, d, timestamp, _data, _buffer, _player}) do
-    {now, _, _, _, _, _, _} = state = {Janis.milliseconds, n, d, timestamp, _data, _buffer, _player}
+    now = Janis.milliseconds
+    state = {now, n, d, timestamp, _data, _buffer, _player}
     case timestamp - now do
       x when x <= @jitter ->
         play_frame(state)
