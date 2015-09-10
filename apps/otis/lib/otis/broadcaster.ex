@@ -9,7 +9,7 @@ defmodule Otis.Broadcaster do
   alias   Otis.Broadcaster.Bandwidth
 
   def start_link(zone, interval) do
-    bw = Bandwidth.new(interval, Otis.stream_bytes_per_step, 3)
+    bw = Bandwidth.new(interval, Otis.stream_bytes_per_step, 1)
     GenServer.start_link(__MODULE__, %{ zone: zone, target_interval: interval, interval: interval - 1, state: :play, last_signal: nil, bandwidth: bw  })
   end
 
