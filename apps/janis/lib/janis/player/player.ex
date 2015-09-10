@@ -37,6 +37,7 @@ defmodule Janis.Player.Player do
 
   def handle_cast({:play, data}, state) do
     # Logger.debug "Play #{inspect data}"
+    Janis.Player.Output.send(data)
     {:noreply, state}
   end
 end
