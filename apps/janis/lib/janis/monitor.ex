@@ -77,7 +77,7 @@ defmodule Janis.Monitor do
     require Logger
 
     def start_link(monitor, broadcaster, interval, count) do
-      # Logger.debug "Starting new collector interval: #{interval}; count: #{count}"
+      # Logger.debug "Starting new collector monitor: #{inspect monitor}; interval: #{interval}; count: #{count}"
       GenServer.start_link(__MODULE__, {monitor, broadcaster, interval, count})
     end
 
@@ -99,10 +99,10 @@ defmodule Janis.Monitor do
     end
 
     defp measure_sync(%{measurements: measurements, count: count, broadcaster: broadcaster} = state) when count > 0  do
-      {:ok, {start, receipt, finish}} = sync_exchange(broadcaster)
+      {:ok, {start, receipt, reply, finish}} = sync_exchange(broadcaster)
       latency = (finish - start) / 2
       # https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_synchronization_algorithm
-      delta = round(((receipt - start) + (receipt - finish)) / 2)
+      delta = round(((receipt - start) + (reply - finish)) / 2)
       %{ state | count: count - 1,  measurements: [{latency, delta} | measurements]}
     end
 
