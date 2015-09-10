@@ -185,8 +185,12 @@ defmodule Otis.Zone do
     end) |> Enum.max
   end
 
+  defp buffer_time(offset) do
+    (8 * Otis.stream_interval_us) + offset
+  end
+
   def next_timestamp_with_offset(0, offset) do
-    Otis.microseconds + (3 * Otis.stream_interval_us) + offset
+    Otis.microseconds + buffer_time(offset)
   end
 
   def next_timestamp_with_offset(timestamp, _offset) do
