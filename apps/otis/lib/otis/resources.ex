@@ -111,6 +111,8 @@ defmodule Otis.Resources do
   end
 
   def add_receiver(_id, true = _is_member, receivers) do
+    # TODO: don't discard receiver_up messages from receivers that we already
+    # think are up. Instead replace the existing instance with the new one...
     receivers
   end
 
