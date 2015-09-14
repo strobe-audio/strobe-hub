@@ -19,6 +19,8 @@ Otis.SourceStream.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
 #############
+# Office
+#############
 
 {:ok, zone} = Otis.Zones.find :office
 
@@ -31,6 +33,14 @@ Otis.Zone.play_pause(zone)
 
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Music/iTunes/iTunes Media/Music/Unknown Artist/Unknown Album/Lady Sovereign - All Eyes On Me (garage).mp3")
 Otis.SourceStream.append_source(ss, source)
+
+Otis.Zone.play_pause(zone)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/apex-twin--peek-824545201.m4a")
+Otis.SourceStream.append_source(ss, source)
+
+Otis.Zone.play_pause(zone)
+
 #############
 
 {:ok, zone} = Otis.Zones.find :downstairs
