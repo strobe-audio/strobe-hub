@@ -38,6 +38,31 @@ Bugs
 
 [converting to raw/pcm]: http://stackoverflow.com/questions/4854513/can-ffmpeg-convert-audio-to-raw-pcm-if-so-how
 
+Time Sync
+---------
+
+It would be good to more to a more precise time sync system e.g. [Precise Time Protocol][] (PTP).
+
+The problems with this are:
+
+- It probably needs to run all the time to work but we want to allow for
+  players to be turned off when they're not in use (or rather, not discourage
+  people from doing that)
+- Launching a completely separate daemon with a whole bunch of config
+  implications is not trivial. It would change the server requirements from an
+  "app" like approach to a more system level software installation (e.g. a
+  leveraging the local package management system to install & configure
+  dependencies or require the use of Docker)
+
+It's not feasible to re-implement the PTP system in Erlang/Elixir - too big a
+job and it just doesn't have the primitives (e.g. low-level access to network
+stack).
+
+*BUT* precision time sync is vital...
+
+[Precise Time Protocol]: http://sourceforge.net/p/ptpd/wiki/Home/
+
+
 UDP
 ---
 
