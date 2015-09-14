@@ -35,7 +35,7 @@ defmodule Otis.Source.File do
 
   defp open(source) do
     inputstream = input_stream(source)
-    { pid, outputstream } = Otis.Sox.transcode(inputstream, file_type(source))
+    { pid, outputstream } = Otis.Transcoders.Avconv.transcode(inputstream, file_type(source))
     %{source | inputstream: inputstream, outputstream: outputstream, transcode_pid: pid }
   end
 
