@@ -39,7 +39,7 @@ Bugs
 [converting to raw/pcm]: http://stackoverflow.com/questions/4854513/can-ffmpeg-convert-audio-to-raw-pcm-if-so-how
 
 Time Sync
----------
+=========
 
 It would be good to more to a more precise time sync system e.g. [Precise Time Protocol][] (PTP).
 
@@ -61,6 +61,18 @@ stack).
 *BUT* precision time sync is vital...
 
 [Precise Time Protocol]: http://sourceforge.net/p/ptpd/wiki/Home/
+
+NTP
+---
+
+Or, alternatively, we could use GPS as a time source. This is extremely accurate (of the order of tens of **nanoseconds**) but requires additional hardware costs of ~30 quid or so
+
+Link dump:
+
+
+- http://www.ehow.com/about_5073608_accurate-gps-time.html
+- http://blog.retep.org/2012/06/18/getting-gps-to-work-on-a-raspberry-pi/
+- https://www.sparkfun.com/pages/GPS_Guide
 
 
 UDP
