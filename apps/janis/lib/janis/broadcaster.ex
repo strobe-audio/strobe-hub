@@ -39,6 +39,7 @@ defmodule Janis.Broadcaster do
     :ok = :gen_udp.send socket, address, port, packet
 
     {:ok, {originate, receipt, reply, finish}} = wait_response(socket)
+    :ok = :gen_udp.close(socket)
     {:reply, {:ok, {originate, receipt, reply, finish}}, %{state | sync_count: count + 1}}
   end
 
