@@ -4,7 +4,7 @@ defmodule Otis.SNTP do
 
   @name Otis.SNTP
 
-  def start_link(port \\ 9104) do
+  def start_link(port \\ 5045) do
     :proc_lib.start_link(__MODULE__, :init, [port])
   end
 

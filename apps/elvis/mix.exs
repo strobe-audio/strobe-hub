@@ -19,7 +19,7 @@ defmodule Elvis.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [mod: {Elvis, []},
-     applications: [:phoenix, :phoenix_html, :cowboy, :logger, :otis]]
+     applications: [:phoenix, :phoenix_html, :cowboy, :logger]]
   end
 
   # Specifies which paths to compile per environment
@@ -33,7 +33,6 @@ defmodule Elvis.Mixfile do
     [{:phoenix, "~> 0.17"},
      {:phoenix_html, "~> 2.1"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
-     {:cowboy, "~> 1.0"},
-     {:otis, in_umbrella: true}]
+     {:cowboy, "~> 1.0"}]
   end
 end

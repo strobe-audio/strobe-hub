@@ -1,7 +1,7 @@
 defmodule Elvis.Endpoint do
   use Phoenix.Endpoint, otp_app: :elvis
 
-  socket "/socket", Elvis.UserSocket
+  socket "/receive", Elvis.ReceiverSocket
 
   # Serve at "/" the static files from "priv/static" directory.
   #
@@ -33,7 +33,7 @@ defmodule Elvis.Endpoint do
   plug Plug.Session,
     store: :cookie,
     key: "_elvis_key",
-    signing_salt: "53RHuHIF"
+    signing_salt: "1lKYyWW7"
 
   plug Elvis.Router
 end

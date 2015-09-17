@@ -9,7 +9,7 @@ use Mix.Config
 config :elvis, Elvis.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
-  secret_key_base: "4ZAG7nV3i+xZjdoYrt+AiO8jnoa5xTDRlu7dRxq6jJFpz5uDXHWKjRCcWMqmQY+5",
+  secret_key_base: "08MLg+W3dNYe+ooCC5YQIWTGqbdM2/vD/i7RNC+vKrm9+XKhwpvpq05e0fooSrKt",
   render_errors: [accepts: ~w(html json)],
   pubsub: [name: Elvis.PubSub,
            adapter: Phoenix.PubSub.PG2]

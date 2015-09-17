@@ -13,22 +13,10 @@ defmodule Elvis.Router do
     plug :accepts, ["json"]
   end
 
-  pipeline :receiver do
-
-  end
-
   scope "/", Elvis do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
-  end
-
-  # channel "audio", Elvis.ToDoChannel
-
-  scope "/receive", Elvis do
-    pipe_through :receiver
-
-    get "/", ReceiverController, :receive
   end
 
   # Other scopes may use custom stacks.

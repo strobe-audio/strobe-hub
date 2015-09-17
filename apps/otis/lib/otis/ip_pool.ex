@@ -8,7 +8,7 @@ defmodule Otis.IPPool do
   end
 
   def init(network) do
-    {:ok, {network, 0, 6666}}
+    {:ok, {network, 0, port}}
   end
 
   def next_address do
@@ -24,5 +24,13 @@ defmodule Otis.IPPool do
     n = count + 1
     address = {a, b, c, n}
     {:reply, {:ok, address, port}, {network, n, port}}
+  end
+
+  def port do
+    otis_config[:port]
+  end
+
+  defp otis_config do
+    Application.get_env :otis, Otis.DNSSD
   end
 end
