@@ -1,6 +1,18 @@
 Peep
 ====
 
+What is the aim?
+----------------
+
+Something to replace LMS.
+
+- Raspberry Pi oriented.
+- Download images for server & client
+- Zero config of client - disposable, re-installable
+- Plug in drives of Music
+- Extendable through plugins
+
+
 Synchronised Player
 -------------------
 
@@ -54,9 +66,12 @@ The problems with this are:
   leveraging the local package management system to install & configure
   dependencies or require the use of Docker)
 
+- https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/s1-Using_PTP.html
+
 It's not feasible to re-implement the PTP system in Erlang/Elixir - too big a
 job and it just doesn't have the primitives (e.g. low-level access to network
 stack).
+
 
 *BUT* precision time sync is vital...
 
@@ -92,4 +107,6 @@ client:
 
     receive do; msg -> msg; end
 
+
+http://zentrope.tumblr.com/post/149688423/erlang-multicast-presencediscovery-notification
 
