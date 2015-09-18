@@ -125,6 +125,7 @@ defmodule Otis.Zone do
   end
 
   def handle_call({:remove_receiver, receiver}, _from, %Zone{ receivers: receivers} = zone) do
+    Logger.debug "Zone removing receiver..."
     {:reply, :ok, %Zone{ zone | receivers: Set.delete(receivers, receiver) }}
   end
 

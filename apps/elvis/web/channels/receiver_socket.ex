@@ -20,7 +20,8 @@ defmodule Elvis.ReceiverSocket do
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
   def connect(_params, socket) do
-    IO.inspect [ :connect, _params ]
+    %{ "id" => id } = _params
+    socket = assign(socket, :id, id)
     {:ok, socket}
   end
 
@@ -34,6 +35,8 @@ defmodule Elvis.ReceiverSocket do
   #     Elvis.Endpoint.broadcast("users_socket:" <> user.id, "disconnect", %{})
   #
   # Returning `nil` makes this socket anonymous.
-  def id(_socket), do: nil
+  def id(socket) do
+    "receiver:" <> socket.assigns.id
+  end
 end
 

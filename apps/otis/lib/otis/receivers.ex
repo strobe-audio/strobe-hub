@@ -10,13 +10,13 @@ defmodule Otis.Receivers do
     GenServer.start_link(__MODULE__, [], name: name)
   end
 
-  def start_receiver(id, node) do
-    start_receiver(@registry_name, id, node)
+  def start_receiver(channel, id, connection) do
+    start_receiver(@registry_name, channel, id, connection)
   end
 
-  def start_receiver(receivers, id, node_name) do
-    Logger.debug "Start receiver #{inspect id} #{inspect(node_name)}"
-    response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, id, node_name)
+  def start_receiver(receivers, channel, id, connection) do
+    Logger.debug "Start receiver #{inspect id} #{inspect(connection)}"
+    response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, channel, id, connection)
     case response do
       {:ok, receiver} ->
         add(receivers, receiver)
@@ -84,6 +84,7 @@ defmodule Otis.Receivers do
 
   def handle_cast({:remove, receiver}, receivers) do
     {:ok, id} = Receiver.id(receiver)
+    Otis.Receiver.shutdown(receiver)
     {:noreply, Enum.reject(receivers, fn({rid, _rec}) -> rid == id end) }
   end
 
