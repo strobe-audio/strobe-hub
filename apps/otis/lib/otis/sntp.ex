@@ -13,7 +13,7 @@ defmodule Otis.SNTP do
     :erlang.register(@name, self)
     Process.flag(:trap_exit, true)
     :proc_lib.init_ack({:ok, self})
-    {:ok, socket} = :gen_udp.open port, [mode: :binary, ip: {0, 0, 0, 0}, active: false]
+    {:ok, socket} = :gen_udp.open port, [mode: :binary, ip: {0, 0, 0, 0}, active: false, reuseaddr: true]
     state = {socket}
     loop(state)
   end
