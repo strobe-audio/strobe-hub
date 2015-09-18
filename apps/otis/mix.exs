@@ -16,7 +16,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:porcelain, :reconnaissance, :resource_discovery, :logger, :dnssd],
+    [applications: [:porcelain, :logger, :dnssd],
      mod: {Otis, []}]
   end
 
@@ -31,8 +31,6 @@ defmodule Otis.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [ {:porcelain, "~> 2.0"},
-      {:resource_discovery, github: "erlware/resource_discovery"},
-      {:reconnaissance, github: "wooga/reconnaissance"},
       {:dnssd, github: "benoitc/dnssd_erlang"}
     ]
   end

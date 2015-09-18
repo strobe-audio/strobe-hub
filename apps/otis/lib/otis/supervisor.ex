@@ -15,7 +15,6 @@ defmodule Otis.Supervisor do
       worker(Otis.Zones, []),
       supervisor(Otis.Receivers.Supervisor, []),
       worker(Otis.Receivers, []),
-      worker(Otis.Resources, []),
       worker(Otis.Startup, [Otis.State, Otis.Zones, Otis.Receivers], restart: :transient)
     ]
     supervise(children, strategy: :one_for_one)
