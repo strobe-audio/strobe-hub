@@ -23,8 +23,8 @@ defmodule Otis.State do
   def init(:ok) do
     Logger.info "Starting state..."
     zones = [
-      %Zone{id: :office, name: "The Office", receiver_ids: [:pi, :janis, :arch]},
-      %Zone{id: :downstairs, name: "Downstairs", receiver_ids: [:aine, :garry]}
+      %Zone{id: :office, name: "The Office", receiver_ids: [:"b8-27-eb-ce-43-c7", :"00-17-f2-09-20-9d", :arch]},
+      %Zone{id: :downstairs, name: "Downstairs", receiver_ids: [:"e0-f8-47-42-aa-48"]}
     ]
     {:ok, %S{zones: zones}}
   end
@@ -50,6 +50,7 @@ defmodule Otis.State do
   end
 
   def handle_cast({:restore_receiver, pid, id}, %S{zones: zones} = state) do
+    IO.inspect [:restore_receiver, id]
     find_zone_for_receiver(zones, pid, id)
     {:noreply, state}
   end
