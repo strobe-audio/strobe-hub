@@ -16,8 +16,18 @@ defmodule Otis.Zone.Socket do
     GenServer.cast(pid, {:send, timestamp, data})
   end
 
+  def stop(pid) do
+    GenServer.cast(pid, :stop)
+  end
+
   def handle_cast({:send, timestamp, audio}, {socket, ip, port, count} = state) do
     packet = << count::size(64)-little-unsigned-integer, timestamp::size(64)-little-signed-integer, audio::binary >>
+    :gen_udp.send socket,  ip, port, packet
+    {:noreply, {socket, ip, port, count + 1}}
+  end
+
+  def handle_cast(:stop, {socket, ip, port, count} = state) do
+    packet = << count::size(64)-little-unsigned-integer, 0::size(64)-little-signed-integer >>
     :gen_udp.send socket,  ip, port, packet
     {:noreply, {socket, ip, port, count + 1}}
   end

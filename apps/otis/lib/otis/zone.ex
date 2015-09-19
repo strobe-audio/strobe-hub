@@ -203,6 +203,11 @@ defmodule Otis.Zone do
     %Zone{zone | last_broadcast: Otis.milliseconds}
   end
 
+  def broadcast_frame(:stop, %Zone{socket: socket} = zone) do
+    Otis.Zone.Socket.stop(socket)
+    zone
+  end
+
   defp toggle_state(%Zone{state: :play} = zone) do
     set_state(zone, :stop)
   end
