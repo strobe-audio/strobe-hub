@@ -1,6 +1,8 @@
 defmodule Otis.Zone do
   require Logger
 
+  @first_timestamp nil
+
   defstruct name:              "A Zone",
             id:                nil,
             source_stream:     nil,
@@ -8,7 +10,7 @@ defmodule Otis.Zone do
             state:             :stop,
             broadcaster:       nil,
             audio_stream:      nil,
-            timestamp:         0,
+            timestamp:         @first_timestamp,
             last_broadcast:    0,
             broadcast_address: nil,
             socket:         nil
@@ -157,7 +159,7 @@ defmodule Otis.Zone do
 
   def handle_call(:broadcast, _from, %Zone{ state: :play, audio_stream: audio_stream, receivers: receivers, last_broadcast: last_broadcast} = zone) do
     frame = Otis.AudioStream.frame(audio_stream)
-    zone = start_broadcast_frame(frame, Set.to_list(receivers), zone)
+    zone = start_broadcast_frame(frame, zone)
     # Logger.debug "Gap #{ms - last_broadcast} #{Otis.stream_interval_ms}"
     {:reply, :ok, zone}
   end
@@ -166,36 +168,34 @@ defmodule Otis.Zone do
     {:noreply, zone}
   end
 
-  def start_broadcast_frame({:ok, data} = _frame, recs, %Zone{timestamp: timestamp} = zone) do
-    timestamp = next_timestamp(timestamp, recs)
+  def start_broadcast_frame({:ok, data} = _frame, %Zone{timestamp: timestamp} = zone) do
+    timestamp = next_timestamp(timestamp, zone)
     broadcast_frame({:ok, data, timestamp}, %Zone{zone | timestamp: timestamp})
   end
 
-  def start_broadcast_frame(:stopped,  _recs, zone) do
+  def start_broadcast_frame(:stopped, zone) do
+    broadcast_frame(:stop, zone)
     set_state(zone, :stop)
   end
 
-  def next_timestamp(timestamp, recs) do
-    next_timestamp_with_offset(timestamp, receiver_latency(recs))
+
+  def next_timestamp(@first_timestamp, zone) do
+    Otis.microseconds + buffer_time + receiver_latency(zone)
   end
 
-  def receiver_latency(recs) do
-    Enum.map(recs, fn(rec) ->
+  def next_timestamp(timestamp, zone) do
+    timestamp + Otis.stream_interval_us
+  end
+
+  def receiver_latency(%Zone{receivers: recs}) do
+    Enum.map(Set.to_list(recs), fn(rec) ->
       {:ok, latency} = Otis.Receiver.latency(rec)
       latency
     end) |> Enum.max
   end
 
-  defp buffer_time(offset) do
-    (8 * Otis.stream_interval_us) + offset
-  end
-
-  def next_timestamp_with_offset(0, offset) do
-    Otis.microseconds + buffer_time(offset)
-  end
-
-  def next_timestamp_with_offset(timestamp, _offset) do
-    timestamp + Otis.stream_interval_us
+  defp buffer_time do
+    (4 * Otis.stream_interval_us)
   end
 
   def broadcast_frame({:ok, data, timestamp}, %Zone{socket: socket} = zone) do
@@ -240,7 +240,7 @@ defmodule Otis.Zone do
   end
 
   defp zone_is_stopped(zone) do
-    %Zone{ zone | timestamp: 0, broadcaster: nil}
+    %Zone{ zone | timestamp: @first_timestamp, broadcaster: nil}
   end
 
   defp start_broadcaster do
