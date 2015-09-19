@@ -50,7 +50,6 @@ defmodule Otis.State do
   end
 
   def handle_cast({:restore_receiver, pid, id}, %S{zones: zones} = state) do
-    IO.inspect [:restore_receiver, id]
     find_zone_for_receiver(zones, pid, id)
     {:noreply, state}
   end
@@ -67,7 +66,6 @@ defmodule Otis.State do
   end
 
   def attach_receiver_to_zone(zone_id, receiver) do
-    IO.inspect [:attach_receiver_to_zone, zone_id]
     case Otis.Zones.find(zone_id) do
       {:ok, zone} ->
         Otis.Zone.add_receiver(zone, receiver)
