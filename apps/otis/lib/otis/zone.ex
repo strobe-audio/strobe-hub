@@ -180,7 +180,7 @@ defmodule Otis.Zone do
 
 
   def next_timestamp(@first_timestamp, zone) do
-    Otis.microseconds + buffer_time + receiver_latency(zone)
+    Otis.microseconds + stream_latency(zone)
   end
 
   def next_timestamp(timestamp, zone) do
@@ -194,8 +194,12 @@ defmodule Otis.Zone do
     end) |> Enum.max
   end
 
+  defp stream_latency(zone) do
+    buffer_time + receiver_latency(zone)
+  end
+
   defp buffer_time do
-    (4 * Otis.stream_interval_us)
+    (1 * Otis.stream_interval_us)
   end
 
   def broadcast_frame({:ok, data, timestamp}, %Zone{socket: socket} = zone) do
@@ -221,7 +225,7 @@ defmodule Otis.Zone do
   end
 
   defp change_state(%Zone{state: :play, broadcaster: nil} = zone) do
-    {:ok, pid } = start_broadcaster
+    {:ok, pid } = start_broadcaster(zone)
     %Zone{ zone | broadcaster: pid }
   end
 
@@ -243,7 +247,14 @@ defmodule Otis.Zone do
     %Zone{ zone | timestamp: @first_timestamp, broadcaster: nil}
   end
 
-  defp start_broadcaster do
-    Otis.Broadcaster.start_link(self, Otis.stream_interval_ms)
+  defp start_broadcaster(%Zone{audio_stream: audio_stream, socket: socket} = zone) do
+    opts = [
+      zone: self,
+      audio_stream: audio_stream,
+      socket: socket,
+      latency: receiver_latency(zone),
+      stream_interval: Otis.stream_interval_us
+    ]
+    Otis.Zone.Broadcaster.start_link(opts)
   end
 end

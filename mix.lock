@@ -7,5 +7,6 @@
   "phoenix_live_reload": {:hex, :phoenix_live_reload, "1.0.0"},
   "plug": {:hex, :plug, "1.0.1"},
   "poison": {:hex, :poison, "1.5.0"},
+  "poolboy": {:git, "git://github.com/devinus/poolboy.git", "3bb48a893ff5598f7c73731ac17545206d259fac", []},
   "porcelain": {:hex, :porcelain, "2.0.0"},
   "ranch": {:hex, :ranch, "1.1.0"}}

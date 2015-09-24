@@ -13,6 +13,7 @@ use Mix.Config
 config :logger, :console,
   level: :debug,
   format: "$date $time [$level] $metadata$message\n",
+  sync_threshold: 1_000_000,
   metadata: [],
   colors: [info: :green]
 

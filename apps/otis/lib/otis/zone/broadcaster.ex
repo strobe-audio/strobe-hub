@@ -1,0 +1,189 @@
+
+defmodule Otis.Zone.Broadcaster do
+  use     GenServer
+  require Logger
+
+  @buffer_latency 50_000 # music starts playing after 50 ms
+  @buffer_size    4      # players hold this many packets (more or less)
+
+
+  defmodule S do
+    defstruct zone: nil,
+              audio_stream: nil,
+              socket: nil,
+              latency: 0.0,
+              stream_interval: 0,
+              start_time: 0,
+              packet_number: 0,
+              in_flight: [],
+              emit_time: 0
+  end
+
+  # This basically takes a zone / audio source and translates it into a set of
+  # timestamped packets. It then queues this to send to the clients.
+  #
+  # - We should flood fill the clients' buffers by sending far-future
+  #   timestamped packets
+  # - The emitter module that actually sends the data at a given timestamp has
+  #   the time of transmission separated from the playback timestamp
+  # - I want to save a list of 'in flight' packets that can be flood-sent to new
+  #   receivers when they join
+  # - The broadcaster gets a receiver latency from the zone when it starts, it
+  #   should use that to calculate the broadcast latency (time between start &
+  #   first packet play)
+  # - Broadcaster is responsible for pulling the packets from the stream, not the zone
+  # - Buffer is trimmed to only packets in the future (or future - broadcast latency)
+  # - Broadcaster should record the time when it starts & base all timestamp info
+  #   on that.
+  # - Timestamp of packet = start time + broadcast latency + receiver latency + (packet no. * stream interval)
+  # - Could keep buffered packets in 'abstract' {offset, data} rather than
+  #   {timestamp, data} and calculate the actual timestamp when they are sent to
+  #   the emitter (makes resending easy). offset = (packet no. * stream interval)
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts, [])
+  end
+
+  def init(opts) do
+    Logger.disable(self)
+    state = %S{
+      zone: opts[:zone],
+      audio_stream: opts[:audio_stream],
+      socket: opts[:socket],
+      latency: opts[:latency],
+      stream_interval: opts[:stream_interval]
+    }
+    GenServer.cast(self, :start)
+    {:ok, state}
+  end
+
+  def handle_cast(:start, state) do
+    state = start(state)
+    {:noreply, state}
+  end
+
+  def handle_info(:emit, state) do
+    state = potentially_emit(state)
+    state = schedule_emit(state)
+    {:noreply, state}
+  end
+
+  # Now I have the first n packets:
+  # - convert them from { seq. number, data } to { timestamp, data } @done
+  # - schedule them to be sent in < buffer interval intervals @done
+  # - save them into the `in_flight` list @done
+  # - schedule some kind of ticker to start posting packets at the defined interval
+  defp start(%S{audio_stream: audio_stream} = state) do
+    Logger.info ">>>>>>>>>>>>> Fast send start......"
+    {packets, packet_number} = next_packet(@buffer_size, state)
+    state = %S{state | start_time: current_time, emit_time: current_time, packet_number: packet_number}
+    state = fast_send_packets(packets, state)
+    Logger.info "<<<<<<<<<<<<< Fast send over ......"
+    state = schedule_emit(state)
+    state
+  end
+
+  defp potentially_emit(%S{packet_number: packet_number, emit_time: emit_time, start_time: start_time, stream_interval: interval, latency: latency} = state) do
+    now = current_time
+    # next_timestamp = emit_time_for_packet(packet_number, start_time, interval)
+    ci = (check_interval(state) * 1000)
+    next_check = now + ci
+    Logger.debug "Potentially emit #{packet_number} #{emit_time}, #{next_check} #{next_check - emit_time}"
+    diff = (next_check - emit_time)
+    if (abs(diff) < ci) || (diff > 0) do
+      state = send_next_packet(state)
+    end
+    state
+  end
+
+  defp send_next_packet(%S{} = state) do
+    {packets, packet_number} = next_packet(1, state)
+    state = %S{state | packet_number: packet_number}
+    state = send_packets(packets, state)
+    state
+  end
+
+  defp check_interval(%S{stream_interval: interval} = state) do
+    round((interval / 4) / 1000)
+    # 2
+  end
+
+  defp schedule_emit(%S{stream_interval: interval} = state) do
+    Process.send_after(self, :emit, check_interval(state))
+    state
+  end
+
+  defp fast_send_packets([packet | packets], %S{start_time: start_time, stream_interval: interval, emit_time: emit_time} = state) do
+    # emit_time = emit_time_for_packet(packet, start_time, round(interval/(@buffer_size * 2)))
+    state = emit_packet(packet, round(interval/(@buffer_size * 2)), state)
+    fast_send_packets(packets, state)
+  end
+
+  defp fast_send_packets([], %S{} = state) do
+    state
+  end
+
+  defp send_packets([packet | packets], state) do
+    state = send_packet(packet, state)
+    send_packets(packets, state)
+  end
+
+  defp send_packets([], state) do
+    state
+  end
+
+  defp send_packet(packet, %S{stream_interval: interval} = state) do
+    emit_packet(packet, interval, state)
+  end
+
+  defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, start_time: start_time, emit_time: emit_time} = state) do
+    {_play_time, _data} = timestamped_packet = timestamp_packet(packet, state)
+    emitter = :poolboy.checkout(Otis.EmitterPool)
+    now = current_time
+    Logger.debug "Emit packet emit: #{emit_time - now}; play: #{_play_time - start_time}"
+    Otis.Zone.Emitter.emit(emitter, emit_time, timestamped_packet, socket)
+    in_flight = [packet | in_flight]
+    %S{ state | in_flight: in_flight, emit_time: emit_time + increment_emit}
+  end
+
+  defp timestamp_packet({packet_number, _data}, state) do
+    {timestamp_for_packet(packet_number, state), _data}
+  end
+
+  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = state) do
+    timestamp_for_packet(packet_number, start_time, interval, latency)
+  end
+
+  defp timestamp_for_packet(packet_number, start_time, interval, latency) do
+    start_time + @buffer_latency + latency + ((packet_number + 1) * interval)
+  end
+
+  defp emit_time_for_packet({packet_number, _data}, %S{start_time: start_time, stream_interval: interval} = state) do
+    emit_time_for_packet(packet_number, start_time, interval)
+  end
+
+  defp emit_time_for_packet({packet_number, _data}, start_time, interval) do
+    emit_time_for_packet(packet_number, start_time, interval)
+  end
+
+  defp emit_time_for_packet(packet_number, start_time, interval) do
+    start_time + ((packet_number + 1) * interval)
+  end
+
+  defp next_packet(n, %S{audio_stream: audio_stream, packet_number: packet_number} = _state) do
+    next_packet(n, [], packet_number, audio_stream)
+  end
+
+  defp next_packet(0, buf, packet_number, audio_stream) do
+    {Enum.reverse(buf), packet_number}
+  end
+
+  defp next_packet(n, buf, packet_number, audio_stream) do
+    {:ok, packet} = Otis.AudioStream.frame(audio_stream)
+    buf = [{packet_number, packet} | buf]
+    next_packet(n - 1, buf, packet_number + 1, audio_stream)
+  end
+
+  defp current_time do
+    :erlang.monotonic_time(:micro_seconds)
+  end
+end

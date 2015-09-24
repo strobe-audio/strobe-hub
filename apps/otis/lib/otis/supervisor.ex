@@ -1,16 +1,30 @@
 defmodule Otis.Supervisor do
   use Supervisor
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, :ok, [])
+  def start_link(opts) do
+    Supervisor.start_link(__MODULE__, opts, [])
   end
 
-  def init(:ok) do
+  def init([packet_interval: packet_interval, packet_size: packet_size]) do
+    emitter_pool_options = [
+      name: {:local, Otis.EmitterPool},
+      worker_module: Otis.Zone.Emitter,
+      size: 16,
+      max_overflow: 2
+    ]
+
     children = [
       worker(Otis.DNSSD, []),
       worker(Otis.SNTP, []),
       worker(Otis.State, []),
       worker(Otis.IPPool, [{224,24,4,0}]),
+
+      :poolboy.child_spec(Otis.EmitterPool, emitter_pool_options, [
+        interval: packet_interval,
+        packet_size: packet_size,
+        pool: Otis.EmitterPool
+      ]),
+
       supervisor(Otis.Zones.Supervisor, []),
       worker(Otis.Zones, []),
       supervisor(Otis.Receivers.Supervisor, []),
