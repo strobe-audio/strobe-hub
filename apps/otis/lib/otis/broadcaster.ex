@@ -16,12 +16,16 @@ defmodule Otis.Broadcaster do
     Supervisor.start_child(supervisor, [opts])
   end
 
-  def stop_broadcaster(broadcaster) do
-    stop_broadcaster(@supervisor_name, broadcaster)
+  def stream_finished(broadcaster) do
+    stop_broadcaster(@supervisor_name, broadcaster, :stream_finished)
   end
 
-  def stop_broadcaster(supervisor, broadcaster) do
-    GenServer.cast(broadcaster, :stop)
+  def stop_broadcaster(broadcaster) do
+    stop_broadcaster(@supervisor_name, broadcaster, :stop)
+  end
+
+  def stop_broadcaster(supervisor, broadcaster, reason) do
+    GenServer.cast(broadcaster, {:stop, reason})
   end
 
   def init(:ok) do

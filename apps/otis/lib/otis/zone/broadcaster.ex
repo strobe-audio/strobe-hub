@@ -3,7 +3,7 @@ defmodule Otis.Zone.Broadcaster do
   use     GenServer
   require Logger
 
-  @buffer_latency 10_000 # music starts playing after this many microseconds
+  @buffer_latency 5_000 # music starts playing after this many microseconds
   @buffer_size    2      # players hold this many packets (more or less)
 
 
@@ -62,11 +62,17 @@ defmodule Otis.Zone.Broadcaster do
     {:noreply, state}
   end
 
-  def handle_cast(:stop, state) do
+  def handle_cast({:stop, :stop}, state) do
     # TODO: send back the in-flight packets to the audio stream (or the zone?)
     # TODO: find all my emitters and tell them to stop too...
-    Logger.info "Stopping broadcaster..."
-    stop_inflight_packets(state)
+    state = stop!(state)
+    {:stop, {:shutdown, :stopped}, state}
+  end
+
+  def handle_cast({:stop, :stream_finished}, state) do
+    # I can just stop the broadcaster process here because this message
+    # originated in the emit_packet method so everything that needs to have
+    # been sent to the players has already been sent
     {:stop, {:shutdown, :stopped}, state}
   end
 
@@ -88,6 +94,23 @@ defmodule Otis.Zone.Broadcaster do
     state = fast_send_packets(packets, state)
     Logger.info "<<<<<<<<<<<<< Fast send over ......"
     state = schedule_emit(state)
+    state
+  end
+
+  @doc """
+    The 'stop' button has been pressed so pull back anything we were about to send
+  """
+  defp stop!(state) do
+    Logger.info "Stopping broadcaster..."
+    stop_inflight_packets(state)
+    rebuffer_in_flight(state)
+    state
+  end
+
+  @doc "The audio stream has finished, so just exit"
+  defp finish(%S{zone: zone} = state) do
+    Logger.info "Stopping broadcaster..."
+    Otis.Zone.stream_finished(zone)
     state
   end
 
@@ -140,6 +163,10 @@ defmodule Otis.Zone.Broadcaster do
     emit_packet(packet, interval, state)
   end
 
+  defp emit_packet(:stop, _increment_emit, state) do
+    finish(state)
+  end
+
   defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, start_time: start_time, emit_time: emit_time} = state) do
     {_play_time, _data} = timestamped_packet = timestamp_packet(packet, state)
     emitter = :poolboy.checkout(Otis.EmitterPool)
@@ -157,6 +184,10 @@ defmodule Otis.Zone.Broadcaster do
     Enum.filter packets, fn({_emitter, timestamp, _data}) ->
       timestamp > now
     end
+  end
+
+  defp rebuffer_in_flight(state) do
+    Logger.warn "!! Implement Broadcaster.rebuffer_in_flight/1"
   end
 
   defp stop_inflight_packets(%S{in_flight: in_flight} = _state) do
@@ -192,9 +223,14 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp next_packet(n, buf, packet_number, audio_stream) do
-    {:ok, packet} = Otis.AudioStream.frame(audio_stream)
-    buf = [{packet_number, packet} | buf]
-    next_packet(n - 1, buf, packet_number + 1, audio_stream)
+    case Otis.AudioStream.frame(audio_stream) do
+      {:ok, packet} ->
+        buf = [{packet_number, packet} | buf]
+        next_packet(n - 1, buf, packet_number + 1, audio_stream)
+      :stopped ->
+        buf = [:stop | buf]
+        next_packet(0, buf, packet_number + 1, audio_stream)
+    end
   end
 
   defp current_time do
