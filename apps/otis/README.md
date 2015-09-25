@@ -23,9 +23,7 @@ Otis.Zone.play_pause(zone)
 #############
 
 {:ok, zone} = Otis.Zones.find :office
-
 {:ok, ss} = Otis.Zone.source_stream(zone)
-
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/SongMaven-Click-Track-120-BPM.mp3")
 Otis.SourceStream.append_source(ss, source)
 
@@ -36,9 +34,23 @@ Otis.SourceStream.append_source(ss, source)
 
 Otis.Zone.play_pause(zone)
 
+{:ok, zone} = Otis.Zones.find :office
+{:ok, ss} = Otis.Zone.source_stream(zone)
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/apex-twin--peek-824545201.m4a")
 Otis.SourceStream.append_source(ss, source)
+Otis.Zone.play_pause(zone)
 
+{:ok, zone} = Otis.Zones.find :office
+{:ok, ss} = Otis.Zone.source_stream(zone)
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/shubert-piano-quintet.m4a")
+Otis.SourceStream.append_source(ss, source)
+Otis.Zone.play_pause(zone)
+
+## SHORT SAMPLE
+{:ok, zone} = Otis.Zones.find :office
+{:ok, ss} = Otis.Zone.source_stream(zone)
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/song.mp3")
+Otis.SourceStream.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
 #############
