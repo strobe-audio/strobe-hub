@@ -4,7 +4,7 @@ defmodule Otis.Zone.Broadcaster do
   require Logger
 
   @buffer_latency 5_000 # music starts playing after this many microseconds
-  @buffer_size    2      # players hold this many packets (more or less)
+  @buffer_size    4      # players hold this many packets (more or less)
 
 
   defmodule S do
@@ -175,7 +175,6 @@ defmodule Otis.Zone.Broadcaster do
     Otis.Zone.Emitter.emit(emitter, emit_time, timestamped_packet, socket)
     packet_in_flight = { emitter, _play_time, _data }
     in_flight = [packet_in_flight | in_flight] |> trim_in_flight
-    Logger.debug "Inflight #{length(in_flight)} packets"
     %S{ state | in_flight: in_flight, emit_time: emit_time + increment_emit}
   end
 
