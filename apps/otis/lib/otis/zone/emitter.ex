@@ -40,7 +40,7 @@ defmodule Otis.Zone.Emitter do
   defp wait(state) do
     # Logger.debug "Emitter.wait... #{inspect state}"
     receive do
-      {:discard, timestamp} ->
+      {:discard, _timestamp} ->
         # We're by definition waiting without a packet so this is a no-op
         wait(state)
       {:emit, time, packet, socket} ->
@@ -51,14 +51,14 @@ defmodule Otis.Zone.Emitter do
     end
   end
 
-  defp start(time, packet, socket, {{t, n, d}, _emit, _config} = state) do
+  defp start(time, packet, socket, {{_t, n, d}, _emit, _config} = _state) do
     # Logger.disable(self)
     now = current_time
-    {t, _} = packet
     case time - now do
       s when s < 0 ->
-        Logger.warn "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
-      s ->
+        {ts, _data} = packet
+        Logger.warn "Start emitter:: emit time: #{s}; packet timestamp: #{ts - now}"
+      _ ->
         # Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
     end
     state = {{current_time, n, d}, {time, packet, socket}, _config}
@@ -111,11 +111,9 @@ defmodule Otis.Zone.Emitter do
   end
 
   defp emit_frame({_loop, {_time, {timestamp, data} = _packet, socket}, {_pi, _ps, pool} = _config} = state) do
-    now = current_time
+    # now = current_time
     # Logger.debug "At #{_time - now}: emit #{timestamp - now} on socket #{inspect socket}"
     Otis.Zone.Socket.send(socket, timestamp, data)
-
-    # Logger.debug "Check back into pool #{pool}"
     :poolboy.checkin(pool, self)
     start_waiting(state)
   end

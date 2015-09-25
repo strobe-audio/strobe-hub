@@ -97,9 +97,8 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  @doc """
-    The 'stop' button has been pressed so pull back anything we were about to send
-  """
+  # The 'stop' button has been pressed so pull back anything we were about to
+  # send
   defp stop!(state) do
     Logger.info "Stopping broadcaster..."
     stop_inflight_packets(state)
@@ -107,17 +106,17 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  @doc "The audio stream has finished, so just exit"
+  # The audio stream has finished, so tell the zone we're done so it can shut
+  # us down properly
   defp finish(%S{zone: zone} = state) do
     Logger.info "Stopping broadcaster..."
     Otis.Zone.stream_finished(zone)
     state
   end
 
-  defp potentially_emit(%S{packet_number: packet_number, emit_time: emit_time} = state) do
+  defp potentially_emit(%S{emit_time: emit_time} = state) do
     ci = (check_interval(state) * 1000)
     next_check = current_time + ci
-    # Logger.debug "Potentially emit #{packet_number} #{emit_time}, #{next_check} #{next_check - emit_time}"
     diff = (next_check - emit_time)
     if (abs(diff) < ci) || (diff > 0) do
       state = send_next_packet(state)
@@ -141,7 +140,7 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  defp fast_send_packets([packet | packets], %S{stream_interval: interval, emit_time: emit_time} = state) do
+  defp fast_send_packets([packet | packets], state) do
     state = emit_packet(packet, 5_000, state)
     fast_send_packets(packets, state)
   end
@@ -167,11 +166,9 @@ defmodule Otis.Zone.Broadcaster do
     finish(state)
   end
 
-  defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, start_time: start_time, emit_time: emit_time} = state) do
+  defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, emit_time: emit_time} = state) do
     {_play_time, _data} = timestamped_packet = timestamp_packet(packet, state)
     emitter = :poolboy.checkout(Otis.EmitterPool)
-    now = current_time
-    # Logger.debug "Emit packet emit: #{emit_time - now}; play: #{_play_time - start_time}"
     Otis.Zone.Emitter.emit(emitter, emit_time, timestamped_packet, socket)
     packet_in_flight = { emitter, _play_time, _data }
     in_flight = [packet_in_flight | in_flight] |> trim_in_flight
@@ -187,6 +184,7 @@ defmodule Otis.Zone.Broadcaster do
 
   defp rebuffer_in_flight(state) do
     Logger.warn "!! Implement Broadcaster.rebuffer_in_flight/1"
+    state
   end
 
   defp stop_inflight_packets(%S{in_flight: in_flight} = _state) do

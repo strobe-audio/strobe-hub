@@ -18,7 +18,7 @@ defmodule Otis.Receiver do
     String.to_atom(id_string)
   end
 
-  def start_link(channel, id, %{"latency" => latency} = connection) do
+  def start_link(channel, id, %{"latency" => latency} = _connection) do
     GenServer.start_link(__MODULE__, {channel, to_id(id), latency}, name: receiver_register_name(id))
   end
 
@@ -98,7 +98,7 @@ defmodule Otis.Receiver do
     {:noreply, state}
   end
 
-  def terminate(reason, %S{channel_monitor: monitor} = state) do
+  def terminate(reason, _state) do
     IO.inspect [:receiver_terminate, reason]
     :ok
   end
