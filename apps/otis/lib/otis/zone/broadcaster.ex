@@ -3,8 +3,8 @@ defmodule Otis.Zone.Broadcaster do
   use     GenServer
   require Logger
 
-  @buffer_latency 50_000 # music starts playing after 50 ms
-  @buffer_size    4      # players hold this many packets (more or less)
+  @buffer_latency 10_000 # music starts playing after this many microseconds
+  @buffer_size    2      # players hold this many packets (more or less)
 
 
   defmodule S do
@@ -44,7 +44,8 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   def init(opts) do
-    Logger.disable(self)
+    Logger.info "Starting broadcaster #{inspect opts}"
+    # Logger.disable(self)
     state = %S{
       zone: opts[:zone],
       audio_stream: opts[:audio_stream],
@@ -61,6 +62,14 @@ defmodule Otis.Zone.Broadcaster do
     {:noreply, state}
   end
 
+  def handle_cast(:stop, state) do
+    # TODO: send back the in-flight packets to the audio stream (or the zone?)
+    # TODO: find all my emitters and tell them to stop too...
+    Logger.info "Stopping broadcaster..."
+    stop_inflight_packets(state)
+    {:stop, {:shutdown, :stopped}, state}
+  end
+
   def handle_info(:emit, state) do
     state = potentially_emit(state)
     state = schedule_emit(state)
@@ -72,7 +81,7 @@ defmodule Otis.Zone.Broadcaster do
   # - schedule them to be sent in < buffer interval intervals @done
   # - save them into the `in_flight` list @done
   # - schedule some kind of ticker to start posting packets at the defined interval
-  defp start(%S{audio_stream: audio_stream} = state) do
+  defp start(state) do
     Logger.info ">>>>>>>>>>>>> Fast send start......"
     {packets, packet_number} = next_packet(@buffer_size, state)
     state = %S{state | start_time: current_time, emit_time: current_time, packet_number: packet_number}
@@ -82,12 +91,10 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  defp potentially_emit(%S{packet_number: packet_number, emit_time: emit_time, start_time: start_time, stream_interval: interval, latency: latency} = state) do
-    now = current_time
-    # next_timestamp = emit_time_for_packet(packet_number, start_time, interval)
+  defp potentially_emit(%S{packet_number: packet_number, emit_time: emit_time} = state) do
     ci = (check_interval(state) * 1000)
-    next_check = now + ci
-    Logger.debug "Potentially emit #{packet_number} #{emit_time}, #{next_check} #{next_check - emit_time}"
+    next_check = current_time + ci
+    # Logger.debug "Potentially emit #{packet_number} #{emit_time}, #{next_check} #{next_check - emit_time}"
     diff = (next_check - emit_time)
     if (abs(diff) < ci) || (diff > 0) do
       state = send_next_packet(state)
@@ -102,19 +109,17 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  defp check_interval(%S{stream_interval: interval} = state) do
+  defp check_interval(%S{stream_interval: interval}) do
     round((interval / 4) / 1000)
-    # 2
   end
 
-  defp schedule_emit(%S{stream_interval: interval} = state) do
+  defp schedule_emit(state) do
     Process.send_after(self, :emit, check_interval(state))
     state
   end
 
-  defp fast_send_packets([packet | packets], %S{start_time: start_time, stream_interval: interval, emit_time: emit_time} = state) do
-    # emit_time = emit_time_for_packet(packet, start_time, round(interval/(@buffer_size * 2)))
-    state = emit_packet(packet, round(interval/(@buffer_size * 2)), state)
+  defp fast_send_packets([packet | packets], %S{stream_interval: interval, emit_time: emit_time} = state) do
+    state = emit_packet(packet, 5_000, state)
     fast_send_packets(packets, state)
   end
 
@@ -139,17 +144,38 @@ defmodule Otis.Zone.Broadcaster do
     {_play_time, _data} = timestamped_packet = timestamp_packet(packet, state)
     emitter = :poolboy.checkout(Otis.EmitterPool)
     now = current_time
-    Logger.debug "Emit packet emit: #{emit_time - now}; play: #{_play_time - start_time}"
+    # Logger.debug "Emit packet emit: #{emit_time - now}; play: #{_play_time - start_time}"
     Otis.Zone.Emitter.emit(emitter, emit_time, timestamped_packet, socket)
-    in_flight = [packet | in_flight]
+    packet_in_flight = { emitter, _play_time, _data }
+    in_flight = [packet_in_flight | in_flight] |> trim_in_flight
+    Logger.debug "Inflight #{length(in_flight)} packets"
     %S{ state | in_flight: in_flight, emit_time: emit_time + increment_emit}
+  end
+
+  defp trim_in_flight(packets) do
+    now = current_time
+    Enum.filter packets, fn({_emitter, timestamp, _data}) ->
+      timestamp > now
+    end
+  end
+
+  defp stop_inflight_packets(%S{in_flight: in_flight} = _state) do
+    stop_inflight_packets(in_flight)
+  end
+
+  defp stop_inflight_packets([]) do
+  end
+
+  defp stop_inflight_packets([{emitter, timestamp, _data} = _packet | packets]) do
+    Otis.Zone.Emitter.discard!(emitter, timestamp)
+    stop_inflight_packets(packets)
   end
 
   defp timestamp_packet({packet_number, _data}, state) do
     {timestamp_for_packet(packet_number, state), _data}
   end
 
-  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = state) do
+  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = _state) do
     timestamp_for_packet(packet_number, start_time, interval, latency)
   end
 
@@ -157,23 +183,11 @@ defmodule Otis.Zone.Broadcaster do
     start_time + @buffer_latency + latency + ((packet_number + 1) * interval)
   end
 
-  defp emit_time_for_packet({packet_number, _data}, %S{start_time: start_time, stream_interval: interval} = state) do
-    emit_time_for_packet(packet_number, start_time, interval)
-  end
-
-  defp emit_time_for_packet({packet_number, _data}, start_time, interval) do
-    emit_time_for_packet(packet_number, start_time, interval)
-  end
-
-  defp emit_time_for_packet(packet_number, start_time, interval) do
-    start_time + ((packet_number + 1) * interval)
-  end
-
   defp next_packet(n, %S{audio_stream: audio_stream, packet_number: packet_number} = _state) do
     next_packet(n, [], packet_number, audio_stream)
   end
 
-  defp next_packet(0, buf, packet_number, audio_stream) do
+  defp next_packet(0, buf, packet_number, _audio_stream) do
     {Enum.reverse(buf), packet_number}
   end
 

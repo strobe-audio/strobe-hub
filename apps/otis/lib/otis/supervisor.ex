@@ -25,6 +25,7 @@ defmodule Otis.Supervisor do
         pool: Otis.EmitterPool
       ]),
 
+      supervisor(Otis.Broadcaster, []),
       supervisor(Otis.Zones.Supervisor, []),
       worker(Otis.Zones, []),
       supervisor(Otis.Receivers.Supervisor, []),

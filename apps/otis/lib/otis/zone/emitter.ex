@@ -12,6 +12,10 @@ defmodule Otis.Zone.Emitter do
     send(emitter, {:emit, timestamp, packet, socket})
   end
 
+  def discard!(emitter, timestamp) do
+    send(emitter, {:discard, timestamp})
+  end
+
   ## GenServer api
 
   def start_link(opts) do
@@ -21,7 +25,7 @@ defmodule Otis.Zone.Emitter do
   @blank_emit {nil, nil, nil} # timestamp, packet, socket
 
   def init([interval: packet_interval, packet_size: packet_size, pool: pool] = opts) do
-    Logger.disable self
+    # Logger.disable self
     Logger.debug "Launched emitter #{inspect opts}"
     :proc_lib.init_ack({:ok, self})
 
@@ -36,6 +40,9 @@ defmodule Otis.Zone.Emitter do
   defp wait(state) do
     # Logger.debug "Emitter.wait... #{inspect state}"
     receive do
+      {:discard, timestamp} ->
+        # We're by definition waiting without a packet so this is a no-op
+        wait(state)
       {:emit, time, packet, socket} ->
         start(time, packet, socket, state)
       msg ->
@@ -52,7 +59,7 @@ defmodule Otis.Zone.Emitter do
       s when s < 0 ->
         Logger.warn "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
       s ->
-        Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
+        # Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
     end
     state = {{current_time, n, d}, {time, packet, socket}, _config}
     test_packet state
@@ -60,8 +67,23 @@ defmodule Otis.Zone.Emitter do
 
   defp loop(state) do
     receive do
+      {:discard, timestamp} ->
+        # Check that we're not actually waiting to send a different packet
+        if discard_packet?(timestamp, state) do
+          Logger.info "Discarding packet #{timestamp - current_time}"
+          start_waiting(state)
+        else
+          test_packet(new_state(state))
+        end
     after 2 ->
-      test_packet new_state(state)
+      test_packet(new_state(state))
+    end
+  end
+
+  defp discard_packet?(time, {_loop, {_emit_time, packet, _socket}, _config} = _state) do
+    case {timestamp, _data} = packet do
+      _ when time == timestamp -> true
+      _ -> false
     end
   end
 
@@ -78,7 +100,7 @@ defmodule Otis.Zone.Emitter do
 
   @jitter 500
 
-  defp loop_tight({{t, n, d}, {time, _packet, _socket} = _emit, _config}) do
+  defp loop_tight({{_t, n, d}, {time, _packet, _socket} = _emit, _config}) do
     now   = current_time
     state = {{now, n, d}, _emit, _config}
     case time - now do
@@ -88,14 +110,22 @@ defmodule Otis.Zone.Emitter do
     end
   end
 
-  defp emit_frame({_loop, {_time, {timestamp, data} = packet, socket}, {_pi, _ps, pool} = _config} = _state) do
+  defp emit_frame({_loop, {_time, {timestamp, data} = _packet, socket}, {_pi, _ps, pool} = _config} = state) do
     now = current_time
-    Logger.debug "At #{_time - now}: emit #{timestamp - now} on socket #{inspect socket}"
+    # Logger.debug "At #{_time - now}: emit #{timestamp - now} on socket #{inspect socket}"
     Otis.Zone.Socket.send(socket, timestamp, data)
 
-    Logger.debug "Check back into pool #{pool}"
+    # Logger.debug "Check back into pool #{pool}"
     :poolboy.checkin(pool, self)
-    wait({_loop, @blank_emit, _config})
+    start_waiting(state)
+  end
+
+  defp start_waiting(state) do
+    wait(waiting_state(state))
+  end
+
+  defp waiting_state({loop, _emit, config} = _state) do
+    {loop, @blank_emit, config}
   end
 
   defp new_state({{t, n, d}, _emit, _config}) do

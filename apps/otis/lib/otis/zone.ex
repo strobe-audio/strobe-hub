@@ -239,7 +239,7 @@ defmodule Otis.Zone do
   end
 
   defp change_state(%Zone{id: _id, state: :stop, broadcaster: broadcaster} = zone) do
-    Otis.Broadcaster.stop(broadcaster)
+    Otis.Broadcaster.stop_broadcaster(broadcaster)
     change_state(%Zone{ zone | broadcaster: nil })
   end
 
@@ -255,6 +255,6 @@ defmodule Otis.Zone do
       latency: receiver_latency(zone),
       stream_interval: Otis.stream_interval_us
     ]
-    Otis.Zone.Broadcaster.start_link(opts)
+    Otis.Broadcaster.start_broadcaster(opts)
   end
 end
