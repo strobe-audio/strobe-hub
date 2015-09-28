@@ -4,7 +4,7 @@ defmodule Otis.Zone.Broadcaster do
   require Logger
 
   @buffer_latency 5_000 # music starts playing after this many microseconds
-  @buffer_size    4      # players hold this many packets (more or less)
+  @buffer_size    6      # players hold this many packets (more or less)
 
 
   defmodule S do
@@ -39,6 +39,12 @@ defmodule Otis.Zone.Broadcaster do
   # - Could keep buffered packets in 'abstract' {offset, data} rather than
   #   {timestamp, data} and calculate the actual timestamp when they are sent to
   #   the emitter (makes resending easy). offset = (packet no. * stream interval)
+
+
+  def buffer_receiver(broadcaster) do
+    GenServer.cast(broadcaster, :buffer_receiver)
+  end
+
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, [])
   end
@@ -76,10 +82,25 @@ defmodule Otis.Zone.Broadcaster do
     {:stop, {:shutdown, :stopped}, state}
   end
 
+  def handle_cast(:buffer_receiver, %S{in_flight: in_flight, socket: socket} = state) do
+    packets = Enum.map(in_flight, &Tuple.delete_at(&1, 0)) |> Enum.reverse
+    resend_packets(packets, socket, current_time+2_000, 5_000)
+    {:noreply, state}
+  end
+
   def handle_info(:emit, state) do
     state = potentially_emit(state)
     state = schedule_emit(state)
     {:noreply, state}
+  end
+
+  defp resend_packets([packet | packets], socket, emit_time, emit_time_increment) do
+    Logger.info "Resending packet..."
+    emit_packet!(emit_time, packet, socket)
+    resend_packets(packets, socket, emit_time + emit_time_increment, emit_time_increment)
+  end
+
+  defp resend_packets([], socket, emit_time, emit_time_increment) do
   end
 
   # Now I have the first n packets:
@@ -167,12 +188,16 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, emit_time: emit_time} = state) do
-    {_play_time, _data} = timestamped_packet = timestamp_packet(packet, state)
-    emitter = :poolboy.checkout(Otis.EmitterPool)
-    Otis.Zone.Emitter.emit(emitter, emit_time, timestamped_packet, socket)
-    packet_in_flight = { emitter, _play_time, _data }
+    timestamped_packet = timestamp_packet(packet, state)
+    packet_in_flight = emit_packet!(emit_time, timestamped_packet, socket)
     in_flight = [packet_in_flight | in_flight] |> trim_in_flight
     %S{ state | in_flight: in_flight, emit_time: emit_time + increment_emit}
+  end
+
+  defp emit_packet!(emit_time, packet, socket) do
+    emitter = :poolboy.checkout(Otis.EmitterPool)
+    Otis.Zone.Emitter.emit(emitter, emit_time, packet, socket)
+    Tuple.insert_at(packet, 0, emitter)
   end
 
   defp trim_in_flight(packets) do

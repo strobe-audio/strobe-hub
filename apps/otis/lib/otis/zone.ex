@@ -127,8 +127,8 @@ defmodule Otis.Zone do
 
   def handle_call({:add_receiver, receiver}, _from, %Zone{ id: id, receivers: receivers} = zone) do
     Logger.info "Adding receiver to zone #{id}"
-    Otis.Receiver.join_zone(receiver, self)
-    {:reply, :ok, %Zone{ zone | receivers: Set.put(receivers, receiver) }}
+    zone = reciever_joined(receiver, zone)
+    {:reply, :ok, zone}
   end
 
   def handle_call({:remove_receiver, receiver}, _from, %Zone{ receivers: receivers} = zone) do
@@ -160,6 +160,25 @@ defmodule Otis.Zone do
   def handle_cast(:stream_finished, %Zone{} = zone) do
     zone = stream_finished!(zone)
     {:noreply, zone}
+  end
+
+  defp reciever_joined(receiver, %Zone{state: :play, broadcaster: broadcaster} = zone) do
+    Otis.Zone.Broadcaster.buffer_receiver(broadcaster)
+    add_receiver_to_zone(receiver, zone)
+  end
+
+  defp reciever_joined(receiver, %Zone{state: :stop} = zone) do
+    add_receiver_to_zone(receiver, zone)
+  end
+
+  defp add_receiver_to_zone(receiver, %Zone{receivers: receivers} = zone) do
+    Otis.Receiver.join_zone(receiver, self)
+    %Zone{ zone | receivers: Set.put(receivers, receiver) }
+  end
+
+  def receiver_latency(%Zone{receivers: []}) do
+    Logger.warn "No receivers attached to zone..."
+    0
   end
 
   def receiver_latency(%Zone{receivers: recs}) do
