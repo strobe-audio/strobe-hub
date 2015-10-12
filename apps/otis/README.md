@@ -22,6 +22,33 @@ Otis.Zone.play_pause(zone)
 # Office
 #############
 
+{:ok, zone} = Otis.Zones.find :downstairs
+## 5m Silence
+
+{:ok, zone} = Otis.Zones.find :office
+{:ok, ss} = Otis.Zone.source_stream(zone)
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/5m-silence.mp3")
+Otis.SourceStream.append_source(ss, source)
+Otis.Zone.play_pause(zone)
+
+## 1 hr silence
+{:ok, zone} = Otis.Zones.find :office
+{:ok, ss} = Otis.Zone.source_stream(zone)
+Enum.each 1..12, fn(_) ->
+  {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/5m-silence.mp3")
+  Otis.SourceStream.append_source(ss, source)
+end
+Otis.Zone.play_pause(zone)
+
+## 5 hr silence
+{:ok, zone} = Otis.Zones.find :office
+{:ok, ss} = Otis.Zone.source_stream(zone)
+Enum.each 1..60, fn(_) ->
+  {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/5m-silence.mp3")
+  Otis.SourceStream.append_source(ss, source)
+end
+Otis.Zone.play_pause(zone)
+
 {:ok, zone} = Otis.Zones.find :office
 {:ok, ss} = Otis.Zone.source_stream(zone)
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/SongMaven-Click-Track-120-BPM.mp3")
@@ -45,6 +72,27 @@ Otis.Zone.play_pause(zone)
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/shubert-piano-quintet.m4a")
 Otis.SourceStream.append_source(ss, source)
 Otis.Zone.play_pause(zone)
+
+
+{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, ss} = Otis.Zone.source_stream(zone)
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/shubert-piano-quintet.m4a")
+Otis.SourceStream.append_source(ss, source)
+Otis.Zone.play_pause(zone)
+## Pavement
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Music/iTunes/iTunes Media/Music/Pavement/Watery Domestic/01 Texas Never Whispers.m4a")
+Otis.SourceStream.append_source(ss, source)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Music/iTunes/iTunes Media/Music/Pavement/Watery Domestic/02 Frontwards.m4a")
+Otis.SourceStream.append_source(ss, source)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Music/iTunes/iTunes Media/Music/Pavement/Watery Domestic/03 Lions.m4a")
+Otis.SourceStream.append_source(ss, source)
+
+{:ok, source} = Otis.Source.File.from_path("/Users/garry/Music/iTunes/iTunes Media/Music/Pavement/Watery Domestic/04 Shoot The Singer.m4a")
+Otis.SourceStream.append_source(ss, source)
+
+
 
 ## SHORT SAMPLE
 {:ok, zone} = Otis.Zones.find :office
