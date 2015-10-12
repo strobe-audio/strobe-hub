@@ -33,7 +33,7 @@ defmodule Otis.Mixfile do
     [ {:porcelain, "~> 2.0"},
       {:dnssd, github: "benoitc/dnssd_erlang"},
       {:poolboy, github: "devinus/poolboy"},
-      {:monotonic, path: "../../../monotonic"},
+      {:monotonic, github: "magnetised/monotonic.ex"},
     ]
   end
 end
