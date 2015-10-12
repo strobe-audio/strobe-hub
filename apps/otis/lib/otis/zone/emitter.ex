@@ -4,6 +4,7 @@ defmodule Otis.Zone.Emitter do
   Emits a given audio packet ({timestamp, data}) at the given time
   """
 
+  use     Monotonic
   require Logger
 
   # Public API
@@ -53,7 +54,7 @@ defmodule Otis.Zone.Emitter do
 
   defp start(time, packet, socket, {{_t, n, d}, _emit, _config} = _state) do
     # Logger.disable(self)
-    now = current_time
+    now = monotonic_microseconds
     case time - now do
       s when s < 0 ->
         {ts, _data} = packet
@@ -61,7 +62,7 @@ defmodule Otis.Zone.Emitter do
       _ ->
         # Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
     end
-    state = {{current_time, n, d}, {time, packet, socket}, _config}
+    state = {{monotonic_microseconds, n, d}, {time, packet, socket}, _config}
     test_packet state
   end
 
@@ -70,7 +71,7 @@ defmodule Otis.Zone.Emitter do
       {:discard, timestamp} ->
         # Check that we're not actually waiting to send a different packet
         if discard_packet?(timestamp, state) do
-          Logger.info "Discarding packet #{timestamp - current_time}"
+          Logger.info "Discarding packet #{timestamp - monotonic_microseconds}"
           start_waiting(state)
         else
           test_packet(new_state(state))
@@ -101,7 +102,7 @@ defmodule Otis.Zone.Emitter do
   @jitter 500
 
   defp loop_tight({{_t, n, d}, {time, _packet, _socket} = _emit, _config}) do
-    now   = current_time
+    now   = monotonic_microseconds
     state = {{now, n, d}, _emit, _config}
     case time - now do
       x when x <= @jitter ->
@@ -111,7 +112,7 @@ defmodule Otis.Zone.Emitter do
   end
 
   defp emit_frame({_loop, {_time, {timestamp, data} = _packet, socket}, {_pi, _ps, pool} = _config} = state) do
-    # now = current_time
+    # now = monotonic_microseconds
     # Logger.debug "At #{_time - now}: emit #{timestamp - now} on socket #{inspect socket}"
     Otis.Zone.Socket.send(socket, timestamp, data)
     :poolboy.checkin(pool, self)
@@ -128,7 +129,7 @@ defmodule Otis.Zone.Emitter do
 
   defp new_state({{t, n, d}, _emit, _config}) do
     m   = n+1
-    now = current_time
+    now = monotonic_microseconds
     delay = case d do
       0 -> now - t
       _ -> (((n * d) + (now - t)) / m)
@@ -137,10 +138,6 @@ defmodule Otis.Zone.Emitter do
     #   Logger.debug "#{now}, #{m}, #{delay}"
     # end
     {{now, m, delay}, _emit, _config}
-  end
-
-  defp current_time do
-    Otis.microseconds
   end
 end
 

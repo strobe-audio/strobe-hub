@@ -40,12 +40,4 @@ defmodule Otis do
     IO.inspect [:starting, Otis, _args]
     :ok
   end
-
-  def milliseconds do
-    :erlang.monotonic_time(:milli_seconds)
-  end
-
-  def microseconds do
-    :erlang.monotonic_time(:micro_seconds)
-  end
 end

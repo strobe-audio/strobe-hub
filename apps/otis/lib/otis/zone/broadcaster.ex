@@ -1,6 +1,7 @@
 
 defmodule Otis.Zone.Broadcaster do
   use     GenServer
+  use     Monotonic
   require Logger
 
   @buffer_latency 5_000 # music starts playing after this many microseconds
@@ -84,7 +85,7 @@ defmodule Otis.Zone.Broadcaster do
 
   def handle_cast(:buffer_receiver, %S{in_flight: in_flight, socket: socket} = state) do
     packets = Enum.map(in_flight, &Tuple.delete_at(&1, 0)) |> Enum.reverse
-    resend_packets(packets, socket, current_time+2_000, 5_000)
+    resend_packets(packets, socket, monotonic_microseconds+2_000, 5_000)
     {:noreply, state}
   end
 
@@ -111,7 +112,8 @@ defmodule Otis.Zone.Broadcaster do
   defp start(state) do
     Logger.info ">>>>>>>>>>>>> Fast send start......"
     {packets, packet_number} = next_packet(@buffer_size, state)
-    state = %S{state | start_time: current_time, emit_time: current_time, packet_number: packet_number}
+    now = monotonic_microseconds
+    state = %S{state | start_time: now, emit_time: now, packet_number: packet_number}
     state = fast_send_packets(packets, state)
     Logger.info "<<<<<<<<<<<<< Fast send over ......"
     state = schedule_emit(state)
@@ -137,7 +139,7 @@ defmodule Otis.Zone.Broadcaster do
 
   defp potentially_emit(%S{emit_time: emit_time} = state) do
     ci = (check_interval(state) * 1000)
-    next_check = current_time + ci
+    next_check = monotonic_microseconds + ci
     diff = (next_check - emit_time)
     if (abs(diff) < ci) || (diff > 0) do
       state = send_next_packet(state)
@@ -188,7 +190,8 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, emit_time: emit_time} = state) do
-    timestamped_packet = timestamp_packet(packet, state)
+    {timestamp, _data} = timestamped_packet = timestamp_packet(packet, state)
+    # Logger.debug "Emit offset #{ timestamp - monotonic_microseconds }"
     packet_in_flight = emit_packet!(emit_time, timestamped_packet, socket)
     in_flight = [packet_in_flight | in_flight] |> trim_in_flight
     %S{ state | in_flight: in_flight, emit_time: emit_time + increment_emit}
@@ -201,7 +204,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp trim_in_flight(packets) do
-    now = current_time
+    now = monotonic_microseconds
     Enum.filter packets, fn({_emitter, timestamp, _data}) ->
       timestamp > now
     end
@@ -253,9 +256,5 @@ defmodule Otis.Zone.Broadcaster do
         buf = [:stop | buf]
         next_packet(0, buf, packet_number + 1, audio_stream)
     end
-  end
-
-  defp current_time do
-    :erlang.monotonic_time(:micro_seconds)
   end
 end

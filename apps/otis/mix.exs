@@ -16,7 +16,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:porcelain, :logger, :dnssd],
+    [applications: [:porcelain, :logger, :dnssd, :monotonic],
      mod: {Otis, []}]
   end
 
@@ -33,6 +33,7 @@ defmodule Otis.Mixfile do
     [ {:porcelain, "~> 2.0"},
       {:dnssd, github: "benoitc/dnssd_erlang"},
       {:poolboy, github: "devinus/poolboy"},
+      {:monotonic, path: "../../../monotonic"},
     ]
   end
 end

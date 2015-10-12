@@ -1,5 +1,6 @@
 
 defmodule Otis.SNTP do
+  use     Monotonic
   require Logger
 
   @name Otis.SNTP
@@ -23,7 +24,7 @@ defmodule Otis.SNTP do
     after 0 ->
       case :gen_udp.recv(socket, 0) do
         {:ok, {address, port, packet}} ->
-          reply(socket, address, port, packet, now)
+          reply(socket, address, port, packet, monotonic_microseconds)
         {:error, reason} ->
           Logger.warn "SNTP got error #{inspect reason}"
       end
@@ -36,18 +37,14 @@ defmodule Otis.SNTP do
     << count::size(64)-little-unsigned-integer,
        originate_ts::size(64)-little-signed-integer
     >> = packet
-    # IO.inspect [count, now]
+    # IO.inspect [count, monotonic_microseconds]
     reply = <<
       count::size(64)-little-unsigned-integer,
       originate_ts::size(64)-little-signed-integer,
       receive_ts::size(64)-little-signed-integer,
-      now::size(64)-little-signed-integer
+      monotonic_microseconds::size(64)-little-signed-integer
     >>
     :gen_udp.send socket, address, port, reply
-  end
-
-  def now do
-    :erlang.monotonic_time :micro_seconds
   end
 end
 

@@ -1,5 +1,6 @@
 defmodule Otis.Receivers do
   use     GenServer
+  use     Monotonic
   require Logger
 
   alias   Otis.Receiver
@@ -74,7 +75,7 @@ defmodule Otis.Receivers do
   end
 
   def handle_call({:time_sync, {start}}, _from, receivers) do
-    {:reply, {:ok, {start, Otis.microseconds}}, receivers}
+    {:reply, {:ok, {start, monotonic_microseconds}}, receivers}
   end
 
   def handle_cast({:add, receiver}, receivers) do
