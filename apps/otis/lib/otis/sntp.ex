@@ -1,50 +1,88 @@
 
 defmodule Otis.SNTP do
-  use     Monotonic
   require Logger
+  use     Supervisor
 
-  @name Otis.SNTP
+  @name      Otis.SNTP
+  @listeners 6
 
   def start_link(port \\ 5045) do
-    :proc_lib.start_link(__MODULE__, :init, [port])
+    Supervisor.start_link(__MODULE__, port, name: @name)
   end
 
   def init(port) do
-    Logger.info "Starting SNTP server on port #{port}"
-    :erlang.register(@name, self)
-    Process.flag(:trap_exit, true)
-    :proc_lib.init_ack({:ok, self})
-    {:ok, socket} = :gen_udp.open port, [mode: :binary, ip: {0, 0, 0, 0}, active: false, reuseaddr: true]
-    state = {socket}
-    loop(state)
+
+    children = [
+      worker(Otis.SNTP.Listener, [port], [])
+    ]
+    spawn_link(&start_listeners/0)
+    supervise(children, strategy: :simple_one_for_one)
   end
 
-  def loop({socket} = state) do
-    receive do
-    after 0 ->
-      case :gen_udp.recv(socket, 0) do
-        {:ok, {address, port, packet}} ->
-          reply(socket, address, port, packet, monotonic_microseconds)
-        {:error, reason} ->
-          Logger.warn "SNTP got error #{inspect reason}"
-      end
+  def start_listener(_n) do
+    start_listener
+  end
+
+  def start_listener do
+    Supervisor.start_child(__MODULE__, [])
+  end
+
+  def start_listeners do
+    Enum.each 1..@listeners, &start_listener/1
+  end
+
+  defmodule Listener do
+    use     Monotonic
+    require Logger
+
+    def start_link(port) do
+      :proc_lib.start_link(__MODULE__, :init, [port])
     end
-    loop(state)
-  end
 
-  def reply(socket, address, port, packet, receive_ts) do
-    # Logger.debug "Got sync request from #{inspect address}:#{port}"
-    << count::size(64)-little-unsigned-integer,
-       originate_ts::size(64)-little-signed-integer
-    >> = packet
-    # IO.inspect [count, monotonic_microseconds]
-    reply = <<
+    def init(port) do
+      Logger.info "Starting SNTP socket listener..."
+      {:ok, socket} = :gen_udp.open port, [
+        mode: :binary,
+        ip: {0, 0, 0, 0},
+        active: false,
+        reuseaddr: true
+      ]
+      :proc_lib.init_ack({:ok, self})
+      state = {socket}
+      loop(state)
+    end
+
+    def loop({socket} = state) do
+      :inet.setopts(socket, [active: :once])
+      receive do
+        {:udp, _sock, address, port, packet} ->
+          reply(socket, address, port, packet, monotonic_microseconds)
+
+        # after 0 ->
+        #   case :gen_udp.recv(socket, 0) do
+        #     {:ok, {address, port, packet}} ->
+        #       reply(socket, address, port, packet, monotonic_microseconds)
+        #     {:error, reason} ->
+        #       Logger.warn "SNTP got error #{inspect reason}"
+        #   end
+        end
+        loop(state)
+    end
+
+    def reply(socket, address, port, packet, receive_ts) do
+      # Logger.debug "Got sync request from #{inspect address}:#{port}"
+      << count::size(64)-little-unsigned-integer,
+      originate_ts::size(64)-little-signed-integer
+      >> = packet
+      # IO.inspect [count, monotonic_microseconds]
+      reply = <<
       count::size(64)-little-unsigned-integer,
       originate_ts::size(64)-little-signed-integer,
       receive_ts::size(64)-little-signed-integer,
       monotonic_microseconds::size(64)-little-signed-integer
-    >>
-    :gen_udp.send socket, address, port, reply
+      >>
+      :gen_udp.send socket, address, port, reply
+    end
   end
 end
 
