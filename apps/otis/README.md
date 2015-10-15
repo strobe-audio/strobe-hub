@@ -79,7 +79,25 @@ Otis.Zone.play_pause(zone)
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Seafile/Peep/audio/shubert-piano-quintet.m4a")
 Otis.SourceStream.append_source(ss, source)
 Otis.Zone.play_pause(zone)
+
+## Albums
+
+{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, ss} = Otis.Zone.source_stream(zone)
+
+{:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Jackson 5/Jackson 5_ The Ultimate Collection"
+Otis.SourceStream.append_sources(ss, sources)
+
+Otis.Zone.play_pause(zone)
+
+{:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Queen/Greatest Hits I"
+Otis.SourceStream.append_sources(ss, sources)
+
+{:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Deerhoof/Milk Man"
+Otis.SourceStream.append_sources(ss, sources)
+
 ## Pavement
+
 {:ok, source} = Otis.Source.File.from_path("/Users/garry/Music/iTunes/iTunes Media/Music/Pavement/Watery Domestic/01 Texas Never Whispers.m4a")
 Otis.SourceStream.append_source(ss, source)
 

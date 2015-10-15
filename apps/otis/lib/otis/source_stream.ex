@@ -15,11 +15,19 @@ defmodule Otis.SourceStream do
     GenServer.call(source_stream, :current_source)
   end
 
-  def append_source(sources, source) do
-    insert_source(sources, source, -1)
+  def append_sources(stream, []) do
   end
 
-  def insert_source(sources, source, position \\ -1) do
-    GenServer.cast(sources, {:add_source, source, position})
+  def append_sources(stream, [source | sources]) do
+    append_source(stream, source)
+    append_sources(stream, sources)
+  end
+
+  def append_source(stream, source) do
+    insert_source(stream, source, -1)
+  end
+
+  def insert_source(stream, source, position \\ -1) do
+    GenServer.cast(stream, {:add_source, source, position})
   end
 end
