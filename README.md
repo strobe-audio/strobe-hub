@@ -37,8 +37,58 @@ Synchronised Player
 TODO
 ----
 
-- [ ] automatically add player to zone once it's online & synced
-- [ ] play a startup sound to boot audio hardware when janis comes online
+- [x] automatically add player to zone once it's online & synced
+- [ ] tell next source in list to prepare (e.g. open files etc) to ensure seamless playback
+- [ ] make janis sockets understand some commands:
+      - [ ] "flsh" i.e. "flush". Discard any unplayed packets that you have
+      - [ ] "stop". Doesn't do anything at present but could be used to switch to a lower-power state
+            i.e. stop the broadcaster process looping
+- [ ] implement 'skip' etc as a broadcaster flush + stop and launch new broadcaster
+
+
+- broadcast at 48000 sample rate (a la DVD)? Why?
+  - http://forum.doom9.org/archive/index.php/t-131642.html
+  - http://shibatch.sourceforge.net/
+
+Ideas
+-----
+
+Reduce memory usage by sending out some kind of 'sleep' command to all players when:
+
+- no audio is playing
+- the ui hasn't been used for n minutes
+
+This sleep state could be as simple as pausing the audio stream. WIth no packets to emit the receivers aren't actually doing much apart from time-sync.
+
+UDP Multicast Problems
+----------------------
+
+UDP multicast across a wifi-wired bridge is not reliable.
+
+http://superuser.com/questions/730288/why-do-some-wifi-routers-block-multicast-packets-going-from-wired-to-wireless
+
+Simplest solution would be to exclusively use TCP streams for the audio.
+
+But, if we can find a way to detect if UDP multicast between the broadcaster and a specific receiver works (which shouldn't be too hard really) then we can start to do more intelligent things:
+
+- if the UDP multicast doesn't work then fallback to a TCP stream for the receiver
+
+or, for extra points:
+
+work out the UDP multicast connectivity between all nodes (peer to peer). This would allow us to group them into UDP-multicast-able pools. Say for a mixed wifi-wired network there would probably be two pools: the receivers on wifi and those on ethernet.
+
+Assuming that the broadcaster belongs to one of those pools then we need to bridge UDP across to the other(s).
+
+If the receivers in a pool (different from the broadcaster) elect a leader (using raft e.g.) then the broadcaster could use TCP to stream to it (accross the UDP divide) and then it could re-transmit the data to the other receivers in its pool using UDP multicast.
+
+Sound File metadata
+-------------------
+
+Need to be able to extract metadata (album, artist etc) from sound files. Don't want to re-implement this in Elixir, it's just annoying.
+
+Ideas:
+
+- http://www.mega-nerd.com/libsndfile/api.html "Functions for Reading and Writing String Data". Write a quick erlang wrapper around the required bits of the api (not a nif or anything else that might crash the vm... http://www.erlang.org/doc/tutorial/erl_interface.html)
 
 Bugs
 ----
