@@ -55,8 +55,8 @@ defmodule Otis.Receivers do
     find(@registry_name, id)
   end
 
-  def find(pid, id) when is_atom(id) do
-    GenServer.call(pid, {:find, Atom.to_string(id)})
+  def find(pid, id) when is_binary(id) do
+    find(pid, String.to_atom(id))
   end
 
   def find(pid, id) do
@@ -102,7 +102,7 @@ defmodule Otis.Receivers do
   end
 
   defp find_result(nil) do
-    :error
+    {:error, :not_found}
   end
 
   defp find_result(receiver) do
