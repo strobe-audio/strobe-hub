@@ -90,9 +90,13 @@ Otis.SourceStream.append_sources(ss, sources)
 
 Otis.Zone.play_pause(zone)
 
+{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, ss} = Otis.Zone.source_stream(zone)
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Queen/Greatest Hits I"
 Otis.SourceStream.append_sources(ss, sources)
 
+{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, ss} = Otis.Zone.source_stream(zone)
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Deerhoof/Milk Man"
 Otis.SourceStream.append_sources(ss, sources)
 
