@@ -7,7 +7,9 @@ defmodule Otis.SourceStream do
 
   @doc "Returns the next source in the stream"
   def next(source_stream) do
-    GenServer.call(source_stream, :next_source)
+    source = GenServer.call(source_stream, :next_source)
+    GenServer.cast(source_stream, :pre_buffer)
+    source
   end
 
   @doc "Returns the current source"

@@ -1,5 +1,6 @@
 defmodule Otis.Source.File do
-  use GenServer
+  require Logger
+  use     GenServer
 
   def from_path(path) do
     start_link(path)
@@ -15,6 +16,11 @@ defmodule Otis.Source.File do
 
   def handle_call(:source_info, _from, source) do
     {:reply, {:ok, source}, source}
+  end
+
+  def handle_cast(:pre_buffer, %{path: path} = source) do
+    Logger.debug "Pre-buffering '#{path}'"
+    {:noreply, open(source)}
   end
 
   defp chunk(%{outputstream: nil} = source) do
