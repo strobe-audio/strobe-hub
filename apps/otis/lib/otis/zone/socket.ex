@@ -26,7 +26,8 @@ defmodule Otis.Zone.Socket do
     {:noreply, {socket, ip, port, count + 1}}
   end
 
-  def handle_cast(:stop, {socket, ip, port, count} = state) do
+  # TODO: send <<"stop">> as the packet
+  def handle_cast(:stop, {socket, ip, port, count} = _state) do
     packet = << count::size(64)-little-unsigned-integer, 0::size(64)-little-signed-integer >>
     :gen_udp.send socket,  ip, port, packet
     {:noreply, {socket, ip, port, count + 1}}
