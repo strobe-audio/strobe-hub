@@ -29,6 +29,7 @@ defmodule Otis.State do
           :"b8-27-eb-ce-43-c7",
           :"10-9a-dd-67-71-9c",
           :"b8-27-eb-f6-19-4b", # rpi 2
+          :"2c-f0-ee-0a-e2-5e", # aines lappie
         ]}
     ]
     {:ok, %S{zones: zones}}
