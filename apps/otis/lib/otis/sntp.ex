@@ -57,16 +57,10 @@ defmodule Otis.SNTP do
       receive do
         {:udp, _sock, address, port, packet} ->
           reply(socket, address, port, packet, monotonic_microseconds)
-
-        # after 0 ->
-        #   case :gen_udp.recv(socket, 0) do
-        #     {:ok, {address, port, packet}} ->
-        #       reply(socket, address, port, packet, monotonic_microseconds)
-        #     {:error, reason} ->
-        #       Logger.warn "SNTP got error #{inspect reason}"
-        #   end
-        end
-        loop(state)
+        msg ->
+          Logger.warn "SNTP Listener got #{ inspect msg}"
+      end
+      loop(state)
     end
 
     def reply(socket, address, port, packet, receive_ts) do
