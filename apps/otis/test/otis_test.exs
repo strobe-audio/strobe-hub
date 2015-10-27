@@ -11,6 +11,10 @@ defmodule TestUtils do
     _md5(extract.(), extract, :crypto.hash_update(md5, data))
   end
 
+  defp _md5({:ok, data}, extract, md5) do
+    _md5(extract.(), extract, :crypto.hash_update(md5, data))
+  end
+
   defp _md5(:stopped, _extract, md5) do
     :crypto.hash_final(md5) |> Base.encode16 |> String.downcase
   end
@@ -48,6 +52,12 @@ defmodule OtisTest do
       assert b == 0
     end
 
+    {:ok, pcm} = Otis.Source.chunk source
+    assert byte_size(pcm) == 4608
+    Enum.each :binary.bin_to_list(pcm), fn(b) ->
+      assert b == 0
+    end
+
     result = Otis.Source.chunk source
     assert result == :done
   end
@@ -55,8 +65,8 @@ defmodule OtisTest do
   test "opening streaming mp3 should give a valid PCM data stream" do
     {:ok, source} = Otis.Source.File.from_path("test/fixtures/snake-rag.mp3")
     hash = TestUtils.md5 fn() -> Otis.Source.chunk(source) end
-    # sox test/fixtures/snake-rag.mp3  --type raw --bits 16 --channels 2 --endian little --rate 44100 --encoding signed-integer - | md5
-    assert hash == "7f022a83734ed280feed7577e2522490"
+    # avconv -i test/fixtures/snake-rag.mp3 -f s16le -ac 2 -ar 44100 - | md5
+    assert hash == "ba5a1791d3a00ac3ec31f2fe490a90c5"
   end
 end
 
@@ -64,8 +74,8 @@ defmodule Otis.SourceStreamTest do
   use ExUnit.Case, async: true
 
   setup do
-    {:ok, a } = Otis.Source.File.from_path("test/fixtures/a.mp3")
-    {:ok, b } = Otis.Source.File.from_path("test/fixtures/b.mp3")
+    {:ok, a } = Otis.Source.File.from_path("test/fixtures/silent.mp3")
+    {:ok, b } = Otis.Source.File.from_path("test/fixtures/snake-rag.mp3")
     {:ok, source_stream} = Otis.SourceStream.Array.from_list([a, b])
     {:ok, source_stream: source_stream}
   end
@@ -74,11 +84,11 @@ defmodule Otis.SourceStreamTest do
 
     {:ok, source} = Otis.SourceStream.next(source_stream)
     {:ok, %{path: path} = _info} = Otis.Source.info(source)
-    assert path == "test/fixtures/a.mp3"
+    assert path == "test/fixtures/silent.mp3"
 
     {:ok, source} = Otis.SourceStream.next(source_stream)
     {:ok, %{path: path} = _info} = Otis.Source.info(source)
-    assert path == "test/fixtures/b.mp3"
+    assert path == "test/fixtures/snake-rag.mp3"
 
     result = Otis.SourceStream.next(source_stream)
     assert result == :done
@@ -88,44 +98,58 @@ end
 defmodule Otis.AudioStreamSingleTest do
   use ExUnit.Case, async: true
 
+  # avconv -i test/fixtures/silent.mp3 -f s16le -ac 2 -ar 44100 silent.raw
+  @silent_raw_byte_size 9216
+
   setup do
     {:ok, source} = Otis.Source.File.from_path("test/fixtures/silent.mp3")
     {:ok, source_stream} = Otis.SourceStream.Array.from_list([source])
-    {:ok, audio_stream} = Otis.AudioStream.start_link(source_stream, 200)
-    {:ok, audio_stream: audio_stream, chunk_size: 200, source_stream: source_stream}
+    {:ok, audio_stream} = Otis.AudioStream.start_link(source_stream, 1000)
+    {:ok, audio_stream: audio_stream, chunk_size: 1000, source_stream: source_stream}
   end
 
   test "source list", %{audio_stream: audio_stream, chunk_size: chunk_size} do
-    Enum.each 0..22, fn(_) ->
+    n = @silent_raw_byte_size / chunk_size
+    Enum.each 0..round(Float.floor(n) - 1 ), fn(_) ->
       { :ok, frame } = Otis.AudioStream.frame(audio_stream)
       assert byte_size(frame) == chunk_size
     end
     {:ok, frame} = Otis.AudioStream.frame(audio_stream)
-    assert byte_size(frame) == 4608 - (23*chunk_size)
+    assert byte_size(frame) == rem(@silent_raw_byte_size, chunk_size)
     result = Otis.AudioStream.frame(audio_stream)
     assert result == :stopped
   end
 
   test "adding a source after finishing the first", %{audio_stream: audio_stream, chunk_size: chunk_size, source_stream: source_stream} do
-    Enum.each 0..22, fn(_) ->
-      { :ok, _frame } = Otis.AudioStream.frame(audio_stream)
+    n = @silent_raw_byte_size / chunk_size
+    Enum.each 0..round(Float.floor(n) - 1), fn(_) ->
+      { :ok, frame } = Otis.AudioStream.frame(audio_stream)
+      assert byte_size(frame) == chunk_size
     end
-    {:ok, _frame} = Otis.AudioStream.frame(audio_stream)
+
+    {:ok, frame} = Otis.AudioStream.frame(audio_stream)
+    assert byte_size(frame) == rem(@silent_raw_byte_size, chunk_size)
+
     result = Otis.AudioStream.frame(audio_stream)
     assert result == :stopped
+
     {:ok, source} = Otis.Source.File.from_path("test/fixtures/silent.mp3")
     :ok = Otis.SourceStream.append_source(source_stream, source)
-    Enum.each 0..22, fn(_) ->
+
+    Enum.each 0..round(Float.ceil(n) - 2), fn(_) ->
       { :ok, frame } = Otis.AudioStream.frame(audio_stream)
       assert byte_size(frame) == chunk_size
     end
     {:ok, frame} = Otis.AudioStream.frame(audio_stream)
-    assert byte_size(frame) == 4608 - (23*chunk_size)
+    assert byte_size(frame) == rem(@silent_raw_byte_size, chunk_size)
+    :stopped = Otis.AudioStream.frame(audio_stream)
   end
 end
 
 defmodule Otis.AudioStreamMultipleTest do
   use ExUnit.Case, async: true
+
+  @transcoded_stream_size 276480
 
   setup do
     paths = [
@@ -161,20 +185,22 @@ defmodule Otis.AudioStreamMultipleTest do
 
   test "stream length", %{audio_stream: audio_stream} do
     data = TestUtils.acc_stream(audio_stream)
-    assert byte_size(data) == 262656
+    assert byte_size(data) == @transcoded_stream_size
   end
 
-  test "stream validity", %{ audio_stream: audio_stream } do
-    hash = TestUtils.md5 fn() -> Otis.AudioStream.frame(audio_stream) end
-    # cat test/fixtures/snake-rag.mp3 | sox --type .mp3 - --type raw --bits 16 --channels 2 --endian little --rate 44100 --encoding signed-integer s1.raw
-    # cat test/fixtures/silent.mp3 | sox --type .mp3 - --type raw --bits 16 --channels 2 --endian little --rate 44100 --encoding signed-integer s2.raw
-    # cat s1.raw s2.raw s1.raw | md5 && rm s1.raw s2.raw
-    assert hash == "5531fbf9d9dfd458aea12eb262bedb35"
-  end
+  ## Now that we're padding songs to always end at the end of a chunk, this is
+  ## difficult to test..
+  # test "stream validity", %{ audio_stream: audio_stream } do
+  #   hash = TestUtils.md5 fn() -> Otis.AudioStream.frame(audio_stream) end
+  #   # cat test/fixtures/snake-rag.mp3 | avconv -f mp3 -i - -f s16le -ac 2 -ar 44100 s1.raw
+  #   # cat test/fixtures/silent.mp3 | avconv -f mp3 -i - -f s16le -ac 2 -ar 44100 s2.raw
+  #   # cat s1.raw s2.raw s1.raw | md5 && rm s1.raw s2.raw
+  #   assert hash == "a3c1a1434637eeb0abc93cd0a24f5c17"
+  # end
 
   test "keeps a constant frame size across sources", %{audio_stream: audio_stream, chunk_size: chunk_size} do
     remainder = test_frame_size(audio_stream, chunk_size)
-    assert remainder == (262656 - chunk_size * ( round(Float.floor(262656 / chunk_size)) ))
+    assert remainder == rem(@transcoded_stream_size, chunk_size)
   end
 end
 
