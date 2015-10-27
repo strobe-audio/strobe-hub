@@ -30,5 +30,6 @@ config :porcelain, :goon_driver_path, "#{__DIR__}/../bin/goon"
 
 config :otis, Otis.DNSSD,
   name: "_peep-broadcaster._tcp",
-  port: 5045
+  port: 5045,
+  multicast_port: 5050
 

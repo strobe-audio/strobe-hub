@@ -27,7 +27,7 @@ defmodule Otis.IPPool do
   end
 
   def port do
-    otis_config[:port]
+    otis_config[:multicast_port]
   end
 
   defp otis_config do
