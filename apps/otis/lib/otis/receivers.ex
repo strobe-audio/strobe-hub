@@ -63,6 +63,22 @@ defmodule Otis.Receivers do
     GenServer.call(pid, {:find, id})
   end
 
+  def volume(id, volume) when is_binary(id) do
+    volume(find(id), volume)
+  end
+
+  def volume(pid, volume) when is_pid(pid) do
+    Otis.Receiver.volume(pid, volume)
+  end
+
+  def volume({:ok, pid}, volume) do
+    volume(pid, volume)
+  end
+
+  def volume({:error, _reason} = err, _volume) do
+    err
+  end
+
   ############# Callbacks
 
   def handle_call(:list, _from, receivers) do
