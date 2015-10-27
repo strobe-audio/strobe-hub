@@ -176,13 +176,17 @@ defmodule Otis.Zone do
     %Zone{ zone | receivers: Set.put(receivers, receiver) }
   end
 
-  def receiver_latency(%Zone{receivers: []}) do
+  def receiver_latency(%Zone{receivers: %HashSet{} = recs}) do
+    _receiver_latency(Set.to_list(recs))
+  end
+
+  defp _receiver_latency([]) do
     Logger.warn "No receivers attached to zone..."
     0
   end
 
-  def receiver_latency(%Zone{receivers: recs}) do
-    Enum.map(Set.to_list(recs), fn(rec) ->
+  defp _receiver_latency(recs) do
+    Enum.map(recs, fn(rec) ->
       {:ok, latency} = Otis.Receiver.latency(rec)
       latency
     end) |> Enum.max
