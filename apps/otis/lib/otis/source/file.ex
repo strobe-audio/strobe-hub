@@ -35,8 +35,9 @@ defmodule Otis.Source.File do
     {:reply, chunk, source}
   end
 
-  defp next_chunk(:error, source) do
-    {:reply, :done, source}
+  defp next_chunk(:error, %{inputstream: inputstream} = source) do
+    Elixir.File.close(inputstream)
+    {:reply, :done, %{source | inputstream: nil, outputstream: nil}}
   end
 
   defp open(source) do
