@@ -23,12 +23,15 @@ defmodule Otis.State do
   def init(:ok) do
     Logger.info "Starting state..."
     zones = [
-      %Zone{id: :office, name: "The Office", receiver_ids: [:"00-17-f2-09-20-9d", :"00-1c-42-fc-0d-b6"]},
+      %Zone{id: :office, name: "The Office", receiver_ids: [
+          :"00-17-f2-09-20-9d",
+          :"b8-27-eb-f6-19-4b", # rpi 2
+          :"00-1c-42-fc-0d-b6"
+        ]},
       %Zone{id: :downstairs, name: "Downstairs", receiver_ids: [
           :"e0-f8-47-42-aa-48",
           :"b8-27-eb-ce-43-c7",
           :"10-9a-dd-67-71-9c",
-          :"b8-27-eb-f6-19-4b", # rpi 2
           :"2c-f0-ee-0a-e2-5e", # aines lappie
         ]}
     ]
