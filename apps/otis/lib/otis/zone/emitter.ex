@@ -35,6 +35,7 @@ defmodule Otis.Zone.Emitter do
       @blank_emit,                         # emit data
       {packet_interval, packet_size, pool} # config
     }
+    Process.flag :priority, :high
     wait(state)
   end
 
