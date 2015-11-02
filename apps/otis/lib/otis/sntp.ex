@@ -33,48 +33,45 @@ defmodule Otis.SNTP do
 
   defmodule Listener do
     use     Monotonic
+    use     GenServer
     require Logger
 
     def start_link(port) do
+      GenServer.start_link(__MODULE__, [port])
       :proc_lib.start_link(__MODULE__, :init, [port])
     end
 
-    def init(port) do
-      Logger.info "Starting SNTP socket listener..."
+    def init([port]) do
+      Logger.info "Starting SNTP socket listener on port #{ port }..."
       {:ok, socket} = :gen_udp.open port, [
         mode: :binary,
         ip: {0, 0, 0, 0},
-        active: false,
+        active: :once,
         reuseaddr: true
       ]
-      :proc_lib.init_ack({:ok, self})
-      state = {socket}
-      loop(state)
+      Process.flag :priority, :high
+      {:ok, {socket}}
     end
 
-    def loop({socket} = state) do
+    def handle_info({:udp, _socket, address, port, packet}, {socket} = state) do
+      reply(socket, address, port, packet, monotonic_microseconds)
       :inet.setopts(socket, [active: :once])
-      receive do
-        {:udp, _sock, address, port, packet} ->
-          reply(socket, address, port, packet, monotonic_microseconds)
-        msg ->
-          Logger.warn "SNTP Listener got #{ inspect msg}"
-      end
-      loop(state)
+      {:noreply, state}
     end
 
     def reply(socket, address, port, packet, receive_ts) do
-      # Logger.debug "Got sync request from #{inspect address}:#{port}"
-      << count::size(64)-little-unsigned-integer,
-      originate_ts::size(64)-little-signed-integer
+      <<
+        count::size(64)-little-unsigned-integer,
+        originate_ts::size(64)-little-signed-integer
       >> = packet
-      # IO.inspect [count, monotonic_microseconds]
+
       reply = <<
-      count::size(64)-little-unsigned-integer,
-      originate_ts::size(64)-little-signed-integer,
-      receive_ts::size(64)-little-signed-integer,
-      monotonic_microseconds::size(64)-little-signed-integer
+        count::size(64)-little-unsigned-integer,
+        originate_ts::size(64)-little-signed-integer,
+        receive_ts::size(64)-little-signed-integer,
+        monotonic_microseconds::size(64)-little-signed-integer
       >>
+
       :gen_udp.send socket, address, port, reply
     end
   end
