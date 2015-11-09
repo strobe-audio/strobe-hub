@@ -24,7 +24,7 @@ defmodule Otis.State do
     Logger.info "Starting state..."
     zones = [
       %Zone{id: :office, name: "The Office", receiver_ids: [
-          :"00-17-f2-09-20-9d",
+          :"00-17-f2-09-20-9d", # mac pro
           :"b8-27-eb-f6-19-4b", # rpi 2
           :"00-1c-42-fc-0d-b6"
         ]},
