@@ -6,10 +6,14 @@ defmodule Otis.Zone.Socket do
     GenServer.start_link(__MODULE__, address, [])
   end
 
-  def init({ip, port} = _address) do
-    Logger.debug "Starting socket with ip #{inspect ip}:#{port}"
-    {:ok, socket} = :gen_udp.open 0, [:binary, ip: {0, 0, 0, 0}, multicast_ttl: 255, reuseaddr: true]
-    {:ok, {socket, ip, port, 1}}
+  def init(port) do
+    Logger.debug "Starting socket with address #{bind(port)}"
+    {:ok, socket} = :enm.pub(bind: bind(port))
+    {:ok, {socket, port, 1}}
+  end
+
+  def bind(port) do
+    "tcp://*:#{port}"
   end
 
   def send(pid, timestamp, data) do
@@ -20,16 +24,20 @@ defmodule Otis.Zone.Socket do
     GenServer.cast(pid, :stop)
   end
 
-  def handle_cast({:send, timestamp, audio}, {socket, ip, port, count} = state) do
+  def handle_cast({:send, timestamp, audio}, {socket, port, count} = state) do
     packet = << count::size(64)-little-unsigned-integer, timestamp::size(64)-little-signed-integer, audio::binary >>
-    :gen_udp.send socket,  ip, port, packet
-    {:noreply, {socket, ip, port, count + 1}}
+    _send(socket, packet)
+    {:noreply, {socket, port, count + 1}}
   end
 
   # TODO: send <<"stop">> as the packet
-  def handle_cast(:stop, {socket, ip, port, count} = _state) do
+  def handle_cast(:stop, {socket, port, count} = _state) do
     packet = << count::size(64)-little-unsigned-integer, 0::size(64)-little-signed-integer >>
-    :gen_udp.send socket,  ip, port, packet
-    {:noreply, {socket, ip, port, count + 1}}
+    _send(socket, packet)
+    {:noreply, {socket, port, count + 1}}
+  end
+
+  defp _send(socket, data) do
+    :enm.send(socket, data)
   end
 end

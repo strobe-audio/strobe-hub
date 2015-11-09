@@ -84,11 +84,11 @@ defmodule Otis.Receiver do
   end
 
   def handle_cast({:join_zone, zone}, state) do
-    {:ok, {ip, port}} = Otis.Zone.broadcast_address(zone)
+    {:ok, {port}} = Otis.Zone.broadcast_address(zone)
     # Now I want to send the ip:port info to the receiver which should cause it
     # to launch a player instance attached to that udp address (along with the
     # necessary linked processes)
-    broadcast!(state, "join_zone", %{address: Tuple.to_list(ip), port: port, interval: Otis.stream_interval_ms, size: Otis.stream_bytes_per_step, volume: 0.3})
+    broadcast!(state, "join_zone", %{port: port, interval: Otis.stream_interval_ms, size: Otis.stream_bytes_per_step, volume: 0.3})
     {:noreply, %S{ state | zone: zone }}
   end
 

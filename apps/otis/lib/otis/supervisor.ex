@@ -17,7 +17,7 @@ defmodule Otis.Supervisor do
       worker(Otis.DNSSD, []),
       worker(Otis.SNTP, []),
       worker(Otis.State, []),
-      worker(Otis.IPPool, [{224,24,4,0}]),
+      worker(Otis.PortPool, [5040, 10]),
 
       :poolboy.child_spec(Otis.EmitterPool, emitter_pool_options, [
         interval: packet_interval,
