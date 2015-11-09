@@ -36,7 +36,7 @@ defmodule Otis.Zone do
   end
 
   def init(%Zone{ source_stream: source_stream } = zone) do
-    {:ok, port} = Otis.PortPool.next_port
+    {:ok, port} = Otis.PortSequence.next
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_stream, Otis.stream_bytes_per_step)
     {:ok, %Zone{ zone | audio_stream: audio_stream, socket: socket, broadcast_address: {port} }}
