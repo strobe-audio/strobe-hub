@@ -8,7 +8,7 @@ defmodule Otis.Zone.Socket do
 
   def init(port) do
     Logger.debug "Starting socket with address #{bind(port)}"
-    {:ok, socket} = :enm.pub(bind: bind(port))
+    {:ok, socket} = :enm.pub(bind: bind(port), nodelay: true)
     {:ok, {socket, port, 1}}
   end
 
