@@ -61,14 +61,14 @@ defmodule Otis.SNTP do
 
     def reply(socket, address, port, packet, receive_ts) do
       <<
-        count::size(64)-little-unsigned-integer,
-        originate_ts::size(64)-little-signed-integer
+        count        ::size(64)-little-unsigned-integer,
+        originate_ts ::size(64)-little-signed-integer
       >> = packet
 
       reply = <<
-        count::size(64)-little-unsigned-integer,
-        originate_ts::size(64)-little-signed-integer,
-        receive_ts::size(64)-little-signed-integer,
+        count        ::size(64)-little-unsigned-integer,
+        originate_ts ::size(64)-little-signed-integer,
+        receive_ts   ::size(64)-little-signed-integer,
         monotonic_microseconds::size(64)-little-signed-integer
       >>
 
