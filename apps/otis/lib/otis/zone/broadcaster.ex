@@ -102,7 +102,7 @@ defmodule Otis.Zone.Broadcaster do
     resend_packets(packets, socket, emit_time + emit_time_increment, emit_time_increment)
   end
 
-  defp resend_packets([], socket, emit_time, emit_time_increment) do
+  defp resend_packets([], _socket, _emit_time, _emit_time_increment) do
   end
 
   # Now I have the first n packets:
@@ -191,8 +191,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, emit_time: emit_time} = state) do
-    {timestamp, _data} = timestamped_packet = timestamp_packet(packet, state)
-    # Logger.debug "Emit offset #{ timestamp - monotonic_microseconds }"
+    timestamped_packet = timestamp_packet(packet, state)
     packet_in_flight = emit_packet!(emit_time, timestamped_packet, socket)
     in_flight = [packet_in_flight | in_flight] |> trim_in_flight
     %S{ state | in_flight: in_flight, emit_time: emit_time + increment_emit}
@@ -228,8 +227,8 @@ defmodule Otis.Zone.Broadcaster do
     stop_inflight_packets(packets)
   end
 
-  defp timestamp_packet({packet_number, _data}, state) do
-    {timestamp_for_packet(packet_number, state), _data}
+  defp timestamp_packet({packet_number, data}, state) do
+    {timestamp_for_packet(packet_number, state), data}
   end
 
   defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = _state) do

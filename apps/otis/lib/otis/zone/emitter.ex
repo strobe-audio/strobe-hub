@@ -26,8 +26,6 @@ defmodule Otis.Zone.Emitter do
   @blank_emit {nil, nil, nil} # timestamp, packet, socket
 
   def init([interval: packet_interval, packet_size: packet_size, pool: pool] = opts) do
-    # Logger.disable self
-    Logger.debug "Launched emitter #{inspect opts}"
     :proc_lib.init_ack({:ok, self})
 
     state = {
@@ -53,7 +51,7 @@ defmodule Otis.Zone.Emitter do
     end
   end
 
-  defp start(time, packet, socket, {{_t, n, d}, _emit, _config} = _state) do
+  defp start(time, packet, socket, {{_t, n, d}, _emit, config} = _state) do
     # Logger.disable(self)
     now = monotonic_microseconds
     case time - now do
@@ -63,7 +61,7 @@ defmodule Otis.Zone.Emitter do
       _ ->
         # Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
     end
-    state = {{monotonic_microseconds, n, d}, {time, packet, socket}, _config}
+    state = {{monotonic_microseconds, n, d}, {time, packet, socket}, config}
     test_packet state
   end
 
@@ -102,9 +100,9 @@ defmodule Otis.Zone.Emitter do
 
   @jitter 500
 
-  defp loop_tight({{_t, n, d}, {time, _packet, _socket} = _emit, _config}) do
+  defp loop_tight({{_t, n, d}, {time, _packet, _socket} = emit, config}) do
     now   = monotonic_microseconds
-    state = {{now, n, d}, _emit, _config}
+    state = {{now, n, d}, emit, config}
     case time - now do
       x when x <= @jitter ->
         emit_frame(state)
@@ -128,17 +126,14 @@ defmodule Otis.Zone.Emitter do
     {loop, @blank_emit, config}
   end
 
-  defp new_state({{t, n, d}, _emit, _config}) do
+  defp new_state({{t, n, d}, emit, config}) do
     m   = n+1
     now = monotonic_microseconds
     delay = case d do
       0 -> now - t
       _ -> (((n * d) + (now - t)) / m)
     end
-    # if rem(m, 1000) == 0 do
-    #   Logger.debug "#{now}, #{m}, #{delay}"
-    # end
-    {{now, m, delay}, _emit, _config}
+    {{now, m, delay}, emit, config}
   end
 end
 
