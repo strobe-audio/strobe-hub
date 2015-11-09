@@ -4,7 +4,7 @@ defmodule Otis.Zone.Broadcaster do
   use     Monotonic
   require Logger
 
-  @buffer_latency 5_000 # music starts playing after this many microseconds
+  @buffer_latency 50_000 # music starts playing after this many microseconds
   @buffer_size    6      # players hold this many packets (more or less)
 
 
