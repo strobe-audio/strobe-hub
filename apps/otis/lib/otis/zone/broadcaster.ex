@@ -60,6 +60,7 @@ defmodule Otis.Zone.Broadcaster do
       latency: opts[:latency],
       stream_interval: opts[:stream_interval]
     }
+    Process.flag :priority, :high
     GenServer.cast(self, :start)
     {:ok, state}
   end
