@@ -69,11 +69,13 @@ defmodule Otis.Zone.BufferedStream do
   defp monitor(%S{waiting: nil, packets: packets, size: size} = state) when packets < size do
     Logger.debug "#{__MODULE__} #{packets}"
     fetch_async(state)
+  # unlikely - nothing waiting and we have exactly the right number of packets
+  defp monitor(%S{waiting: nil} = state) do
+    state
   end
 
-  # unlikely
-  defp monitor(%S{waiting: nil, packets: packets, size: size} = state) do
-    state
+  defp monitor(%S{waiting: waiting, packets: packets, size: size} = state) when (not is_nil(waiting)) and (packets < size) do
+    fetch_async(state)
   end
 
   defp monitor(%S{waiting: waiting, packets: packets} = state) do
