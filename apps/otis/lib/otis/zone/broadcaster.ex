@@ -165,7 +165,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp fast_send_packets([packet | packets], state) do
-    state = emit_packet(packet, 5_000, state)
+    state = emit_packet(packet, 10_000, state)
     fast_send_packets(packets, state)
   end
 
