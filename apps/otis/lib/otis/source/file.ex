@@ -25,11 +25,6 @@ defmodule Otis.Source.File do
     {:reply, {:ok, source}, source}
   end
 
-  def handle_cast(:pre_buffer, %{path: path} = source) do
-    Logger.debug "Pre-buffering '#{path}'"
-    {:noreply, open(source)}
-  end
-
   defp chunk(%{outputstream: nil, pending_streams: nil} = source) do
     chunk(open(source))
   end
