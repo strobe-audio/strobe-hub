@@ -36,10 +36,13 @@ defmodule Otis.Zone do
   end
 
   def init(%Zone{ source_stream: source_stream } = zone) do
+    Logger.info "#{__MODULE__} starting... #{ inspect zone }"
     {:ok, port} = Otis.PortSequence.next
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
-    {:ok, audio_stream } = Otis.AudioStream.start_link(source_stream, Otis.stream_bytes_per_step)
-    {:ok, %Zone{ zone | audio_stream: audio_stream, socket: socket, broadcast_address: {port} }}
+    # {:ok, audio_stream } = Otis.AudioStream.start_link(source_stream, Otis.stream_bytes_per_step)
+    buffer_size = round(1_000 / Otis.stream_interval_ms)
+    {:ok, stream } = Otis.Zone.BufferedStream.start_link(source_stream, Otis.stream_bytes_per_step, buffer_size)
+    {:ok, %Zone{ zone | audio_stream: stream, socket: socket, broadcast_address: {port} }}
   end
 
   def get_broadcast_address do
