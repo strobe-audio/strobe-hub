@@ -1,10 +1,22 @@
 defmodule Otis.Zone.BufferedStream do
+  @moduledoc """
+  Sits between a zone broadcaster and the audio stream and buffers the audio
+  packets to protect against temporary slow-downs caused by delayed file opening
+  and transcoder startup.
+  """
+
   use     GenServer
   require Logger
 
-  @name __MODULE__
-
-  defstruct [:audio_stream, :size, :waiting, :task, packets: 0, state: :starting, queue: :queue.new]
+  defstruct [
+    :audio_stream,
+    :size,
+    :waiting,
+    :task,
+    packets: 0,
+    state: :waiting, # [:waiting, :playing, :stopped]
+    queue: :queue.new
+  ]
 
   alias __MODULE__, as: S
 
@@ -13,14 +25,12 @@ defmodule Otis.Zone.BufferedStream do
   end
 
   def init([source_stream, bytes_per_packet, size]) do
-    Logger.info "#{__MODULE__} starting..."
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_stream, bytes_per_packet)
-    state = %S{audio_stream: audio_stream, size: size, packets: 0 }
-    {:ok, state}
+    {:ok, %S{audio_stream: audio_stream, size: size, packets: 0 }}
   end
 
   def handle_call(:frame, _from, %S{state: :stopped, packets: packets} = state) when packets == 0 do
-    {:reply, :stopped, %S{state | state: :starting}}
+    {:reply, :stopped, %S{state | state: :waiting}}
   end
 
   def handle_call(:frame, from, state) do
@@ -52,9 +62,8 @@ defmodule Otis.Zone.BufferedStream do
 
   defp pop(%S{packets: packets, queue: queue} = state, from) do
     {{:value, packet}, queue} = :queue.out(queue)
-    state = monitor %S{ state | queue: queue, packets: packets - 1}
     GenServer.reply(from, {:ok, packet})
-    state
+    monitor(%S{ state | queue: queue, packets: packets - 1})
   end
 
   defp monitor(%S{state: :stopped} = state) do

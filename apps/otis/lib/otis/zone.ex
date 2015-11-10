@@ -39,7 +39,6 @@ defmodule Otis.Zone do
     Logger.info "#{__MODULE__} starting... #{ inspect zone }"
     {:ok, port} = Otis.PortSequence.next
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
-    # {:ok, audio_stream } = Otis.AudioStream.start_link(source_stream, Otis.stream_bytes_per_step)
     buffer_size = round(1_000 / Otis.stream_interval_ms)
     {:ok, stream } = Otis.Zone.BufferedStream.start_link(source_stream, Otis.stream_bytes_per_step, buffer_size)
     {:ok, %Zone{ zone | audio_stream: stream, socket: socket, broadcast_address: {port} }}
@@ -128,7 +127,7 @@ defmodule Otis.Zone do
     {:reply, {:ok, Set.to_list(receivers)}, zone}
   end
 
-  def handle_call({:add_receiver, receiver}, _from, %Zone{ id: id, receivers: receivers} = zone) do
+  def handle_call({:add_receiver, receiver}, _from, %Zone{ id: id} = zone) do
     Logger.info "Adding receiver to zone #{id}"
     zone = reciever_joined(receiver, zone)
     {:reply, :ok, zone}
