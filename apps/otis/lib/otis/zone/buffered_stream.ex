@@ -23,7 +23,7 @@ defmodule Otis.Zone.BufferedStream do
     {:reply, :stopped, %S{state | state: :starting}}
   end
 
-  def handle_call(:frame, from, %S{packets: packets, size: size} = state) do
+  def handle_call(:frame, from, state) do
     state = pop(state, from)
     {:noreply, state}
   end
@@ -32,7 +32,7 @@ defmodule Otis.Zone.BufferedStream do
     {:noreply, state}
   end
 
-  def handle_info({_ref, result}, state) when is_reference(_ref) do
+  def handle_info({ref, result}, state) when is_reference(ref) do
     state = push(result, state)
     {:noreply, state}
   end
@@ -47,7 +47,7 @@ defmodule Otis.Zone.BufferedStream do
   end
 
   defp pop(%S{packets: packets} = state, from) when packets == 0 do
-    state = fetch_async(%S{ state | waiting: from })
+    fetch_async(%S{ state | waiting: from })
   end
 
   defp pop(%S{packets: packets, queue: queue} = state, from) do
@@ -62,13 +62,13 @@ defmodule Otis.Zone.BufferedStream do
   end
 
   defp monitor(%S{waiting: nil, packets: packets, size: size} = state) when packets < size do
-    Logger.debug "#{__MODULE__} #{packets}"
+    case size - packets do
+      1 -> nil
+      _ -> Logger.warn "#{__MODULE__} #{packets}/#{size}"
+    end
     fetch_async(state)
   end
 
-  defp monitor(%S{waiting: nil, packets: packets, size: size} = state) when packets < size do
-    Logger.debug "#{__MODULE__} #{packets}"
-    fetch_async(state)
   # unlikely - nothing waiting and we have exactly the right number of packets
   defp monitor(%S{waiting: nil} = state) do
     state
@@ -78,7 +78,7 @@ defmodule Otis.Zone.BufferedStream do
     fetch_async(state)
   end
 
-  defp monitor(%S{waiting: waiting, packets: packets} = state) do
+  defp monitor(%S{waiting: waiting} = state) do
     pop(%S{ state | waiting: nil }, waiting)
   end
 
@@ -87,7 +87,7 @@ defmodule Otis.Zone.BufferedStream do
     state
   end
 
-  def fetch(%S{audio_stream: stream} = state) do
+  def fetch(%S{audio_stream: stream}) do
     Otis.AudioStream.frame(stream)
   end
 end
