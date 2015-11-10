@@ -58,7 +58,7 @@ defmodule Otis.Source.File do
   end
 
   defp input_stream(%{ path: path }) do
-    Elixir.File.stream!(path, [], 8192)
+    Elixir.File.stream!(path, [], Otis.stream_bytes_per_step)
   end
 
   defp file_type(%{ path: path }) do
