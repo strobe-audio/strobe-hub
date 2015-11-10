@@ -20,6 +20,10 @@ defmodule Otis.Zone.BufferedStream do
 
   alias __MODULE__, as: S
 
+  def seconds(seconds, interval_ms \\ Otis.stream_interval_ms) do
+    round((seconds * 1000) / interval_ms)
+  end
+
   def start_link(source_stream, bytes_per_packet, size) do
     GenServer.start_link(__MODULE__, [source_stream, bytes_per_packet, size])
   end
@@ -77,7 +81,6 @@ defmodule Otis.Zone.BufferedStream do
     end
     fetch_async(state)
   end
-
   # unlikely - nothing waiting and we have exactly the right number of packets
   defp monitor(%S{waiting: nil} = state) do
     state
