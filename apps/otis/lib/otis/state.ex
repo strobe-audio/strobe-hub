@@ -25,7 +25,8 @@ defmodule Otis.State do
     zones = [
       %Zone{id: :office, name: "The Office", receiver_ids: [
           :"00-17-f2-09-20-9d", # mac pro
-          :"b8-27-eb-f6-19-4b", # rpi 2
+          :"b8-27-eb-f6-19-4b", # rpi 2 eth0
+          :"e8-94-f6-24-4a-db", # rpi 2 wlan
           :"00-1c-42-fc-0d-b6"
         ]},
       %Zone{id: :downstairs, name: "Downstairs", receiver_ids: [
