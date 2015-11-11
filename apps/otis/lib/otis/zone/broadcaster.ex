@@ -9,15 +9,17 @@ defmodule Otis.Zone.Broadcaster do
 
 
   defmodule S do
-    defstruct zone: nil,
-              audio_stream: nil,
-              socket: nil,
-              latency: 0.0,
-              stream_interval: 0,
-              start_time: 0,
-              packet_number: 0,
-              in_flight: [],
-              emit_time: 0
+    defstruct [
+      zone: nil,
+      audio_stream: nil,
+      socket: nil,
+      latency: 0.0,
+      stream_interval: 0,
+      start_time: 0,
+      packet_number: 0,
+      in_flight: [],
+      emit_time: 0
+    ]
   end
 
   # This basically takes a zone / audio source and translates it into a set of
