@@ -13,6 +13,12 @@ Something to replace LMS.
 - Extendable through plugins
 
 
+Dependencies
+------------
+
+    brew install mediainfo
+    brew install libav
+
 Synchronised Player
 -------------------
 
