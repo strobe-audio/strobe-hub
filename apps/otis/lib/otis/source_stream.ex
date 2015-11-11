@@ -17,6 +17,7 @@ defmodule Otis.SourceStream do
   end
 
   def append_sources(stream, []) do
+    :ok
   end
 
   def append_sources(stream, [source | sources]) do
@@ -30,5 +31,6 @@ defmodule Otis.SourceStream do
 
   def insert_source(stream, source, position \\ -1) do
     GenServer.cast(stream, {:add_source, source, position})
+    :ok
   end
 end
