@@ -25,7 +25,11 @@ defmodule Otis.Zone.Socket do
   end
 
   def handle_cast({:send, timestamp, audio}, {socket, port, count} = state) do
-    packet = << count::size(64)-little-unsigned-integer, timestamp::size(64)-little-signed-integer, audio::binary >>
+    packet = <<
+      count     :: size(64)-little-unsigned-integer,
+      timestamp :: size(64)-little-signed-integer,
+      audio     :: binary
+    >>
     _send(socket, packet)
     {:noreply, {socket, port, count + 1}}
   end
