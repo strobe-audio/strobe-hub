@@ -57,7 +57,7 @@ defmodule Otis.Zone.Emitter do
     case time - now do
       s when s < 0 ->
         {ts, _data} = packet
-        Logger.warn "Start emitter:: emit time: #{s}; packet timestamp: #{ts - now}"
+        Logger.warn "Late emitter: emit time (us): #{s}; packet play in (ms): #{round((ts - now)/1000)}"
       _ ->
         # Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
     end
