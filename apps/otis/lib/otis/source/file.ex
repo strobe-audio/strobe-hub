@@ -1,14 +1,27 @@
 defmodule Otis.Source.File do
   require Logger
   use     GenServer
+  alias   Otis.Filesystem.File, as: F
 
   def from_path(path) do
-    start_link(path)
+    new(path)
   end
 
-  def start_link(path) do
+  def new(path) when is_binary(path) do
+    F.new(path) |> new
+  end
+
+  def new({:ok, %F{} = file}) do
+    new(file)
+  end
+
+  def new(%F{} = file) do
+    start_link(file)
+  end
+
+  def start_link(%F{} = file) do
     state = %{
-      path: path,
+      file: file,
       outputstream: nil,
       inputstream: nil,
       transcode_pid: nil,
@@ -57,12 +70,12 @@ defmodule Otis.Source.File do
     source
   end
 
-  defp input_stream(%{ path: path }) do
-    Elixir.File.stream!(path, [], Otis.stream_bytes_per_step)
+  defp input_stream(%{ file: file }) do
+    Elixir.File.stream!(file.path, [], Otis.stream_bytes_per_step)
   end
 
-  defp file_type(%{ path: path }) do
-    Path.extname(path)
+  defp file_type(%{ file: file }) do
+    F.extension(file)
   end
 end
 

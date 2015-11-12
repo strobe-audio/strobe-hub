@@ -11,6 +11,10 @@ defmodule Otis.Filesystem.File do
     path |> Path.expand |> read
   end
 
+  def extension(%__MODULE__{path: path}) do
+    Path.extname(path)
+  end
+
   defp read(path) do
     case read_metadata(path) do
       {xml, 0} -> parse_metadata(xml, path)
