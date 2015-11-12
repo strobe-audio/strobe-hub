@@ -3,12 +3,9 @@ defmodule Otis.Filesystem.File do
   Represents an audio file on-disk
   """
 
-  defstruct [
-    :path,
-    :metadata
-  ]
+  defstruct [:path, :metadata]
 
-  alias Otis.Source.Metadata, as: M
+  alias Otis.Source.Metadata
 
   def new(path) do
     path |> Path.expand |> read
@@ -22,10 +19,9 @@ defmodule Otis.Filesystem.File do
   end
 
   defp parse_metadata(xml, path) do
-    state = %{ field: nil, data: %M{}, audio_track: false }
+    state = %{ field: nil, data: %Metadata{}, audio_track: false }
     {:ok, result, _} = :erlsom.parse_sax(xml, state, &sax_event/2)
-    file = %__MODULE__{path: path, metadata: result.data}
-    {:ok, file}
+    {:ok, %__MODULE__{path: path, metadata: result.data}}
   end
 
   Enum.each [
