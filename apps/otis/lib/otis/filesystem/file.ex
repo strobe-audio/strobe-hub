@@ -5,26 +5,10 @@ defmodule Otis.Filesystem.File do
 
   defstruct [
     :path,
-    # metadata
-    :album,
-    :bit_rate,
-    :channels,
-    :composer,
-    :date,
-    :disk_number,
-    :disk_total,
-    :duration_ms,
-    :extension,
-    :filename,
-    :genre,
-    :mime_type,
-    :performer,
-    :sample_rate,
-    :stream_size,
-    :title,
-    :track_number,
-    :track_total
+    :metadata
   ]
+
+  alias Otis.Source.Metadata, as: M
 
   def new(path) do
     path |> Path.expand |> read
@@ -38,9 +22,9 @@ defmodule Otis.Filesystem.File do
   end
 
   defp parse_metadata(xml, path) do
-    state = %{ field: nil, record: [], audio_track: false }
+    state = %{ field: nil, data: %M{}, audio_track: false }
     {:ok, result, _} = :erlsom.parse_sax(xml, state, &sax_event/2)
-    file = Map.merge %__MODULE__{path: path}, Enum.into(result.record, %{})
+    file = %__MODULE__{path: path, metadata: result.data}
     {:ok, file}
   end
 
@@ -48,8 +32,8 @@ defmodule Otis.Filesystem.File do
     :album, :composer, :date, :extension, :filename, :genre, :mime_type,
     :performer, :title
   ], fn(field) ->
-    defp sax_event({:characters, cdata}, %{field: unquote(field), record: record} = state) do
-      %{ state | record: [{unquote(field), to_string(cdata)} | record] }
+    defp sax_event({:characters, cdata}, %{field: unquote(field), data: data} = state) do
+      %{ state | data: :maps.put(unquote(field), to_string(cdata), data) }
     end
   end
 
@@ -61,9 +45,9 @@ defmodule Otis.Filesystem.File do
     [:disk_total,   false], [:duration_ms,  true ], [:sample_rate,  true ],
     [:stream_size,  true ], [:track_number, false], [:track_total,  false]
   ], fn([field, audio]) ->
-    defp sax_event({:characters, cdata}, %{audio_track: unquote(audio), field: unquote(field), record: record} = state) do
+    defp sax_event({:characters, cdata}, %{audio_track: unquote(audio), field: unquote(field), data: data} = state) do
       case Regex.match?(@integer, to_string(cdata)) do
-        true  -> %{ state | record: [{unquote(field), List.to_integer(cdata, 10)} | record] }
+        true  -> %{ state | data: :maps.put(unquote(field), List.to_integer(cdata, 10), data) }
         false -> state
       end
     end
