@@ -25,7 +25,7 @@ defmodule Otis.Zone.Emitter do
 
   @blank_emit {nil, nil, nil} # timestamp, packet, socket
 
-  def init([interval: packet_interval, packet_size: packet_size, pool: pool] = opts) do
+  def init([interval: packet_interval, packet_size: packet_size, pool: pool]) do
     :proc_lib.init_ack({:ok, self})
 
     state = {

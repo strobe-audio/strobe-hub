@@ -24,7 +24,7 @@ defmodule Otis.Zone.Socket do
     GenServer.cast(pid, :stop)
   end
 
-  def handle_cast({:send, timestamp, audio}, {socket, port, count} = state) do
+  def handle_cast({:send, timestamp, audio}, {socket, port, count} = _state) do
     packet = <<
       count     :: size(64)-little-unsigned-integer,
       timestamp :: size(64)-little-signed-integer,

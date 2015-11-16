@@ -10,7 +10,7 @@ defmodule Otis.Receiver.Monitor do
     GenServer.start_link(__MODULE__, [receiver, receiver_node])
   end
 
-  def init([receiver, receiver_node])  do
+  def init([_receiver, _receiver_node])  do
     # Logger.disable self
     # Logger.debug "Starting monitor for #{receiver} node: #{inspect receiver_node}"
     # {:ok, collect_measurements(%S{receiver: receiver, receiver_node: receiver_node})}

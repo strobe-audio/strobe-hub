@@ -16,7 +16,7 @@ defmodule Otis.SourceStream do
     GenServer.call(source_stream, :current_source)
   end
 
-  def append_sources(stream, []) do
+  def append_sources(_stream, []) do
     :ok
   end
 

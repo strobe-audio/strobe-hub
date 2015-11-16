@@ -19,7 +19,7 @@ defmodule Otis.DNSSD do
     :dnssd.register(service_name, service_port, service_texts)
   end
 
-  def terminate(reason, %{ref: ref} = state) do
+  def terminate(_reason, %{ref: ref}) do
     :dnssd.stop(ref)
     :ok
   end
