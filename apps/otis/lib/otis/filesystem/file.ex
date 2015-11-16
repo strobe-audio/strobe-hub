@@ -7,8 +7,31 @@ defmodule Otis.Filesystem.File do
 
   alias Otis.Source.Metadata
 
+  @type t :: %__MODULE__{}
+
+  @doc """
+  Returns a new file-with-metadata struct raising an exception if there's a problem
+  """
+  def new!(path) do
+    {:ok, file} = new(path)
+    file
+  end
+
   def new(path) do
     path |> Path.expand |> read
+  end
+
+  @doc """
+  Creates a new music source from a local file
+
+      iex> {:ok, source} = Otis.Filesytem.File.source!("/path/to/audio.mp3")
+      {:ok, #PID<0.123.0>}
+      iex> Otis.Source.chunk(source)
+      {:ok, <<139, 254, 231, 254, 139, 254, 233, 254, 152, 254, 232, 254, 160, ...>>}
+
+  """
+  def source!(path) do
+    new!(path) |> Otis.Source.new
   end
 
   def extension(%__MODULE__{path: path}) do

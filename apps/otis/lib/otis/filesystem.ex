@@ -17,7 +17,7 @@ defmodule Otis.Filesystem do
 
   def file(path) do
     ifexists?(path) do
-      Otis.Source.File.new(path)
+      Otis.Filesystem.File.source!(path)
     end
   end
 
