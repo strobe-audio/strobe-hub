@@ -5,7 +5,7 @@ defmodule Otis.Zone.Broadcaster do
   require Logger
 
   @buffer_latency 50_000 # music starts playing after this many microseconds
-  @buffer_size    6      # players hold this many packets (more or less)
+  @buffer_size    25      # players hold this many packets (more or less)
 
 
   defmodule S do
