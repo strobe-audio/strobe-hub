@@ -18,6 +18,9 @@ defmodule Otis.SourceStream.Array do
     {:reply, :done, state}
   end
 
+  # TODO: I don't need to save a list of source processes in here
+  # just a list of Source.Stream protocol implementers then
+  # I can just translate that into a source instance on demand
   def handle_call(:next_source, _from, %{sources: [h | t]} = state) do
     {:reply, {:ok, h}, %{ state | sources: t }}
   end
