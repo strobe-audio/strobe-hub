@@ -86,9 +86,12 @@ defmodule Otis.Zone.Broadcaster do
     {:stop, {:shutdown, :stopped}, state}
   end
 
+  # The resend_packets system just resulted in the newly joined receiver
+  # trying to play very stale packets and hence joining the zone with
+  # very out-of-sync audio.
   def handle_cast(:buffer_receiver, %S{in_flight: in_flight, socket: socket} = state) do
-    packets = Enum.map(in_flight, &Tuple.delete_at(&1, 0)) |> Enum.reverse
-    resend_packets(packets, socket, monotonic_microseconds+2_000, 5_000)
+    # packets = Enum.map(in_flight, &Tuple.delete_at(&1, 0)) |> Enum.reverse
+    # resend_packets(packets, socket, monotonic_microseconds+2_000, 5_000)
     {:noreply, state}
   end
 
