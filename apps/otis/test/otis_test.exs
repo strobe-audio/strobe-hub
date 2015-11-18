@@ -70,27 +70,27 @@ defmodule OtisTest do
   end
 end
 
-defmodule Otis.SourceStreamTest do
+defmodule Otis.SourceListTest do
   use ExUnit.Case, async: true
 
   setup do
     {:ok, a } = Otis.Source.File.from_path("test/fixtures/silent.mp3")
     {:ok, b } = Otis.Source.File.from_path("test/fixtures/snake-rag.mp3")
-    {:ok, source_stream} = Otis.SourceStream.Array.from_list([a, b])
-    {:ok, source_stream: source_stream}
+    {:ok, source_list} = Otis.SourceList.from_list([a, b])
+    {:ok, source_list: source_list}
   end
 
-  test "array sources should iterate the array", %{source_stream: source_stream} do
+  test "array sources should iterate the array", %{source_list: source_list} do
 
-    {:ok, source} = Otis.SourceStream.next(source_stream)
+    {:ok, source} = Otis.SourceList.next(source_list)
     {:ok, %{path: path} = _info} = Otis.Source.info(source)
     assert path == "test/fixtures/silent.mp3"
 
-    {:ok, source} = Otis.SourceStream.next(source_stream)
+    {:ok, source} = Otis.SourceList.next(source_list)
     {:ok, %{path: path} = _info} = Otis.Source.info(source)
     assert path == "test/fixtures/snake-rag.mp3"
 
-    result = Otis.SourceStream.next(source_stream)
+    result = Otis.SourceList.next(source_list)
     assert result == :done
   end
 end
@@ -103,9 +103,9 @@ defmodule Otis.AudioStreamSingleTest do
 
   setup do
     {:ok, source} = Otis.Source.File.from_path("test/fixtures/silent.mp3")
-    {:ok, source_stream} = Otis.SourceStream.Array.from_list([source])
-    {:ok, audio_stream} = Otis.AudioStream.start_link(source_stream, 1000)
-    {:ok, audio_stream: audio_stream, chunk_size: 1000, source_stream: source_stream}
+    {:ok, source_list} = Otis.SourceList.from_list([source])
+    {:ok, audio_stream} = Otis.AudioStream.start_link(source_list, 1000)
+    {:ok, audio_stream: audio_stream, chunk_size: 1000, source_list: source_list}
   end
 
   test "source list", %{audio_stream: audio_stream, chunk_size: chunk_size} do
@@ -120,10 +120,10 @@ defmodule Otis.AudioStreamSingleTest do
     assert result == :stopped
   end
 
-  test "adding a source after finishing the first", %{audio_stream: audio_stream, chunk_size: chunk_size, source_stream: source_stream} do
+  test "adding a source after finishing the first", %{audio_stream: audio_stream, chunk_size: chunk_size, source_list: source_list} do
     n = @silent_raw_byte_size / chunk_size
     Enum.each 0..round(Float.floor(n) - 1), fn(_) ->
-      { :ok, frame } = Otis.AudioStream.frame(audio_stream)
+      { :ok, frame } = Otis.AudioStream.frame(audio_list)
       assert byte_size(frame) == chunk_size
     end
 
@@ -134,7 +134,7 @@ defmodule Otis.AudioStreamSingleTest do
     assert result == :stopped
 
     {:ok, source} = Otis.Source.File.from_path("test/fixtures/silent.mp3")
-    :ok = Otis.SourceStream.append_source(source_stream, source)
+    :ok = Otis.SourceList.append_source(source_list, source)
 
     Enum.each 0..round(Float.ceil(n) - 2), fn(_) ->
       { :ok, frame } = Otis.AudioStream.frame(audio_stream)
@@ -161,8 +161,8 @@ defmodule Otis.AudioStreamMultipleTest do
       {:ok, source } = Otis.Source.File.from_path(path)
       source
     end
-    {:ok, source_stream} = Otis.SourceStream.Array.from_list(ss)
-    {:ok, audio_stream} = Otis.AudioStream.start_link(source_stream, 200)
+    {:ok, source_list} = Otis.SourceList.from_list(ss)
+    {:ok, audio_stream} = Otis.AudioStream.start_link(source_list, 200)
     {:ok, audio_stream: audio_stream, chunk_size: 200}
   end
 

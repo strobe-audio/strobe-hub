@@ -5,7 +5,7 @@ defmodule Otis.Zone do
 
   defstruct name:              "A Zone",
             id:                nil,
-            source_stream:     nil,
+            source_list:       nil,
             receivers:         HashSet.new,
             state:             :stop,
             broadcaster:       nil,
@@ -20,27 +20,27 @@ defmodule Otis.Zone do
   alias Otis.Zone, as: Zone
 
   def start_link(id, name) do
-    start_link(id, name, Otis.SourceStream.Array.empty)
+    start_link(id, name, Otis.SourceList.empty)
   end
 
-  def start_link(id, name, {:ok, source_stream }) do
-    start_link(id, name, source_stream)
+  def start_link(id, name, {:ok, source_list }) do
+    start_link(id, name, source_list)
   end
 
-  def start_link(id, name, source_stream) when is_binary(id) do
-    start_link(String.to_atom(id), name, source_stream)
+  def start_link(id, name, source_list) when is_binary(id) do
+    start_link(String.to_atom(id), name, source_list)
   end
 
-  def start_link(id, name, source_stream) do
-    GenServer.start_link(__MODULE__, %Zone{ id: id, name: name, source_stream: source_stream, broadcaster: nil }, name: id)
+  def start_link(id, name, source_list) do
+    GenServer.start_link(__MODULE__, %Zone{ id: id, name: name, source_list: source_list, broadcaster: nil }, name: id)
   end
 
-  def init(%Zone{ source_stream: source_stream } = zone) do
+  def init(%Zone{ source_list: source_list } = zone) do
     Logger.info "#{__MODULE__} starting... #{ inspect zone }"
     {:ok, port} = Otis.PortSequence.next
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
     buffer_size = Otis.Zone.BufferedStream.seconds(1)
-    {:ok, stream } = Otis.Zone.BufferedStream.start_link(source_stream, Otis.stream_bytes_per_step, buffer_size)
+    {:ok, stream } = Otis.Zone.BufferedStream.start_link(source_list, Otis.stream_bytes_per_step, buffer_size)
     {:ok, %Zone{ zone | audio_stream: stream, socket: socket, broadcast_address: {port} }}
   end
 
@@ -79,8 +79,8 @@ defmodule Otis.Zone do
     GenServer.call(zone, :play_pause)
   end
 
-  def source_stream(zone) do
-    GenServer.call(zone, :get_source_stream)
+  def source_list(zone) do
+    GenServer.call(zone, :get_source_list)
   end
 
   def audio_stream(zone) do
@@ -151,8 +151,8 @@ defmodule Otis.Zone do
     {:reply, {:ok, audio_stream}, zone}
   end
 
-  def handle_call(:get_source_stream, _from, %Zone{source_stream: source_stream} = zone) do
-    {:reply, {:ok, source_stream}, zone}
+  def handle_call(:get_source_list, _from, %Zone{source_list: source_list} = zone) do
+    {:reply, {:ok, source_list}, zone}
   end
 
   def handle_call(:get_broadcast_address, _from, %Zone{broadcast_address: broadcast_address} = zone) do

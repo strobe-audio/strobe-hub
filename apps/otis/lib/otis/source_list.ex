@@ -1,4 +1,4 @@
-defmodule Otis.SourceStream.Array do
+defmodule Otis.SourceList do
   use GenServer
 
   def empty do
@@ -8,6 +8,35 @@ defmodule Otis.SourceStream.Array do
   def from_list(sources) do
     source = %{sources: sources, position: 0}
     start_link(source)
+  end
+
+  @doc "Returns the next source in the list"
+  def next(source_list) do
+    source = GenServer.call(source_list, :next_source)
+    source
+  end
+
+  @doc "Returns the current source"
+  def current(source_list) do
+    GenServer.call(source_list, :current_source)
+  end
+
+  def append_sources(_list, []) do
+    :ok
+  end
+
+  def append_sources(list, [source | sources]) do
+    append_source(list, source)
+    append_sources(list, sources)
+  end
+
+  def append_source(list, source) do
+    insert_source(list, source, -1)
+  end
+
+  def insert_source(list, source, position \\ -1) do
+    GenServer.cast(list, {:add_source, source, position})
+    :ok
   end
 
   def start_link(sources) do

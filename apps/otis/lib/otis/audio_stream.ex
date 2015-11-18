@@ -8,7 +8,7 @@ defmodule Otis.AudioStream do
   require Logger
 
   defmodule S do
-    defstruct source_stream: nil, source: nil, buffer: <<>>, chunk_size: 3528, state: :stopped
+    defstruct source_list: nil, source: nil, buffer: <<>>, chunk_size: 3528, state: :stopped
   end
 
   def frame(pid) do
@@ -19,12 +19,12 @@ defmodule Otis.AudioStream do
   Create a new source list with the given SourceSource which is anything that
   implements Enumerable
   """
-  def start_link(source_stream, chunk_size) do
-    GenServer.start_link(__MODULE__, %S{source_stream: source_stream, chunk_size: chunk_size})
+  def start_link(source_list, chunk_size) do
+    GenServer.start_link(__MODULE__, %S{source_list: source_list, chunk_size: chunk_size})
   end
 
-  def start_link(source_stream) do
-    GenServer.start_link(__MODULE__, %S{source_stream: source_stream})
+  def start_link(source_list) do
+    GenServer.start_link(__MODULE__, %S{source_list: source_list})
   end
 
   def handle_call(:frame, _from, %S{source: nil, state: :stopped} = state) do
@@ -72,8 +72,8 @@ defmodule Otis.AudioStream do
     audio_frame(%S{state | source: nil})
   end
 
-  defp enumerate_source(%S{source_stream: source_stream, source: nil} = state) do
-    case Otis.SourceStream.next(source_stream) do
+  defp enumerate_source(%S{source_list: source_list, source: nil} = state) do
+    case Otis.SourceList.next(source_list) do
       {:ok, source } ->
         %S{ state | source: source, state: :playing }
       :done ->
