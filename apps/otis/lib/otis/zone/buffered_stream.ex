@@ -10,6 +10,7 @@ defmodule Otis.Zone.BufferedStream do
 
   defstruct [
     :audio_stream,
+    :fetcher,
     :size,
     :waiting,
     :task,
@@ -30,7 +31,14 @@ defmodule Otis.Zone.BufferedStream do
 
   def init([source_stream, bytes_per_packet, size]) do
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_stream, bytes_per_packet)
-    {:ok, %S{audio_stream: audio_stream, size: size, packets: 0 }}
+    pid = start_fetcher(audio_stream)
+    {:ok, %S{audio_stream: audio_stream, fetcher: pid, size: size, packets: 0 }}
+  end
+
+  def start_fetcher(audio_stream) do
+    pid = spawn(Otis.Zone.BufferedStream.Fetcher, :init, [audio_stream])
+    Process.monitor(pid)
+    pid
   end
 
   def handle_call(:frame, _from, %S{state: :stopped, packets: packets} = state) when packets == 0 do
@@ -42,13 +50,13 @@ defmodule Otis.Zone.BufferedStream do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, _ref, :process, _pid, :normal}, state) do
-    {:noreply, state}
+  def handle_cast({:frame, frame}, state) do
+    {:noreply, push(frame, state)}
   end
 
-  def handle_info({ref, result}, state) when is_reference(ref) do
-    state = push(result, state)
-    {:noreply, state}
+  def handle_info({:DOWN, _ref, :process, _pid, :normal}, %S{audio_stream: audio_stream} = state) do
+    Logger.warn "#{__MODULE__} down, restarting..."
+    {:noreply, %S{ state | fetcher: start_fetcher(audio_stream) }}
   end
 
   defp push({:ok, packet}, %S{queue: queue, packets: packets} = state) do
@@ -94,13 +102,36 @@ defmodule Otis.Zone.BufferedStream do
     pop(%S{ state | waiting: nil }, waiting)
   end
 
-  defp fetch_async(state) do
-    %Task{pid: _pid, ref: _ref} = Task.async(__MODULE__, :fetch, [state])
+  defp fetch_async(%{fetcher: fetcher} = state) do
+    try do
+      Kernel.send(fetcher, {:fetch, self})
+    rescue
+      error -> Logger.warn "Error triggering fetcher process #{ inspect error }"
+    end
     state
   end
 
-  def fetch(%S{audio_stream: stream}) do
-    Otis.AudioStream.frame(stream)
+  defmodule Fetcher do
+    use     GenServer
+    require Logger
+
+    def init(stream) do
+      Logger.debug "#{__MODULE__ } init..."
+      loop(stream)
+    end
+
+    def loop(stream) do
+      receive do
+        {:fetch, from} -> fetch(from, stream)
+        :exit          -> Logger.debug "Stopping #{__MODULE__}"
+        msg            -> Logger.debug "#{__MODULE__} got msg #{ inspect msg }"
+      end
+    end
+
+    def fetch(from, stream) do
+      GenServer.cast(from, {:frame, Otis.AudioStream.frame(stream)})
+      loop(stream)
+    end
   end
 end
 
