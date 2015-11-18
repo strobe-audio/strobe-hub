@@ -12,6 +12,15 @@ Something to replace LMS.
 - Plug in drives of Music
 - Extendable through plugins
 
+DLNA
+====
+
+Be a dlna renderer? dlna for music management.
+Twonky (dead)
+
+dlna server -> music library?
+
+e.g. connect NAS music library to peep over dlna protocol -- no need for music import
 
 Dependencies
 ------------
@@ -31,12 +40,10 @@ Synchronised Player
 
 
 - Player is Elixir
-- Use the [NTP algo][] to find the difference between server 'time' (`:erlang.monotonic_time :milli_seconds`) and client time
-- Streaming packets are sent as erlang messages over the network, or over a socket with serialization (if messages doesn't cut it)
+- Use the [NTP algo][] to find the difference between server 'time' and client time
 - Packets have form: `{:frame, <time_to_play_at>, << data >>}` where:
     - `time_to_play_at` is the `monotonic_time` on the server that this packet should be played at
 
-- I could try using `/dev/audio` to play the PCM stream which could avoid issues with buffering in the players
 
 [NTP algo]: http://www.ntp.org/ntpfaq/NTP-s-algo.htm#Q-ALGO-BASIC-SYNC
 
@@ -44,7 +51,7 @@ TODO
 ----
 
 - [x] automatically add player to zone once it's online & synced
-- [ ] tell next source in list to prepare (e.g. open files etc) to ensure seamless playback
+- [x] tell next source in list to prepare (e.g. open files etc) to ensure seamless playback
 - [ ] make janis sockets understand some commands:
       - [ ] "flsh" i.e. "flush". Discard any unplayed packets that you have
       - [ ] "stop". Doesn't do anything at present but could be used to switch to a lower-power state
@@ -87,6 +94,35 @@ Assuming that the broadcaster belongs to one of those pools then we need to brid
 
 If the receivers in a pool (different from the broadcaster) elect a leader (using raft e.g.) then the broadcaster could use TCP to stream to it (accross the UDP divide) and then it could re-transmit the data to the other receivers in its pool using UDP multicast.
 
+Use alternate protocol instead of raw UDP?
+
+I just saw things:
+
+- http://jungerl.sourceforge.net/ `spread_drv` - "This driver is for Spread, a reliable multicast library"
+  http://www.spread.org/
+
+What about 0MQ (and it's children): http://zeromq.org/bindings:erlang
+Worth reading this: http://zguide.zeromq.org/php:chapter8 - it would be nice if 0MQ could do discovery + transport
+
+How about nanomsg?
+
+- http://nanomsg.org/
+- https://github.com/basho/enm
+
+would need to figure out topology & see how to map zones onto that.
+
+Seems like nanomsg's 'survey' pattern makes this easy!
+
+- http://bravenewgeek.com/tag/service-discovery/
+
+However both 0mq & nanomsg are TCP only, which means I lose the efficiency of
+UDP multicast. Is this a problem? I need to soul search...
+
+
+Getting music onto the server
+-----------------------------
+
+WebDAV is a good solution. Mounts natively in windows & mac and Yaws does it out of the box: http://yaws.hyber.org/
 Sound File metadata
 -------------------
 
@@ -99,7 +135,7 @@ Ideas:
 Bugs
 ----
 
-- [ ] can't read aac files (m4a). Replace sox with avconv/ffmpeg (see here re [converting to raw/pcm][])
+- [x] can't read aac files (m4a). Replace sox with avconv/ffmpeg (see here re [converting to raw/pcm][])
 - [x] adding sources to a source stream after all sources have played won't start again
 - [ ] can't replay a source
 - [ ] zone should call audio stream for most api functions
@@ -108,6 +144,8 @@ Bugs
 
 Time Sync
 =========
+
+**The sync as done in elixir is actually more than good enough**
 
 It would be good to more to a more precise time sync system e.g. [Precise Time Protocol][] (PTP).
 
@@ -145,24 +183,4 @@ Link dump:
 - http://blog.retep.org/2012/06/18/getting-gps-to-work-on-a-raspberry-pi/
 - https://www.sparkfun.com/pages/GPS_Guide
 
-
-UDP
----
-
-- http://zentrope.tumblr.com/post/149688423/erlang-multicast-presencediscovery-notification
-
-server:
-
-    {:ok, socket} = :gen_udp.open 0, ip: {0, 0, 0, 0}, multicast_ttl: 255
-
-    :gen_udp.send socket,  {239,0,0,251}, 6666, <<"hello">>
-
-client:
-
-    {:ok, socket} = :gen_udp.open 6666, [:binary, active: true, ip: {239,0,0,251}, add_membership: {{239,0,0,251}, {0, 0, 0, 0}}, reuseaddr: true]
-
-    receive do; msg -> msg; end
-
-
-http://zentrope.tumblr.com/post/149688423/erlang-multicast-presencediscovery-notification
 
