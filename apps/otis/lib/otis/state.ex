@@ -30,6 +30,7 @@ defmodule Otis.State do
           :"00-1c-42-fc-0d-b6"
         ]},
       %Zone{id: :downstairs, name: "Downstairs", receiver_ids: [
+          :"00-00-00-00-00-00", # lo0
           :"e0-f8-47-42-aa-48",
           :"b8-27-eb-ce-43-c7",
           :"10-9a-dd-67-71-9c",
