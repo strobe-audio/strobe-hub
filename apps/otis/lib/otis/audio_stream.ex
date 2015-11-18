@@ -55,7 +55,7 @@ defmodule Otis.AudioStream do
   end
 
   defp audio_frame(%S{ source: source, buffer: buffer, chunk_size: chunk_size} = state) when byte_size(buffer) < chunk_size do
-    Otis.Source.chunk(source) |> append_and_send(state)
+    Otis.SourceStream.chunk(source) |> append_and_send(state)
   end
 
   defp audio_frame(%S{ buffer: buffer, chunk_size: chunk_size } = state) do

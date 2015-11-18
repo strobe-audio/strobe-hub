@@ -1,4 +1,4 @@
-defmodule Otis.Source do
+defmodule Otis.SourceStream do
   require Logger
   use     GenServer
 

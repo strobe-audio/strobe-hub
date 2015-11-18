@@ -26,12 +26,12 @@ defmodule Otis.Filesystem.File do
 
       iex> {:ok, source} = Otis.Filesytem.File.source!("/path/to/audio.mp3")
       {:ok, #PID<0.123.0>}
-      iex> Otis.Source.chunk(source)
+      iex> Otis.SourceStream.chunk(source)
       {:ok, <<139, 254, 231, 254, 139, 254, 233, 254, 152, 254, 232, 254, 160, ...>>}
 
   """
   def source!(path) do
-    new!(path) |> Otis.Source.new
+    new!(path) |> Otis.SourceStream.new
   end
 
   def extension(%__MODULE__{path: path}) do
