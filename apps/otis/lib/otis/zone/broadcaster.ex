@@ -125,8 +125,9 @@ defmodule Otis.Zone.Broadcaster do
 
   # The 'stop' button has been pressed so pull back anything we were about to
   # send
-  defp stop!(state) do
+  defp stop!(%S{socket: socket} = state) do
     Logger.info "Stopping broadcaster..."
+    Otis.Zone.Socket.stop(socket)
     stop_inflight_packets(state)
     rebuffer_in_flight(state)
     state

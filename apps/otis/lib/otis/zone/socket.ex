@@ -34,10 +34,8 @@ defmodule Otis.Zone.Socket do
     {:noreply, {socket, port, count + 1}}
   end
 
-  # TODO: send <<"stop">> as the packet
   def handle_cast(:stop, {socket, port, count} = _state) do
-    packet = << count::size(64)-little-unsigned-integer, 0::size(64)-little-signed-integer >>
-    _send(socket, packet)
+    _send(socket, <<"STOP">>)
     {:noreply, {socket, port, count + 1}}
   end
 
