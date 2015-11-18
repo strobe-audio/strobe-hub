@@ -1,5 +1,6 @@
 defmodule Elvis.ReceiverSocket do
-  use Phoenix.Socket
+  use     Phoenix.Socket
+  require Logger
 
   ## Channels
   channel "receiver:*", Elvis.ReceiverChannel
@@ -19,8 +20,9 @@ defmodule Elvis.ReceiverSocket do
   #
   # See `Phoenix.Token` documentation for examples in
   # performing token verification on connect.
-  def connect(_params, socket) do
-    %{ "id" => id } = _params
+  def connect(params, socket) do
+    Logger.debug "Receiver connect #{ inspect params }"
+    %{ "id" => id } = params
     socket = assign(socket, :id, id)
     {:ok, socket}
   end
