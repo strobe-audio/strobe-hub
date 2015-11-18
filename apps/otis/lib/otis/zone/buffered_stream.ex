@@ -54,12 +54,32 @@ defmodule Otis.Zone.BufferedStream do
     {:noreply, push(frame, state)}
   end
 
+  def handle_cast({:rebuffer, packets}, state) do
+    {:noreply, rebuffer_packets(packets, state)}
+  end
+
+  defp rebuffer_packets([], state) do
+    state
+  end
+  defp rebuffer_packets([packet | packets], state) do
+    rebuffer_packets(packets, unshift(packet, state))
+  end
+
   def handle_info({:DOWN, _ref, :process, _pid, :normal}, %S{audio_stream: audio_stream} = state) do
     Logger.warn "#{__MODULE__} down, restarting..."
     {:noreply, %S{ state | fetcher: start_fetcher(audio_stream) }}
   end
 
+  # No need to monitor this action as it's only called by the rebuffering
+  defp unshift(packet, %S{queue: queue, packets: packets} = state) do
+    queue = :queue.in_r(packet, queue)
+    %S{ state | queue: queue, packets: packets + 1, state: :playing }
+  end
+
   defp push({:ok, packet}, %S{queue: queue, packets: packets} = state) do
+    push(packet, state)
+  end
+  defp push(packet, %S{queue: queue, packets: packets} = state) do
     queue = :queue.in(packet, queue)
     %S{ state | queue: queue, packets: packets + 1, state: :playing } |> monitor
   end
