@@ -251,7 +251,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp timestamp_for_packet(packet_number, start_time, interval, latency) do
-    start_time + @buffer_latency + latency + ((packet_number + 1) * interval)
+    start_time + @buffer_latency + latency + (packet_number * interval)
   end
 
   defp next_packet(n, %S{audio_stream: audio_stream, packet_number: packet_number} = _state) do
