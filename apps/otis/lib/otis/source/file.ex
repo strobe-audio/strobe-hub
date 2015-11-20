@@ -1,4 +1,4 @@
-defmodule Otis.Filesystem.File do
+defmodule Otis.Source.File do
   @moduledoc """
   Represents an audio file on-disk
   """
@@ -30,6 +30,7 @@ defmodule Otis.Filesystem.File do
       {:ok, <<139, 254, 231, 254, 139, 254, 233, 254, 152, 254, 232, 254, 160, ...>>}
 
   """
+  #TODO: remove this!
   def source!(path) do
     new!(path) |> Otis.SourceStream.new
   end

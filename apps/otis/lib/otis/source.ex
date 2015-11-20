@@ -1,4 +1,4 @@
-defprotocol Otis.Source.Stream do
+defprotocol Otis.Source do
   @moduledoc "Defines a protocol for extracting a stream from a source"
 
   @type t :: %{}
@@ -20,8 +20,8 @@ defprotocol Otis.Source.Stream do
   def audio_type(stream)
 end
 
-defimpl Otis.Source.Stream, for: Otis.Filesystem.File do
-  alias Otis.Filesystem.File
+defimpl Otis.Source, for: Otis.Source.File do
+  alias Otis.Source.File
 
   def open!(%File{path: path}, packet_size_bytes) do
     Elixir.File.stream!(path, [], packet_size_bytes)
@@ -35,3 +35,4 @@ defimpl Otis.Source.Stream, for: Otis.Filesystem.File do
     {metadata.extension, metadata.mime_type}
   end
 end
+

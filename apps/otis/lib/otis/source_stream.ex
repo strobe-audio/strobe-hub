@@ -65,7 +65,7 @@ defmodule Otis.SourceStream do
 
   defp next_chunk(:error, %{stream: stream, inputstream: inputstream} = state) do
     # TODO: can I tell the transcode process to exit or will it just get GC'd
-    Otis.Source.Stream.close(stream, inputstream)
+    Otis.Source.close(stream, inputstream)
     {:reply, :done, %{state | inputstream: nil, outputstream: nil, transcode_pid: nil}}
   end
 
@@ -80,11 +80,11 @@ defmodule Otis.SourceStream do
   end
 
   defp input_stream(%{ stream: stream }) do
-    Otis.Source.Stream.open!(stream, Otis.stream_bytes_per_step * 4)
+    Otis.Source.open!(stream, Otis.stream_bytes_per_step * 4)
   end
 
   defp stream_type(%{ stream: stream }) do
-    {ext, _mime_type} = Otis.Source.Stream.audio_type(stream)
+    {ext, _mime_type} = Otis.Source.audio_type(stream)
     ext
   end
 end
