@@ -40,7 +40,7 @@ defmodule Otis.Zone.Socket do
 
   def handle_cast(:stop, {socket, port, count} = _state) do
     _send(socket, <<"STOP">>)
-    {:noreply, {socket, port, count + 1}}
+    {:noreply, {socket, port, 0}}
   end
 
   defp _send(socket, data) do
