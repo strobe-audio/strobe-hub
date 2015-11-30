@@ -20,17 +20,18 @@ defmodule Otis.SourceStream do
     new(path)
   end
 
-  def new({:ok, stream}) do
-    new(stream)
+  def new({:ok, source}) do
+    new(source)
   end
 
-  def new(stream) do
-    start_link(stream)
+  @doc "Returns a new SourceStream for the given source"
+  def new(source) do
+    start_link(source)
   end
 
-  def start_link(stream) do
+  def start_link(source) do
     state = %{
-      stream: stream,
+      source: source,
       outputstream: nil,
       inputstream: nil,
       transcode_pid: nil,
@@ -44,7 +45,7 @@ defmodule Otis.SourceStream do
   end
 
   def handle_call(:source_info, _from, state) do
-    {:reply, {:ok, state.stream}, state}
+    {:reply, {:ok, state.source}, state}
   end
 
   defp next_chunk(%{outputstream: nil, pending_streams: nil} = state) do
@@ -63,9 +64,9 @@ defmodule Otis.SourceStream do
     {:reply, chunk, state}
   end
 
-  defp next_chunk(:error, %{stream: stream, inputstream: inputstream} = state) do
+  defp next_chunk(:error, %{source: source, inputstream: inputstream} = state) do
     # TODO: can I tell the transcode process to exit or will it just get GC'd
-    Otis.Source.close(stream, inputstream)
+    Otis.Source.close(source, inputstream)
     {:reply, :done, %{state | inputstream: nil, outputstream: nil, transcode_pid: nil}}
   end
 
@@ -79,12 +80,12 @@ defmodule Otis.SourceStream do
     state
   end
 
-  defp input_stream(%{ stream: stream }) do
-    Otis.Source.open!(stream, Otis.stream_bytes_per_step * 4)
+  defp input_stream(%{ source: source }) do
+    Otis.Source.open!(source, Otis.stream_bytes_per_step * 4)
   end
 
-  defp stream_type(%{ stream: stream }) do
-    {ext, _mime_type} = Otis.Source.audio_type(stream)
+  defp stream_type(%{ source: source }) do
+    {ext, _mime_type} = Otis.Source.audio_type(source)
     ext
   end
 end
