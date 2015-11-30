@@ -52,9 +52,15 @@ defmodule Otis.SourceList do
   # I can just translate that into a source instance on demand
   def handle_call(:next_source, _from, %{sources: [h | t]} = state) do
     {:reply, {:ok, h}, %{ state | sources: t }}
+  def handle_call(:next_source, _from, %{sources: [source | sources]} = state) do
+    {:reply, open_source(source), %{ state | sources: sources }}
   end
 
   def handle_cast({:add_source, source, index}, %{sources: sources} = state) do
     {:noreply, %{ state | sources: List.insert_at(sources, index, source) }}
+  end
+
+  defp open_source(source) do
+    Otis.SourceStream.new(source)
   end
 end
