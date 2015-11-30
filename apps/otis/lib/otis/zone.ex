@@ -10,8 +10,6 @@ defmodule Otis.Zone do
             state:             :stop,
             broadcaster:       nil,
             audio_stream:      nil,
-            timestamp:         @first_timestamp,
-            last_broadcast:    0,
             broadcast_address: nil,
             socket:         nil
 
@@ -231,7 +229,7 @@ defmodule Otis.Zone do
   end
 
   defp zone_is_stopped(zone) do
-    %Zone{ zone | timestamp: @first_timestamp, broadcaster: nil}
+    %Zone{ zone | broadcaster: nil}
   end
 
   defp start_broadcaster(%Zone{audio_stream: audio_stream, socket: socket} = zone) do
