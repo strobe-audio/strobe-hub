@@ -1,6 +1,8 @@
 defmodule Otis.SourceList do
   use GenServer
 
+  @type t :: __MODULE__
+
   def empty do
     from_list([])
   end
@@ -11,29 +13,27 @@ defmodule Otis.SourceList do
   end
 
   @doc "Returns the next source in the list"
+  @spec next(pid) :: {:ok, Otis.Source.t}
   def next(source_list) do
     source = GenServer.call(source_list, :next_source)
     source
   end
 
-  @doc "Returns the current source"
-  def current(source_list) do
-    GenServer.call(source_list, :current_source)
-  end
-
+  @spec append_sources(pid, list(Otis.Source.t)) :: :ok
   def append_sources(_list, []) do
     :ok
   end
-
   def append_sources(list, [source | sources]) do
     append_source(list, source)
     append_sources(list, sources)
   end
 
+  @spec append_source(pid, Otis.Source.t) :: :ok
   def append_source(list, source) do
     insert_source(list, source, -1)
   end
 
+  @spec insert_source(pid, Otis.Source.t, integer) :: :ok
   def insert_source(list, source, position \\ -1) do
     GenServer.cast(list, {:add_source, source, position})
     :ok
@@ -46,12 +46,6 @@ defmodule Otis.SourceList do
   def handle_call(:next_source, _from, %{sources: []} = state) do
     {:reply, :done, state}
   end
-
-  # TODO: I don't need to save a list of source processes in here
-  # just a list of Source.Stream protocol implementers then
-  # I can just translate that into a source instance on demand
-  def handle_call(:next_source, _from, %{sources: [h | t]} = state) do
-    {:reply, {:ok, h}, %{ state | sources: t }}
   def handle_call(:next_source, _from, %{sources: [source | sources]} = state) do
     {:reply, open_source(source), %{ state | sources: sources }}
   end
