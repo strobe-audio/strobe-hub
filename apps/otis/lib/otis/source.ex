@@ -18,6 +18,9 @@ defprotocol Otis.Source do
   @doc "Returns the audio type as a {extension, mime type} tuple"
   @spec audio_type(t) :: {binary, binary}
   def audio_type(source)
+
+  @spec metadata(t) :: Otis.Source.Metadata.t
+  def metadata(source)
 end
 
 defimpl Otis.Source, for: Otis.Source.File do
@@ -34,5 +37,8 @@ defimpl Otis.Source, for: Otis.Source.File do
   def audio_type(%File{metadata: metadata}) do
     {metadata.extension, metadata.mime_type}
   end
-end
 
+  def metadata(%File{metadata: metadata}) do
+    metadata
+  end
+end
