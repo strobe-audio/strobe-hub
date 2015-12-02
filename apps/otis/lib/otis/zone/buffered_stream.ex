@@ -114,7 +114,8 @@ defmodule Otis.Zone.BufferedStream do
     state
   end
 
-  defp monitor(%S{waiting: waiting, packets: packets, size: size} = state) when (not is_nil(waiting)) and (packets < size) do
+  defp monitor(%S{waiting: waiting, packets: packets, size: size} = state)
+  when (not is_nil(waiting)) and (packets < size) do
     fetch_async(state)
   end
 
@@ -154,4 +155,3 @@ defmodule Otis.Zone.BufferedStream do
     end
   end
 end
-
