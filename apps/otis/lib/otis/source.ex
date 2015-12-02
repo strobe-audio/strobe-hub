@@ -7,17 +7,17 @@ defprotocol Otis.Source do
   Returns a stream of raw PCM audio data
   """
   @spec open!(t, non_neg_integer) :: Enumerable.t
-  def open!(stream, packet_size_bytes)
+  def open!(source, packet_size_bytes)
 
   @doc """
   Returns a stream of raw PCM audio data
   """
   @spec close(t, :file.io_device) :: :ok | {:error, :file.posix | :badarg | :terminated}
-  def close(file, stream)
+  def close(file, source)
 
   @doc "Returns the audio type as a {extension, mime type} tuple"
   @spec audio_type(t) :: {binary, binary}
-  def audio_type(stream)
+  def audio_type(source)
 end
 
 defimpl Otis.Source, for: Otis.Source.File do
