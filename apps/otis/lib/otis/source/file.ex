@@ -32,7 +32,7 @@ defmodule Otis.Source.File do
   """
   #TODO: remove this!
   def source!(path) do
-    new!(path) |> Otis.SourceStream.new
+    path |> new! |> Otis.SourceStream.new
   end
 
   def extension(%__MODULE__{path: path}) do

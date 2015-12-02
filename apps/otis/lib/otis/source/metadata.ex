@@ -30,4 +30,3 @@ defmodule Otis.Source.Metadata do
     {data.extension, data.mime_type}
   end
 end
-

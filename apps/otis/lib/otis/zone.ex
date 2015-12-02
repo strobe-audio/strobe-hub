@@ -137,8 +137,8 @@ defmodule Otis.Zone do
   end
 
   def handle_call(:play_pause, _from, zone) do
-    zone = %Zone{state: state} = toggle_state(zone) |> change_state
-    {:reply, {:ok, state}, zone}
+    zone = zone |> toggle_state |> change_state
+    {:reply, {:ok, zone.state}, zone}
   end
 
   def handle_call(:get_state, _from, %Zone{state: state} = zone) do
@@ -186,7 +186,7 @@ defmodule Otis.Zone do
   end
 
   defp _receiver_latency(recs) do
-    Enum.map(recs, fn(rec) ->
+    recs |> Enum.map(fn(rec) ->
       {:ok, latency} = Otis.Receiver.latency(rec)
       latency
     end) |> Enum.max

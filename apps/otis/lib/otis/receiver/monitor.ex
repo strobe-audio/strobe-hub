@@ -17,4 +17,3 @@ defmodule Otis.Receiver.Monitor do
     {:ok, {}}
   end
 end
-

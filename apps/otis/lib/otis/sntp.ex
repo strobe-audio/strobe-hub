@@ -76,4 +76,3 @@ defmodule Otis.SNTP do
     end
   end
 end
-

@@ -42,20 +42,24 @@ defmodule Otis.AudioStream do
     audio_frame(enumerate_source(state))
   end
 
-  defp audio_frame(%S{ state: :stopped, buffer: buffer } = state) when byte_size(buffer) > 0 do
+  defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
+  when byte_size(buffer) > 0 do
     {:ok, { :ok, buffer }, %S{state | buffer: <<>> }}
   end
 
-  defp audio_frame(%S{ state: :stopped, buffer: buffer } = state) when byte_size(buffer) == 0 do
+  defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
+  when byte_size(buffer) == 0 do
     {:ok, :stopped, %S{ state | source: nil} }
   end
 
-  defp audio_frame(%S{ source: nil, buffer: buffer, chunk_size: chunk_size} = state) when byte_size(buffer) < chunk_size do
+  defp audio_frame(%S{ source: nil, buffer: buffer, chunk_size: chunk_size} = state)
+  when byte_size(buffer) < chunk_size do
     audio_frame(enumerate_source(state))
   end
 
-  defp audio_frame(%S{ source: source, buffer: buffer, chunk_size: chunk_size} = state) when byte_size(buffer) < chunk_size do
-    Otis.SourceStream.chunk(source) |> append_and_send(state)
+  defp audio_frame(%S{ source: source, buffer: buffer, chunk_size: chunk_size} = state)
+  when byte_size(buffer) < chunk_size do
+    source |> Otis.SourceStream.chunk |> append_and_send(state)
   end
 
   defp audio_frame(%S{ buffer: buffer, chunk_size: chunk_size } = state) do
@@ -85,4 +89,3 @@ defmodule Otis.AudioStream do
     state
   end
 end
-

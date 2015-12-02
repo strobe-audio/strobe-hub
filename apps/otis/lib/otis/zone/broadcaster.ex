@@ -1,5 +1,9 @@
 
 defmodule Otis.Zone.Broadcaster do
+  @moduledoc """
+  This takes a zone and audio source and translates it into a set of
+  timestamped packets. It then queues this to send to the clients.
+  """
   use     GenServer
   use     Monotonic
   require Logger
@@ -9,6 +13,7 @@ defmodule Otis.Zone.Broadcaster do
 
 
   defmodule S do
+    @moduledoc "State for the broadcaster genserver"
     defstruct [
       zone: nil,
       audio_stream: nil,
@@ -22,9 +27,6 @@ defmodule Otis.Zone.Broadcaster do
     ]
   end
 
-  # This basically takes a zone / audio source and translates it into a set of
-  # timestamped packets. It then queues this to send to the clients.
-  #
   # - We should flood fill the clients' buffers by sending far-future
   #   timestamped packets
   # - The emitter module that actually sends the data at a given timestamp has
@@ -220,7 +222,7 @@ defmodule Otis.Zone.Broadcaster do
   # the audio starts where it left off rather than losing a buffer's worth
   # of audio.
   defp rebuffer_in_flight(%{in_flight: in_flight, audio_stream: audio_stream} = state) do
-    packets = unplayed_packets(in_flight) |> Enum.map(fn({_, _, data}) -> data end)
+    packets = in_flight |> unplayed_packets |> Enum.map(fn({_, _, data}) -> data end)
     GenServer.cast(audio_stream, {:rebuffer, packets})
     %S{ state | in_flight: [] }
   end
@@ -246,7 +248,7 @@ defmodule Otis.Zone.Broadcaster do
     {timestamp_for_packet(packet_number, state), data}
   end
 
-  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = _state) do
+  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency}) do
     timestamp_for_packet(packet_number, start_time, interval, latency)
   end
 

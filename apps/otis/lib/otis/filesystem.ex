@@ -34,12 +34,12 @@ defmodule Otis.Filesystem do
     case File.ls(path) do
       {:error, _} = err -> err
       {:ok, files} ->
-        { :ok, Enum.sort(files) |> map(&Path.join(path, &1)) }
+        { :ok, files |> Enum.sort |> map(&Path.join(path, &1)) }
     end
   end
 
   defp sources(paths) do
-    map(paths, &file/1) |> validate_sources
+    paths |> map(&file/1) |> validate_sources
   end
 
   defp validate_sources(sources) do

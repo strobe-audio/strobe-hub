@@ -136,4 +136,3 @@ defmodule Otis.Zone.Emitter do
     {{now, m, delay}, emit, config}
   end
 end
-

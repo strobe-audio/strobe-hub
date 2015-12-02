@@ -53,11 +53,12 @@ defmodule Otis.SourceStream do
   end
 
   defp next_chunk(%{outputstream: nil, pending_streams: {inputstream, outputstream, pid}} = state) do
-    next_chunk(%{state | inputstream: inputstream, outputstream: outputstream, transcode_pid: pid, pending_streams: nil })
+    state = %{ state | inputstream: inputstream, outputstream: outputstream, transcode_pid: pid, pending_streams: nil }
+    next_chunk(state)
   end
 
   defp next_chunk(%{outputstream: outputstream} = state) do
-    Enum.fetch(outputstream, 0) |> next_chunk(state)
+    outputstream |> Enum.fetch(0) |> next_chunk(state)
   end
 
   defp next_chunk({:ok, _} = chunk, state) do

@@ -125,4 +125,3 @@ defmodule Otis.Receivers do
     {:ok, receiver}
   end
 end
-

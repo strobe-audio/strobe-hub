@@ -28,4 +28,3 @@ defmodule Otis.PortSequence do
     {:reply, {:ok, next_port}, {start_port, step, next_port}}
   end
 end
-

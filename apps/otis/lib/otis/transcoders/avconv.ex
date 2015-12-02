@@ -33,4 +33,3 @@ defmodule Otis.Transcoders.Avconv do
     System.find_executable("avconv")
   end
 end
-
