@@ -1,8 +1,6 @@
 defmodule Otis.Zone do
   require Logger
 
-  @first_timestamp nil
-
   defstruct name:              "A Zone",
             id:                nil,
             source_list:       nil,
