@@ -45,7 +45,7 @@ defmodule Otis.ZoneTest do
 
   setup do
     {:ok, zone} = Otis.Zone.start_link(:zone_1, "Downstairs")
-    {:ok, receiver} = Otis.Receiver.start_link(:receiver_1, node)
+    {:ok, receiver} = Otis.Receiver.start_link(self, "receiver_2", %{ "latency" => 0 })
     {:ok, zone: zone, receiver: receiver}
   end
 
