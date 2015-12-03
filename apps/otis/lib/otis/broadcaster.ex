@@ -28,6 +28,14 @@ defmodule Otis.Broadcaster do
     GenServer.cast(broadcaster, {:stop, reason})
   end
 
+  def kill_broadcaster(broadcaster) do
+    kill_broadcaster(@supervisor_name, broadcaster)
+  end
+
+  def kill_broadcaster(supervisor, broadcaster) do
+    GenServer.cast(broadcaster, :kill)
+  end
+
   def init(:ok) do
     children = [
       worker(Otis.Zone.Broadcaster, [], [restart: :transient])

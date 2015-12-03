@@ -50,6 +50,12 @@ defmodule Otis.Zone.BufferedStream do
     {:noreply, state}
   end
 
+  def handle_call(:flush, _from, state) do
+    IO.inspect [:buffered_stream, :flush]
+    Otis.Stream.flush(state.audio_stream)
+    {:reply, :ok, %S{ state | queue: :queue.new, state: :waiting, packets: 0 }}
+  end
+
   def handle_cast({:frame, frame}, state) do
     {:noreply, push(frame, state)}
   end
@@ -114,6 +120,8 @@ defmodule Otis.Zone.BufferedStream do
     state
   end
 
+  # Uncomment the below if the desired behaviour is for the buffer to be full
+  # before starting to play.
   defp monitor(%S{waiting: waiting, packets: packets, size: size} = state)
   when (not is_nil(waiting)) and (packets < size) do
     fetch_async(state)
@@ -132,6 +140,9 @@ defmodule Otis.Zone.BufferedStream do
     state
   end
 
+  # TODO: replace per-buffer fetcher process with a pool shared across zones
+  # that way they have their own supervisor & we don't have to manage them in
+  # this module.
   defmodule Fetcher do
     use     GenServer
     require Logger

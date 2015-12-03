@@ -38,6 +38,10 @@ defmodule Otis.AudioStream do
     {:reply, frame, state}
   end
 
+  def handle_call(:flush, _from, state) do
+    {:reply, :ok, %S{ state | source: nil, state: :stopped, buffer: <<>> }}
+  end
+
   defp audio_frame(%S{source: nil, state: :starting} = state) do
     audio_frame(enumerate_source(state))
   end

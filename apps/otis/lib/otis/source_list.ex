@@ -1,10 +1,10 @@
 defmodule Otis.SourceList do
+  use    GenServer
+
   @moduledoc """
   Provides a list of Sources and a `next` function to iterate them.
   """
 
-  use    GenServer
-  import Kernel, except: [length: 2]
 
   @doc "Start a new empty list instance"
   @spec empty() :: {:ok, pid}
@@ -35,7 +35,7 @@ defmodule Otis.SourceList do
   @doc "Appends the given List of Sources"
   @spec append_sources(pid, list(Otis.Source.t)) :: {:ok, integer}
   def append_sources(list, []) do
-    {:ok, length(list)}
+    {:ok, count(list)}
   end
   def append_sources(list, [source | sources]) do
     append_source(list, source)
@@ -63,9 +63,13 @@ defmodule Otis.SourceList do
   end
 
   @doc "Gives the number of sources in the list"
-  @spec length(pid) :: integer
-  def length(list) do
-    GenServer.call(list, :length)
+  @spec count(pid) :: integer
+  def count(list) do
+    GenServer.call(list, :count)
+  end
+
+  def skip(list, source_id) do
+    GenServer.call(list, {:skip, source_id})
   end
 
   ###### GenServer Callbacks
@@ -81,15 +85,23 @@ defmodule Otis.SourceList do
     {:reply, :ok, %{ state | sources: [] }}
   end
 
-  def handle_call(:length, _from, state) do
-    {:reply, Kernel.length(state.sources), state}
+  def handle_call(:count, _from, state) do
+    {:reply, length(state.sources), state}
   end
 
   def handle_call({:add_source, source, index}, _from, %{sources: sources} = state) do
-    {:reply, {:ok, Kernel.length(sources) + 1}, %{ state | sources: List.insert_at(sources, index, source) }}
+    {:reply, {:ok, length(sources) + 1}, %{ state | sources: List.insert_at(sources, index, source) }}
+  end
+
+  def handle_call({:skip, source_id}, _from, %{sources: sources} = state) do
+    sources = sources |> Enum.drop_while(fn(source) ->
+      Otis.Source.id(source) != source_id
+    end)
+    {:reply, {:ok, length(sources) + 1}, %{ state | sources: sources }}
   end
 
   defp open_source(source) do
     Otis.SourceStream.new(source)
   end
+
 end

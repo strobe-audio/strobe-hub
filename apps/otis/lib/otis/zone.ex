@@ -92,6 +92,11 @@ defmodule Otis.Zone do
     GenServer.cast(zone, :stream_finished)
   end
 
+  @doc "Skip to the source with the given id"
+  def skip(zone, source_id) do
+    GenServer.cast(zone, {:skip, source_id})
+  end
+
   # Things we can do to zones:
   # - list receivers
   # - add receiver
@@ -135,7 +140,7 @@ defmodule Otis.Zone do
   end
 
   def handle_call(:play_pause, _from, zone) do
-    zone = zone |> toggle_state |> change_state
+    zone = zone |> toggle_state
     {:reply, {:ok, zone.state}, zone}
   end
 
@@ -158,6 +163,21 @@ defmodule Otis.Zone do
   def handle_cast(:stream_finished, %Zone{} = zone) do
     zone = stream_finished!(zone)
     {:noreply, zone}
+  end
+
+  def handle_cast({:skip, source_id}, %Zone{source_list: source_list } = zone) do
+    zone = zone |> set_state(:skip) |> flush |> skip_to(source_id)
+    {:noreply, set_state(zone, :play)}
+  end
+
+  defp flush(zone) do
+    Otis.Stream.flush(zone.audio_stream)
+    zone
+  end
+
+  defp skip_to(zone, source_id) do
+    {:ok, _} = Otis.SourceList.skip(zone.source_list, source_id)
+    zone
   end
 
   defp reciever_joined(receiver, %Zone{state: :play, broadcaster: broadcaster} = zone) do
@@ -190,9 +210,13 @@ defmodule Otis.Zone do
     end) |> Enum.max
   end
 
-  defp stream_finished!(%Zone{broadcaster: broadcaster} = zone) do
-    Otis.Broadcaster.stream_finished(broadcaster)
-    set_state(%Zone{zone | broadcaster: nil}, :stop)
+  defp stream_finished!(zone) do
+    zone |> stream_has_finished |> set_state(:stop)
+  end
+
+  defp stream_has_finished(zone) do
+    Otis.Broadcaster.stream_finished(zone.broadcaster)
+    %Zone{zone | broadcaster: nil}
   end
 
   defp toggle_state(%Zone{state: :play} = zone) do
@@ -223,6 +247,14 @@ defmodule Otis.Zone do
 
   defp change_state(%Zone{id: _id, state: :stop, broadcaster: broadcaster} = zone) do
     Otis.Broadcaster.stop_broadcaster(broadcaster)
+    change_state(%Zone{ zone | broadcaster: nil })
+  end
+
+  defp change_state(%Zone{state: :skip, broadcaster: nil} = zone) do
+    zone
+  end
+  defp change_state(%Zone{id: _id, state: :skip, broadcaster: broadcaster} = zone) do
+    Otis.Broadcaster.kill_broadcaster(broadcaster)
     change_state(%Zone{ zone | broadcaster: nil })
   end
 

@@ -70,15 +70,14 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   def handle_cast(:start, state) do
-    state = start(state)
-    {:noreply, state}
+    {:noreply, start(state)}
   end
 
+  # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
+  # but pushes back any unplayed packets to the source stream so that when
+  # we press play again, we start from where we left off.
   def handle_cast({:stop, :stop}, state) do
-    # TODO: send back the in-flight packets to the audio stream (or the zone?)
-    # TODO: find all my emitters and tell them to stop too...
-    state = stop!(state)
-    {:stop, {:shutdown, :stopped}, state}
+    {:stop, {:shutdown, :stopped}, stop!(state)}
   end
 
   def handle_cast({:stop, :stream_finished}, state) do
@@ -86,6 +85,12 @@ defmodule Otis.Zone.Broadcaster do
     # originated in the emit_packet method so everything that needs to have
     # been sent to the players has already been sent
     {:stop, {:shutdown, :stopped}, state}
+  end
+
+  # This stops the broadcaster & drops any unsent packets
+  # Used during track skipping
+  def handle_cast(:kill, state) do
+    {:stop, {:shutdown, :stopped}, kill!(state)}
   end
 
   # The resend_packets system just resulted in the newly joined receiver
@@ -98,8 +103,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   def handle_info(:emit, state) do
-    state = potentially_emit(state)
-    state = schedule_emit(state)
+    state = state |> potentially_emit |> schedule_emit
     {:noreply, state}
   end
 
@@ -128,12 +132,21 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
+  defp kill!(state) do
+    Logger.info "Killing broadcaster..."
+    kill(state)
+  end
+
+  defp kill(state) do
+    Otis.Zone.Socket.stop(state.socket)
+    stop_inflight_packets(state)
+  end
+
   # The 'stop' button has been pressed so pull back anything we were about to
   # send
   defp stop!(%S{socket: socket} = state) do
     Logger.info "Stopping broadcaster..."
-    Otis.Zone.Socket.stop(socket)
-    stop_inflight_packets(state)
+    kill(state)
     rebuffer_in_flight(state)
   end
 
