@@ -88,6 +88,19 @@ Otis.Zone.play_pause(zone)
 
 ## Albums
 
+
+{:ok, zone} = Otis.Zones.find :office
+{:ok, ss} = Otis.Zone.source_list(zone)
+{:ok, sources} = Otis.Filesystem.directory("/Users/garry/Seafile/Peep/audio/Tomorrow's Modern Boxes")
+Otis.SourceList.append_sources(ss, sources)
+Otis.Zone.play_pause(zone)
+
+
+Otis.Zone.skip(zone, "585747910cf6af2ba29fecd8b13eeb77")
+Otis.Zone.skip(zone, "3c283aeb0c669255fe59359b97a11616")
+
+
+
 {:ok, zone} = Otis.Zones.find :downstairs
 {:ok, ss} = Otis.Zone.source_list(zone)
 
