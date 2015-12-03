@@ -39,8 +39,7 @@ defmodule Otis.SourceList do
   @spec insert_source(pid, Otis.Source.t, integer) :: :ok
 
   def insert_source(list, source, position \\ -1) do
-    GenServer.cast(list, {:add_source, source, position})
-    :ok
+    GenServer.call(list, {:add_source, source, position})
   end
 
   def start_link(sources) do
@@ -54,8 +53,8 @@ defmodule Otis.SourceList do
     {:reply, open_source(source), %{ state | sources: sources }}
   end
 
-  def handle_cast({:add_source, source, index}, %{sources: sources} = state) do
-    {:noreply, %{ state | sources: List.insert_at(sources, index, source) }}
+  def handle_call({:add_source, source, index}, _from, %{sources: sources} = state) do
+    {:reply, {:ok, Kernel.length(sources) + 1}, %{ state | sources: List.insert_at(sources, index, source) }}
   end
 
   defp open_source(source) do
