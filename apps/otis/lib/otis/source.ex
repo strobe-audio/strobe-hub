@@ -4,6 +4,12 @@ defprotocol Otis.Source do
   @type t :: %{}
 
   @doc """
+  Returns the source's unique id
+  """
+  @spec id(t) :: binary
+  def id(source)
+
+  @doc """
   Returns a stream of raw PCM audio data
   """
   @spec open!(t, non_neg_integer) :: Enumerable.t
@@ -25,6 +31,10 @@ end
 
 defimpl Otis.Source, for: Otis.Source.File do
   alias Otis.Source.File
+
+  def id(file) do
+    file.id
+  end
 
   def open!(%File{path: path}, packet_size_bytes) do
     Elixir.File.stream!(path, [], packet_size_bytes)
