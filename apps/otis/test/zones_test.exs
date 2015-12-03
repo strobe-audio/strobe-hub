@@ -50,8 +50,8 @@ defmodule Otis.ZoneTest do
   end
 
   test "gives its name", %{zone: zone} do
-    {:ok, _name} = Otis.Zone.name(zone)
-    assert _name == "Downstairs"
+    {:ok, name} = Otis.Zone.name(zone)
+    assert name == "Downstairs"
   end
 
   test "gives its id", %{zone: zone} do

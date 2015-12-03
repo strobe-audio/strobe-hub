@@ -119,8 +119,7 @@ defmodule Otis.Receiver do
     {:noreply, state}
   end
 
-  def terminate(reason, _state) do
-    IO.inspect [:receiver_terminate, reason]
+  def terminate(_reason, _state) do
     :ok
   end
 

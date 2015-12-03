@@ -76,7 +76,7 @@ defmodule Otis.Zone.BufferedStream do
     %S{ state | queue: queue, packets: packets + 1, state: :playing }
   end
 
-  defp push({:ok, packet}, %S{queue: queue, packets: packets} = state) do
+  defp push({:ok, packet}, state) do
     push(packet, state)
   end
   defp push(packet, %S{queue: queue, packets: packets} = state) do
