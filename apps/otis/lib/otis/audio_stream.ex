@@ -81,12 +81,19 @@ defmodule Otis.AudioStream do
   end
 
   defp enumerate_source(%S{source_list: source_list, source: nil} = state) do
-    case Otis.SourceList.next(source_list) do
-      {:ok, source } ->
-        %S{ state | source: source, state: :playing }
+    case open_source(Otis.SourceList.next(source_list)) do
+      {:ok, source_stream} ->
+        %S{ state | source: source_stream, state: :playing }
       :done ->
         %S{ state | state: :stopped }
     end
+  end
+
+  defp open_source(:done) do
+    :done
+  end
+  defp open_source({:ok, source}) do
+    Otis.SourceStream.new(source)
   end
 
   defp enumerate_source(state) do

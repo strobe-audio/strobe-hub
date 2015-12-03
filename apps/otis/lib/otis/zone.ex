@@ -93,8 +93,8 @@ defmodule Otis.Zone do
   end
 
   @doc "Skip to the source with the given id"
-  def skip(zone, source_id) do
-    GenServer.cast(zone, {:skip, source_id})
+  def skip(zone, count) do
+    GenServer.cast(zone, {:skip, count})
   end
 
   # Things we can do to zones:
@@ -165,8 +165,9 @@ defmodule Otis.Zone do
     {:noreply, zone}
   end
 
-  def handle_cast({:skip, source_id}, %Zone{source_list: source_list } = zone) do
-    zone = zone |> set_state(:skip) |> flush |> skip_to(source_id)
+  # TODO: handle the case where we skip past the end of the source list...
+  def handle_cast({:skip, count}, %Zone{source_list: source_list } = zone) do
+    zone = zone |> set_state(:skip) |> flush |> skip_to(count)
     {:noreply, set_state(zone, :play)}
   end
 
@@ -175,8 +176,11 @@ defmodule Otis.Zone do
     zone
   end
 
-  defp skip_to(zone, source_id) do
-    {:ok, _} = Otis.SourceList.skip(zone.source_list, source_id)
+  defp skip_to(zone, 1) do
+    zone
+  end
+  defp skip_to(zone, count) do
+    {:ok, _} = Otis.SourceList.skip(zone.source_list, count - 1)
     zone
   end
 

@@ -68,8 +68,9 @@ defmodule Otis.SourceList do
     GenServer.call(list, :count)
   end
 
-  def skip(list, source_id) do
-    GenServer.call(list, {:skip, source_id})
+  @doc "Skips the given number of tracks"
+  def skip(list, count) do
+    GenServer.call(list, {:skip, count})
   end
 
   ###### GenServer Callbacks
@@ -78,7 +79,7 @@ defmodule Otis.SourceList do
     {:reply, :done, state}
   end
   def handle_call(:next_source, _from, %{sources: [source | sources]} = state) do
-    {:reply, open_source(source), %{ state | sources: sources }}
+    {:reply, {:ok, source}, %{ state | sources: sources }}
   end
 
   def handle_call(:clear, _from, state) do
@@ -93,11 +94,9 @@ defmodule Otis.SourceList do
     {:reply, {:ok, length(sources) + 1}, %{ state | sources: List.insert_at(sources, index, source) }}
   end
 
-  def handle_call({:skip, source_id}, _from, %{sources: sources} = state) do
-    sources = sources |> Enum.drop_while(fn(source) ->
-      Otis.Source.id(source) != source_id
-    end)
-    {:reply, {:ok, length(sources) + 1}, %{ state | sources: sources }}
+  def handle_call({:skip, count}, _from, %{sources: sources} = state) do
+    sources = sources |> Enum.drop(count)
+    {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
   end
 
   defp open_source(source) do

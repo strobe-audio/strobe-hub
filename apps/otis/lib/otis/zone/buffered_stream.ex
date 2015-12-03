@@ -51,7 +51,6 @@ defmodule Otis.Zone.BufferedStream do
   end
 
   def handle_call(:flush, _from, state) do
-    IO.inspect [:buffered_stream, :flush]
     Otis.Stream.flush(state.audio_stream)
     {:reply, :ok, %S{ state | queue: :queue.new, state: :waiting, packets: 0 }}
   end
