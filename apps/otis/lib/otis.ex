@@ -37,7 +37,6 @@ defmodule Otis do
   end
 
   def init(_args) do
-    IO.inspect [:starting, Otis, _args]
     :ok
   end
 end

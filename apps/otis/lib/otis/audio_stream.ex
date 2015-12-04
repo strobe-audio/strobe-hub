@@ -88,15 +88,14 @@ defmodule Otis.AudioStream do
         %S{ state | state: :stopped }
     end
   end
+  defp enumerate_source(state) do
+    state
+  end
 
   defp open_source(:done) do
     :done
   end
   defp open_source({:ok, source}) do
     Otis.SourceStream.new(source)
-  end
-
-  defp enumerate_source(state) do
-    state
   end
 end

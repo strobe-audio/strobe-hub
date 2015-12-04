@@ -165,7 +165,7 @@ defmodule Otis.Zone do
   end
 
   # TODO: handle the case where we skip past the end of the source list...
-  def handle_cast({:skip, count}, %Zone{source_list: source_list } = zone) do
+  def handle_cast({:skip, count}, zone) do
     zone = zone |> set_state(:skip) |> flush |> skip_to(count)
     {:noreply, set_state(zone, :play)}
   end
