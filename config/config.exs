@@ -38,3 +38,7 @@ import_config "../apps/*/config/config.exs"
 #       level: :info,
 #       format: "$date $time [$level] $metadata$message\n",
 #       metadata: [:user_id]
+
+config :dogma,
+  rule_set: Dogma.RuleSet.All,
+  override: %{ LineLength => [ max_length: 120 ] }

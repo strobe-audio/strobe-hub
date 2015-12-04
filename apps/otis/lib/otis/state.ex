@@ -8,17 +8,11 @@ defmodule Otis.State do
     defstruct zones: []
   end
 
-  defmodule Zone do
-    defstruct id: :default_zone, name: "Default Zone", receiver_ids: []
-  end
-
-  defmodule Receiver do
-    defstruct id: nil, name: "Receiver"
-  end
-
   def start_link do
     GenServer.start_link(__MODULE__, :ok, name: @name)
   end
+
+  alias Otis.State.Zone
 
   def init(:ok) do
     Logger.info "Starting state..."
