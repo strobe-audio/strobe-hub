@@ -24,16 +24,12 @@ defmodule Otis.Broadcaster do
     stop_broadcaster(@supervisor_name, broadcaster, :stop)
   end
 
+  def skip_broadcaster(broadcaster) do
+    stop_broadcaster(@supervisor_name, broadcaster, :skip)
+  end
+
   def stop_broadcaster(supervisor, broadcaster, reason) do
     GenServer.cast(broadcaster, {:stop, reason})
-  end
-
-  def kill_broadcaster(broadcaster) do
-    kill_broadcaster(@supervisor_name, broadcaster)
-  end
-
-  def kill_broadcaster(supervisor, broadcaster) do
-    GenServer.cast(broadcaster, :kill)
   end
 
   def init(:ok) do
