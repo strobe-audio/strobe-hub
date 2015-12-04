@@ -98,9 +98,4 @@ defmodule Otis.SourceList do
     sources = sources |> Enum.drop(count)
     {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
   end
-
-  defp open_source(source) do
-    Otis.SourceStream.new(source)
-  end
-
 end
