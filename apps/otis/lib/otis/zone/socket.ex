@@ -24,7 +24,7 @@ defmodule Otis.Zone.Socket do
     GenServer.cast(pid, :stop)
   end
 
-  def handle_cast({:send, timestamp, :stopped}, state) do
+  def handle_cast({:send, _timestamp, :stopped}, state) do
     {:noreply, state}
   end
 
@@ -38,7 +38,7 @@ defmodule Otis.Zone.Socket do
     {:noreply, {socket, port, count + 1}}
   end
 
-  def handle_cast(:stop, {socket, port, count} = _state) do
+  def handle_cast(:stop, {socket, port, _count} = _state) do
     _send(socket, <<"STOP">>)
     {:noreply, {socket, port, 0}}
   end
