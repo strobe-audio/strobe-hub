@@ -16,7 +16,6 @@ defmodule Otis.Startup do
   end
 
   defp start_zone(zones_supervisor, [zone | rest] = _zones_to_start) do
-    IO.inspect [:starting_zone, zone]
     %Otis.State.Zone{ id: id, name: name } = zone
     Otis.Zones.start_zone(zones_supervisor, id, name)
     start_zone(zones_supervisor, rest)
