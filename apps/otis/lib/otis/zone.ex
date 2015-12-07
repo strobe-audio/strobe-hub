@@ -193,7 +193,7 @@ defmodule Otis.Zone do
   end
 
   defp add_receiver_to_zone(receiver, %Zone{receivers: receivers} = zone) do
-    Otis.Receiver.join_zone(receiver, self)
+    Otis.Receiver.join_zone(receiver, self, zone.broadcast_address)
     %Zone{ zone | receivers: Set.put(receivers, receiver) }
   end
 

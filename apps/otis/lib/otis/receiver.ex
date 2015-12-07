@@ -44,8 +44,8 @@ defmodule Otis.Receiver do
     Otis.State.restore_receiver(pid, id)
   end
 
-  def join_zone(pid, zone) do
-    GenServer.cast(pid, {:join_zone, zone})
+  def join_zone(pid, zone, broadcast_address) do
+    GenServer.cast(pid, {:join_zone, zone, broadcast_address})
   end
 
   def shutdown(pid) do
@@ -83,8 +83,8 @@ defmodule Otis.Receiver do
     {:noreply, %S{state | latency: l}}
   end
 
-  def handle_cast({:join_zone, zone}, state) do
-    {:ok, {port}} = Otis.Zone.broadcast_address(zone)
+  def handle_cast({:join_zone, zone, {port}}, state) do
+    # {:ok, {port}} = Otis.Zone.broadcast_address(zone)
     # Now I want to send the ip:port info to the receiver which should cause it
     # to launch a player instance attached to that udp address (along with the
     # necessary linked processes)
