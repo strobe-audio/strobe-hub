@@ -36,6 +36,11 @@ defmodule Otis.Receiver do
     GenServer.call(pid, :id)
   end
 
+  def id!(pid) do
+    {:ok, id} = GenServer.call(pid, :id)
+    id
+  end
+
   def latency(pid) do
     GenServer.call(pid, :get_latency)
   end
