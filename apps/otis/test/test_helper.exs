@@ -33,4 +33,21 @@ defmodule FakeMonitor do
 end
 
 {:ok, _monitor} = FakeMonitor.start
+
+defmodule TestHandler do
+  use GenEvent
+
+  def init(_args) do
+    {:ok, []}
+  end
+
+  def handle_event(event, messages) do
+    {:ok, [event|messages]}
+  end
+
+  def handle_call(:messages, messages) do
+    {:ok, Enum.reverse(messages), []}
+  end
+end
+
 ExUnit.start()

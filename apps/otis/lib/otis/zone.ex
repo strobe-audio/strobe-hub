@@ -9,7 +9,8 @@ defmodule Otis.Zone do
             broadcaster:       nil,
             audio_stream:      nil,
             broadcast_address: nil,
-            socket:         nil
+            socket:            nil,
+            event_stream:      nil
 
   use GenServer
 
@@ -34,9 +35,15 @@ defmodule Otis.Zone do
   def init(%Zone{ source_list: source_list } = zone) do
     Logger.info "#{__MODULE__} starting... #{ inspect zone }"
     {:ok, port} = Otis.PortSequence.next
+    {:ok, event_stream} = GenEvent.start_link([])
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
     {:ok, stream} = Otis.Zone.BufferedStream.seconds(source_list, 1)
-    {:ok, %Zone{ zone | audio_stream: stream, socket: socket, broadcast_address: {port} }}
+    {:ok, %Zone{ zone |
+        audio_stream: stream,
+        socket: socket,
+        broadcast_address: {port},
+        event_stream: event_stream }
+    }
   end
 
   def get_broadcast_address do
@@ -94,6 +101,10 @@ defmodule Otis.Zone do
   @doc "Skip to the source with the given id"
   def skip(zone, count) do
     GenServer.cast(zone, {:skip, count})
+  end
+
+  def add_event_handler(zone, module, args) do
+    GenServer.call(zone, {:add_event_handler, module, args})
   end
 
   # Things we can do to zones:
@@ -159,6 +170,11 @@ defmodule Otis.Zone do
     {:reply, {:ok, broadcast_address}, zone}
   end
 
+  def handle_call({:add_event_handler, module, args}, _from, zone) do
+    :ok = GenEvent.add_handler(zone.event_stream, module, args)
+    {:reply, {:ok, zone.event_stream}, zone}
+  end
+
   def handle_cast(:stream_finished, %Zone{} = zone) do
     zone = stream_finished!(zone)
     {:noreply, zone}
@@ -194,7 +210,12 @@ defmodule Otis.Zone do
 
   defp add_receiver_to_zone(receiver, %Zone{receivers: receivers} = zone) do
     Otis.Receiver.join_zone(receiver, self, zone.broadcast_address)
+    event!(:receiver_added, {Otis.Receiver.id!(receiver)}, zone)
     %Zone{ zone | receivers: Set.put(receivers, receiver) }
+  end
+
+  defp event!(name, params, zone) do
+    GenEvent.notify(zone.event_stream, {name, zone.id, params})
   end
 
   def receiver_latency(%Zone{receivers: %HashSet{} = recs}) do

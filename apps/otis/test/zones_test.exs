@@ -96,4 +96,11 @@ defmodule Otis.ZoneTest do
     {:ok, state} = Otis.Zone.play_pause(zone)
     assert state == :stop
   end
+
+  test "broadcasts an event when a receiver is added", %{zone: zone, receiver: receiver} do
+    {:ok, manager} = Otis.Zone.add_event_handler(zone, TestHandler, [])
+    :ok = Otis.Zone.add_receiver(zone, receiver)
+    messages = GenEvent.call(manager, TestHandler, :messages)
+    assert messages == [{:receiver_added, :zone_1, {:receiver_2}}]
+  end
 end
