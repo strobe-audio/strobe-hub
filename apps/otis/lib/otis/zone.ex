@@ -129,7 +129,7 @@ defmodule Otis.Zone do
 
   def handle_call({:add_receiver, receiver}, _from, %Zone{ id: id} = zone) do
     Logger.info "Adding receiver to zone #{id}"
-    zone = reciever_joined(receiver, zone)
+    zone = receiver_joined(receiver, zone)
     {:reply, :ok, zone}
   end
 
@@ -183,12 +183,12 @@ defmodule Otis.Zone do
     zone
   end
 
-  defp reciever_joined(receiver, %Zone{state: :play, broadcaster: broadcaster} = zone) do
+  defp receiver_joined(receiver, %Zone{state: :play, broadcaster: broadcaster} = zone) do
     Otis.Zone.Broadcaster.buffer_receiver(broadcaster)
     add_receiver_to_zone(receiver, zone)
   end
 
-  defp reciever_joined(receiver, %Zone{state: :stop} = zone) do
+  defp receiver_joined(receiver, %Zone{state: :stop} = zone) do
     add_receiver_to_zone(receiver, zone)
   end
 
