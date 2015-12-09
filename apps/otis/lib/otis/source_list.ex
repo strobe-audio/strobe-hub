@@ -111,11 +111,11 @@ defmodule Otis.SourceList do
   end
 
   def source_with_id(source) do
-    {next_source_id, source}
+    {next_source_id(source), source}
   end
 
   # Has to be valid/unique across all source lists and across broadcaster restarts
-  def next_source_id do
+  def next_source_id(_source) do
     UUID.uuid1()
   end
 end
