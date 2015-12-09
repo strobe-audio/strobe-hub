@@ -160,8 +160,7 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  defp finish(%S{in_flight: in_flight} = state) do
-    Logger.debug "Waiting, #{length(in_flight)} in-flight packets"
+  defp finish(state) do
     monitor_in_flight(state)
   end
 
@@ -217,28 +216,28 @@ defmodule Otis.Zone.Broadcaster do
     finish(state)
   end
 
-  defp emit_packet(packet, increment_emit, %S{in_flight: in_flight, emit_time: emit_time} = state) do
-    emitted_packet = timestamp_packet(packet, state) |> emit_packet!(emit_time, state.socket)
+  defp emit_packet(packet, increment_emit, %S{emit_time: emit_time} = state) do
+    emitted_packet = packet |> timestamp_packet(state)
+                            |> emit_packet!(emit_time, state.socket)
     %S{ state |
-      in_flight: [emitted_packet | in_flight],
+      in_flight: [emitted_packet | state.in_flight],
       emit_time: emit_time + increment_emit
     } |> monitor_in_flight
   end
 
-  defp monitor_in_flight(%S{in_flight: in_flight} = state) do
-    {unplayed, played} = in_flight |> trim_in_flight
+  defp monitor_in_flight(state) do
+    {unplayed, played} = state |> partition_in_flight(monotonic_microseconds)
     monitor_source(played, %S{ state | in_flight: unplayed })
   end
 
-  defp emit_packet!({timestamp, source_id, data} = packet, emit_time, socket) do
+  defp emit_packet!({timestamp, _source_id, data} = packet, emit_time, socket) do
     emitter = :poolboy.checkout(Otis.EmitterPool)
     Otis.Zone.Emitter.emit(emitter, emit_time, {timestamp, data}, socket)
     Tuple.insert_at(packet, 0, emitter)
   end
 
-  defp trim_in_flight(packets) do
-    now = monotonic_microseconds
-    Enum.partition packets, fn({_emitter, timestamp, _source_id, _data}) ->
+  defp partition_in_flight(%S{in_flight: packets}, now) do
+    Enum.partition packets, fn({_, timestamp, _, _}) ->
       timestamp > now
     end
   end
@@ -312,7 +311,7 @@ defmodule Otis.Zone.Broadcaster do
 
   defp next_packet(n, buf, packet_number, audio_stream) do
     case Otis.AudioStream.frame(audio_stream) do
-      {:ok, source_id, packet} = frame ->
+      {:ok, source_id, packet} ->
         buf = [{packet_number, source_id, packet} | buf]
         next_packet(n - 1, buf, packet_number + 1, audio_stream)
       :stopped ->
