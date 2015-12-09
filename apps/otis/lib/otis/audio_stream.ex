@@ -8,7 +8,7 @@ defmodule Otis.AudioStream do
   require Logger
 
   defmodule S do
-    defstruct source_list: nil, source: nil, buffer: <<>>, chunk_size: 3528, state: :stopped
+    defstruct source_list: nil, source_id: nil, source: nil, buffer: <<>>, chunk_size: 3528, state: :stopped
   end
 
   def frame(pid) do
@@ -29,12 +29,12 @@ defmodule Otis.AudioStream do
 
   def handle_call(:frame, _from, %S{source: nil, state: :stopped} = state) do
     state = %S{ state | state: :starting }
-    {:ok, frame, state } = audio_frame(state)
+    {:frame, frame, state } = audio_frame(state)
     {:reply, frame, state}
   end
 
   def handle_call(:frame, _from, state) do
-    {:ok, frame, state } = audio_frame(state)
+    {:frame, frame, state } = audio_frame(state)
     {:reply, frame, state}
   end
 
@@ -48,12 +48,12 @@ defmodule Otis.AudioStream do
 
   defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
   when byte_size(buffer) > 0 do
-    {:ok, { :ok, buffer }, %S{state | buffer: <<>> }}
+    {:frame, { :ok, state.source_id, buffer }, %S{state | buffer: <<>> }}
   end
 
   defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
   when byte_size(buffer) == 0 do
-    {:ok, :stopped, %S{ state | source: nil} }
+    {:frame, :stopped, %S{ state | source: nil} }
   end
 
   defp audio_frame(%S{ source: nil, buffer: buffer, chunk_size: chunk_size} = state)
@@ -67,13 +67,13 @@ defmodule Otis.AudioStream do
   end
 
   defp audio_frame(%S{ buffer: buffer, chunk_size: chunk_size } = state) do
-    << frame :: binary-size(chunk_size), rest :: binary >> = buffer
-    {:ok, {:ok, frame }, %S{ state | buffer: rest } }
+    << data :: binary-size(chunk_size), rest :: binary >> = buffer
+    frame = {:ok, state.source_id, data}
+    {:frame, frame, %S{ state | buffer: rest } }
   end
 
   defp append_and_send({:ok, data}, %S{buffer: buffer } = state) do
-    state = %S{ state | buffer: << buffer <> data >> }
-    audio_frame(state)
+    audio_frame(%S{ state | buffer: << buffer <> data >> })
   end
 
   defp append_and_send(:done, state) do
@@ -82,8 +82,8 @@ defmodule Otis.AudioStream do
 
   defp enumerate_source(%S{source_list: source_list, source: nil} = state) do
     case open_source(Otis.SourceList.next(source_list)) do
-      {:ok, source_stream} ->
-        %S{ state | source: source_stream, state: :playing }
+      {:ok, id, source_stream} ->
+        %S{ state | source_id: id, source: source_stream, state: :playing }
       :done ->
         %S{ state | state: :stopped }
     end
@@ -95,7 +95,7 @@ defmodule Otis.AudioStream do
   defp open_source(:done) do
     :done
   end
-  defp open_source({:ok, source}) do
-    Otis.SourceStream.new(source)
+  defp open_source({:ok, id, source}) do
+    Otis.SourceStream.new(id, source)
   end
 end

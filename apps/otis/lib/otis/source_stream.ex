@@ -25,8 +25,9 @@ defmodule Otis.SourceStream do
   end
 
   @doc "Returns a new SourceStream for the given source"
-  def new(source) do
-    start_link(source)
+  def new(id, source) do
+    {:ok, pid} = start_link(source)
+    {:ok, id, pid}
   end
 
   def start_link(source) do

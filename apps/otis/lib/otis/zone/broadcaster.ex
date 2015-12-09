@@ -23,6 +23,7 @@ defmodule Otis.Zone.Broadcaster do
       start_time: 0,
       packet_number: 0,
       in_flight: [],
+      source_id: nil,
       emit_time: 0
     ]
   end
@@ -110,7 +111,7 @@ defmodule Otis.Zone.Broadcaster do
 
   # defp resend_packets([packet | packets], socket, emit_time, emit_time_increment) do
   #   Logger.info "Resending packet..."
-  #   emit_packet!(emit_time, packet, socket)
+  #   emit_packet!(packet, emit_time, socket)
   #   resend_packets(packets, socket, emit_time + emit_time_increment, emit_time_increment)
   # end
   #
@@ -153,9 +154,15 @@ defmodule Otis.Zone.Broadcaster do
 
   # The audio stream has finished, so tell the zone we're done so it can shut
   # us down properly
-  defp finish(%S{zone: zone} = state) do
+  defp finish(%S{in_flight: [], zone: zone} = state) do
+    Logger.debug "Stream finished"
     Otis.Zone.stream_finished(zone)
     state
+  end
+
+  defp finish(%S{in_flight: in_flight} = state) do
+    Logger.debug "Waiting, #{length(in_flight)} in-flight packets"
+    monitor_in_flight(state)
   end
 
   defp potentially_emit(%S{emit_time: emit_time} = state) do
@@ -210,24 +217,50 @@ defmodule Otis.Zone.Broadcaster do
     finish(state)
   end
 
-  defp emit_packet(packet, increment_emit, %{socket: socket, in_flight: in_flight, emit_time: emit_time} = state) do
-    timestamped_packet = timestamp_packet(packet, state)
-    packet_in_flight = emit_packet!(emit_time, timestamped_packet, socket)
-    in_flight = [packet_in_flight | in_flight] |> trim_in_flight
-    %S{ state | in_flight: in_flight, emit_time: emit_time + increment_emit}
+  defp emit_packet(packet, increment_emit, %S{in_flight: in_flight, emit_time: emit_time} = state) do
+    emitted_packet = timestamp_packet(packet, state) |> emit_packet!(emit_time, state.socket)
+    %S{ state |
+      in_flight: [emitted_packet | in_flight],
+      emit_time: emit_time + increment_emit
+    } |> monitor_in_flight
   end
 
-  defp emit_packet!(emit_time, packet, socket) do
+  defp monitor_in_flight(%S{in_flight: in_flight} = state) do
+    {unplayed, played} = in_flight |> trim_in_flight
+    monitor_source(played, %S{ state | in_flight: unplayed })
+  end
+
+  defp emit_packet!({timestamp, source_id, data} = packet, emit_time, socket) do
     emitter = :poolboy.checkout(Otis.EmitterPool)
-    Otis.Zone.Emitter.emit(emitter, emit_time, packet, socket)
+    Otis.Zone.Emitter.emit(emitter, emit_time, {timestamp, data}, socket)
     Tuple.insert_at(packet, 0, emitter)
   end
 
   defp trim_in_flight(packets) do
     now = monotonic_microseconds
-    Enum.filter packets, fn({_emitter, timestamp, _data}) ->
+    Enum.partition packets, fn({_emitter, timestamp, _source_id, _data}) ->
       timestamp > now
     end
+  end
+
+  defp monitor_source([], state) do
+    state
+  end
+  defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: nil} = state) do
+    source_changed(source_id)
+    monitor_source(packets, %S{ state | source_id:  source_id })
+  end
+  defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: source_id} = state) do
+    monitor_source(packets, state)
+  end
+  defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: playing_source_id} = state)
+  when source_id != playing_source_id do
+    source_changed(source_id)
+    monitor_source(packets, %S{ state | source_id:  source_id })
+  end
+
+  defp source_changed(new_source_id) do
+    Logger.info "SOURCE CHANGED #{ new_source_id }"
   end
 
   # Take all the in flight packets that we know haven't been played
@@ -252,13 +285,13 @@ defmodule Otis.Zone.Broadcaster do
   defp stop_inflight_packets([]) do
   end
 
-  defp stop_inflight_packets([{emitter, timestamp, _data} = _packet | packets]) do
+  defp stop_inflight_packets([{emitter, timestamp, _source_id, _data} = _packet | packets]) do
     Otis.Zone.Emitter.discard!(emitter, timestamp)
     stop_inflight_packets(packets)
   end
 
-  defp timestamp_packet({packet_number, data}, state) do
-    {timestamp_for_packet(packet_number, state), data}
+  defp timestamp_packet({packet_number, source_id, data}, state) do
+    {timestamp_for_packet(packet_number, state), source_id, data}
   end
 
   defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency}) do
@@ -279,8 +312,8 @@ defmodule Otis.Zone.Broadcaster do
 
   defp next_packet(n, buf, packet_number, audio_stream) do
     case Otis.AudioStream.frame(audio_stream) do
-      {:ok, packet} ->
-        buf = [{packet_number, packet} | buf]
+      {:ok, source_id, packet} = frame ->
+        buf = [{packet_number, source_id, packet} | buf]
         next_packet(n - 1, buf, packet_number + 1, audio_stream)
       :stopped ->
         buf = [:stop | buf]

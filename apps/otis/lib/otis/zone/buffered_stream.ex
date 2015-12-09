@@ -85,8 +85,8 @@ defmodule Otis.Zone.BufferedStream do
     %S{ state | queue: queue, packets: packets + 1, state: :playing }
   end
 
-  defp push({:ok, packet}, state) do
-    push(packet, state)
+  defp push({:ok, id, packet}, state) do
+    push({id, packet}, state)
   end
   defp push(packet, %S{queue: queue, packets: packets} = state) do
     queue = :queue.in(packet, queue)
@@ -102,8 +102,14 @@ defmodule Otis.Zone.BufferedStream do
   end
 
   defp pop(%S{packets: packets, queue: queue} = state, from) do
-    {{:value, packet}, queue} = :queue.out(queue)
-    GenServer.reply(from, {:ok, packet})
+    queue = case :queue.out(queue) do
+      {{:value, {id, packet}}, queue} ->
+        GenServer.reply(from, {:ok, id, packet})
+        queue
+      {{:value, :stopped}, queue} ->
+        GenServer.reply(from, :stopped)
+        queue
+    end
     monitor(%S{ state | queue: queue, packets: packets - 1})
   end
 

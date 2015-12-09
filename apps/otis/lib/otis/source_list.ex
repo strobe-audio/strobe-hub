@@ -78,8 +78,8 @@ defmodule Otis.SourceList do
   def handle_call(:next_source, _from, %{sources: []} = state) do
     {:reply, :done, state}
   end
-  def handle_call(:next_source, _from, %{sources: [source | sources]} = state) do
-    {:reply, {:ok, source}, %{ state | sources: sources }}
+  def handle_call(:next_source, _from, %{sources: [{id, source} | sources]} = state) do
+    {:reply, {:ok, id, source}, %{ state | sources: sources }}
   end
 
   def handle_call(:clear, _from, state) do
@@ -91,11 +91,21 @@ defmodule Otis.SourceList do
   end
 
   def handle_call({:add_source, source, index}, _from, %{sources: sources} = state) do
-    {:reply, {:ok, length(sources) + 1}, %{ state | sources: List.insert_at(sources, index, source) }}
+    sources = sources |> List.insert_at(index, source_with_id(source))
+    {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
   end
 
+  # TODO: replace count with the source's list id
   def handle_call({:skip, count}, _from, %{sources: sources} = state) do
     sources = sources |> Enum.drop(count)
     {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
+  end
+
+  def source_with_id(source) do
+    {next_source_id, source}
+  end
+
+  def next_source_id do
+    :erlang.unique_integer([:positive, :monotonic])
   end
 end
