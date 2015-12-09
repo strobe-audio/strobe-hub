@@ -73,6 +73,11 @@ defmodule Otis.SourceList do
     GenServer.call(list, {:skip, count})
   end
 
+  @doc "Lists the current sources"
+  def list(list) do
+    GenServer.call(list, :list)
+  end
+
   ###### GenServer Callbacks
 
   def handle_call(:next_source, _from, %{sources: []} = state) do
@@ -99,6 +104,10 @@ defmodule Otis.SourceList do
   def handle_call({:skip, count}, _from, %{sources: sources} = state) do
     sources = sources |> Enum.drop(count)
     {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
+  end
+
+  def handle_call(:list, _from, %{sources: sources} = state) do
+    {:reply, {:ok, sources}, state}
   end
 
   def source_with_id(source) do
