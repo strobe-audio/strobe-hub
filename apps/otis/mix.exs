@@ -35,7 +35,8 @@ defmodule Otis.Mixfile do
       {:poolboy, github: "devinus/poolboy"},
       {:monotonic, github: "magnetised/monotonic.ex"},
       {:enm, github: "basho/enm" },
-      {:erlsom, github: "willemdj/erlsom"}
+      {:erlsom, github: "willemdj/erlsom"},
+      {:uuid, "~> 1.1"},
     ]
   end
 end

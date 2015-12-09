@@ -105,7 +105,8 @@ defmodule Otis.SourceList do
     {next_source_id, source}
   end
 
+  # Has to be valid/unique across all source lists and across broadcaster restarts
   def next_source_id do
-    :erlang.unique_integer([:positive, :monotonic])
+    UUID.uuid1()
   end
 end
