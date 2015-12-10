@@ -267,14 +267,14 @@ defmodule Otis.Zone.Broadcaster do
   # the audio starts where it left off rather than losing a buffer's worth
   # of audio.
   defp rebuffer_in_flight(%{in_flight: in_flight, audio_stream: audio_stream} = state) do
-    packets = in_flight |> unplayed_packets |> Enum.map(fn({_, _, data}) -> data end)
+    packets = in_flight |> unplayed_packets |> Enum.map(fn({_, _, source_id, data}) -> {source_id, data} end)
     GenServer.cast(audio_stream, {:rebuffer, packets})
     %S{ state | in_flight: [] }
   end
 
   defp unplayed_packets(in_flight) do
     now = monotonic_microseconds
-    Enum.reject(in_flight, fn({_, timestamp, _}) -> timestamp <= now end)
+    Enum.reject(in_flight, fn({_, timestamp, _, _}) -> timestamp <= now end)
   end
 
   defp stop_inflight_packets(%S{in_flight: in_flight} = _state) do
