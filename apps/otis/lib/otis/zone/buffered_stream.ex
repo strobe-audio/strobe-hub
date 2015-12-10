@@ -45,8 +45,8 @@ defmodule Otis.Zone.BufferedStream do
     pid
   end
 
-  def handle_call(:frame, _from, %S{state: :stopped, packets: packets} = state) when packets == 0 do
-    {:reply, :stopped, %S{state | state: :waiting}}
+  def handle_call(:frame, _from, %S{state: :stopped, packets: 0} = state) do
+    {:reply, :stopped, state}
   end
 
   def handle_call(:frame, from, state) do
@@ -56,10 +56,14 @@ defmodule Otis.Zone.BufferedStream do
 
   def handle_call(:flush, _from, state) do
     Otis.Stream.flush(state.audio_stream)
-    {:reply, :ok, %S{ state | queue: :queue.new, state: :waiting, packets: 0 }}
+    {:reply, :ok, %S{ change_state(state, :waiting) | queue: :queue.new, packets: 0 }}
   end
 
-  def handle_cast({:frame, frame}, state) do
+  def handle_call(:reset, _from, state) do
+    {:reply, :ok, change_state(state, :waiting)}
+  end
+
+  def handle_cast({:push_frame, frame}, state) do
     {:noreply, push(frame, state)}
   end
 
@@ -82,51 +86,64 @@ defmodule Otis.Zone.BufferedStream do
   # No need to monitor this action as it's only called by the rebuffering
   defp unshift(packet, %S{queue: queue, packets: packets} = state) do
     queue = :queue.in_r(packet, queue)
-    %S{ state | queue: queue, packets: packets + 1, state: :playing }
+    %S{ state | queue: queue, packets: packets + 1 }
   end
 
+  defp push(:stopped, %S{waiting: nil} = state) do
+    change_state(state, :stopped)
+  end
+  defp push(:stopped, %S{waiting: waiting} = state) do
+    pop(change_state(_push(:stopped, state), :stopped), waiting)
+  end
   defp push({:ok, id, packet}, state) do
     push({id, packet}, state)
   end
-  defp push(packet, %S{queue: queue, packets: packets} = state) do
-    queue = :queue.in(packet, queue)
-    %S{ state | queue: queue, packets: packets + 1, state: :playing } |> monitor
+  defp push(packet, %S{ state: :playing } = state) do
+    _push(packet, state) |> monitor
+  end
+  defp push(packet, state) do
+    change_state(_push(packet, state), :playing) |> monitor
   end
 
-  defp push(:stopped, state) do
-    %S{ state | state: :stopped }
+  defp _push(packet, state) do
+    %S{ state | queue: :queue.in(packet, state.queue), packets: state.packets + 1}
   end
 
-  defp pop(%S{packets: packets} = state, from) when packets == 0 do
+
+  defp pop(%S{state: :stopped, packets: 0} = state, from) do
+    state
+  end
+  defp pop(%S{state: :stopped, packets: packets} = state, from) do
+    _pop(state, from)
+  end
+  defp pop(%S{packets: 0} = state, from) do
     fetch_async(%S{ state | waiting: from })
   end
-
-  defp pop(%S{packets: packets, queue: queue} = state, from) do
-    queue = case :queue.out(queue) do
+  defp pop(state, from) do
+    _pop(state, from)
+  end
+  defp _pop(state, from) do
+    queue = case :queue.out(state.queue) do
       {{:value, {id, packet}}, queue} ->
         GenServer.reply(from, {:ok, id, packet})
         queue
       {{:value, :stopped}, queue} ->
         GenServer.reply(from, :stopped)
         queue
+      {:empty, queue} -> queue
     end
-    monitor(%S{ state | queue: queue, packets: packets - 1})
+    %S{ state | queue: queue, packets: state.packets - 1 }
   end
 
   defp monitor(%S{state: :stopped} = state) do
     state
   end
-
   defp monitor(%S{waiting: nil, packets: packets, size: size} = state) when packets < size do
     case size - packets do
       1 -> nil
       _ -> Logger.warn "#{__MODULE__} #{packets}/#{size}"
     end
     fetch_async(state)
-  end
-  # unlikely - nothing waiting and we have exactly the right number of packets
-  defp monitor(%S{waiting: nil} = state) do
-    state
   end
 
   # Uncomment the below if the desired behaviour is for the buffer to be full
@@ -135,7 +152,10 @@ defmodule Otis.Zone.BufferedStream do
   when (not is_nil(waiting)) and (packets < size) do
     fetch_async(state)
   end
-
+  # unlikely - nothing waiting and we have exactly the right number of packets
+  defp monitor(%S{waiting: nil} = state) do
+    state
+  end
   defp monitor(%S{waiting: waiting} = state) do
     pop(%S{ state | waiting: nil }, waiting)
   end
@@ -147,6 +167,10 @@ defmodule Otis.Zone.BufferedStream do
       error -> Logger.warn "Error triggering fetcher process #{ inspect error }"
     end
     state
+  end
+
+  defp change_state(stream, state) do
+    %S{ stream | state: state}
   end
 
   # TODO: replace per-buffer fetcher process with a pool shared across zones
@@ -170,7 +194,7 @@ defmodule Otis.Zone.BufferedStream do
     end
 
     def fetch(from, stream) do
-      GenServer.cast(from, {:frame, Otis.AudioStream.frame(stream)})
+      GenServer.cast(from, {:push_frame, Otis.AudioStream.frame(stream)})
       loop(stream)
     end
   end

@@ -286,6 +286,7 @@ defmodule Otis.Zone do
   end
 
   defp zone_is_stopped(zone) do
+    Otis.Stream.reset(zone.audio_stream)
     %Zone{ zone | broadcaster: nil}
   end
 
