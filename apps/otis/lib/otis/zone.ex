@@ -238,6 +238,9 @@ defmodule Otis.Zone do
     zone |> stream_has_finished |> set_state(:stop)
   end
 
+  defp stream_has_finished(%Zone{broadcaster: nil} = zone) do
+    zone
+  end
   defp stream_has_finished(zone) do
     Otis.Broadcaster.stream_finished(zone.broadcaster)
     %Zone{zone | broadcaster: nil}
