@@ -7,7 +7,13 @@ defmodule Otis.Zone.Emitter do
   use     Monotonic
   require Logger
 
+  defstruct [:socket, pool: Otis.EmitterPool]
+
   # Public API
+
+  def new(socket) do
+    %__MODULE__{ socket: socket }
+  end
 
   def emit(emitter, timestamp, packet, socket) do
     send(emitter, {:emit, timestamp, packet, socket})

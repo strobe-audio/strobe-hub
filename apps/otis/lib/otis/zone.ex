@@ -16,11 +16,14 @@ defmodule Otis.Zone do
 
   alias Otis.Zone, as: Zone
 
+  # music starts playing after this many microseconds
+  @buffer_latency     50_000
+
   def start_link(id, name) do
     start_link(id, name, Otis.SourceList.empty)
   end
 
-  def start_link(id, name, {:ok, source_list }) do
+  def start_link(id, name, {:ok, source_list}) do
     start_link(id, name, source_list)
   end
 
@@ -294,7 +297,8 @@ defmodule Otis.Zone do
     opts = [
       zone: self,
       audio_stream: audio_stream,
-      socket: socket,
+      emitter: Otis.Zone.Emitter.new(socket),
+      # socket: socket,
       latency: receiver_latency(zone),
       stream_interval: Otis.stream_interval_us
     ]
