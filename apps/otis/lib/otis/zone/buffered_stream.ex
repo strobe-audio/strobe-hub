@@ -110,10 +110,10 @@ defmodule Otis.Zone.BufferedStream do
   end
 
 
-  defp pop(%S{state: :stopped, packets: 0} = state, from) do
+  defp pop(%S{state: :stopped, packets: 0} = state, _from) do
     state
   end
-  defp pop(%S{state: :stopped, packets: packets} = state, from) do
+  defp pop(%S{state: :stopped} = state, from) do
     _pop(state, from)
   end
   defp pop(%S{packets: 0} = state, from) do
