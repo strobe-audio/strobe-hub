@@ -45,7 +45,7 @@ defmodule Otis.Zone.Clock do
 
   def handle_info(:tick, %S{broadcasters: broadcasters} = state) do
     Enum.each broadcasters, fn(broadcaster) ->
-      cast(broadcaster, {:emit, now, state.poll_interval})
+      cast(broadcaster, {:emit, now, state.poll_interval * 1000})
     end
     {:noreply, state}
   end
