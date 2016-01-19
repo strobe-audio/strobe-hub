@@ -55,10 +55,6 @@ defmodule Otis.Zone.Broadcaster do
     round(stream_interval / 4)
   end
 
-  # def buffer_receiver(broadcaster) do
-  #   GenServer.cast(broadcaster, :buffer_receiver)
-  # end
-
   def start_link(opts) do
     GenServer.start_link(__MODULE__, opts, [])
   end
@@ -72,8 +68,6 @@ defmodule Otis.Zone.Broadcaster do
       emitter: opts.emitter,
       stream_interval: opts.stream_interval
     }
-    # Process.flag :priority, :high
-    # GenServer.cast(self, :start)
     {:ok, state}
   end
 
@@ -102,34 +96,11 @@ defmodule Otis.Zone.Broadcaster do
     {:stop, {:shutdown, :stopped}, kill!(state)}
   end
 
-  # The resend_packets system just resulted in the newly joined receiver
-  # trying to play very stale packets and hence joining the zone with
-  # very out-of-sync audio.
-  # def handle_cast(:buffer_receiver, state) do
-  #   packets = Enum.map(in_flight, &Tuple.delete_at(&1, 0)) |> Enum.reverse
-  #   resend_packets(packets, socket, monotonic_microseconds+2_000, 5_000)
-  #   {:noreply, state}
-  # end
-
   def handle_cast({:emit, time, interval}, state) do
-    state = state |> potentially_emit(time, interval)# |> schedule_emit
+    state = state |> potentially_emit(time, interval)
     {:noreply, state}
   end
 
-  # defp resend_packets([packet | packets], socket, emit_time, emit_time_increment) do
-  #   Logger.info "Resending packet..."
-  #   emit_packet!(packet, emit_time, socket)
-  #   resend_packets(packets, socket, emit_time + emit_time_increment, emit_time_increment)
-  # end
-  #
-  # defp resend_packets([], _socket, _emit_time, _emit_time_increment) do
-  # end
-
-  # Now I have the first n packets:
-  # - convert them from { seq. number, data } to { timestamp, data } @done
-  # - schedule them to be sent in < buffer interval intervals @done
-  # - save them into the `in_flight` list @done
-  # - schedule some kind of ticker to start posting packets at the defined interval
   defp start(now, latency, buffer_size, state) do
     Logger.info ">>>>>>>>>>>>> Fast send start......"
     {packets, packet_number} = next_packet(buffer_size, state)
@@ -141,7 +112,6 @@ defmodule Otis.Zone.Broadcaster do
     }
     state = fast_send_packets(packets, state)
     Logger.info "<<<<<<<<<<<<< Fast send over ......"
-    # state = schedule_emit(state)
     state
   end
 
@@ -190,16 +160,6 @@ defmodule Otis.Zone.Broadcaster do
     state = send_packets(packets, state)
     state
   end
-
-  # defp check_interval(%S{stream_interval: interval}) do
-  #   round((interval / 4) / 1000)
-  # end
-
-  # defp schedule_emit(state) do
-  #   Process.send_after(self, :emit, check_interval(state))
-  #   state
-  # end
-
 
   defp fast_send_packets([packet | packets], state) do
     state = emit_packet(packet, buffer_interval(state.stream_interval), state)

@@ -1,4 +1,5 @@
 defmodule Otis.Zone do
+  use     GenServer
   require Logger
 
   defstruct name:              "A Zone",
@@ -7,17 +8,18 @@ defmodule Otis.Zone do
             receivers:         HashSet.new,
             state:             :stop,
             broadcaster:       nil,
+            clock:             nil,
             audio_stream:      nil,
             broadcast_address: nil,
             socket:            nil,
             event_stream:      nil
 
-  use GenServer
 
   alias Otis.Zone, as: Zone
 
   # music starts playing after this many microseconds
   @buffer_latency     50_000
+  @buffer_size        25
 
   def start_link(id, name) do
     start_link(id, name, Otis.SourceList.empty)
@@ -261,25 +263,27 @@ defmodule Otis.Zone do
     %Zone{ zone | state: state } |> change_state
   end
 
-  defp change_state(%Zone{state: :play, broadcaster: nil} = zone) do
-    {:ok, pid } = start_broadcaster(zone)
-    %Zone{ zone | broadcaster: pid }
+  defp change_state(%Zone{state: :play, clock: nil} = zone) do
+    # TODO: share a clock between all zones
+    clock = Otis.Zone.Clock.new(Otis.stream_interval_us)
+    %Zone{ zone | clock: clock } |> change_state
   end
-
+  defp change_state(%Zone{state: :play, broadcaster: nil, clock: clock} = zone) do
+    {:ok, pid } = start_broadcaster(zone)
+    clock = Otis.Broadcaster.Clock.start(clock, pid, broadcaster_latency(zone), @buffer_size)
+    %Zone{ zone | broadcaster: pid, clock: clock }
+  end
   defp change_state(%Zone{state: :play} = zone) do
     zone
   end
-
   defp change_state(%Zone{state: :stop, broadcaster: nil} = zone) do
     Logger.debug("Zone stopped")
     zone_is_stopped(zone)
   end
-
   defp change_state(%Zone{id: _id, state: :stop, broadcaster: broadcaster} = zone) do
     Otis.Broadcaster.stop_broadcaster(broadcaster)
     change_state(%Zone{ zone | broadcaster: nil })
   end
-
   defp change_state(%Zone{state: :skip, broadcaster: nil} = zone) do
     zone
   end
@@ -288,20 +292,22 @@ defmodule Otis.Zone do
     change_state(%Zone{ zone | broadcaster: nil })
   end
 
+  defp broadcaster_latency(zone) do
+    receiver_latency(zone) + @buffer_latency
+  end
+
   defp zone_is_stopped(zone) do
     Otis.Stream.reset(zone.audio_stream)
     %Zone{ zone | broadcaster: nil}
   end
 
-  defp start_broadcaster(%Zone{audio_stream: audio_stream, socket: socket} = zone) do
-    opts = [
+  defp start_broadcaster(%Zone{audio_stream: audio_stream, socket: socket, clock: clock} = zone) do
+    opts = %{
       zone: self,
       audio_stream: audio_stream,
       emitter: Otis.Zone.Emitter.new(socket),
-      # socket: socket,
-      latency: receiver_latency(zone),
       stream_interval: Otis.stream_interval_us
-    ]
+    }
     Otis.Broadcaster.start_broadcaster(opts)
   end
 end

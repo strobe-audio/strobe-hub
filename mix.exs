@@ -4,6 +4,7 @@ defmodule Peep.Mixfile do
   def project do
     [apps_path: "apps",
      elixir: "~> 1.2",
+     consolidate_protocols: Mix.env != :test,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]

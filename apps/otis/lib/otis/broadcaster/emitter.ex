@@ -10,9 +10,9 @@ defprotocol Otis.Broadcaster.Emitter do
 end
 
 defimpl Otis.Broadcaster.Emitter, for: Otis.Zone.Emitter do
-  def emit(emitter, emit_time, {timestamp, data}) do
+  def emit(emitter, emit_time, packet) do
     pid = :poolboy.checkout(emitter.pool)
-    Otis.Zone.Emitter.emit(pid, emit_time, timestamp, emitter.socket)
+    Otis.Zone.Emitter.emit(pid, emit_time, packet, emitter.socket)
     {:emitter, pid}
   end
 
