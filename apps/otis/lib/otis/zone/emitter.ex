@@ -66,6 +66,7 @@ defmodule Otis.Zone.Emitter do
         Logger.warn "Late emitter: emit time (ms): #{Float.round(s/1000, 2)}; packet play in (ms): #{round((ts - now)/1000)}"
       _ ->
         # Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
+        nil
     end
     state = {{monotonic_microseconds, n, d}, {time, packet, socket}, config}
     test_packet state
