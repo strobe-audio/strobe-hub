@@ -42,7 +42,8 @@ defmodule Otis.Zone do
     {:ok, port} = Otis.PortSequence.next
     {:ok, event_stream} = GenEvent.start_link([])
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
-    {:ok, stream} = Otis.Zone.BufferedStream.seconds(source_list, 1)
+    {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, Otis.stream_bytes_per_step)
+    {:ok, stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
     {:ok, %Zone{ zone |
         audio_stream: stream,
         socket: socket,

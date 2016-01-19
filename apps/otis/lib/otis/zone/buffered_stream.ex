@@ -25,16 +25,16 @@ defmodule Otis.Zone.BufferedStream do
     round((seconds * 1000) / interval_ms)
   end
 
-  def seconds(source_list, seconds, bytes_per_packet \\ Otis.stream_bytes_per_step) do
-    start_link(source_list, bytes_per_packet, size_for_seconds(seconds))
+  def seconds(audio_stream, seconds) do
+    start_link(audio_stream, size_for_seconds(seconds))
   end
 
-  def start_link(source_list, bytes_per_packet, size) do
-    GenServer.start_link(__MODULE__, [source_list, bytes_per_packet, size])
+  def start_link(audio_stream, size) do
+    GenServer.start_link(__MODULE__, [audio_stream, size])
   end
 
-  def init([source_list, bytes_per_packet, size]) do
-    {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, bytes_per_packet)
+  def init([audio_stream, size]) do
+    # {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, bytes_per_packet)
     pid = start_fetcher(audio_stream)
     {:ok, %S{audio_stream: audio_stream, fetcher: pid, size: size, packets: 0 }}
   end
