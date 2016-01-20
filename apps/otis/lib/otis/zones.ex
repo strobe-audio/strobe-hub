@@ -45,29 +45,24 @@ defmodule Otis.Zones do
 
   ############# Callbacks
 
+  def init(args) do
+    {:ok, %{}}
+  end
+
   def handle_call(:list, _from, zone_list) do
-    zones = Enum.map zone_list, fn({_id, zone}) -> zone end
-    {:reply, {:ok, zones}, zone_list}
+    {:reply, {:ok, Map.values(zone_list)}, zone_list}
   end
 
   def handle_call({:find, id}, _from, zone_list) do
-    {:reply, find_by_id(zone_list, id), zone_list}
+    {:reply, Map.fetch(zone_list, id), zone_list}
   end
 
   def handle_cast({:add, zone}, zone_list) do
     {:ok, id} = Zone.id(zone)
-    {:noreply, [{id, zone} | zone_list]}
+    {:noreply, Map.put(zone_list, id, zone)}
   end
 
   defp find_by_id(zone_list, id) do
-    zone_list[id] |> zone_find_result
-  end
 
-  defp zone_find_result(nil) do
-    :error
-  end
-
-  defp zone_find_result(zone) do
-    {:ok, zone}
   end
 end
