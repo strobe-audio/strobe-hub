@@ -17,6 +17,7 @@ defmodule Otis.Supervisor do
       worker(Otis.DNSSD, []),
       worker(Otis.SNTP, []),
       worker(Otis.State, []),
+      worker(Otis.State.Events, []),
       worker(Otis.Repo, []),
       worker(Otis.PortSequence, [5040, 10]),
 
