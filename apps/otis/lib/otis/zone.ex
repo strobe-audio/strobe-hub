@@ -11,8 +11,7 @@ defmodule Otis.Zone do
             clock:             nil,
             audio_stream:      nil,
             broadcast_address: nil,
-            socket:            nil,
-            event_stream:      nil
+            socket:            nil
 
 
   alias Otis.Zone, as: Zone
@@ -40,15 +39,14 @@ defmodule Otis.Zone do
   def init(%Zone{ source_list: source_list } = zone) do
     Logger.info "#{__MODULE__} starting... #{ inspect zone }"
     {:ok, port} = Otis.PortSequence.next
-    {:ok, event_stream} = GenEvent.start_link([])
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, Otis.stream_bytes_per_step)
     {:ok, stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
     {:ok, %Zone{ zone |
         audio_stream: stream,
         socket: socket,
-        broadcast_address: {port},
-        event_stream: event_stream }
+        broadcast_address: {port}
+      }
     }
   end
 
@@ -107,10 +105,6 @@ defmodule Otis.Zone do
   @doc "Skip to the source with the given id"
   def skip(zone, count) do
     GenServer.cast(zone, {:skip, count})
-  end
-
-  def add_event_handler(zone, module, args) do
-    GenServer.call(zone, {:add_event_handler, module, args})
   end
 
   # Things we can do to zones:
@@ -176,11 +170,6 @@ defmodule Otis.Zone do
     {:reply, {:ok, broadcast_address}, zone}
   end
 
-  def handle_call({:add_event_handler, module, args}, _from, zone) do
-    :ok = GenEvent.add_handler(zone.event_stream, module, args)
-    {:reply, {:ok, zone.event_stream}, zone}
-  end
-
   def handle_cast(:stream_finished, %Zone{} = zone) do
     zone = stream_finished!(zone)
     {:noreply, zone}
@@ -221,7 +210,7 @@ defmodule Otis.Zone do
   end
 
   defp event!(name, params, zone) do
-    GenEvent.notify(zone.event_stream, {name, zone.id, params})
+    Otis.State.Events.notify({name, zone.id, params})
   end
 
   def receiver_latency(%Zone{receivers: %HashSet{} = recs}) do
