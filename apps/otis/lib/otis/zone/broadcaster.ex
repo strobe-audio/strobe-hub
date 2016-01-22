@@ -25,7 +25,8 @@ defmodule Otis.Zone.Broadcaster do
       packet_number: 0,
       in_flight: [],
       source_id: nil,
-      emit_time: 0
+      emit_time: 0,
+      state: :play
     ]
   end
 
@@ -110,7 +111,7 @@ defmodule Otis.Zone.Broadcaster do
       packet_number: packet_number,
       latency: latency
     }
-    state = fast_send_packets(packets, state)
+    state = fast_send_packets(packets, state, now) |> monitor_in_flight(now)
     Logger.info "<<<<<<<<<<<<< Fast send over ......"
     state
   end
@@ -129,88 +130,92 @@ defmodule Otis.Zone.Broadcaster do
   # send
   defp stop!(state) do
     Logger.info "Stopping broadcaster..."
+    {:ok, zone_id} = Otis.Zone.id(state.zone)
+    Otis.State.Events.notify({:zone_stop, zone_id})
     kill(state)
     rebuffer_in_flight(state)
   end
 
   # The audio stream has finished, so tell the zone we're done so it can shut
   # us down properly
-  defp finish(%S{in_flight: [], zone: zone} = state) do
-    Logger.debug "Stream finished"
-    Otis.Zone.stream_finished(zone)
+  defp finish(%S{in_flight: [], state: :stopped} = state, _time) do
     state
   end
-
-  defp finish(state) do
-    monitor_in_flight(state)
+  defp finish(%S{in_flight: [], zone: zone, state: :play} = state, _time) do
+    Logger.debug "Stream finished"
+    {:ok, zone_id} = Otis.Zone.id(zone)
+    Otis.State.Events.notify({:zone_finished, zone_id})
+    Otis.Zone.stream_finished(zone)
+    %S{ state | state: :stopped }
+  end
+  defp finish(state, time) do
+    monitor_in_flight(state, time)
   end
 
   defp potentially_emit(%S{emit_time: emit_time} = state, time, interval) do
     next_check = time + interval
     diff = (next_check - emit_time)
     if (abs(diff) < interval) || (diff > 0) do
-      state = send_next_packet(state)
+      state = send_next_packet(state, time)
     end
     state
   end
 
-  defp send_next_packet(%S{} = state) do
+  defp send_next_packet(%S{} = state, time) do
     {packets, packet_number} = next_packet(1, state)
     state = %S{state | packet_number: packet_number}
-    state = send_packets(packets, state)
+    state = send_packets(packets, state, time)
     state
   end
 
-  defp fast_send_packets([packet | packets], state) do
-    state = emit_packet(packet, buffer_interval(state.stream_interval), state)
-    fast_send_packets(packets, state)
+  defp fast_send_packets([packet | packets], state, time) do
+    state = emit_packet(packet, buffer_interval(state.stream_interval), state, time)
+    fast_send_packets(packets, state, time)
   end
 
-  defp fast_send_packets([], %S{} = state) do
+  defp fast_send_packets([], %S{} = state, _time) do
     state
   end
 
-  defp send_packets([packet | packets], state) do
-    state = send_packet(packet, state)
-    send_packets(packets, state)
+  defp send_packets([packet | packets], state, time) do
+    state = send_packet(packet, state, time)
+    send_packets(packets, state, time)
   end
 
-  defp send_packets([], state) do
+  defp send_packets([], state, _time) do
     state
   end
 
-  defp send_packet(packet, %S{stream_interval: interval} = state) do
-    emit_packet(packet, interval, state)
+  defp send_packet(packet, %S{stream_interval: interval} = state, time) do
+    emit_packet(packet, interval, state, time)
   end
 
-  defp emit_packet(:stop, _increment_emit, state) do
-    finish(state)
+  defp emit_packet(:stop, _increment_emit, state, time) do
+    finish(state, time)
   end
 
-  defp emit_packet(packet, increment_emit, %S{emit_time: emit_time} = state) do
+  defp emit_packet(packet, increment_emit, %S{emit_time: emit_time} = state, time) do
     emitted_packet = packet |> timestamp_packet(state)
                             |> emit_packet!(state.emitter, emit_time)
     %S{ state |
       in_flight: [emitted_packet | state.in_flight],
       emit_time: emit_time + increment_emit
-    } |> monitor_in_flight
+    } |> monitor_in_flight(time)
   end
 
-  defp monitor_in_flight(state) do
-    {unplayed, played} = state |> partition_in_flight(monotonic_microseconds)
+  defp monitor_in_flight(state, time) do
+    {unplayed, played} = state |> partition_in_flight(time)
     monitor_source(played, %S{ state | in_flight: unplayed })
   end
 
   defp emit_packet!({timestamp, source_id, data}, emitter, emit_time) do
     {:emitter, emitter} = Otis.Broadcaster.Emitter.emit(emitter, emit_time, {timestamp, data})
-    # emitter = :poolboy.checkout(Otis.EmitterPool)
-    # Otis.Zone.Emitter.emit(emitter, emit_time, {timestamp, data}, socket)
     {emitter, timestamp, source_id, data}
   end
 
-  defp partition_in_flight(%S{in_flight: packets}, now) do
+  defp partition_in_flight(%S{in_flight: packets}, time) do
     Enum.partition packets, fn({_, timestamp, _, _}) ->
-      timestamp > now
+      timestamp > time
     end
   end
 
@@ -218,7 +223,7 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
   defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: nil} = state) do
-    source_changed(source_id)
+    source_changed(source_id, state)
     monitor_source(packets, %S{ state | source_id:  source_id })
   end
   defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: source_id} = state) do
@@ -226,12 +231,14 @@ defmodule Otis.Zone.Broadcaster do
   end
   defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: playing_source_id} = state)
   when source_id != playing_source_id do
-    source_changed(source_id)
+    source_changed(source_id, state)
     monitor_source(packets, %S{ state | source_id:  source_id })
   end
 
-  defp source_changed(new_source_id) do
+  defp source_changed(new_source_id, state) do
     Logger.info "SOURCE CHANGED #{ new_source_id }"
+    {:ok, zone_id} = Otis.Zone.id(state.zone)
+    Otis.State.Events.notify({:source_changed, zone_id, new_source_id})
   end
 
   # Take all the in flight packets that we know haven't been played

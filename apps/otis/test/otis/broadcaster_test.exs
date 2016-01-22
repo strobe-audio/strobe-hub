@@ -1,12 +1,12 @@
 defmodule Otis.Test.ArrayAudioStream do
   use GenServer
 
-  def start_link(packets) do
-    Kernel.apply GenServer, :start_link, [__MODULE__, packets]
+  def start_link(sources) do
+    Kernel.apply GenServer, :start_link, [__MODULE__, sources]
   end
 
-  def init(packets) do
-    {:ok, %{ packets: packets }}
+  def init(sources) do
+    {:ok, %{ sources: sources, packets: [], source_id: nil }}
   end
 
   def handle_call(:frame, _from, state) do
@@ -14,11 +14,19 @@ defmodule Otis.Test.ArrayAudioStream do
     {:reply, packet, state}
   end
 
-  def next_packet(%{packets: []} = state) do
+  def handle_cast({:rebuffer, _packets}, state) do
+    {:noreply, state}
+  end
+
+  def next_packet(%{packets: [], sources: []} = state) do
     { :stopped, %{ state | packets: [] } }
   end
-  def next_packet(%{packets: [packet | packets]} = state) do
-    { {:ok, "source-1", packet}, %{ state | packets: packets } }
+  def next_packet(%{packets: [], sources: [source | sources]} = state) do
+    [source_id, packets] = source
+    next_packet(%{ state | packets: packets, source_id: source_id, sources: sources})
+  end
+  def next_packet(%{packets: [packet | packets], source_id: source_id} = state) do
+    { {:ok, source_id, packet}, %{ state | packets: packets } }
   end
 end
 
@@ -58,6 +66,14 @@ defmodule Otis.Test.SteppingClock do
     %__MODULE__{ clock | broadcaster: broadcaster }
   end
 
+  def stop(clock, broadcaster) do
+    Otis.Broadcaster.stop_broadcaster(broadcaster)
+    %__MODULE__{ clock | broadcaster: nil }
+  end
+
+  def step(%__MODULE__{broadcaster: nil} = clock, _time, _interval) do
+    clock
+  end
   def step(%__MODULE__{broadcaster: broadcaster} = clock, time, interval) do
     GenServer.cast(broadcaster, {:emit, time, interval})
     clock
@@ -80,16 +96,23 @@ defimpl Otis.Broadcaster.Clock, for: Otis.Test.SteppingClock do
   def start(clock, broadcaster, latency, buffer_size) do
     Otis.Test.SteppingClock.start(clock, broadcaster, latency, buffer_size)
   end
+  def stop(clock, broadcaster) do
+    Otis.Test.SteppingClock.stop(clock, broadcaster)
+  end
 end
 
 defmodule Otis.BroadcasterTest do
   use   ExUnit.Case, async: true
 
   setup do
-    {:ok, zone} = Otis.Zones.start_zone(UUID.uuid1(), "Zone")
-    packets = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
+    zone_id = UUID.uuid1()
+    {:ok, zone} = Otis.Zones.start_zone(zone_id, "Zone")
+    packets1 = (1..10) |> Enum.map(&Integer.to_string(&1, 10))
+    source1 = [UUID.uuid1(), packets1]
+    packets2 = (11..20) |> Enum.map(&Integer.to_string(&1, 10))
+    source2 = [UUID.uuid1(), packets2]
     # - a audio stream that emits known packets
-    {:ok, stream} = Otis.Test.ArrayAudioStream.start_link(packets)
+    {:ok, stream} = Otis.Test.ArrayAudioStream.start_link([source1, source2])
     # - an emitter impl that records the packets emitted (& when!)
     {:ok, emitter} = Otis.Test.RecordingEmitter.new(self)
     # - a clock implementation that is step-able
@@ -102,23 +125,45 @@ defmodule Otis.BroadcasterTest do
       stream_interval: 10
     }
 
-    {:ok, broadcaster} = Otis.Zone.Broadcaster.start_link(opts)
+    {:ok, broadcaster} = Otis.Broadcaster.start_broadcaster(opts)
 
     # save a handy timestamp calculation function
     timestamp = &Otis.Zone.Broadcaster.timestamp_for_packet(&1, clock.start_time, opts.stream_interval, clock.latency)
 
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    on_exit fn ->
+      Otis.State.Events.remove_handler(MessagingHandler, self)
+    end
+
     {:ok,
+      zone_id: zone_id,
       zone: zone,
-      packets: packets,
+      packets1: packets1,
+      packets2: packets2,
       stream: stream,
       emitter: emitter,
       clock: clock,
       opts: opts,
       broadcaster: broadcaster,
       timestamp: timestamp,
-      latency: 0
+      latency: 0,
+      source1: source1,
+      source2: source2
     }
   end
+
+  test "audio stream sends right packets & source ids", %{source1: source1, source2: source2, stream: stream} do
+    [source_id1, packets1] = source1
+    Enum.each packets1, fn(packet) ->
+      {:ok, ^source_id1, ^packet} = Otis.AudioStream.frame(stream)
+    end
+    [source_id2, packets2] = source2
+    Enum.each packets2, fn(packet) ->
+      {:ok, ^source_id2, ^packet} = Otis.AudioStream.frame(stream)
+    end
+    :stopped = Otis.AudioStream.frame(stream)
+  end
+
   test "it sends the right number of buffer packets", state do
     buffer_size = 5
 
@@ -126,7 +171,7 @@ defmodule Otis.BroadcasterTest do
 
     Enum.each 0..(buffer_size - 1), fn(n) ->
       ts = state.timestamp.(n)
-      {:ok, packet} = Enum.fetch state.packets, n
+      {:ok, packet} = Enum.fetch state.packets1, n
       expect = {:emit, n * Otis.Zone.Broadcaster.buffer_interval(state.opts.stream_interval), {ts, packet}}
       assert_receive ^expect, 1000, "Not received #{n}"
     end
@@ -190,5 +235,70 @@ defmodule Otis.BroadcasterTest do
     time = time + poll_interval
     Otis.Test.SteppingClock.step(clock, time, poll_interval)
     assert_receive {:emit, _, _}, 200, "Not received #{time}"
+  end
+
+  test "it broadcasts a source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = state do
+
+    buffer_size = 5
+    poll_interval = round(state.opts.stream_interval / 1)
+
+    clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
+
+    time = state.timestamp.(1)
+
+    [source_id1, _] = source1
+    [source_id2, _] = source2
+
+    Otis.Test.SteppingClock.step(clock, time + poll_interval, poll_interval)
+    assert_receive {:emit, _, _}, 200
+    assert_receive {:source_changed, ^zone_id, ^source_id1}, 200
+
+
+    Enum.each 2..9, fn(n) ->
+      Otis.Test.SteppingClock.step(clock, time + (n * poll_interval), poll_interval)
+      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+    end
+
+    assert_receive {:source_changed, ^zone_id, ^source_id2}, 200
+
+    Enum.each 10..20, fn(n) ->
+      Otis.Test.SteppingClock.step(clock, time + (n * poll_interval), poll_interval)
+      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+    end
+  end
+
+  test "it broadcasts a stream finished event", %{ zone_id: zone_id } = state do
+
+    buffer_size = 5
+    poll_interval = round(state.opts.stream_interval / 1)
+
+    clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
+
+    time = state.timestamp.(1)
+
+    Enum.each 1..9, fn(n) ->
+      Otis.Test.SteppingClock.step(clock, time + (n * poll_interval), poll_interval)
+      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+    end
+
+    Enum.each 10..20, fn(n) ->
+      Otis.Test.SteppingClock.step(clock, time + (n * poll_interval), poll_interval)
+      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+    end
+
+    Otis.Test.SteppingClock.step(clock, time + (21 * poll_interval), poll_interval)
+    assert_receive {:zone_finished, ^zone_id}, 200
+  end
+
+  test "it broadcasts a stream stop event", %{ zone_id: zone_id } = state do
+
+    buffer_size = 5
+
+    _clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
+
+    _clock = Otis.Broadcaster.Clock.stop(state.clock, state.broadcaster)
+
+    assert_receive {:zone_stop, ^zone_id}, 200
+
   end
 end

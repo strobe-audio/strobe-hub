@@ -24,16 +24,16 @@ defmodule Otis.Zone do
     start_link(id, name, Otis.SourceList.empty)
   end
 
+  def start_link(id, name, source_list) when is_atom(id) do
+    start_link(Atom.to_string(id), name, source_list)
+  end
+
   def start_link(id, name, {:ok, source_list}) do
     start_link(id, name, source_list)
   end
 
-  def start_link(id, name, source_list) when is_binary(id) do
-    start_link(String.to_atom(id), name, source_list)
-  end
-
   def start_link(id, name, source_list) do
-    GenServer.start_link(__MODULE__, %Zone{ id: id, name: name, source_list: source_list, broadcaster: nil }, name: id)
+    GenServer.start_link(__MODULE__, %Zone{ id: id, name: name, source_list: source_list, broadcaster: nil }, name: String.to_atom("zone-#{id}"))
   end
 
   def init(%Zone{ source_list: source_list } = zone) do
@@ -259,9 +259,9 @@ defmodule Otis.Zone do
     %Zone{ zone | clock: clock } |> change_state
   end
   defp change_state(%Zone{state: :play, broadcaster: nil, clock: clock} = zone) do
-    {:ok, pid } = start_broadcaster(zone)
-    clock = Otis.Broadcaster.Clock.start(clock, pid, broadcaster_latency(zone), @buffer_size)
-    %Zone{ zone | broadcaster: pid, clock: clock }
+    {:ok, broadcaster} = start_broadcaster(zone)
+    clock = Otis.Broadcaster.Clock.start(clock, broadcaster, broadcaster_latency(zone), @buffer_size)
+    %Zone{ zone | broadcaster: broadcaster, clock: clock }
   end
   defp change_state(%Zone{state: :play} = zone) do
     zone
@@ -270,9 +270,9 @@ defmodule Otis.Zone do
     Logger.debug("Zone stopped")
     zone_is_stopped(zone)
   end
-  defp change_state(%Zone{id: _id, state: :stop, broadcaster: broadcaster} = zone) do
-    Otis.Broadcaster.stop_broadcaster(broadcaster)
-    change_state(%Zone{ zone | broadcaster: nil })
+  defp change_state(%Zone{id: id, state: :stop, broadcaster: broadcaster} = zone) do
+    clock = Otis.Broadcaster.Clock.stop(zone.clock, broadcaster)
+    change_state(%Zone{ zone | broadcaster: nil, clock: zone.clock })
   end
   defp change_state(%Zone{state: :skip, broadcaster: nil} = zone) do
     zone

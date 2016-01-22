@@ -50,4 +50,17 @@ defmodule TestHandler do
   end
 end
 
+defmodule MessagingHandler do
+  use GenEvent
+
+  def init(parent) do
+    {:ok, parent}
+  end
+
+  def handle_event(event, parent) do
+    send(parent, event)
+    {:ok, parent}
+  end
+end
+
 ExUnit.start()
