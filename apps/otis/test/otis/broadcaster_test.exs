@@ -291,14 +291,9 @@ defmodule Otis.BroadcasterTest do
   end
 
   test "it broadcasts a stream stop event", %{ zone_id: zone_id } = state do
-
     buffer_size = 5
-
     _clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
-
     _clock = Otis.Broadcaster.Clock.stop(state.clock, state.broadcaster)
-
     assert_receive {:zone_stop, ^zone_id}, 200
-
   end
 end
