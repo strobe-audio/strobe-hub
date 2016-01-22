@@ -22,17 +22,17 @@ Otis.Zone.play_pause(zone)
 # Office
 #############
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 ## 5m Silence
 
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/5m-silence.mp3")
 Otis.SourceList.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
 ## 1 hr silence
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 Enum.each 1..12, fn(_) ->
   {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/5m-silence.mp3")
@@ -41,7 +41,7 @@ end
 Otis.Zone.play_pause(zone)
 
 ## 5 hr silence
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 Enum.each 1..60, fn(_) ->
   {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/5m-silence.mp3")
@@ -49,7 +49,7 @@ Enum.each 1..60, fn(_) ->
 end
 Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/SongMaven-Click-Track-120-BPM.mp3")
 Otis.SourceList.append_source(ss, source)
@@ -61,26 +61,26 @@ Otis.SourceList.append_source(ss, source)
 
 Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/apex-twin--peek-824545201.m4a")
 Otis.SourceList.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/shubert-piano-quintet.m4a")
 Otis.SourceList.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/shubert-piano-quintet.m4a")
 Otis.SourceList.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Music/iTunes/iTunes Media/Music/Oliver Jeffers/How to catch a star/01 Untitled.m4a")
 Otis.SourceList.append_source(ss, source)
@@ -89,7 +89,33 @@ Otis.Zone.play_pause(zone)
 ## Albums
 
 
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
+{:ok, ss} = Otis.Zone.source_list(zone)
+
+{:ok, sources} = Otis.Filesystem.directory("/Users/garry/Music/iTunes/iTunes Media/Music/Richard Dawson/The Magic Bridge")
+Otis.SourceList.append_sources(ss, sources)
+Otis.Zone.play_pause(zone)
+
+{:ok, zone} = Otis.Zones.find "downstairs"
+{:ok, ss} = Otis.Zone.source_list(zone)
+{:ok, sources} = Otis.Filesystem.directory("/Users/garry/Music/iTunes/iTunes Media/Music/Richard Dawson/The Glass Trunk")
+Otis.SourceList.append_sources(ss, sources)
+Otis.Zone.play_pause(zone)
+
+{:ok, zone} = Otis.Zones.find "office"
+{:ok, ss} = Otis.Zone.source_list(zone)
+{:ok, sources} = Otis.Filesystem.directory("/Users/garry/Music/iTunes/iTunes Media/Music/Richard Dawson/Nothing Important")
+Otis.SourceList.append_sources(ss, sources)
+
+Otis.Zone.play_pause(zone)
+
+{:ok, zone} = Otis.Zones.find "office"
+{:ok, ss} = Otis.Zone.source_list(zone)
+{:ok, sources} = Otis.Filesystem.directory("/Users/garry/Seafile/Peep/audio/Tomorrow's Modern Boxes")
+Otis.SourceList.append_sources(ss, sources)
+Otis.Zone.play_pause(zone)
+
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, sources} = Otis.Filesystem.directory("/Users/garry/Seafile/Peep/audio/Tomorrow's Modern Boxes")
 Otis.SourceList.append_sources(ss, sources)
@@ -101,7 +127,7 @@ Otis.Zone.skip(zone, "3c283aeb0c669255fe59359b97a11616")
 
 
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Jackson 5/Jackson 5_ The Ultimate Collection"
@@ -109,32 +135,32 @@ Otis.SourceList.append_sources(ss, sources)
 
 Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Queen/Greatest Hits I"
 Otis.SourceList.append_sources(ss, sources)
 
 Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Deerhoof/Milk Man"
 Otis.SourceList.append_sources(ss, sources)
 Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Pixies/Doolittle"
 Otis.SourceList.append_sources(ss, sources)
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Pavement/Westing (By Musket And Sextant)"
 Otis.SourceList.append_sources(ss, sources)
 
 
 # CELLO
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, sources} = Otis.Filesystem.directory "/Users/garry/Music/iTunes/iTunes Media/Music/Compilations/Cello Suites 1, 4 & 5"
 Otis.SourceList.append_sources(ss, sources)
@@ -157,10 +183,12 @@ Otis.SourceList.append_source(ss, source)
 
 
 ## SHORT SAMPLE
-{:ok, zone} = Otis.Zones.find :downstairs
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "downstairs"
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 
+{:ok, zone} = Otis.Zones.find "office"
+{:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/song.mp3")
 Otis.SourceList.append_source(ss, source)
 Otis.SourceList.append_source(ss, source)
@@ -170,15 +198,16 @@ Otis.SourceList.append_source(ss, source)
 Otis.SourceList.append_source(ss, source)
 Otis.SourceList.append_source(ss, source)
 Otis.SourceList.append_source(ss, source)
+Otis.Zone.play_pause(zone)
 
-{:ok, zone} = Otis.Zones.find :office
+{:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/song.mp3")
 Otis.SourceList.append_source(ss, source)
 
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/song.mp3")
 Otis.SourceList.append_source(ss, source)
@@ -187,7 +216,7 @@ Otis.Zone.play_pause(zone)
 
 #############
 
-{:ok, zone} = Otis.Zones.find :downstairs
+{:ok, zone} = Otis.Zones.find "downstairs"
 
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/SongMaven-Click-Track-120-BPM.mp3")
