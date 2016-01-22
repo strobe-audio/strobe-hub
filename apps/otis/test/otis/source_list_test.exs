@@ -3,10 +3,10 @@ defmodule Otis.Source.Test do
     %{ id: id }
   end
   def id(%{id: id}), do: id
-  def open!(source, packet_size_bytes), do: []
-  def close(file, source)
-  def audio_type(source), do: {"mp3", "audio/mpeg"}
-  def metadata(source), do: %Otis.Source.Metadata{}
+  def open!(_source, _packet_size_bytes), do: []
+  def close(_file, _source), do: nil
+  def audio_type(_source), do: {"mp3", "audio/mpeg"}
+  def metadata(_source), do: %Otis.Source.Metadata{}
 end
 
 defmodule Otis.SourceListTest do
@@ -26,13 +26,13 @@ defmodule Otis.SourceListTest do
 
   test "skips a single track", state do
     {:ok, 3} = Otis.SourceList.skip(state.source_list, 1)
-    {:ok, source} = Otis.SourceList.next(state.source_list)
+    {:ok, _id, source} = Otis.SourceList.next(state.source_list)
     assert source.id == "b"
   end
 
   test "skips multiple tracks", state do
     {:ok, 1} = Otis.SourceList.skip(state.source_list, 3)
-    {:ok, source} = Otis.SourceList.next(state.source_list)
+    {:ok, _id, source} = Otis.SourceList.next(state.source_list)
     assert source.id == "d"
   end
 end

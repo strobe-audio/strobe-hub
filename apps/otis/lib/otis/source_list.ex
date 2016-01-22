@@ -15,7 +15,7 @@ defmodule Otis.SourceList do
   @doc "Start a new list instance from the given list of sources"
   @spec from_list([Otis.Source.t]) :: {:ok, pid}
   def from_list(sources) do
-    source = %{sources: sources, position: 0}
+    source = %{sources: Enum.map(sources, &source_with_id/1), position: 0}
     start_link(source)
   end
 
