@@ -12,16 +12,16 @@ defmodule ZonesTest do
   alias Otis.Zone
 
   test "allows for the adding of a zone", %{zones: zones} do
-    {:ok, zone} = Zone.start_link(:zone_1, "Downstairs")
+    {:ok, zone} = Zone.start_link("zone_1", "Downstairs")
     Otis.Zones.add(zones, zone)
     {:ok, list } = Otis.Zones.list(zones)
     assert list == [zone]
   end
 
   test "lets you retrieve a zone by id", %{zones: zones} do
-    {:ok, zone} = Zone.start_link(:zone_1, "Downstairs")
+    {:ok, zone} = Zone.start_link("zone_1", "Downstairs")
     Otis.Zones.add(zones, zone)
-    {:ok, found } = Otis.Zones.find(zones, :zone_1)
+    {:ok, found } = Otis.Zones.find(zones, "zone_1")
     assert found == zone
   end
 
@@ -56,7 +56,7 @@ defmodule Otis.ZoneTest do
 
   test "gives its id", %{zone: zone} do
     {:ok, id} = Otis.Zone.id(zone)
-    assert id == :zone_1
+    assert id == "zone_1"
   end
 
   test "starts with an empty receiver list", %{zone: zone} do
@@ -101,6 +101,6 @@ defmodule Otis.ZoneTest do
     :ok = Otis.State.Events.add_handler(TestHandler, [])
     :ok = Otis.Zone.add_receiver(zone, receiver)
     messages = Otis.State.Events.call(TestHandler, :messages)
-    assert messages == [{:receiver_added, :zone_1, {:receiver_2}}]
+    assert messages == [{:receiver_added, "zone_1", {:receiver_2}}]
   end
 end
