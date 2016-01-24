@@ -170,9 +170,8 @@ defmodule Otis.Zone do
     {:reply, {:ok, broadcast_address}, zone}
   end
 
-  def handle_cast(:stream_finished, %Zone{} = zone) do
-    zone = stream_finished!(zone)
-    {:noreply, zone}
+  def handle_cast(:stream_finished, zone) do
+    {:noreply, stream_finished!(zone)}
   end
 
   # TODO: handle the case where we skip past the end of the source list...
@@ -237,7 +236,6 @@ defmodule Otis.Zone do
     zone
   end
   defp stream_has_finished(zone) do
-    Otis.Broadcaster.stream_finished(zone.broadcaster)
     %Zone{zone | broadcaster: nil}
   end
 

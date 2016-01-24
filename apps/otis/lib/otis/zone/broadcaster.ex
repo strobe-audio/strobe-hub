@@ -83,14 +83,6 @@ defmodule Otis.Zone.Broadcaster do
     {:stop, {:shutdown, :stopped}, stop!(state)}
   end
 
-  def handle_cast({:stop, :stream_finished}, state) do
-    # I can just stop the broadcaster process here because this message
-    # originated in the emit_packet method so everything that needs to have
-    # been sent to the players has already been sent
-    Logger.info "Stream finished, stopping broadcaster..."
-    {:stop, {:shutdown, :stopped}, state}
-  end
-
   # This stops the broadcaster & drops any unsent packets
   # Used during track skipping
   def handle_cast({:stop, :skip}, state) do
@@ -98,8 +90,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   def handle_cast({:emit, time, interval}, state) do
-    state = state |> potentially_emit(time, interval)
-    {:noreply, state}
+    state = state |> potentially_emit(time, interval) |> monitor_finish
   end
 
   defp start(now, latency, buffer_size, state) do
@@ -134,6 +125,13 @@ defmodule Otis.Zone.Broadcaster do
     Otis.State.Events.notify({:zone_stop, zone_id})
     kill(state)
     rebuffer_in_flight(state)
+  end
+
+  defp monitor_finish(%{state: :stopped} = state) do
+    {:stop, {:shutdown, :stopped}, state}
+  end
+  defp monitor_finish(state) do
+    {:noreply, state}
   end
 
   # The audio stream has finished, so tell the zone we're done so it can shut
