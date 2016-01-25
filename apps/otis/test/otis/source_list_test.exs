@@ -52,6 +52,23 @@ defmodule Otis.SourceListTest do
     assert length(ids) == l + 2
   end
 
+  test "#next iterates the source list" do
+    {:ok, a } = Otis.Source.File.new("test/fixtures/silent.mp3")
+    {:ok, b } = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
+    {:ok, source_list} = Otis.SourceList.from_list([a, b])
+
+    {:ok, _uuid, source} = Otis.SourceList.next(source_list)
+    %Otis.Source.File{path: path} = source
+
+    assert path == Path.expand("../fixtures/silent.mp3", __DIR__)
+
+    {:ok, _uuid, source} = Otis.SourceList.next(source_list)
+    %Otis.Source.File{path: path} = source
+    assert path == Path.expand("../fixtures/snake-rag.mp3", __DIR__)
+
+    result = Otis.SourceList.next(source_list)
+    assert result == :done
+  end
   test "skips a single track", state do
     {:ok, 3} = Otis.SourceList.skip(state.source_list, 1)
     {:ok, _id, source} = Otis.SourceList.next(state.source_list)
@@ -64,3 +81,5 @@ defmodule Otis.SourceListTest do
     assert source.id == "d"
   end
 end
+
+

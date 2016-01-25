@@ -9,8 +9,6 @@ defmodule RecieversTest do
     {:ok, recs: recs}
   end
 
-  alias Otis.Receiver
-
   test "allows for the adding of a receiver", %{recs: recs} do
     {:ok, rec} = Otis.Receiver.start_link(self, "receiver_1", %{ "latency" => 0 })
     Otis.Receivers.add(recs, rec)

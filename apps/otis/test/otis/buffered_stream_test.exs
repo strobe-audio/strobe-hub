@@ -18,7 +18,7 @@ defmodule Test.ArrayAudioStream do
   end
 end
 
-defmodule Otis.BroadcasterTest do
+defmodule Otis.BufferedStreamTest do
   use   ExUnit.Case, async: true
   setup do
     :ok

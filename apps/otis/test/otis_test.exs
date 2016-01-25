@@ -11,10 +11,6 @@ defmodule TestUtils do
     _md5(extract.(), extract, :crypto.hash_update(md5, data))
   end
 
-  defp _md5({:ok, data}, extract, md5) do
-    _md5(extract.(), extract, :crypto.hash_update(md5, data))
-  end
-
   defp _md5(:stopped, _extract, md5) do
     :crypto.hash_final(md5) |> Base.encode16 |> String.downcase
   end
@@ -69,32 +65,6 @@ defmodule OtisTest do
     hash = TestUtils.md5 fn() -> Otis.SourceStream.chunk(stream) end
     # avconv -i test/fixtures/snake-rag.mp3 -f s16le -ac 2 -ar 44100 - | md5
     assert hash == "ba5a1791d3a00ac3ec31f2fe490a90c5"
-  end
-end
-
-defmodule Otis.SourceListTest do
-  use ExUnit.Case, async: true
-
-  setup do
-    {:ok, a } = Otis.Source.File.new("test/fixtures/silent.mp3")
-    {:ok, b } = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
-    {:ok, source_list} = Otis.SourceList.from_list([a, b])
-    {:ok, source_list: source_list}
-  end
-
-  test "array sources should iterate the array", %{source_list: source_list} do
-
-    {:ok, _uuid, source} = Otis.SourceList.next(source_list)
-    %Otis.Source.File{path: path} = source
-
-    assert path == Path.expand("fixtures/silent.mp3", __DIR__)
-
-    {:ok, _uuid, source} = Otis.SourceList.next(source_list)
-    %Otis.Source.File{path: path} = source
-    assert path == Path.expand("fixtures/snake-rag.mp3", __DIR__)
-
-    result = Otis.SourceList.next(source_list)
-    assert result == :done
   end
 end
 
