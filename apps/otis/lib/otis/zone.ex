@@ -276,7 +276,8 @@ defmodule Otis.Zone do
     zone
   end
   defp change_state(%Zone{id: _id, state: :skip, broadcaster: broadcaster} = zone) do
-    Otis.Broadcaster.skip_broadcaster(broadcaster)
+    clock = Otis.Broadcaster.Clock.skip(zone.clock, broadcaster)
+    # Otis.Broadcaster.skip_broadcaster(broadcaster)
     change_state(%Zone{ zone | broadcaster: nil })
   end
 

@@ -6,7 +6,6 @@ defmodule Otis.Zone.Broadcaster do
   """
 
   use     GenServer
-  use     Monotonic
   require Logger
 
   # initial packets are sent out with this interval
@@ -79,14 +78,14 @@ defmodule Otis.Zone.Broadcaster do
   # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
   # but pushes back any unplayed packets to the source stream so that when
   # we press play again, we start from where we left off.
-  def handle_cast({:stop, :stop}, state) do
-    {:stop, {:shutdown, :stopped}, stop!(state)}
+  def handle_cast({:stop, {:stop, time}}, state) do
+    {:stop, {:shutdown, :stopped}, stop!(state, time)}
   end
 
   # This stops the broadcaster & drops any unsent packets
   # Used during track skipping
-  def handle_cast({:stop, :skip}, state) do
-    {:stop, {:shutdown, :stopped}, kill!(state)}
+  def handle_cast({:stop, {:skip, time}}, state) do
+    {:stop, {:shutdown, :stopped}, kill!(state, time)}
   end
 
   def handle_cast({:emit, time, interval}, state) do
@@ -107,24 +106,24 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  defp kill!(state) do
+  defp kill!(state, time) do
     Logger.info "Killing broadcaster..."
-    kill(state)
+    kill(state, time)
   end
 
-  defp kill(state) do
+  defp kill(state, time) do
     Otis.Broadcaster.Emitter.stop(state.emitter)
-    stop_inflight_packets(state)
+    stop_inflight_packets(state, time)
   end
 
   # The 'stop' button has been pressed so pull back anything we were about to
   # send
-  defp stop!(state) do
+  defp stop!(state, time) do
     Logger.info "Stopping broadcaster..."
     {:ok, zone_id} = Otis.Zone.id(state.zone)
     Otis.State.Events.notify({:zone_stop, zone_id})
-    kill(state)
-    rebuffer_in_flight(state)
+    kill(state, time)
+    rebuffer_in_flight(state, time)
   end
 
   defp monitor_finish(%{state: :stopped} = state) do
@@ -195,6 +194,7 @@ defmodule Otis.Zone.Broadcaster do
   defp emit_packet(packet, increment_emit, %S{emit_time: emit_time} = state, time) do
     emitted_packet = packet |> timestamp_packet(state)
                             |> emit_packet!(state.emitter, emit_time)
+
     %S{ state |
       in_flight: [emitted_packet | state.in_flight],
       emit_time: emit_time + increment_emit
@@ -243,27 +243,26 @@ defmodule Otis.Zone.Broadcaster do
   # and send them back to the buffer so that if we resume playback
   # the audio starts where it left off rather than losing a buffer's worth
   # of audio.
-  defp rebuffer_in_flight(%{in_flight: in_flight, audio_stream: audio_stream} = state) do
-    packets = in_flight |> unplayed_packets |> Enum.map(fn({_, _, source_id, data}) -> {source_id, data} end)
+  defp rebuffer_in_flight(%{in_flight: in_flight, audio_stream: audio_stream} = state, time) do
+    packets = in_flight |> unplayed_packets(time) |> Enum.map(fn({_, _, source_id, data}) -> {source_id, data} end)
     GenServer.cast(audio_stream, {:rebuffer, packets})
     %S{ state | in_flight: [] }
   end
 
-  defp unplayed_packets(in_flight) do
-    now = monotonic_microseconds
-    Enum.reject(in_flight, fn({_, timestamp, _, _}) -> timestamp <= now end)
+  defp unplayed_packets(in_flight, time) do
+    Enum.reject(in_flight, fn({_, timestamp, _, _}) -> timestamp <= time end)
   end
 
-  defp stop_inflight_packets(%S{in_flight: in_flight} = _state) do
-    stop_inflight_packets(in_flight)
+  defp stop_inflight_packets(%S{in_flight: in_flight} = _state, time) do
+    stop_inflight_packets(in_flight, time)
   end
 
-  defp stop_inflight_packets([]) do
+  defp stop_inflight_packets([], time) do
   end
 
-  defp stop_inflight_packets([{emitter, timestamp, _source_id, _data} = _packet | packets]) do
+  defp stop_inflight_packets([{emitter, timestamp, _source_id, _data} = _packet | packets], time) do
     Otis.Zone.Emitter.discard!(emitter, timestamp)
-    stop_inflight_packets(packets)
+    stop_inflight_packets(packets, time)
   end
 
   defp timestamp_packet({packet_number, source_id, data}, state) do

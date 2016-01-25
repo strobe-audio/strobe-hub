@@ -44,13 +44,19 @@ defmodule Otis.Zone.Clock do
   end
 
   def handle_cast({:stop, broadcaster}, %S{broadcasters: broadcasters} = state) do
-    Otis.Broadcaster.stop_broadcaster(broadcaster)
+    Otis.Broadcaster.stop_broadcaster(broadcaster, now)
+    {:noreply, %S{ state | broadcasters: List.delete(broadcasters, broadcaster) }}
+  end
+
+  def handle_cast({:skip, broadcaster}, %S{broadcasters: broadcasters} = state) do
+    Otis.Broadcaster.skip_broadcaster(broadcaster, now)
     {:noreply, %S{ state | broadcasters: List.delete(broadcasters, broadcaster) }}
   end
 
   def handle_info(:tick, %S{broadcasters: broadcasters} = state) do
+    time = now
     Enum.each broadcasters, fn(broadcaster) ->
-      cast(broadcaster, {:emit, now, state.poll_interval * 1000})
+      cast(broadcaster, {:emit, time, state.poll_interval * 1000})
     end
     {:noreply, state}
   end
@@ -69,6 +75,10 @@ defimpl Otis.Broadcaster.Clock, for: Otis.Zone.Clock do
   end
   def stop(clock, broadcaster) do
     GenServer.cast(clock.pid, {:stop, broadcaster})
+    clock
+  end
+  def skip(clock, broadcaster) do
+    GenServer.cast(clock.pid, {:skip, broadcaster})
     clock
   end
 end

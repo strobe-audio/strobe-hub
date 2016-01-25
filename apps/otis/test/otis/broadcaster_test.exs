@@ -66,8 +66,8 @@ defmodule Otis.Test.SteppingClock do
     %__MODULE__{ clock | broadcaster: broadcaster }
   end
 
-  def stop(clock, broadcaster) do
-    Otis.Broadcaster.stop_broadcaster(broadcaster)
+  def stop(clock, broadcaster, time) do
+    Otis.Broadcaster.stop_broadcaster(broadcaster, time)
     %__MODULE__{ clock | broadcaster: nil }
   end
 
@@ -97,7 +97,10 @@ defimpl Otis.Broadcaster.Clock, for: Otis.Test.SteppingClock do
     Otis.Test.SteppingClock.start(clock, broadcaster, latency, buffer_size)
   end
   def stop(clock, broadcaster) do
-    Otis.Test.SteppingClock.stop(clock, broadcaster)
+    Otis.Test.SteppingClock.stop(clock, broadcaster, 0)
+  end
+  def skip(clock, broadcaster) do
+    Otis.Test.SteppingClock.stop(clock, broadcaster, 0)
   end
 end
 
@@ -293,7 +296,7 @@ defmodule Otis.BroadcasterTest do
   test "it broadcasts a stream stop event", %{ zone_id: zone_id } = state do
     buffer_size = 5
     _clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
-    _clock = Otis.Broadcaster.Clock.stop(state.clock, state.broadcaster)
+    _clock = Otis.Test.SteppingClock.stop(state.clock, state.broadcaster, 0)
     assert_receive {:zone_stop, ^zone_id}, 200
   end
 end

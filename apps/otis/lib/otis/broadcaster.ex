@@ -16,18 +16,18 @@ defmodule Otis.Broadcaster do
   end
 
   def stream_finished(broadcaster) do
-    stop_broadcaster(broadcaster, :stream_finished)
+    stop_broadcaster!(broadcaster, :stream_finished)
   end
 
-  def stop_broadcaster(broadcaster) do
-    stop_broadcaster(broadcaster, :stop)
+  def stop_broadcaster(broadcaster, time) do
+    stop_broadcaster!(broadcaster, {:stop, time})
   end
 
-  def skip_broadcaster(broadcaster) do
-    stop_broadcaster(broadcaster, :skip)
+  def skip_broadcaster(broadcaster, time) do
+    stop_broadcaster!(broadcaster, {:skip, time})
   end
 
-  def stop_broadcaster(broadcaster, reason) do
+  def stop_broadcaster!(broadcaster, reason) do
     GenServer.cast(broadcaster, {:stop, reason})
   end
 

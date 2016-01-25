@@ -4,6 +4,6 @@ defprotocol Otis.Broadcaster.Clock do
   """
   def start(clock, broadcaster, latency, buffer_size)
   def stop(clock, broadcaster)
-  # def skip()
+  def skip(clock, broadcaster)
 end
 
