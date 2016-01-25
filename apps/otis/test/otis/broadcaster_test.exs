@@ -1,12 +1,12 @@
 defmodule Otis.Test.ArrayAudioStream do
   use GenServer
 
-  def start_link(sources) do
-    Kernel.apply GenServer, :start_link, [__MODULE__, sources]
+  def start_link(sources, parent) do
+    Kernel.apply GenServer, :start_link, [__MODULE__, {sources, parent}]
   end
 
-  def init(sources) do
-    {:ok, %{ sources: sources, packets: [], source_id: nil }}
+  def init({sources, parent}) do
+    {:ok, %{ sources: sources, packets: [], source_id: nil, parent: parent }}
   end
 
   def handle_call(:frame, _from, state) do
@@ -14,7 +14,8 @@ defmodule Otis.Test.ArrayAudioStream do
     {:reply, packet, state}
   end
 
-  def handle_cast({:rebuffer, _packets}, state) do
+  def handle_cast({:rebuffer, packets}, %{parent: parent} = state) do
+    send parent, {:rebuffer, packets}
     {:noreply, state}
   end
 
@@ -115,7 +116,7 @@ defmodule Otis.BroadcasterTest do
     packets2 = (11..20) |> Enum.map(&Integer.to_string(&1, 10))
     source2 = [UUID.uuid1(), packets2]
     # - a audio stream that emits known packets
-    {:ok, stream} = Otis.Test.ArrayAudioStream.start_link([source1, source2])
+    {:ok, stream} = Otis.Test.ArrayAudioStream.start_link([source1, source2], self)
     # - an emitter impl that records the packets emitted (& when!)
     {:ok, emitter} = Otis.Test.RecordingEmitter.new(self)
     # - a clock implementation that is step-able
@@ -298,5 +299,35 @@ defmodule Otis.BroadcasterTest do
     _clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
     _clock = Otis.Test.SteppingClock.stop(state.clock, state.broadcaster, 0)
     assert_receive {:zone_stop, ^zone_id}, 200
+  end
+
+  test "it rebuffers in-flight packets when stopped", state do
+    buffer_size = 5
+    poll_interval = round(state.opts.stream_interval / 4)
+    steps = 20
+    time = state.timestamp.(1)
+    clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
+    Enum.each 1..steps, fn(n) ->
+      Otis.Test.SteppingClock.step(clock, time + (n * poll_interval), poll_interval)
+    end
+    assert_receive {:emit, _, {70, "8"}}, 200
+    Otis.Test.SteppingClock.stop(state.clock, state.broadcaster, time + (steps * poll_interval) + 1)
+    assert_receive {:rebuffer, packets}, 200
+
+    assert length(packets) == 4, "Expected 4 packets but got #{ length(packets) }"
+
+    [p1, p2, p3, p4] = packets
+    [source_id1, packets1] = state.source1
+    [source_id2, packets2] = state.source2
+
+    packets1_1 = Enum.fetch!(packets1, -2)
+    packets1_2 = Enum.fetch!(packets1, -1)
+    packets2_1 = Enum.fetch!(packets2, 0)
+    packets2_2 = Enum.fetch!(packets2, 1)
+
+    assert {source_id2, packets2_2} == p1
+    assert {source_id2, packets2_1} == p2
+    assert {source_id1, packets1_2} == p3
+    assert {source_id1, packets1_1} == p4
   end
 end
