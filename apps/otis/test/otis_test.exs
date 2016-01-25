@@ -45,7 +45,7 @@ defmodule OtisTest do
 
   test "opening silent mp3 should give a data stream of all 0" do
     {:ok, source} = Otis.Source.File.new("test/fixtures/silent.mp3")
-    {:ok, stream} = Otis.SourceStream.new(source)
+    {:ok, _id, stream} = Otis.SourceStream.new(UUID.uuid1, source)
     {:ok, pcm } = Otis.SourceStream.chunk stream
     assert byte_size(pcm) == 4608
 
@@ -65,7 +65,7 @@ defmodule OtisTest do
 
   test "opening streaming mp3 should give a valid PCM data stream" do
     {:ok, source} = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
-    {:ok, stream} = Otis.SourceStream.new(source)
+    {:ok, _id, stream} = Otis.SourceStream.new(UUID.uuid1(), source)
     hash = TestUtils.md5 fn() -> Otis.SourceStream.chunk(stream) end
     # avconv -i test/fixtures/snake-rag.mp3 -f s16le -ac 2 -ar 44100 - | md5
     assert hash == "ba5a1791d3a00ac3ec31f2fe490a90c5"
@@ -85,11 +85,12 @@ defmodule Otis.SourceListTest do
   test "array sources should iterate the array", %{source_list: source_list} do
 
     {:ok, _uuid, source} = Otis.SourceList.next(source_list)
-    {:ok, %{path: path} = _info} = Otis.SourceStream.info(source)
+    %Otis.Source.File{path: path} = source
+
     assert path == Path.expand("fixtures/silent.mp3", __DIR__)
 
     {:ok, _uuid, source} = Otis.SourceList.next(source_list)
-    {:ok, %{path: path} = _info} = Otis.SourceStream.info(source)
+    %Otis.Source.File{path: path} = source
     assert path == Path.expand("fixtures/snake-rag.mp3", __DIR__)
 
     result = Otis.SourceList.next(source_list)
