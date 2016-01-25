@@ -268,17 +268,16 @@ defmodule Otis.Zone do
     Logger.debug("Zone stopped")
     zone_is_stopped(zone)
   end
-  defp change_state(%Zone{id: id, state: :stop, broadcaster: broadcaster} = zone) do
+  defp change_state(%Zone{state: :stop, broadcaster: broadcaster} = zone) do
     clock = Otis.Broadcaster.Clock.stop(zone.clock, broadcaster)
-    change_state(%Zone{ zone | broadcaster: nil, clock: zone.clock })
+    change_state(%Zone{ zone | broadcaster: nil, clock: clock })
   end
   defp change_state(%Zone{state: :skip, broadcaster: nil} = zone) do
     zone
   end
   defp change_state(%Zone{id: _id, state: :skip, broadcaster: broadcaster} = zone) do
     clock = Otis.Broadcaster.Clock.skip(zone.clock, broadcaster)
-    # Otis.Broadcaster.skip_broadcaster(broadcaster)
-    change_state(%Zone{ zone | broadcaster: nil })
+    change_state(%Zone{ zone | broadcaster: nil, clock: clock })
   end
 
   defp broadcaster_latency(zone) do
@@ -290,7 +289,7 @@ defmodule Otis.Zone do
     %Zone{ zone | broadcaster: nil}
   end
 
-  defp start_broadcaster(%Zone{audio_stream: audio_stream, socket: socket, clock: clock} = zone) do
+  defp start_broadcaster(%Zone{audio_stream: audio_stream, socket: socket}) do
     opts = %{
       zone: self,
       audio_stream: audio_stream,

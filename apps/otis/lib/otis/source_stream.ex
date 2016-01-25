@@ -15,15 +15,6 @@ defmodule Otis.SourceStream do
     GenServer.call(pid, :source_info)
   end
 
-  # TODO: remove this!
-  def from_path(path) when is_binary(path) do
-    new(path)
-  end
-
-  def new({:ok, source}) do
-    new(source)
-  end
-
   @doc "Returns a new SourceStream for the given source"
   def new(id, source) do
     {:ok, pid} = start_link(source)

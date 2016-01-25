@@ -89,7 +89,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   def handle_cast({:emit, time, interval}, state) do
-    state = state |> potentially_emit(time, interval) |> monitor_finish
+    state |> potentially_emit(time, interval) |> monitor_finish
   end
 
   defp start(now, latency, buffer_size, state) do
@@ -257,7 +257,7 @@ defmodule Otis.Zone.Broadcaster do
     stop_inflight_packets(in_flight, time)
   end
 
-  defp stop_inflight_packets([], time) do
+  defp stop_inflight_packets([], _time) do
   end
 
   defp stop_inflight_packets([{emitter, timestamp, _source_id, _data} = _packet | packets], time) do

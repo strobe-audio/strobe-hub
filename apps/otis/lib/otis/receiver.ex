@@ -108,10 +108,11 @@ defmodule Otis.Receiver do
     {:noreply, %S{ state | volume: volume }}
   end
 
+
   def handle_cast(:shutdown, %S{id: id, zone: zone} = state) do
     Logger.warn "Receiver shutting down #{id}"
-    Otis.Zone.remove_receiver(zone, self)
-    {:stop, :shutdown, state}
+    remove_from_zone(zone)
+    {:stop, :shutdown, %S{state | zone: nil}}
   end
 
   def handle_info({:DOWN, monitor, :process, _channel, :noproc}, %{channel_monitor: monitor} = state) do
@@ -126,6 +127,12 @@ defmodule Otis.Receiver do
 
   def terminate(_reason, _state) do
     :ok
+  end
+
+  defp remove_from_zone(nil) do
+  end
+  defp remove_from_zone(zone) do
+    Otis.Zone.remove_receiver(zone, self)
   end
 
   defp broadcast!(state, event, msg) do
