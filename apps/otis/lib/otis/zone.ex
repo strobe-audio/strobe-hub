@@ -236,6 +236,7 @@ defmodule Otis.Zone do
     zone
   end
   defp stream_has_finished(zone) do
+    Otis.Broadcaster.Clock.done(zone.clock)
     %Zone{zone | broadcaster: nil}
   end
 

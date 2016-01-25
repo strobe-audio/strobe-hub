@@ -63,7 +63,7 @@ defmodule Otis.Test.SteppingClock do
   end
 
   def start(clock, broadcaster, latency, buffer_size) do
-    GenServer.cast(broadcaster, {:start, clock.start_time, latency, buffer_size})
+    GenServer.call(broadcaster, {:start, clock.start_time, latency, buffer_size})
     %__MODULE__{ clock | broadcaster: broadcaster }
   end
 

@@ -3,12 +3,12 @@ defmodule Otis.Zone.Clock do
   require Monotonic
 
   defmodule S do
-    defstruct [:stream_interval, :poll_interval, :broadcasters, :timer]
+    defstruct [:stream_interval, :poll_interval, :broadcaster, :timer]
   end
 
   defstruct [:pid]
 
-  import GenServer, only: [cast: 2]
+  import GenServer, only: [cast: 2, call: 2]
 
   def default_poll_interval(stream_interval) do
     round((stream_interval/4) / 1000)
@@ -28,41 +28,48 @@ defmodule Otis.Zone.Clock do
 
   def init([stream_interval, poll_interval]) do
     Process.flag(:priority, :high)
-    {:ok, ref} = schedule_emit(poll_interval)
     state = %S{
       stream_interval: stream_interval,
       poll_interval: poll_interval,
-      broadcasters: [],
-      timer: ref
+      broadcaster: nil,
     }
     {:ok, state}
   end
 
-  def handle_cast({:start, broadcaster, latency, buffer_size}, %S{broadcasters: broadcasters} = state) do
-    cast(broadcaster, {:start, now, latency, buffer_size})
-    {:noreply, %S{ state | broadcasters: [ broadcaster | broadcasters] }}
+  def handle_cast({:start, broadcaster, latency, buffer_size}, %S{broadcaster: nil} = state) do
+    call(broadcaster, {:start, now, latency, buffer_size})
+    {:ok, ref} = schedule_emit(state.poll_interval)
+    {:noreply, %S{ state | broadcaster: broadcaster, timer: ref }}
   end
 
-  def handle_cast({:stop, broadcaster}, %S{broadcasters: broadcasters} = state) do
+  def handle_cast({:stop, broadcaster}, %S{broadcaster: broadcaster} = state) do
     Otis.Broadcaster.stop_broadcaster(broadcaster, now)
-    {:noreply, %S{ state | broadcasters: List.delete(broadcasters, broadcaster) }}
+    cancel_emit(state)
+    {:noreply, %S{ state | broadcaster: nil }}
   end
 
-  def handle_cast({:skip, broadcaster}, %S{broadcasters: broadcasters} = state) do
+  def handle_cast({:skip, broadcaster}, %S{broadcaster: broadcaster} = state) do
     Otis.Broadcaster.skip_broadcaster(broadcaster, now)
-    {:noreply, %S{ state | broadcasters: List.delete(broadcasters, broadcaster) }}
+    cancel_emit(state)
+    {:noreply, %S{ state | broadcaster: nil }}
   end
 
-  def handle_info(:tick, %S{broadcasters: broadcasters} = state) do
-    time = now
-    Enum.each broadcasters, fn(broadcaster) ->
-      cast(broadcaster, {:emit, time, state.poll_interval * 1000})
-    end
+  def handle_cast(:done, %S{broadcaster: broadcaster} = state) do
+    cancel_emit(state)
+    {:noreply, %S{ state | broadcaster: nil }}
+  end
+
+  def handle_info(:tick, %S{broadcaster: broadcaster} = state) do
+    cast(broadcaster, {:emit, now, state.poll_interval * 1000})
     {:noreply, state}
   end
 
   defp schedule_emit(poll_interval) do
     :timer.send_interval(poll_interval, self, :tick)
+  end
+
+  defp cancel_emit(state) do
+    :timer.cancel(state.timer)
   end
 
   defp now, do: Monotonic.microseconds
@@ -79,6 +86,10 @@ defimpl Otis.Broadcaster.Clock, for: Otis.Zone.Clock do
   end
   def skip(clock, broadcaster) do
     GenServer.cast(clock.pid, {:skip, broadcaster})
+    clock
+  end
+  def done(clock) do
+    GenServer.cast(clock.pid, :done)
     clock
   end
 end

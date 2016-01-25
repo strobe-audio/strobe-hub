@@ -71,8 +71,8 @@ defmodule Otis.Zone.Broadcaster do
     {:ok, state}
   end
 
-  def handle_cast({:start, now, latency, buffer_size}, state) do
-    {:noreply, start(now, latency, buffer_size, state)}
+  def handle_call({:start, now, latency, buffer_size}, _from, state) do
+    {:reply, :ok, start(now, latency, buffer_size, state)}
   end
 
   # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
