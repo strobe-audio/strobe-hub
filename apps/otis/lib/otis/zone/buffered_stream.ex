@@ -15,6 +15,7 @@ defmodule Otis.Zone.BufferedStream do
     :waiting,
     :task,
     packets: 0,
+    buffering: false,
     state: :waiting, # [:waiting, :playing, :stopped]
     queue: :queue.new
   ]
@@ -43,6 +44,11 @@ defmodule Otis.Zone.BufferedStream do
     pid = spawn(Otis.Zone.BufferedStream.Fetcher, :init, [audio_stream])
     Process.monitor(pid)
     pid
+  end
+
+  def handle_call(:buffer, from, state) do
+    state = fetch_async(%S{ state | waiting: from, buffering: true })
+    {:noreply, state}
   end
 
   def handle_call(:frame, _from, %S{state: :stopped, packets: 0} = state) do
@@ -156,8 +162,16 @@ defmodule Otis.Zone.BufferedStream do
   defp monitor(%S{waiting: nil} = state) do
     state
   end
+  defp monitor(%S{waiting: waiting, buffering: true} = state) do
+    buffered(%S{ state | waiting: nil }, waiting)
+  end
   defp monitor(%S{waiting: waiting} = state) do
     pop(%S{ state | waiting: nil }, waiting)
+  end
+
+  defp buffered(state, from) do
+    GenServer.reply(from, :ok)
+    %S{state | buffering: false}
   end
 
   defp fetch_async(%{fetcher: fetcher} = state) do

@@ -15,6 +15,10 @@ defmodule Otis.AudioStream do
     GenServer.call(pid, :frame)
   end
 
+  def buffer(pid) do
+    GenServer.call(pid, :buffer)
+  end
+
   @doc """
   Create a new source list with the given SourceSource which is anything that
   implements Enumerable
@@ -25,6 +29,11 @@ defmodule Otis.AudioStream do
 
   def start_link(source_list) do
     GenServer.start_link(__MODULE__, %S{source_list: source_list})
+  end
+
+  # TODO: Do I need to implement this
+  def handle_call(:buffer, _from, state) do
+    {:reply, :ok, state}
   end
 
   def handle_call(:frame, _from, %S{source: nil, state: :stopped} = state) do
