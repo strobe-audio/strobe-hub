@@ -87,5 +87,30 @@ defmodule Otis.BufferedStreamTest do
     end
     :stopped = Otis.AudioStream.frame(buffered_stream)
   end
+
+  test "calling buffer multiple times does nothing" do
+    source_id = "source-1"
+    buffer_size = 8
+    packets = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
+    {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, packets)
+    {:ok, buffered_stream} = Otis.Zone.BufferedStream.start_link(audio_stream, buffer_size)
+
+    :ok = Otis.AudioStream.buffer(buffered_stream)
+    {:ok, sent} = GenServer.call(audio_stream, :sent)
+    assert sent == Enum.take(packets, buffer_size)
+
+    :ok = Otis.AudioStream.buffer(buffered_stream)
+    {:ok, sent} = GenServer.call(audio_stream, :sent)
+    assert sent == []
+
+    :ok = Otis.AudioStream.buffer(buffered_stream)
+    {:ok, sent} = GenServer.call(audio_stream, :sent)
+    assert sent == []
+
+    Enum.each packets, fn(p) ->
+      {:ok, ^source_id, ^p} = Otis.AudioStream.frame(buffered_stream)
+    end
+    :stopped = Otis.AudioStream.frame(buffered_stream)
+  end
 end
 

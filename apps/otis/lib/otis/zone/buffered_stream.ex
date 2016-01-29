@@ -47,8 +47,7 @@ defmodule Otis.Zone.BufferedStream do
   end
 
   def handle_call(:buffer, from, state) do
-    state = fetch_async(%S{ state | waiting: from, buffering: true })
-    {:noreply, state}
+    {:noreply, buffer(state, from)}
   end
 
   def handle_call(:frame, _from, %S{state: :stopped, packets: 0} = state) do
@@ -167,6 +166,15 @@ defmodule Otis.Zone.BufferedStream do
   end
   defp monitor(%S{waiting: waiting} = state) do
     pop(%S{ state | waiting: nil }, waiting)
+  end
+
+  defp buffer(%S{packets: packets, size: size} = state, from)
+  when (packets < size) do
+    fetch_async(%S{ state | waiting: from, buffering: true })
+  end
+
+  defp buffer(state, from) do
+    buffered(state, from)
   end
 
   defp buffered(state, from) do
