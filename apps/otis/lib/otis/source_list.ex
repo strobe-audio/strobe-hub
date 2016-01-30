@@ -7,22 +7,21 @@ defmodule Otis.SourceList do
 
 
   @doc "Start a new empty list instance"
-  @spec empty() :: {:ok, pid}
-  def empty do
-    from_list([])
+  @spec empty(binary) :: {:ok, pid}
+  def empty(id) do
+    from_list(id, [])
   end
 
   @doc "Start a new list instance from the given list of sources"
-  @spec from_list([Otis.Source.t]) :: {:ok, pid}
-  def from_list(sources) do
-    source = %{sources: Enum.map(sources, &source_with_id/1), position: 0}
-    start_link(source)
+  @spec from_list(binary, [Otis.Source.t]) :: {:ok, pid}
+  def from_list(id, sources) do
+    start_link(id, Enum.map(sources, &source_with_id/1))
   end
 
   @doc "GenServer api to start an instance with the given list of sources"
-  @spec start_link([Otis.Source.t]) :: {:ok, pid}
-  def start_link(sources) do
-    GenServer.start_link(__MODULE__, sources)
+  @spec start_link(binary, [Otis.Source.t]) :: {:ok, pid}
+  def start_link(id, sources) do
+    GenServer.start_link(__MODULE__, {id, sources})
   end
 
   @doc "Returns the next source in the list"
@@ -80,6 +79,11 @@ defmodule Otis.SourceList do
 
   ###### GenServer Callbacks
 
+  def init({id, sources}) do
+    state = %{id: id, sources: sources, position: 0}
+    {:ok, state}
+  end
+
   def handle_call(:next_source, _from, %{sources: []} = state) do
     {:reply, :done, state}
   end
@@ -96,7 +100,14 @@ defmodule Otis.SourceList do
   end
 
   def handle_call({:add_source, source, index}, _from, %{sources: sources} = state) do
-    sources = sources |> List.insert_at(index, source_with_id(source))
+    entry = source_with_id(source)
+    sources = sources |> List.insert_at(index, entry)
+    Otis.State.Events.notify({
+      :new_source,
+      state.id,
+      insert_offset_to_position(sources, index),
+      entry
+    })
     {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
   end
 
@@ -108,6 +119,17 @@ defmodule Otis.SourceList do
 
   def handle_call(:list, _from, %{sources: sources} = state) do
     {:reply, {:ok, sources}, state}
+  end
+
+  # Converts an insertion position (e.g. -1 for end into
+  # an absolute position). Note that this is called *after* insertion
+  # so we can use the actual list length in our calculations.
+  defp insert_offset_to_position(sources, index) do
+    if index < 0 do
+      length(sources) + index
+    else
+      index
+    end
   end
 
   def source_with_id(source) do

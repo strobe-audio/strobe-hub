@@ -21,7 +21,7 @@ defmodule Otis.Zone do
   @buffer_size        25
 
   def start_link(id, name) do
-    start_link(id, name, Otis.SourceList.empty)
+    start_link(id, name, Otis.SourceList.empty(id))
   end
 
   def start_link(id, name, source_list) when is_atom(id) do
@@ -103,8 +103,8 @@ defmodule Otis.Zone do
   end
 
   @doc "Skip to the source with the given id"
-  def skip(zone, count) do
-    GenServer.cast(zone, {:skip, count})
+  def skip(zone, id) do
+    GenServer.cast(zone, {:skip, id})
   end
 
   # Things we can do to zones:
@@ -175,8 +175,8 @@ defmodule Otis.Zone do
   end
 
   # TODO: handle the case where we skip past the end of the source list...
-  def handle_cast({:skip, count}, zone) do
-    zone = zone |> set_state(:skip) |> flush |> skip_to(count)
+  def handle_cast({:skip, id}, zone) do
+    zone = zone |> set_state(:skip) |> flush |> skip_to(id)
     {:noreply, set_state(zone, :play)}
   end
 
@@ -185,11 +185,8 @@ defmodule Otis.Zone do
     zone
   end
 
-  defp skip_to(zone, 1) do
-    zone
-  end
-  defp skip_to(zone, count) do
-    {:ok, _} = Otis.SourceList.skip(zone.source_list, count - 1)
+  defp skip_to(zone, id) do
+    {:ok, _} = Otis.SourceList.skip(zone.source_list, id)
     zone
   end
 

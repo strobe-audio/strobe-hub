@@ -20,8 +20,16 @@ defmodule Otis.SourceListTest do
       TS.new("c"),
       TS.new("d"),
     ]
-    {:ok, list} = Otis.SourceList.from_list(sources)
-    {:ok, sources: sources, source_list: list}
+    id = UUID.uuid1
+
+    {:ok, list} = Otis.SourceList.from_list(id, sources)
+
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    on_exit fn ->
+      Otis.State.Events.remove_handler(MessagingHandler, self)
+    end
+
+    {:ok, id: id, sources: sources, source_list: list}
   end
 
   test "it gives each source a unique id", %{source_list: list} do
@@ -55,7 +63,7 @@ defmodule Otis.SourceListTest do
   test "#next iterates the source list" do
     {:ok, a } = Otis.Source.File.new("test/fixtures/silent.mp3")
     {:ok, b } = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
-    {:ok, source_list} = Otis.SourceList.from_list([a, b])
+    {:ok, source_list} = Otis.SourceList.from_list(UUID.uuid1, [a, b])
 
     {:ok, _uuid, source} = Otis.SourceList.next(source_list)
     %Otis.Source.File{path: path} = source
@@ -70,28 +78,59 @@ defmodule Otis.SourceListTest do
     assert result == :done
   end
 
-  test "skips to next track", state do
-    {:ok, sources} = Otis.SourceList.list(state.source_list)
+  test "skips to next track", context do
+    {:ok, sources} = Otis.SourceList.list(context.source_list)
     ids = Enum.map sources, fn({id, _source}) -> id end
     {:ok, id} = Enum.fetch ids, 0
-    {:ok, 4} = Otis.SourceList.skip(state.source_list, id)
-    {:ok, _id, source} = Otis.SourceList.next(state.source_list)
+    {:ok, 4} = Otis.SourceList.skip(context.source_list, id)
+    {:ok, _id, source} = Otis.SourceList.next(context.source_list)
     assert source.id == "a"
 
     {:ok, id} = Enum.fetch ids, 1
-    {:ok, 3} = Otis.SourceList.skip(state.source_list, id)
-    {:ok, _id, source} = Otis.SourceList.next(state.source_list)
+    {:ok, 3} = Otis.SourceList.skip(context.source_list, id)
+    {:ok, _id, source} = Otis.SourceList.next(context.source_list)
     assert source.id == "b"
   end
 
-  test "can skip to a source id", state do
-    {:ok, sources} = Otis.SourceList.list(state.source_list)
+  test "can skip to a source id", context do
+    {:ok, sources} = Otis.SourceList.list(context.source_list)
     ids = Enum.map sources, fn({id, _source}) -> id end
     {:ok, id} = Enum.fetch ids, 3
-    {:ok, 1} = Otis.SourceList.skip(state.source_list, id)
-    {:ok, _id, source} = Otis.SourceList.next(state.source_list)
+    {:ok, 1} = Otis.SourceList.skip(context.source_list, id)
+    {:ok, _id, source} = Otis.SourceList.next(context.source_list)
     assert source.id == "d"
   end
+
+  test "emits a state change event when appending a source", %{id: list_id} = context do
+    source = TS.new("e")
+    Otis.SourceList.append_source(context.source_list, source)
+    {:ok, sources} = Otis.SourceList.list(context.source_list)
+    {source_id, _} = List.last(sources)
+    assert_receive {:new_source, ^list_id, 4, {^source_id, %{id: "e"}}}, 200
+  end
+
+  test "emits a state change event when inserting a source", %{id: list_id} = context do
+    source = TS.new("e")
+    Otis.SourceList.insert_source(context.source_list, source, 0)
+    {:ok, sources} = Otis.SourceList.list(context.source_list)
+    {source_id, _} = List.first(sources)
+    assert_receive {:new_source, ^list_id, 0, {^source_id, %{id: "e"}}}, 2000
+
+    source = TS.new("f")
+    Otis.SourceList.insert_source(context.source_list, source, -3)
+    {:ok, sources} = Otis.SourceList.list(context.source_list)
+    {source_id, _} = Enum.at(sources, -3)
+    assert_receive {:new_source, ^list_id, 3, {^source_id, %{id: "f"}}}, 200
+  end
+
+  # actually I don't think this is necessary -- the source change event emitted
+  # by the broadcaster will do the required notification work -- the client can
+  # skip to the source with the id given in that event.
+  # test "emits a state change event when skipping sources"
+
+
+  test "emits a state change event when cleared"
+  test "emits a state change event when removing a source"
 end
 
 
