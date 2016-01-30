@@ -68,9 +68,9 @@ defmodule Otis.SourceList do
     GenServer.call(list, :count)
   end
 
-  @doc "Skips the given number of tracks"
-  def skip(list, count) do
-    GenServer.call(list, {:skip, count})
+  @doc "Skips to the given source id"
+  def skip(list, id) do
+    GenServer.call(list, {:skip, id})
   end
 
   @doc "Lists the current sources"
@@ -101,8 +101,8 @@ defmodule Otis.SourceList do
   end
 
   # TODO: replace count with the source's list id
-  def handle_call({:skip, count}, _from, %{sources: sources} = state) do
-    sources = sources |> Enum.drop(count)
+  def handle_call({:skip, id}, _from, %{sources: sources} = state) do
+    sources = sources |> Enum.drop_while(fn({source_id, _}) -> source_id != id end)
     {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
   end
 

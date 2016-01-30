@@ -69,14 +69,26 @@ defmodule Otis.SourceListTest do
     result = Otis.SourceList.next(source_list)
     assert result == :done
   end
-  test "skips a single track", state do
-    {:ok, 3} = Otis.SourceList.skip(state.source_list, 1)
+
+  test "skips to next track", state do
+    {:ok, sources} = Otis.SourceList.list(state.source_list)
+    ids = Enum.map sources, fn({id, _source}) -> id end
+    {:ok, id} = Enum.fetch ids, 0
+    {:ok, 4} = Otis.SourceList.skip(state.source_list, id)
+    {:ok, _id, source} = Otis.SourceList.next(state.source_list)
+    assert source.id == "a"
+
+    {:ok, id} = Enum.fetch ids, 1
+    {:ok, 3} = Otis.SourceList.skip(state.source_list, id)
     {:ok, _id, source} = Otis.SourceList.next(state.source_list)
     assert source.id == "b"
   end
 
-  test "skips multiple tracks", state do
-    {:ok, 1} = Otis.SourceList.skip(state.source_list, 3)
+  test "can skip to a source id", state do
+    {:ok, sources} = Otis.SourceList.list(state.source_list)
+    ids = Enum.map sources, fn({id, _source}) -> id end
+    {:ok, id} = Enum.fetch ids, 3
+    {:ok, 1} = Otis.SourceList.skip(state.source_list, id)
     {:ok, _id, source} = Otis.SourceList.next(state.source_list)
     assert source.id == "d"
   end
