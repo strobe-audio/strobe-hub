@@ -55,28 +55,33 @@ end
 defmodule Otis.Test.SteppingClock do
   # use     GenServer
 
-  defstruct [:broadcaster, start_time: 0, latency: 0]
+  defstruct [:broadcaster, start_time: 0, latency: 0, time: 0]
 
-  def new(opts \\ [latency: 0])
-  def new(latency: latency) do
-    {:ok, %__MODULE__{latency: latency}}
+  def new(opts \\ [start_time: 0])
+  def new(start_time: start_time) do
+    {:ok, %__MODULE__{start_time: start_time, time: start_time}}
+  end
+
+  def time(%__MODULE__{time: time} = clock) do
+    time
   end
 
   def start(clock, broadcaster, latency, buffer_size) do
-    GenServer.call(broadcaster, {:start, clock.start_time, latency, buffer_size})
+    GenServer.call(broadcaster, {:start, clock, latency, buffer_size})
     %__MODULE__{ clock | broadcaster: broadcaster }
   end
 
-  def stop(clock, broadcaster, time) do
-    Otis.Broadcaster.stop_broadcaster(broadcaster, time)
+  def stop(clock, broadcaster) do
+    Otis.Broadcaster.stop_broadcaster(broadcaster, clock)
     %__MODULE__{ clock | broadcaster: nil }
   end
 
-  def step(%__MODULE__{broadcaster: nil} = clock, _time, _interval) do
-    clock
+  def step(%__MODULE__{broadcaster: nil} = clock, time, _interval) do
+    %__MODULE__{ clock | time: time }
   end
   def step(%__MODULE__{broadcaster: broadcaster} = clock, time, interval) do
-    GenServer.cast(broadcaster, {:emit, time, interval})
+    clock = %__MODULE__{ clock | time: time }
+    GenServer.cast(broadcaster, {:emit, clock, interval})
     clock
   end
   # def start_link do
@@ -94,14 +99,17 @@ defmodule Otis.Test.SteppingClock do
 end
 
 defimpl Otis.Broadcaster.Clock, for: Otis.Test.SteppingClock do
+  def time(clock) do
+    Otis.Test.SteppingClock.time(clock)
+  end
   def start(clock, broadcaster, latency, buffer_size) do
     Otis.Test.SteppingClock.start(clock, broadcaster, latency, buffer_size)
   end
   def stop(clock, broadcaster) do
-    Otis.Test.SteppingClock.stop(clock, broadcaster, 0)
+    Otis.Test.SteppingClock.stop(clock, broadcaster)
   end
   def skip(clock, broadcaster) do
-    Otis.Test.SteppingClock.stop(clock, broadcaster, 0)
+    Otis.Test.SteppingClock.stop(clock, broadcaster)
   end
 end
 
@@ -297,7 +305,7 @@ defmodule Otis.BroadcasterTest do
   test "it broadcasts a stream stop event", %{ zone_id: zone_id } = state do
     buffer_size = 5
     _clock = Otis.Broadcaster.Clock.start(state.clock, state.broadcaster, state.latency, buffer_size)
-    _clock = Otis.Test.SteppingClock.stop(state.clock, state.broadcaster, 0)
+    _clock = Otis.Test.SteppingClock.stop(state.clock, state.broadcaster)
     assert_receive {:zone_stop, ^zone_id}, 200
   end
 

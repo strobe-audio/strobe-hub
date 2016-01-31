@@ -18,6 +18,7 @@ defmodule Otis.Zone.Broadcaster do
       zone: nil,
       audio_stream: nil,
       emitter: nil,
+      clock: nil,
       latency: 0.0,
       stream_interval: 0,
       start_time: 0,
@@ -67,59 +68,72 @@ defmodule Otis.Zone.Broadcaster do
     {:ok, state}
   end
 
-  def handle_call({:start, now, latency, buffer_size}, _from, state) do
-    {:reply, :ok, start(now, latency, buffer_size, state)}
+  def handle_call(:prebuffer, _from, state) do
+    Otis.AudioStream.buffer(state.audio_stream)
+    {:reply, :ok, state}
+  end
+
+  def handle_cast({:start, clock, latency, buffer_size}, state) do
+    {:noreply, start(clock, latency, buffer_size, state)}
   end
 
   # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
   # but pushes back any unplayed packets to the source stream so that when
   # we press play again, we start from where we left off.
-  def handle_cast({:stop, {:stop, time}}, state) do
-    {:stop, {:shutdown, :stopped}, stop!(state, time)}
+  def handle_cast({:stop, :stop}, state) do
+    {:stop, {:shutdown, :stopped}, stop!(state)}
   end
 
   # This stops the broadcaster & drops any unsent packets
   # Used during track skipping
-  def handle_cast({:stop, {:skip, time}}, state) do
-    {:stop, {:shutdown, :stopped}, kill!(state, time)}
+  def handle_cast({:stop, :skip}, state) do
+    {:stop, {:shutdown, :stopped}, kill!(state)}
   end
 
-  def handle_cast({:emit, time, interval}, state) do
-    state |> potentially_emit(time, interval) |> monitor_finish
+  # FIXME: the version with a clock below is to work around limitations
+  # with the current test setup, where the clock is not a process
+  # so the version provided by start has a fixed time
+  def handle_cast({:emit, clock, interval}, state) do
+    %S{state | clock: clock} |> potentially_emit(interval) |> monitor_finish
+  end
+  def handle_cast({:emit, interval}, state) do
+    state |> potentially_emit(interval) |> monitor_finish
   end
 
-  defp start(now, latency, buffer_size, state) do
+  defp start(clock, latency, buffer_size, state) do
     Logger.info ">>>>>>>>>>>>> Fast send start......"
+    now = Otis.Broadcaster.Clock.time(clock)
     {packets, packet_number} = next_packet(buffer_size, state)
     state = %S{ state |
+      clock: clock,
       start_time: now,
       emit_time: now,
       packet_number: packet_number,
       latency: latency
     }
-    state = fast_send_packets(packets, state, now) |> monitor_in_flight(now)
+    state = fast_send_packets(packets, state) |> monitor_in_flight
     Logger.info "<<<<<<<<<<<<< Fast send over ......"
     state
   end
 
-  defp kill!(state, time) do
+  defp kill!(state) do
     Logger.info "Killing broadcaster..."
-    kill(state, time)
+    kill(state)
   end
 
-  defp kill(state, time) do
+  defp kill(state) do
     Otis.Broadcaster.Emitter.stop(state.emitter)
-    stop_inflight_packets(state, time)
+    stop_inflight_packets(state)
   end
 
   # The 'stop' button has been pressed so pull back anything we were about to
   # send
-  defp stop!(state, time) do
+  defp stop!(state) do
     Logger.info "Stopping broadcaster..."
     {:ok, zone_id} = Otis.Zone.id(state.zone)
     Otis.State.Events.notify({:zone_stop, zone_id})
-    kill(state, time)
-    rebuffer_in_flight(state, time)
+    kill(state)
+    rebuffer_in_flight(state)
   end
 
   defp monitor_finish(%{state: :stopped} = state) do
@@ -131,74 +145,75 @@ defmodule Otis.Zone.Broadcaster do
 
   # The audio stream has finished, so tell the zone we're done so it can shut
   # us down properly
-  defp finish(%S{in_flight: [], state: :stopped} = state, _time) do
+  defp finish(%S{in_flight: [], state: :stopped} = state) do
     state
   end
-  defp finish(%S{in_flight: [], zone: zone, state: :play} = state, _time) do
+  defp finish(%S{in_flight: [], zone: zone, state: :play} = state) do
     Logger.debug "Stream finished"
     {:ok, zone_id} = Otis.Zone.id(zone)
     Otis.State.Events.notify({:zone_finished, zone_id})
     Otis.Zone.stream_finished(zone)
     %S{ state | state: :stopped }
   end
-  defp finish(state, time) do
-    monitor_in_flight(state, time)
+  defp finish(state) do
+    monitor_in_flight(state)
   end
 
-  defp potentially_emit(%S{emit_time: emit_time} = state, time, interval) do
+  defp potentially_emit(state, interval) do
+    time = Otis.Broadcaster.Clock.time(state.clock)
     next_check = time + interval
-    diff = (next_check - emit_time)
+    diff = (next_check - state.emit_time)
     if (abs(diff) < interval) || (diff > 0) do
-      state = send_next_packet(state, time)
+      state = send_next_packet(state)
     end
     state
   end
 
-  defp send_next_packet(%S{} = state, time) do
+  defp send_next_packet(state) do
     {packets, packet_number} = next_packet(1, state)
     state = %S{state | packet_number: packet_number}
-    state = send_packets(packets, state, time)
+    state = send_packets(packets, state)
     state
   end
 
-  defp fast_send_packets([packet | packets], state, time) do
-    state = emit_packet(packet, buffer_interval(state.stream_interval), state, time)
-    fast_send_packets(packets, state, time)
+  defp fast_send_packets([packet | packets], state) do
+    state = emit_packet(packet, buffer_interval(state.stream_interval), state)
+    fast_send_packets(packets, state)
   end
 
-  defp fast_send_packets([], %S{} = state, _time) do
+  defp fast_send_packets([], %S{} = state) do
     state
   end
 
-  defp send_packets([packet | packets], state, time) do
-    state = send_packet(packet, state, time)
-    send_packets(packets, state, time)
+  defp send_packets([packet | packets], state) do
+    state = send_packet(packet, state)
+    send_packets(packets, state)
   end
 
-  defp send_packets([], state, _time) do
+  defp send_packets([], state) do
     state
   end
 
-  defp send_packet(packet, %S{stream_interval: interval} = state, time) do
-    emit_packet(packet, interval, state, time)
+  defp send_packet(packet, %S{stream_interval: interval} = state) do
+    emit_packet(packet, interval, state)
   end
 
-  defp emit_packet(:stop, _increment_emit, state, time) do
-    finish(state, time)
+  defp emit_packet(:stop, _increment_emit, state) do
+    finish(state)
   end
 
-  defp emit_packet(packet, increment_emit, %S{emit_time: emit_time} = state, time) do
+  defp emit_packet(packet, increment_emit, %S{emit_time: emit_time} = state) do
     emitted_packet = packet |> timestamp_packet(state)
                             |> emit_packet!(state.emitter, emit_time)
 
     %S{ state |
       in_flight: [emitted_packet | state.in_flight],
       emit_time: emit_time + increment_emit
-    } |> monitor_in_flight(time)
+    } |> monitor_in_flight
   end
 
-  defp monitor_in_flight(state, time) do
-    {unplayed, played} = state |> partition_in_flight(time)
+  defp monitor_in_flight(state) do
+    {unplayed, played} = state |> partition_in_flight
     monitor_source(played, %S{ state | in_flight: unplayed })
   end
 
@@ -207,8 +222,9 @@ defmodule Otis.Zone.Broadcaster do
     {emitter, timestamp, source_id, data}
   end
 
-  defp partition_in_flight(%S{in_flight: packets}, time) do
-    Enum.partition packets, fn({_, timestamp, _, _}) ->
+  defp partition_in_flight(state) do
+    time = Otis.Broadcaster.Clock.time(state.clock)
+    Enum.partition state.in_flight, fn({_, timestamp, _, _}) ->
       timestamp > time
     end
   end
@@ -239,26 +255,27 @@ defmodule Otis.Zone.Broadcaster do
   # and send them back to the buffer so that if we resume playback
   # the audio starts where it left off rather than losing a buffer's worth
   # of audio.
-  defp rebuffer_in_flight(%{in_flight: in_flight, audio_stream: audio_stream} = state, time) do
-    packets = in_flight |> unplayed_packets(time) |> Enum.map(fn({_, _, source_id, data}) -> {source_id, data} end)
+  defp rebuffer_in_flight(%{in_flight: in_flight, audio_stream: audio_stream} = state) do
+    packets = state |> unplayed_packets |> Enum.map(fn({_, _, source_id, data}) -> {source_id, data} end)
     GenServer.cast(audio_stream, {:rebuffer, packets})
     %S{ state | in_flight: [] }
   end
 
-  defp unplayed_packets(in_flight, time) do
-    Enum.reject(in_flight, fn({_, timestamp, _, _}) -> timestamp <= time end)
+  defp unplayed_packets(state) do
+    time = Otis.Broadcaster.Clock.time(state.clock)
+    Enum.reject(state.in_flight, fn({_, timestamp, _, _}) -> timestamp <= time end)
   end
 
-  defp stop_inflight_packets(%S{in_flight: in_flight} = _state, time) do
-    stop_inflight_packets(in_flight, time)
+  defp stop_inflight_packets(state) do
+    do_stop_inflight_packets(state.in_flight)
   end
 
-  defp stop_inflight_packets([], _time) do
+  defp do_stop_inflight_packets([]) do
   end
 
-  defp stop_inflight_packets([{emitter, timestamp, _source_id, _data} = _packet | packets], time) do
+  defp do_stop_inflight_packets([{emitter, timestamp, _source_id, _data} = _packet | packets]) do
     Otis.Zone.Emitter.discard!(emitter, timestamp)
-    stop_inflight_packets(packets, time)
+    do_stop_inflight_packets(packets)
   end
 
   defp timestamp_packet({packet_number, source_id, data}, state) do

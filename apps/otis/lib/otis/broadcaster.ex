@@ -15,16 +15,12 @@ defmodule Otis.Broadcaster do
     Supervisor.start_child(supervisor, [opts])
   end
 
-  def stream_finished(broadcaster) do
-    stop_broadcaster!(broadcaster, :stream_finished)
+  def stop_broadcaster(broadcaster) do
+    stop_broadcaster!(broadcaster, :stop)
   end
 
-  def stop_broadcaster(broadcaster, time) do
-    stop_broadcaster!(broadcaster, {:stop, time})
-  end
-
-  def skip_broadcaster(broadcaster, time) do
-    stop_broadcaster!(broadcaster, {:skip, time})
+  def skip_broadcaster(broadcaster) do
+    stop_broadcaster!(broadcaster, :skip)
   end
 
   def stop_broadcaster!(broadcaster, reason) do
