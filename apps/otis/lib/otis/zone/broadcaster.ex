@@ -265,7 +265,7 @@ defmodule Otis.Zone.Broadcaster do
     {timestamp_for_packet(packet_number, state), source_id, data}
   end
 
-  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency}) do
+  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = state) do
     timestamp_for_packet(packet_number, start_time, interval, latency)
   end
 
