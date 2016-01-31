@@ -3,7 +3,7 @@ defmodule Otis.Zone.Clock do
   require Monotonic
 
   defmodule S do
-    defstruct [:stream_interval, :poll_interval, :broadcaster, :timer]
+    defstruct [:stream_interval, :poll_interval, :tick_interval, :broadcaster, :timer, :last_tick_us]
   end
 
   defstruct [:pid]
@@ -11,7 +11,7 @@ defmodule Otis.Zone.Clock do
   import GenServer, only: [cast: 2, call: 2]
 
   def default_poll_interval(stream_interval) do
-    round((stream_interval/4) / 1000)
+    round(stream_interval/4)
   end
 
   def new(stream_interval) do
@@ -65,7 +65,7 @@ defmodule Otis.Zone.Clock do
   end
 
   defp schedule_emit(poll_interval) do
-    :timer.send_interval(poll_interval, self, :tick)
+    :timer.send_interval(round(poll_interval / 1000), self, :tick)
   end
 
   defp cancel_emit(state) do
