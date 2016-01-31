@@ -47,10 +47,6 @@ defmodule Otis.Zone.Broadcaster do
   #   {timestamp, data} and calculate the actual timestamp when they are sent to
   #   the emitter (makes resending easy). offset = (packet no. * stream interval)
 
-  def timestamp_for_packet(packet_number, start_time, interval, latency) do
-    start_time + latency + (packet_number * interval)
-  end
-
   def buffer_interval(stream_interval) do
     round(stream_interval / 4)
   end
@@ -271,6 +267,10 @@ defmodule Otis.Zone.Broadcaster do
 
   defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency}) do
     timestamp_for_packet(packet_number, start_time, interval, latency)
+  end
+
+  def timestamp_for_packet(packet_number, start_time, interval, latency) do
+    start_time + latency + (packet_number * interval)
   end
 
   defp next_packet(n, %S{audio_stream: audio_stream, packet_number: packet_number} = _state) do
