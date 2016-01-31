@@ -58,16 +58,8 @@ defmodule Otis.Zone.Emitter do
   end
 
   defp start(time, packet, socket, {{_t, n, d}, _emit, config} = _state) do
-    # Logger.disable(self)
     now = monotonic_microseconds
-    case time - now do
-      s when s < 0 ->
-        {ts, _data} = packet
-        Logger.warn "Late emitter: emit time (ms): #{Float.round(s/1000, 2)}; packet play in (ms): #{round((ts - now)/1000)}"
-      _ ->
-        # Logger.debug "Start emitter:: emit time: #{s}; packet timestamp: #{t - now}"
-        nil
-    end
+    monitor_emit_time(time, now, packet)
     state = {{monotonic_microseconds, n, d}, {time, packet, socket}, config}
     test_packet state
   end
@@ -141,5 +133,17 @@ defmodule Otis.Zone.Emitter do
       _ -> (((n * d) + (now - t)) / m)
     end
     {{now, m, delay}, emit, config}
+  end
+
+  defp monitor_emit_time(time, now, packet) do
+    case time - now do
+      s when s < 0 ->
+        {ts, _data} = packet
+        play_latency = ts - now
+        if (abs(s)/play_latency) >= 0.1 do
+          Logger.warn "Late emitter: emit time (ms): #{Float.round(s/1000, 2)}; packet play in (ms): #{round(play_latency/1000)}"
+        end
+      _ -> nil
+    end
   end
 end
