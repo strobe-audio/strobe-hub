@@ -73,6 +73,10 @@ defmodule Otis.Zone.Broadcaster do
     {:reply, :ok, state}
   end
 
+  def handle_call({:start, clock, latency, buffer_size}, _from, state) do
+    {:reply, :ok, start(clock, latency, buffer_size, state)}
+  end
+
   def handle_cast({:start, clock, latency, buffer_size}, state) do
     {:noreply, start(clock, latency, buffer_size, state)}
   end
@@ -90,20 +94,18 @@ defmodule Otis.Zone.Broadcaster do
     {:stop, {:shutdown, :stopped}, kill!(state)}
   end
 
-  # FIXME: the version with a clock below is to work around limitations
-  # with the current test setup, where the clock is not a process
-  # so the version provided by start has a fixed time
-  def handle_cast({:emit, clock, interval}, state) do
-    %S{state | clock: clock} |> potentially_emit(interval) |> monitor_finish
+  def handle_call({:emit, interval}, _from, state) do
+    state |> potentially_emit(interval) |> monitor_finish(:call)
   end
+
   def handle_cast({:emit, interval}, state) do
-    state |> potentially_emit(interval) |> monitor_finish
+    state |> potentially_emit(interval) |> monitor_finish(:cast)
   end
 
   defp start(clock, latency, buffer_size, state) do
     Logger.info ">>>>>>>>>>>>> Fast send start......"
-    now = Otis.Broadcaster.Clock.time(clock)
     {packets, packet_number} = next_packet(buffer_size, state)
+    now = Otis.Broadcaster.Clock.time(clock)
     state = %S{ state |
       clock: clock,
       start_time: now,
@@ -139,8 +141,11 @@ defmodule Otis.Zone.Broadcaster do
   defp monitor_finish(%{state: :stopped} = state) do
     {:stop, {:shutdown, :stopped}, state}
   end
-  defp monitor_finish(state) do
+  defp monitor_finish(state, :cast) do
     {:noreply, state}
+  end
+  defp monitor_finish(state, :call) do
+    {:reply, :ok, state}
   end
 
   # The audio stream has finished, so tell the zone we're done so it can shut

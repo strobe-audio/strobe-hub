@@ -233,7 +233,7 @@ defmodule Otis.Zone do
     zone
   end
   defp stream_has_finished(zone) do
-    Otis.Broadcaster.Clock.done(zone.clock)
+    Otis.Broadcaster.Controller.done(zone.clock)
     %Zone{zone | broadcaster: nil}
   end
 
@@ -251,12 +251,12 @@ defmodule Otis.Zone do
 
   defp change_state(%Zone{state: :play, clock: nil} = zone) do
     # TODO: share a clock between all zones
-    clock = Otis.Zone.Clock.new(Otis.stream_interval_us)
+    clock = Otis.Zone.Controller.new(Otis.stream_interval_us)
     %Zone{ zone | clock: clock } |> change_state
   end
   defp change_state(%Zone{state: :play, broadcaster: nil, clock: clock} = zone) do
     {:ok, broadcaster} = start_broadcaster(zone)
-    clock = Otis.Broadcaster.Clock.start(clock, broadcaster, broadcaster_latency(zone), @buffer_size)
+    clock = Otis.Broadcaster.Controller.start(clock, broadcaster, broadcaster_latency(zone), @buffer_size)
     %Zone{ zone | broadcaster: broadcaster, clock: clock }
   end
   defp change_state(%Zone{state: :play} = zone) do
@@ -267,14 +267,14 @@ defmodule Otis.Zone do
     zone_is_stopped(zone)
   end
   defp change_state(%Zone{state: :stop, broadcaster: broadcaster} = zone) do
-    clock = Otis.Broadcaster.Clock.stop(zone.clock, broadcaster)
+    clock = Otis.Broadcaster.Controller.stop(zone.clock, broadcaster)
     change_state(%Zone{ zone | broadcaster: nil, clock: clock })
   end
   defp change_state(%Zone{state: :skip, broadcaster: nil} = zone) do
     zone
   end
   defp change_state(%Zone{id: _id, state: :skip, broadcaster: broadcaster} = zone) do
-    clock = Otis.Broadcaster.Clock.skip(zone.clock, broadcaster)
+    clock = Otis.Broadcaster.Controller.skip(zone.clock, broadcaster)
     change_state(%Zone{ zone | broadcaster: nil, clock: clock })
   end
 
