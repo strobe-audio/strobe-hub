@@ -232,62 +232,74 @@ defmodule Otis.BroadcasterTest do
 
   test "it sends audio packets when stepped", state do
     buffer_size = 5
-    poll_interval = round(state.opts.stream_interval / 4)
+    poll_interval = round(state.opts.stream_interval / 2)
 
     clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
 
-
     Enum.each 0..(buffer_size - 1), fn(n) ->
-      assert_receive {:emit, _, _}, 1000, "Not received #{n}"
+      time = state.timestamp.(n)
+      assert_receive {:emit, _, {^time, _}}, 1000, "Not received buffer packet #{n}"
     end
 
-    # EMIT
-    time = state.timestamp.(1)
+    n = buffer_size
+    ts = state.timestamp.(n)
+
+    time = state.start_time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, _, _}, 200, "Not received #{time}"
+    refute_receive {:emit, _, _}, 200
+
+    time = time + poll_interval
+    emit_time = time + poll_interval
+    Otis.Test.SteppingController.step(clock, time, poll_interval)
+    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+
+    n = n + 1
+    ts = state.timestamp.(n)
 
     time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200, "Received #{time}"
+    refute_receive {:emit, _, _}, 200
+
+    time = time + poll_interval
+    emit_time = time + poll_interval
+    Otis.Test.SteppingController.step(clock, time, poll_interval)
+    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+
+    n = n + 1
+    ts = state.timestamp.(n)
 
     time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200, "Received #{time}"
+    refute_receive {:emit, _, _}, 200
+
+    time = time + poll_interval
+    emit_time = time + poll_interval
+    Otis.Test.SteppingController.step(clock, time, poll_interval)
+    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+
+    n = n + 1
+    ts = state.timestamp.(n)
 
     time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200, "Received #{time}"
-
-    # EMIT
-    time = time + poll_interval
-    Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, _, _}, 200, "Not received #{time}"
+    refute_receive {:emit, _, _}, 200
 
     time = time + poll_interval
+    emit_time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200, "Received #{time}"
+    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
 
-    time = time + poll_interval
-    Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200, "Received #{time}"
-
-    # EMIT
-    time = time + poll_interval
-    Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, _, _}, 200, "Not received #{time}"
+    n = n + 1
+    ts = state.timestamp.(n)
 
     time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200, "Received #{time}"
+    refute_receive {:emit, _, _}, 200
 
     time = time + poll_interval
+    emit_time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200, "Received #{time}"
-
-    # EMIT
-    time = time + poll_interval
-    Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, _, _}, 200, "Not received #{time}"
+    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
   end
 
   test "it broadcasts a source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = state do
