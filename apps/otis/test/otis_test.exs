@@ -41,7 +41,7 @@ defmodule OtisTest do
 
   test "opening silent mp3 should give a data stream of all 0" do
     {:ok, source} = Otis.Source.File.new("test/fixtures/silent.mp3")
-    {:ok, _id, stream} = Otis.SourceStream.new(UUID.uuid1, source)
+    {:ok, _id, stream} = Otis.SourceStream.new(Otis.uuid, source)
     {:ok, pcm } = Otis.SourceStream.chunk stream
     assert byte_size(pcm) == 4608
 
@@ -61,7 +61,7 @@ defmodule OtisTest do
 
   test "opening streaming mp3 should give a valid PCM data stream" do
     {:ok, source} = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
-    {:ok, _id, stream} = Otis.SourceStream.new(UUID.uuid1(), source)
+    {:ok, _id, stream} = Otis.SourceStream.new(Otis.uuid(), source)
     hash = TestUtils.md5 fn() -> Otis.SourceStream.chunk(stream) end
     # avconv -i test/fixtures/snake-rag.mp3 -f s16le -ac 2 -ar 44100 - | md5
     assert hash == "ba5a1791d3a00ac3ec31f2fe490a90c5"

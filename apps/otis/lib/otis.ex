@@ -39,4 +39,8 @@ defmodule Otis do
   def init(_args) do
     :ok
   end
+
+  def uuid do
+    UUID.uuid1()
+  end
 end

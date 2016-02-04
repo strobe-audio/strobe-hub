@@ -20,7 +20,7 @@ defmodule Otis.SourceListTest do
       TS.new("c"),
       TS.new("d"),
     ]
-    id = UUID.uuid1
+    id = Otis.uuid
 
     {:ok, list} = Otis.SourceList.from_list(id, sources)
 
@@ -63,7 +63,7 @@ defmodule Otis.SourceListTest do
   test "#next iterates the source list" do
     {:ok, a } = Otis.Source.File.new("test/fixtures/silent.mp3")
     {:ok, b } = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
-    {:ok, source_list} = Otis.SourceList.from_list(UUID.uuid1, [a, b])
+    {:ok, source_list} = Otis.SourceList.from_list(Otis.uuid, [a, b])
 
     {:ok, _uuid, source} = Otis.SourceList.next(source_list)
     %Otis.Source.File{path: path} = source
