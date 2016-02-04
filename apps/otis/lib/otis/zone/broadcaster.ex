@@ -15,6 +15,7 @@ defmodule Otis.Zone.Broadcaster do
   defmodule S do
     @moduledoc "State for the broadcaster genserver"
     defstruct [
+      id: nil,
       zone: nil,
       audio_stream: nil,
       emitter: nil,
@@ -60,6 +61,7 @@ defmodule Otis.Zone.Broadcaster do
     Logger.info "Starting broadcaster #{inspect opts}"
     # Logger.disable(self)
     state = %S{
+      id: opts.id,
       zone: opts.zone,
       audio_stream: opts.audio_stream,
       emitter: opts.emitter,
@@ -132,8 +134,7 @@ defmodule Otis.Zone.Broadcaster do
   # send
   defp stop!(state) do
     Logger.info "Stopping broadcaster..."
-    {:ok, zone_id} = Otis.Zone.id(state.zone)
-    Otis.State.Events.notify({:zone_stop, zone_id})
+    Otis.State.Events.notify({:zone_stop, state.id})
     kill(state)
     rebuffer_in_flight(state)
   end
@@ -155,8 +156,7 @@ defmodule Otis.Zone.Broadcaster do
   end
   defp finish(%S{in_flight: [], zone: zone, state: :play} = state) do
     Logger.debug "Stream finished"
-    {:ok, zone_id} = Otis.Zone.id(zone)
-    Otis.State.Events.notify({:zone_finished, zone_id})
+    Otis.State.Events.notify({:zone_finished, state.id})
     Otis.Zone.stream_finished(zone)
     %S{ state | state: :stopped }
   end
@@ -252,8 +252,7 @@ defmodule Otis.Zone.Broadcaster do
 
   defp source_changed(new_source_id, state) do
     Logger.info "SOURCE CHANGED #{ new_source_id }"
-    {:ok, zone_id} = Otis.Zone.id(state.zone)
-    Otis.State.Events.notify({:source_changed, zone_id, new_source_id})
+    Otis.State.Events.notify({:source_changed, state.id, new_source_id})
   end
 
   # Take all the in flight packets that we know haven't been played

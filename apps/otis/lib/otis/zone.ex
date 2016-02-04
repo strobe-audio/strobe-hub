@@ -287,8 +287,9 @@ defmodule Otis.Zone do
     %Zone{ zone | broadcaster: nil}
   end
 
-  defp start_broadcaster(%Zone{audio_stream: audio_stream, socket: socket}) do
+  defp start_broadcaster(%Zone{id: id, audio_stream: audio_stream, socket: socket}) do
     opts = %{
+      id: id,
       zone: self,
       audio_stream: audio_stream,
       emitter: Otis.Zone.Emitter.new(socket),
