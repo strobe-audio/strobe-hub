@@ -72,7 +72,7 @@ defmodule Otis.Test.SteppingClock do
   def handle_call(:time, _from, {time}) do
     {:reply, time, {time}}
   end
-  def handle_call({:step, new_time}, _from, {time}) do
+  def handle_call({:step, new_time}, _from, {_time}) do
     {:reply, :ok, {new_time}}
   end
 end
@@ -94,7 +94,7 @@ defmodule Otis.Test.SteppingController do
     {:ok, %__MODULE__{start_time: start_time, time: start_time, clock: clock}}
   end
 
-  def time(%__MODULE__{time: time} = controller) do
+  def time(%__MODULE__{time: time} = _controller) do
     time
   end
 
@@ -306,8 +306,6 @@ defmodule Otis.BroadcasterTest do
 
     :ok = Otis.State.Events.add_handler(MessagingHandler, self)
 
-    on_exit fn ->
-    end
     buffer_size = 5
     poll_interval = round(state.opts.stream_interval / 1)
 
@@ -392,8 +390,6 @@ defmodule Otis.BroadcasterTest do
 
     ts = state.timestamp.(7)
     assert_receive {:emit, _, {^ts, "8"}}, 1000
-
-    {:messages, messages} = Process.info(self, :messages)
 
     Otis.Test.SteppingClock.step(state.clock.clock, state.timestamp.(7) + 1)
 
