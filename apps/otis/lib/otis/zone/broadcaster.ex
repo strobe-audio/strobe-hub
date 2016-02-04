@@ -248,7 +248,7 @@ defmodule Otis.Zone.Broadcaster do
   # and send them back to the buffer so that if we resume playback
   # the audio starts where it left off rather than losing a buffer's worth
   # of audio.
-  defp rebuffer_in_flight(%{in_flight: in_flight, audio_stream: audio_stream} = state) do
+  defp rebuffer_in_flight(%{audio_stream: audio_stream} = state) do
     packets = state |> unplayed_packets |> Enum.map(fn({_, _, source_id, data}) -> {source_id, data} end)
     GenServer.cast(audio_stream, {:rebuffer, packets})
     %S{ state | in_flight: [] }
@@ -275,7 +275,7 @@ defmodule Otis.Zone.Broadcaster do
     {timestamp_for_packet(packet_number, state), source_id, data}
   end
 
-  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = state) do
+  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = _state) do
     timestamp_for_packet(packet_number, start_time, interval, latency)
   end
 

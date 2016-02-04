@@ -11,6 +11,6 @@ end
 defimpl Otis.Broadcaster.Clock, for: Otis.Zone.Clock do
   require Monotonic
 
-  def time(clock), do: Monotonic.microseconds
+  def time(_clock), do: Monotonic.microseconds
 end
 

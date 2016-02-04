@@ -45,7 +45,7 @@ defmodule Otis.Zones do
 
   ############# Callbacks
 
-  def init(args) do
+  def init(_args) do
     {:ok, %{}}
   end
 
@@ -60,9 +60,5 @@ defmodule Otis.Zones do
   def handle_cast({:add, zone}, zone_list) do
     {:ok, id} = Zone.id(zone)
     {:noreply, Map.put(zone_list, id, zone)}
-  end
-
-  defp find_by_id(zone_list, id) do
-
   end
 end

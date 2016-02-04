@@ -69,7 +69,7 @@ defmodule MessagingHandler do
   #      assert_receive :remove_messaging_handler, 200
   #    end
 
-  def terminate(pid, parent)
+  def terminate(pid, _parent)
   when is_pid(pid) do
     send(pid, :remove_messaging_handler)
     :ok
