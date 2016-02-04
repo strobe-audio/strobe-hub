@@ -79,8 +79,8 @@ defmodule Otis.Zone.Broadcaster do
     {:reply, :ok, start(clock, latency, buffer_size, state)}
   end
 
-  def handle_cast({:start, clock, latency, buffer_size}, state) do
-    {:noreply, start(clock, latency, buffer_size, state)}
+  def handle_call({:emit, interval}, _from, state) do
+    state |> potentially_emit(interval) |> monitor_finish
   end
 
   # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
@@ -94,14 +94,6 @@ defmodule Otis.Zone.Broadcaster do
   # Used during track skipping
   def handle_cast({:stop, :skip}, state) do
     {:stop, {:shutdown, :stopped}, kill!(state)}
-  end
-
-  def handle_call({:emit, interval}, _from, state) do
-    state |> potentially_emit(interval) |> monitor_finish(:call)
-  end
-
-  def handle_cast({:emit, interval}, state) do
-    state |> potentially_emit(interval) |> monitor_finish(:cast)
   end
 
   defp start(clock, latency, buffer_size, state) do
@@ -142,10 +134,7 @@ defmodule Otis.Zone.Broadcaster do
   defp monitor_finish(%{state: :stopped} = state) do
     {:stop, {:shutdown, :stopped}, state}
   end
-  defp monitor_finish(state, :cast) do
-    {:noreply, state}
-  end
-  defp monitor_finish(state, :call) do
+  defp monitor_finish(state) do
     {:reply, :ok, state}
   end
 
