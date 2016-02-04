@@ -131,7 +131,7 @@ defmodule Otis.Zone.Broadcaster do
     rebuffer_in_flight(state)
   end
 
-  defp monitor_finish(%{state: :stopped} = state) do
+  defp monitor_finish(%S{state: :stopped} = state) do
     {:stop, {:shutdown, :stopped}, state}
   end
   defp monitor_finish(state) do
