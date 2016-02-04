@@ -61,6 +61,19 @@ defmodule MessagingHandler do
     send(parent, event)
     {:ok, parent}
   end
+
+  # Allows tests to wait for successful removal of the handler
+  #
+  #    on_exit fn ->
+  #      Otis.State.Events.remove_handler(MessagingHandler, self)
+  #      assert_receive :remove_messaging_handler, 200
+  #    end
+
+  def terminate(pid, parent)
+  when is_pid(pid) do
+    send(pid, :remove_messaging_handler)
+    :ok
+  end
 end
 
 ExUnit.start()

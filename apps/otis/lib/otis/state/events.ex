@@ -37,11 +37,16 @@ defmodule Otis.State.Events do
     GenEvent.add_mon_handler(@name, handler, args)
   end
 
-  def remove_handler(handler, term) do
-    GenEvent.remove_handler(@name, handler, term)
+  def remove_handler(handler, args \\ :remove_handler)
+  def remove_handler(handler, args) do
+    GenEvent.remove_handler(@name, handler, args)
   end
 
   def stream(options \\ []) do
     GenEvent.stream(@name, options)
+  end
+
+  def which_handlers do
+    GenEvent.which_handlers(@name)
   end
 end
