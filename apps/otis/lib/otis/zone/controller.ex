@@ -6,11 +6,9 @@ defmodule Otis.Zone.Controller do
     defstruct [
       :stream_interval,
       :poll_interval,
-      :tick_interval,
       :broadcaster,
       :clock,
-      :timer,
-      :last_tick_us
+      :next_tick_us
     ]
   end
 
@@ -39,7 +37,6 @@ defmodule Otis.Zone.Controller do
     state = %S{
       stream_interval: stream_interval,
       poll_interval: poll_interval,
-      tick_interval: round(poll_interval / 1000),
       broadcaster: nil,
       clock: Otis.Zone.Clock.new
     }
@@ -47,45 +44,45 @@ defmodule Otis.Zone.Controller do
   end
 
   def handle_cast({:start, broadcaster, latency, buffer_size}, %S{broadcaster: nil, clock: clock} = state) do
-    call(broadcaster, :prebuffer)
-    cast(broadcaster, {:start, clock, latency, buffer_size})
-    {:ok, ref} = schedule_emit(state.tick_interval)
-    # ref = nil
-    # Process.send_after(self, :tick, state.poll_interval / 1000)
-    # schedule_emit(state.tick_interval)
-    {:noreply, %S{ state | broadcaster: broadcaster, timer: ref, last_tick_us: now }}
+    call(broadcaster, {:start, clock, latency, buffer_size})
+    state = %S{ state | broadcaster: broadcaster, next_tick_us: now } |> schedule_emit
+    {:noreply, state}
   end
 
   def handle_cast({:stop, broadcaster}, %S{broadcaster: broadcaster} = state) do
     Otis.Broadcaster.stop_broadcaster(broadcaster)
-    {:noreply, %S{ cancel_emit(state) | broadcaster: nil, timer: nil }}
+    {:noreply, %S{ state | broadcaster: nil }}
   end
 
   def handle_cast({:skip, broadcaster}, %S{broadcaster: broadcaster} = state) do
     Otis.Broadcaster.skip_broadcaster(broadcaster)
-    {:noreply, %S{ cancel_emit(state) | broadcaster: nil, timer: nil }}
+    {:noreply, %S{ state | broadcaster: nil }}
   end
 
-  def handle_cast(:done, %S{broadcaster: broadcaster} = state) do
-    {:noreply, %S{ cancel_emit(state) | broadcaster: nil, timer: nil }}
+  def handle_cast(:done, state) do
+    {:noreply, %S{ state | broadcaster: nil }}
   end
 
   def handle_info(:tick, %S{broadcaster: nil} = state) do
-    {:noreply, cancel_emit(state)}
+    {:noreply, state}
   end
   def handle_info(:tick, %S{broadcaster: broadcaster} = state) do
-    cast(broadcaster, {:emit, round(state.tick_interval * 1.2)})
-    {:noreply, %S{state | last_tick_us: now}}
+    call(broadcaster, {:emit, state.poll_interval})
+    {:noreply, schedule_emit(state) }
   end
 
-  defp schedule_emit(tick_interval_ms) do
-    :timer.send_interval(tick_interval_ms - 2, self, :tick)
-    # Process.send_after(self, :tick, tick_interval_ms)
+  defp schedule_emit(state) do
+    state |> increment_tick |> do_schedule_emit
   end
 
-  defp cancel_emit(state) do
-    :timer.cancel(state.timer)
-    %S{ state | timer: nil }
+  defp do_schedule_emit(state) do
+    duration = round((state.next_tick_us - now) / 1000)
+    Process.send_after(self, :tick, duration)
+    state
+  end
+
+  defp increment_tick(state) do
+    %S{ state | next_tick_us: state.next_tick_us + state.poll_interval }
   end
 
   defp now, do: Monotonic.microseconds
