@@ -75,10 +75,11 @@ defmodule Otis.AudioStreamSingleTest do
   @silent_raw_byte_size 9216
 
   setup do
+    source_list_id = Otis.uuid
     {:ok, source} = Otis.Source.File.new("test/fixtures/silent.mp3")
-    {:ok, source_list} = Otis.SourceList.from_list([source])
+    {:ok, source_list} = Otis.SourceList.from_list(source_list_id, [source])
     {:ok, audio_stream} = Otis.AudioStream.start_link(source_list, 1000)
-    {:ok, audio_stream: audio_stream, chunk_size: 1000, source_list: source_list}
+    {:ok, audio_stream: audio_stream, chunk_size: 1000, source_list: source_list, source_list_id: source_list_id}
   end
 
   test "source list", %{audio_stream: audio_stream, chunk_size: chunk_size} do
@@ -130,13 +131,14 @@ defmodule Otis.AudioStreamMultipleTest do
       "test/fixtures/silent.mp3",
       "test/fixtures/snake-rag.mp3"
     ]
+    source_list_id = Otis.uuid
     ss  = Enum.map paths, fn(path) ->
       {:ok, source } = Otis.Source.File.new(path)
       source
     end
-    {:ok, source_list} = Otis.SourceList.from_list(ss)
+    {:ok, source_list} = Otis.SourceList.from_list(source_list_id, ss)
     {:ok, audio_stream} = Otis.AudioStream.start_link(source_list, 200)
-    {:ok, audio_stream: audio_stream, chunk_size: 200}
+    {:ok, audio_stream: audio_stream, chunk_size: 200, source_list_id: source_list_id}
   end
 
   defp test_frame_size(stream, size) do
