@@ -17,8 +17,9 @@ defmodule Otis.Supervisor do
       worker(Otis.DNSSD, []),
       worker(Otis.SNTP, []),
       worker(Otis.State, []),
+      worker(Otis.State.Repo, []),
       worker(Otis.State.Events, []),
-      worker(Otis.Repo, []),
+      worker(Otis.State.Persistence, []),
       worker(Otis.PortSequence, [5040, 10]),
 
       :poolboy.child_spec(Otis.EmitterPool, emitter_pool_options, [

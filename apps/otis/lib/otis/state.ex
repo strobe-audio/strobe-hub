@@ -12,25 +12,25 @@ defmodule Otis.State do
     GenServer.start_link(__MODULE__, :ok, name: @name)
   end
 
-  alias Otis.State.Zone
+  # alias Otis.State.Zone
 
   def init(:ok) do
     Logger.info "Starting state..."
     zones = [
-      %Zone{id: "office", name: "The Office", receiver_ids: [
-          :"00-25-00-f4-1d-cd", # mac pro 5,1
-          :"00-17-f2-09-20-9d", # mac pro 1,1
-          :"b8-27-eb-f6-19-4b", # rpi 2 eth0
-          :"e8-94-f6-24-4a-db", # rpi 2 wlan
-          :"00-1c-42-fc-0d-b6"
-        ]},
-      %Zone{id: "downstairs", name: "Downstairs", receiver_ids: [
-          :"00-00-00-00-00-00", # lo0
-          :"e0-f8-47-42-aa-48",
-          :"b8-27-eb-ce-43-c7",
-          :"10-9a-dd-67-71-9c",
-          :"2c-f0-ee-0a-e2-5e", # aines lappie
-        ]}
+      # %Zone{id: "office", name: "The Office", receiver_ids: [
+      #     :"00-25-00-f4-1d-cd", # mac pro 5,1
+      #     :"00-17-f2-09-20-9d", # mac pro 1,1
+      #     :"b8-27-eb-f6-19-4b", # rpi 2 eth0
+      #     :"e8-94-f6-24-4a-db", # rpi 2 wlan
+      #     :"00-1c-42-fc-0d-b6"
+      #   ]},
+      # %Zone{id: "downstairs", name: "Downstairs", receiver_ids: [
+      #     :"00-00-00-00-00-00", # lo0
+      #     :"e0-f8-47-42-aa-48",
+      #     :"b8-27-eb-ce-43-c7",
+      #     :"10-9a-dd-67-71-9c",
+      #     :"2c-f0-ee-0a-e2-5e", # aines lappie
+      #   ]}
     ]
     {:ok, %S{zones: zones}}
   end
@@ -60,7 +60,7 @@ defmodule Otis.State do
     {:noreply, state}
   end
 
-  def find_zone_for_receiver([%Zone{id: zone_id, receiver_ids: receiver_ids} = _zone | zones], pid, id) do
+  def find_zone_for_receiver([%{id: zone_id, receiver_ids: receiver_ids} = _zone | zones], pid, id) do
     case Enum.find(receiver_ids, fn(rid) -> rid == id end) do
       nil -> find_zone_for_receiver(zones, pid, id)
       _   -> attach_receiver_to_zone(zone_id, pid)

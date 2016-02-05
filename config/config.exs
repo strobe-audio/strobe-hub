@@ -26,6 +26,8 @@ use Mix.Config
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+import_config "#{Mix.env}.exs"
+
 # The configuration defined here will only affect the dependencies
 # in the apps directory when commands are executed from the umbrella
 # project. For this reason, it is preferred to configure each child
@@ -42,3 +44,5 @@ import_config "../apps/*/config/config.exs"
 # config :dogma,
 #   rule_set: Dogma.RuleSet.All,
 #   override: %{ LineLength => [ max_length: 120 ] }
+
+
