@@ -18,7 +18,14 @@ defmodule Otis.Zones.Supervisor do
     start_zone(@supervisor_name, id, name)
   end
 
+  def stop_zone(pid) do
+    stop_zone(@supervisor_name, pid)
+  end
+
   def start_zone(supervisor, id, name) do
     Supervisor.start_child(supervisor, [id, name])
+  end
+  def stop_zone(supervisor, pid) do
+    Supervisor.terminate_child(supervisor, pid)
   end
 end

@@ -102,5 +102,28 @@ defmodule Otis.ZoneTest do
     :ok = Otis.Zone.add_receiver(zone, receiver)
     messages = Otis.State.Events.call(TestHandler, :messages)
     assert messages == [{:receiver_added, "zone_1", {:receiver_2}}]
+    Otis.State.Events.remove_handler(TestHandler)
+  end
+
+  test "broadcasts an event when a zone is added", _context do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    id = Otis.uuid
+    {:ok, _zone} = Otis.Zones.Supervisor.start_zone(id, "My New Zone")
+    assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
+  test "broadcasts an event when a zone is removed", _context do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    id = Otis.uuid
+    {:ok, zone} = Otis.Zones.Supervisor.start_zone(id, "My New Zone")
+    assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
+
+
+    Otis.Zones.Supervisor.stop_zone(zone)
+    assert_receive {:zone_removed, ^id}, 200
+    assert Process.alive?(zone) == false
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
   end
 end
