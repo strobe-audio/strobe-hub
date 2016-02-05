@@ -80,7 +80,11 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   def handle_call({:emit, interval}, _from, state) do
-    state |> potentially_emit(interval) |> monitor_finish
+    state |> potentially_emit(interval) |> monitor_finish(:call)
+  end
+
+  def handle_cast({:emit, interval}, state) do
+    state |> potentially_emit(interval) |> monitor_finish(:cast)
   end
 
   # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
@@ -131,11 +135,14 @@ defmodule Otis.Zone.Broadcaster do
     rebuffer_in_flight(state)
   end
 
-  defp monitor_finish(%S{state: :stopped} = state) do
+  defp monitor_finish(%S{state: :stopped} = state, _callback) do
     {:stop, {:shutdown, :stopped}, state}
   end
-  defp monitor_finish(state) do
+  defp monitor_finish(state, :call) do
     {:reply, :ok, state}
+  end
+  defp monitor_finish(state, :cast) do
+    {:noreply, state}
   end
 
   # The audio stream has finished, so tell the zone we're done so it can shut

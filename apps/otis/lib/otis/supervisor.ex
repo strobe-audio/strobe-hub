@@ -29,6 +29,7 @@ defmodule Otis.Supervisor do
 
       supervisor(Otis.Broadcaster, []),
       supervisor(Otis.Zones.Supervisor, []),
+      supervisor(Otis.Controllers, []),
       worker(Otis.Zones, []),
       supervisor(Otis.Receivers.Supervisor, []),
       worker(Otis.Receivers, []),
