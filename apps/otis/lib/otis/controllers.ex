@@ -19,7 +19,6 @@ defmodule Otis.Controllers do
   end
 
   def start_controller(supervisor, stream_interval, poll_interval) do
-    IO.inspect [:start_controller, supervisor, stream_interval, poll_interval]
     Supervisor.start_child(supervisor, [stream_interval, poll_interval])
   end
 end
