@@ -52,7 +52,7 @@ defmodule Otis.Zone.Controller do
     {:noreply, %S{state|timer: nil}}
   end
 
-  def handle_cast({:start, broadcaster, latency, buffer_size}, %S{clock: clock} = state) do
+  def handle_cast({:start, broadcaster, latency, buffer_size}, state) do
     {:noreply, start(broadcaster, latency, buffer_size, state)}
   end
 
@@ -90,7 +90,7 @@ defmodule Otis.Zone.Controller do
     cast(broadcaster, {:emit, state.poll_interval})
     {:noreply, schedule_emit(state) }
   end
-  defp tick(false, %S{broadcaster: broadcaster} = state) do
+  defp tick(false, state) do
     {:noreply, %S{state | broadcaster: nil} }
   end
 
