@@ -56,7 +56,7 @@ defmodule Otis.Zone.Controller do
     {:noreply, start(broadcaster, latency, buffer_size, state)}
   end
 
-  def handle_cast({:stop, broadcaster}, %S{broadcaster: broadcaster} = state) do
+  def handle_cast({:stop, broadcaster}, state) do
     Otis.Broadcaster.stop_broadcaster(broadcaster)
     {:noreply, %S{ state | broadcaster: nil }}
   end
@@ -78,8 +78,12 @@ defmodule Otis.Zone.Controller do
 
   def start(broadcaster, latency, buffer_size, %S{clock: clock} = state) do
     Process.monitor(broadcaster)
-    call(broadcaster, {:start, clock, latency, buffer_size})
-    %S{ state | broadcaster: broadcaster, next_tick_us: now } |> schedule_emit
+    try do
+      call(broadcaster, {:start, clock, latency, buffer_size})
+      %S{ state | broadcaster: broadcaster, next_tick_us: now } |> schedule_emit
+    catch
+      :exit, _reason -> %S{ state | broadcaster: nil }
+    end
   end
 
   defp tick(true, %S{broadcaster: broadcaster} = state) do
