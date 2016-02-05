@@ -118,7 +118,11 @@ defmodule Otis.Test.SteppingController do
   end
   def step(%__MODULE__{broadcaster: broadcaster} = controller, time, interval) do
     :ok = Otis.Test.SteppingClock.step(controller.clock, time)
-    GenServer.call(broadcaster, {:emit, interval})
+    try do
+      GenServer.call(broadcaster, {:emit, interval})
+    catch
+      :exit, _reason -> nil
+    end
     %__MODULE__{ controller | time: time }
   end
 end
@@ -311,26 +315,27 @@ defmodule Otis.BroadcasterTest do
 
     clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
 
-    time = state.timestamp.(1)
-
     [source_id1, _] = source1
     [source_id2, _] = source2
 
-    Otis.Test.SteppingController.step(clock, time + poll_interval, poll_interval)
+    time = state.timestamp.(0)
+    Otis.Test.SteppingController.step(clock, time, poll_interval)
     assert_receive {:emit, _, _}, 200
+
+
     assert_receive {:source_changed, ^zone_id, ^source_id1}, 200
 
 
-    Enum.each 2..9, fn(n) ->
+    Enum.each 2..10, fn(n) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
-      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+      assert_receive {:emit, _, _}, 200
     end
 
     assert_receive {:source_changed, ^zone_id, ^source_id2}, 200
 
-    Enum.each 10..20, fn(n) ->
+    Enum.each 10..19, fn(n) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
-      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+      assert_receive {:emit, _, _}, 200
     end
 
     Otis.State.Events.remove_handler(MessagingHandler, self)
@@ -346,14 +351,14 @@ defmodule Otis.BroadcasterTest do
 
     clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
 
-    time = state.timestamp.(1)
+    time = state.timestamp.(0)
 
-    Enum.each 1..9, fn(n) ->
+    Enum.each 1..10, fn(n) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
       assert_receive {:emit, _, _}, 200, "Not received #{n}"
     end
 
-    Enum.each 10..20, fn(n) ->
+    Enum.each 11..20, fn(n) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
       assert_receive {:emit, _, _}, 200, "Not received #{n}"
     end
