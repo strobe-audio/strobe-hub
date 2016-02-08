@@ -17,31 +17,15 @@ defmodule Otis.Zones do
     response
   end
 
-  def remove_zone(id) do
-    remove_zone(@registry_name, id)
+  def destroy!(id) do
+    destroy!(@registry_name, id)
   end
 
-  def remove_zone(registry, id) do
+  def destroy!(registry, id) do
     {:ok, zone} = find(registry, id)
     response = Otis.Zones.Supervisor.stop_zone(zone)
     remove(registry, id)
     response
-  end
-
-  def add(zone, id, name) do
-    add(@registry_name, zone, id, name)
-  end
-
-  def add(pid, zone, id, name) do
-    GenServer.cast(pid, {:add, zone, id, name})
-  end
-
-  def remove(id) do
-    remove(@registry_name, id)
-  end
-
-  def remove(pid, id) do
-    GenServer.cast(pid, {:remove, id})
   end
 
   def list do
@@ -58,6 +42,14 @@ defmodule Otis.Zones do
 
   def find(pid, id) do
     GenServer.call(pid, {:find, id})
+  end
+
+  defp add(pid, zone, id, name) do
+    GenServer.cast(pid, {:add, zone, id, name})
+  end
+
+  defp remove(pid, id) do
+    GenServer.cast(pid, {:remove, id})
   end
 
   ############# Callbacks

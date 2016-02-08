@@ -117,7 +117,7 @@ defmodule Otis.ZoneTest do
     assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
 
 
-    Otis.Zones.remove_zone(id)
+    Otis.Zones.destroy!(id)
     assert_receive {:zone_removed, ^id}, 200
     assert Process.alive?(zone) == false
     Otis.State.Events.remove_handler(MessagingHandler, self)

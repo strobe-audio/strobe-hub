@@ -39,7 +39,7 @@ defmodule Otis.Persistence.ZonesTest do
     {:ok, _zone} = Otis.Zones.create(id, name)
     assert_receive {:zone_added, ^id, %{name: ^name}}, 200
 
-    :ok = Otis.Zones.remove_zone(id)
+    :ok = Otis.Zones.destroy!(id)
     assert_receive {:zone_removed, ^id}, 200
 
     zones = Otis.State.Zone.all
