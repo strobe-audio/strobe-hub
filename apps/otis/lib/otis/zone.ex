@@ -38,12 +38,10 @@ defmodule Otis.Zone do
 
   def init(%Zone{ source_list: source_list } = zone) do
     Logger.info "#{__MODULE__} starting... #{ inspect zone }"
-    Process.flag(:trap_exit, true) # so we get terminate calls
     {:ok, port} = Otis.PortSequence.next
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, Otis.stream_bytes_per_step)
     {:ok, stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
-    Otis.State.Events.notify({:zone_added, zone.id, %{ name: zone.name }})
     {:ok, %Zone{ zone |
         audio_stream: stream,
         socket: socket,
@@ -180,11 +178,6 @@ defmodule Otis.Zone do
   def handle_cast({:skip, id}, zone) do
     zone = zone |> set_state(:skip) |> flush |> skip_to(id)
     {:noreply, set_state(zone, :play)}
-  end
-
-  def terminate(reason, state) do
-    Otis.State.Events.notify({:zone_removed, state.id})
-    :ok
   end
 
   defp flush(zone) do
