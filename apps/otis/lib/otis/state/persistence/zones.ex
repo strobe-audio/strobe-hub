@@ -1,7 +1,6 @@
 
 defmodule Otis.State.Persistence.Zones do
   use     GenEvent
-  import  Ecto.Query
   require Logger
 
   alias Otis.State.Zone
@@ -16,6 +15,9 @@ defmodule Otis.State.Persistence.Zones do
   end
   def handle_event({:zone_removed, id}, state) do
     Zone.find(id) |> remove_zone(id)
+    {:ok, state}
+  end
+  def handle_event(_evt, state) do
     {:ok, state}
   end
 

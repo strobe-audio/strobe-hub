@@ -75,5 +75,7 @@ defmodule MessagingHandler do
     :ok
   end
 end
+Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
+Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
 
 ExUnit.start()

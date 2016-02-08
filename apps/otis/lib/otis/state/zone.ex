@@ -39,6 +39,10 @@ defmodule Otis.State.Zone do
 
   defstruct id: :default_zone, name: "Default Zone", receiver_ids: []
 
+  def all do
+    Zone |> Repo.all
+  end
+
   def create!(id, name) do
     Repo.insert!(%Zone{id: id, name: name})
   end
@@ -52,6 +56,10 @@ defmodule Otis.State.Zone do
     |> where(id: ^id)
     |> limit(1)
     |> Repo.one
+  end
+
+  def delete_all do
+    Zone |> Repo.delete_all
   end
 #
 #   def create(name)

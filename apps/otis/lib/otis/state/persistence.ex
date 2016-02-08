@@ -7,7 +7,9 @@ defmodule Otis.State.Persistence do
   end
 
   def init(:ok) do
-    Otis.State.Persistence.Zones.register
+    Enum.each [Otis.State.Persistence.Zones], fn(handler) ->
+      handler.register
+    end
     {:ok, {}}
   end
 
