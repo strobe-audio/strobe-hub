@@ -10,7 +10,7 @@ defmodule Otis.Source.Test do
 end
 
 defmodule Otis.SourceListTest do
-  use   ExUnit.Case, async: true
+  use   ExUnit.Case
   alias Otis.Source.Test, as: TS
 
   setup do

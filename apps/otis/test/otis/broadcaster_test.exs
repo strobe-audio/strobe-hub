@@ -146,7 +146,7 @@ defimpl Otis.Broadcaster.Controller, for: Otis.Test.SteppingController do
 end
 
 defmodule Otis.BroadcasterTest do
-  use   ExUnit.Case, async: true
+  use   ExUnit.Case
 
   setup do
     latency    = 500
