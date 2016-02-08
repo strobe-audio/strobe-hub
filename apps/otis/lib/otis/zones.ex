@@ -7,11 +7,11 @@ defmodule Otis.Zones do
     GenServer.start_link(__MODULE__, [], name: name)
   end
 
-  def start_zone(id, name) do
-    start_zone(@registry_name, id, name)
+  def create(id, name) do
+    create(@registry_name, id, name)
   end
 
-  def start_zone(registry, id, name) do
+  def create(registry, id, name) do
     {:ok, zone} = response = Otis.Zones.Supervisor.start_zone(Otis.Zones.Supervisor, id, name)
     add(registry, zone, id, name)
     response

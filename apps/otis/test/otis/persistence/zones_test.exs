@@ -20,7 +20,7 @@ defmodule Otis.Persistence.ZonesTest do
     assert Otis.State.Zone.all == []
     id = Otis.uuid
     name = "A new zone"
-    {:ok, _zone} = Otis.Zones.start_zone(id, name)
+    {:ok, _zone} = Otis.Zones.create(id, name)
     assert_receive {:zone_added, ^id, %{name: ^name}}, 200
     zones = Otis.State.Zone.all
     assert length(zones) == 1
@@ -36,7 +36,7 @@ defmodule Otis.Persistence.ZonesTest do
     assert Otis.State.Zone.all == []
     id = Otis.uuid
     name = "A new zone"
-    {:ok, _zone} = Otis.Zones.start_zone(id, name)
+    {:ok, _zone} = Otis.Zones.create(id, name)
     assert_receive {:zone_added, ^id, %{name: ^name}}, 200
 
     :ok = Otis.Zones.remove_zone(id)
@@ -55,14 +55,14 @@ defmodule Otis.Persistence.ZonesTest do
     assert Otis.State.Zone.all == []
     id = Otis.uuid
     name = "A new zone"
-    {:ok, zone} = Otis.Zones.start_zone(id, name)
+    {:ok, zone} = Otis.Zones.create(id, name)
     assert_receive {:zone_added, ^id, %{name: ^name}}, 200
 
 
     Otis.Zones.Supervisor.stop_zone(zone)
     refute Process.alive?(zone)
 
-    {:ok, _zone} = Otis.Zones.start_zone(id, name)
+    {:ok, _zone} = Otis.Zones.create(id, name)
 
     zones = Otis.State.Zone.all
     assert length(zones) == 1

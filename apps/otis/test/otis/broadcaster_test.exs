@@ -153,7 +153,7 @@ defmodule Otis.BroadcasterTest do
     start_time = 5000
 
     zone_id = Otis.uuid
-    {:ok, zone} = Otis.Zones.start_zone(zone_id, "Zone")
+    {:ok, zone} = Otis.Zones.create(zone_id, "Zone")
     packets1 = (1..10) |> Enum.map(&Integer.to_string(&1, 10))
     source1 = ["source-1", packets1]
     packets2 = (11..20) |> Enum.map(&Integer.to_string(&1, 10))
