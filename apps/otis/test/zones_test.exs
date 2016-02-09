@@ -3,6 +3,10 @@ defmodule ZonesTest do
 
   @moduletag :zones
 
+  def zone_ids(zones) do
+    Enum.map(Otis.Zones.list!(zones), fn(pid) -> {:ok, id} = Otis.Zone.id(pid); id end)
+  end
+
   setup do
     {:ok, zones} = Otis.Zones.start_link(:test_zones)
     {:ok, zones: zones}
@@ -31,6 +35,42 @@ defmodule ZonesTest do
     {:ok, zone} = Otis.Zones.create(zones, "1", "A Zone")
     {:ok, list} = Otis.Zones.list(zones)
     assert list == [zone]
+  end
+
+  test "broadcasts an event when a zone is added", %{zones: zones} do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    id = Otis.uuid
+    {:ok, _zone} = Otis.Zones.create(zones, id, "My New Zone")
+    assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
+
+  test "broadcasts an event when a zone is removed", %{zones: zones} do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    id = Otis.uuid
+    {:ok, zone} = Otis.Zones.create(zones, id, "My New Zone")
+    assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
+
+    Otis.Zones.destroy!(zones, id)
+    assert_receive {:zone_removed, ^id}, 200
+    assert Process.alive?(zone) == false
+
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
+
+  test "doesn't broadcast an event when starting a zone", %{zones: zones} do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+
+    id = Otis.uuid
+    {:ok, _zone} = Otis.Zones.start(zones, id, "Something")
+    refute_receive {:zone_added, ^id, _}
+
+    assert zone_ids(zones) == [id]
+
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
   end
 end
 
@@ -100,27 +140,5 @@ defmodule Otis.ZoneTest do
     messages = Otis.State.Events.call(TestHandler, :messages)
     assert messages == [{:receiver_added, "zone_1", {:receiver_2}}]
     Otis.State.Events.remove_handler(TestHandler)
-  end
-
-  test "broadcasts an event when a zone is added", _context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-    id = Otis.uuid
-    {:ok, _zone} = Otis.Zones.create(id, "My New Zone")
-    assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
-  end
-  test "broadcasts an event when a zone is removed", _context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-    id = Otis.uuid
-    {:ok, zone} = Otis.Zones.create(id, "My New Zone")
-    assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
-
-
-    Otis.Zones.destroy!(id)
-    assert_receive {:zone_removed, ^id}, 200
-    assert Process.alive?(zone) == false
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 end

@@ -12,9 +12,16 @@ defmodule Otis.Zones do
   end
 
   def create(registry, id, name) do
-    {:ok, zone} = response = Otis.Zones.Supervisor.start_zone(Otis.Zones.Supervisor, id, name)
-    add(registry, zone, id, name)
-    response
+    add(:create, registry, id, name)
+  end
+
+  @doc "Start an existing zone"
+  def start(id, name) do
+    start(@registry_name, id, name)
+  end
+
+  def start(registry, id, name) do
+    add(:start, registry, id, name)
   end
 
   def destroy!(id) do
@@ -26,6 +33,15 @@ defmodule Otis.Zones do
     response = Otis.Zones.Supervisor.stop_zone(zone)
     remove(registry, id)
     response
+  end
+
+  def list! do
+    list!(@registry_name)
+  end
+
+  def list!(registry) do
+    {:ok, zones} = list(registry)
+    zones
   end
 
   def list do
@@ -44,8 +60,13 @@ defmodule Otis.Zones do
     GenServer.call(pid, {:find, id})
   end
 
-  defp add(pid, zone, id, name) do
-    GenServer.cast(pid, {:add, zone, id, name})
+
+  defp add(action, registry, id, name) do
+    {:ok, zone} = Otis.Zones.Supervisor.start_zone(Otis.Zones.Supervisor, id, name)
+    add(action, registry, zone, id, name)
+  end
+  defp add(action, registry, zone, id, name) do
+    GenServer.call(registry, {action, zone, id, name})
   end
 
   defp remove(pid, id) do
@@ -66,13 +87,21 @@ defmodule Otis.Zones do
     {:reply, Map.fetch(zone_list, id), zone_list}
   end
 
-  def handle_cast({:add, zone, id, name}, zone_list) do
+  def handle_call({:create, zone, id, name}, _from, zone_list) do
     Otis.State.Events.notify({:zone_added, id, %{ name: name }})
-    {:noreply, Map.put(zone_list, id, zone)}
+    insert(zone_list, id, zone)
+  end
+
+  def handle_call({:start, zone, id, name}, _from, zone_list) do
+    insert(zone_list, id, zone)
   end
 
   def handle_cast({:remove, id}, zone_list) do
     Otis.State.Events.notify({:zone_removed, id})
     {:noreply, Map.delete(zone_list, id)}
+  end
+
+  defp insert(zone_list, id, zone) do
+    {:reply, {:ok, zone}, Map.put(zone_list, id, zone)}
   end
 end
