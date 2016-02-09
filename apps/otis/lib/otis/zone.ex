@@ -4,7 +4,6 @@ defmodule Otis.Zone do
 
   defmodule S do
     defstruct [
-      name:              "A Zone",
       id:                nil,
       source_list:       nil,
       receivers:         HashSet.new,
@@ -17,25 +16,26 @@ defmodule Otis.Zone do
     ]
   end
 
+  defstruct [:id, :pid]
 
   # music starts playing after this many microseconds
   @buffer_latency     50_000
   @buffer_size        25
 
-  def start_link(id, name) do
-    start_link(id, name, Otis.SourceList.empty(id))
+  def start_link(id) do
+    start_link(id, Otis.SourceList.empty(id))
   end
 
-  def start_link(id, name, source_list) when is_atom(id) do
-    start_link(Atom.to_string(id), name, source_list)
+  def start_link(id, source_list) when is_atom(id) do
+    start_link(Atom.to_string(id), source_list)
   end
 
-  def start_link(id, name, {:ok, source_list}) do
-    start_link(id, name, source_list)
+  def start_link(id, {:ok, source_list}) do
+    start_link(id, source_list)
   end
 
-  def start_link(id, name, source_list) do
-    GenServer.start_link(__MODULE__, %S{ id: id, name: name, source_list: source_list, broadcaster: nil }, name: String.to_atom("zone-#{id}"))
+  def start_link(id, source_list) do
+    GenServer.start_link(__MODULE__, %S{ id: id, source_list: source_list, broadcaster: nil }, name: String.to_atom("zone-#{id}"))
   end
 
   def init(%S{ source_list: source_list } = zone) do
@@ -61,10 +61,6 @@ defmodule Otis.Zone do
 
   def id(zone) do
     GenServer.call(zone, :id)
-  end
-
-  def name(zone) do
-    GenServer.call(zone, :name)
   end
 
   def receivers(zone) do
@@ -130,10 +126,6 @@ defmodule Otis.Zone do
 
   def handle_call(:id, _from, %S{id: id} = zone) do
     {:reply, {:ok, id}, zone}
-  end
-
-  def handle_call(:name, _from, %S{name: name} = zone) do
-    {:reply, {:ok, name}, zone}
   end
 
   def handle_call(:receivers, _from, %S{receivers: receivers} = zone) do

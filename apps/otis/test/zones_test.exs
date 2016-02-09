@@ -32,7 +32,8 @@ defmodule ZonesTest do
   end
 
   test "starts and adds the given zone", %{zones: zones} do
-    {:ok, zone} = Otis.Zones.create(zones, "1", "A Zone")
+    id = Otis.uuid
+    {:ok, zone} = Otis.Zones.create(zones, id, "A Zone")
     {:ok, list} = Otis.Zones.list(zones)
     assert list == [zone]
   end
@@ -81,19 +82,15 @@ defmodule Otis.ZoneTest do
   @moduletag :zone
 
   setup do
-    {:ok, zone} = Otis.Zone.start_link(:zone_1, "Downstairs")
+    zone_id = Otis.uuid
+    {:ok, zone} = Otis.Zone.start_link(zone_id)
     {:ok, receiver} = Otis.Receiver.start_link(self, "receiver_2", %{ "latency" => 0 })
-    {:ok, zone: zone, receiver: receiver}
+    {:ok, zone: zone, receiver: receiver, zone_id: zone_id}
   end
 
-  test "gives its name", %{zone: zone} do
-    {:ok, name} = Otis.Zone.name(zone)
-    assert name == "Downstairs"
-  end
-
-  test "gives its id", %{zone: zone} do
+  test "gives its id", %{zone: zone, zone_id: zone_id} do
     {:ok, id} = Otis.Zone.id(zone)
-    assert id == "zone_1"
+    assert id == zone_id
   end
 
   test "starts with an empty receiver list", %{zone: zone} do
@@ -134,11 +131,11 @@ defmodule Otis.ZoneTest do
     assert state == :stop
   end
 
-  test "broadcasts an event when a receiver is added", %{zone: zone, receiver: receiver} do
+  test "broadcasts an event when a receiver is added", %{zone: zone, receiver: receiver} = context do
     :ok = Otis.State.Events.add_handler(TestHandler, [])
     :ok = Otis.Zone.add_receiver(zone, receiver)
     messages = Otis.State.Events.call(TestHandler, :messages)
-    assert messages == [{:receiver_added, "zone_1", {:receiver_2}}]
+    assert messages == [{:receiver_added, context.zone_id, {:receiver_2}}]
     Otis.State.Events.remove_handler(TestHandler)
   end
 end

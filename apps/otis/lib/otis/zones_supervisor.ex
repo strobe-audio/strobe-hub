@@ -14,16 +14,16 @@ defmodule Otis.Zones.Supervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 
-  def start_zone(id, name) do
-    start_zone(@supervisor_name, id, name)
+  def start_zone(id) do
+    start_zone(@supervisor_name, id)
   end
 
   def stop_zone(pid) do
     stop_zone(@supervisor_name, pid)
   end
 
-  def start_zone(supervisor, id, name) do
-    Supervisor.start_child(supervisor, [id, name])
+  def start_zone(supervisor, id) do
+    Supervisor.start_child(supervisor, [id])
   end
   def stop_zone(supervisor, pid) do
     Supervisor.terminate_child(supervisor, pid)

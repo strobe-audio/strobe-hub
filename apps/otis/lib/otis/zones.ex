@@ -62,7 +62,7 @@ defmodule Otis.Zones do
 
 
   defp add(action, registry, id, name) do
-    {:ok, zone} = Otis.Zones.Supervisor.start_zone(Otis.Zones.Supervisor, id, name)
+    {:ok, zone} = Otis.Zones.Supervisor.start_zone(Otis.Zones.Supervisor, id)
     add(action, registry, zone, id, name)
   end
   defp add(action, registry, zone, id, name) do
