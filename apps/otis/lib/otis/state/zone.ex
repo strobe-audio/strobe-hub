@@ -35,12 +35,14 @@ defmodule Otis.State.Zone do
     field :name, :string
     field :volume, :float, default: 1.0
     field :position, :integer, default: 0
+
+    has_many :receivers, Otis.State.Receiver
   end
 
   defstruct id: :default_zone, name: "Default Zone", receiver_ids: []
 
   def all do
-    Zone |> Repo.all
+    Zone |> order_by(:position) |> Repo.all
   end
 
   def create!(id, name) do
@@ -60,6 +62,25 @@ defmodule Otis.State.Zone do
 
   def delete_all do
     Zone |> Repo.delete_all
+  end
+
+  def receivers(zone) do
+    zone |> Ecto.assoc(:receivers) |> order_by(:name) |> Repo.all
+  end
+
+  def build_receiver(zone, opts \\ []) do
+    zone |> Ecto.build_assoc(:receivers, opts)
+  end
+
+  def create_default! do
+    create!(Otis.uuid, "Default zone")
+  end
+
+  def default do
+    Zone
+    |> order_by(:position)
+    |> limit(1)
+    |> Repo.one
   end
 #
 #   def create(name)

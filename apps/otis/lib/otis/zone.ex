@@ -67,7 +67,10 @@ defmodule Otis.Zone do
     GenServer.call(zone, :receivers)
   end
 
-  def add_receiver(zone, receiver) do
+  def add_receiver(%__MODULE__{pid: pid} = _zone, receiver) do
+    add_receiver(pid, receiver)
+  end
+  def add_receiver(zone, receiver) when is_pid(zone) do
     GenServer.call(zone, {:add_receiver, receiver})
   end
 
@@ -91,7 +94,11 @@ defmodule Otis.Zone do
     GenServer.call(zone, :get_audio_stream)
   end
 
-  def broadcast_address(zone) do
+  def broadcast_address(%__MODULE__{pid: pid} = _zone) do
+    broadcast_address(pid)
+  end
+
+  def broadcast_address(zone) when is_pid(zone) do
     GenServer.call(zone, :get_broadcast_address)
   end
 
@@ -133,7 +140,7 @@ defmodule Otis.Zone do
   end
 
   def handle_call({:add_receiver, receiver}, _from, %S{id: id} = zone) do
-    Logger.info "Adding receiver to zone #{id}"
+    Logger.info "Adding receiver to zone #{id} #{inspect receiver}"
     zone = receiver_joined(receiver, zone)
     {:reply, :ok, zone}
   end
@@ -194,7 +201,6 @@ defmodule Otis.Zone do
   end
 
   defp add_receiver_to_zone(receiver, %S{receivers: receivers} = zone) do
-    Otis.Receiver.join_zone(receiver, self, zone.broadcast_address)
     event!(:receiver_added, {Otis.Receiver.id!(receiver)}, zone)
     %S{ zone | receivers: Set.put(receivers, receiver) }
   end

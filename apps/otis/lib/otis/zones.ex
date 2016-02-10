@@ -52,6 +52,11 @@ defmodule Otis.Zones do
     GenServer.call(pid, :list)
   end
 
+  def find!(id) do
+    {:ok, pid} = find(id)
+    pid
+  end
+
   def find(id) do
     find(@registry_name, id)
   end

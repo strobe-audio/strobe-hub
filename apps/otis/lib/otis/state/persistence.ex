@@ -6,8 +6,13 @@ defmodule Otis.State.Persistence do
     GenServer.start_link(__MODULE__, :ok)
   end
 
+  @handlers [
+    Otis.State.Persistence.Zones,
+    Otis.State.Persistence.Receivers,
+  ]
+
   def init(:ok) do
-    Enum.each [Otis.State.Persistence.Zones], fn(handler) ->
+    Enum.each @handlers, fn(handler) ->
       handler.register
     end
     {:ok, {}}

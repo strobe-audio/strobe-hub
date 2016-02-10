@@ -12,17 +12,23 @@ defmodule Otis.Startup do
   end
 
   defp start_zones(state, zones_supervisor) do
-    {:ok, zones} = Otis.State.zones(state)
-    start_zone(zones_supervisor, zones)
+    zones = Otis.State.Zone.all
+    zones |> guarantee_zone |> start_zone(zones_supervisor)
   end
 
-  defp start_zone(zones_supervisor, [zone | rest] = _zones_to_start) do
-    %Otis.State.Zone{ id: id, name: name } = zone
-    Otis.Zones.start_zone(zones_supervisor, id, name)
-    start_zone(zones_supervisor, rest)
+  defp guarantee_zone([]) do
+    [Otis.State.Zone.create_default!]
+  end
+  defp guarantee_zone(zones) do
+    zones
   end
 
-  defp start_zone(_zones_supervisor, []) do
+  defp start_zone([zone | rest], zones_supervisor) do
+    zones_supervisor.start(zone.id, zone.name)
+    start_zone(rest, zones_supervisor)
+  end
+
+  defp start_zone([], _zones_supervisor) do
     :ok
   end
 end

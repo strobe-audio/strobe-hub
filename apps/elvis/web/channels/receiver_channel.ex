@@ -4,8 +4,13 @@ defmodule Elvis.ReceiverChannel do
 
   def join("receiver:" <> receiver_id, connection_info, socket) do
     Logger.debug "JOIN receiver #{inspect socket.assigns} #{inspect connection_info}"
-    IO.inspect socket
-    Otis.Receivers.start_receiver(self, receiver_id(socket), connection_info)
+    Otis.State.Events.notify({
+      :receiver_connected,
+      receiver_id(socket),
+      self,
+      connection_info
+    })
+    # Otis.Receivers.joined(self, receiver_id(socket), connection_info)
     {:ok, socket}
   end
 

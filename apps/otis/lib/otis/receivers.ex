@@ -5,123 +5,116 @@ defmodule Otis.Receivers do
 
   alias   Otis.Receiver
 
-  @registry_name Otis.Receivers
+  @registry Otis.Receivers
 
-  def start_link(name \\ @registry_name) do
+  def start_link(name \\ @registry) do
     GenServer.start_link(__MODULE__, [], name: name)
   end
 
-  def start_receiver(channel, id, connection) do
-    start_receiver(@registry_name, channel, id, connection)
+  def start(id, zone, config, channel, connection_info) do
+    start(@registry, id, zone, config, channel, connection_info)
   end
 
-  def start_receiver(receivers, channel, id, connection) do
-    Logger.debug "Start receiver #{inspect id} #{inspect(connection)}"
-    response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, channel, id, connection)
-    case response do
-      {:ok, receiver} ->
-        add(receivers, receiver)
-        response
-      {:error, {:already_started, receiver}} ->
-        {:ok, receiver}
-    end
+  def start(registry, id, zone, config, channel, connection_info) do
+    Logger.info "Start receiver #{inspect id} #{inspect zone} #{inspect(connection_info)}"
+    {:ok, pid} = response = Otis.Receivers.Supervisor.start_receiver(id, zone, config, channel, connection_info)
+    add(%Receiver{id: id, pid: pid})
+    response
   end
+
+  # def start_receiver(channel, id, connection) do
+  #   start_receiver(@registry, channel, id, connection)
+  # end
+
+  # def start_receiver(receivers, channel, id, connection) do
+  #   Logger.debug "Start receiver #{inspect id} #{inspect(connection)}"
+  #   response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, channel, id, connection)
+  #   case response do
+  #     {:ok, receiver} ->
+  #       add(receivers, receiver)
+  #       response
+  #     {:error, {:already_started, receiver}} ->
+  #       {:ok, receiver}
+  #   end
+  # end
 
   def add(receiver) do
-    add(@registry_name, receiver)
+    add(@registry, receiver)
   end
 
-  def add(pid, receiver) do
-    GenServer.cast(pid, {:add, receiver})
+  def add(registry, receiver) do
+    GenServer.cast(registry, {:add, receiver})
   end
 
   def remove(receiver) do
-    remove(@registry_name, receiver)
+    remove(@registry, receiver)
   end
 
   def remove(pid, receiver) do
     GenServer.cast(pid, {:remove, receiver})
   end
 
+  def list! do
+    list!(@registry)
+  end
+
+  def list!(registry) do
+    {:ok, receivers} = list(registry)
+    receivers
+  end
+
   def list do
-    list(@registry_name)
+    list(@registry)
   end
 
   def list(pid) do
     GenServer.call(pid, :list)
   end
 
-  def find(id) do
-    find(@registry_name, id)
+  def find!(id) do
+    {:ok, pid} = find(id)
+    pid
   end
 
-  def find(pid, id) when is_binary(id) do
-    find(pid, String.to_atom(id))
+  def find(id) do
+    find(@registry, id)
   end
 
   def find(pid, id) do
     GenServer.call(pid, {:find, id})
   end
 
-  def volume(id, volume) when is_binary(id) do
-    volume(find(id), volume)
-  end
-
   def volume(pid, volume) when is_pid(pid) do
     Otis.Receiver.volume(pid, volume)
   end
 
-  def volume({:ok, pid}, volume) do
-    volume(pid, volume)
-  end
-
-  def volume({:error, _reason} = err, _volume) do
-    err
+  def volume(id, volume) do
+    volume(find!(id), volume)
   end
 
   ############# Callbacks
 
+  def init(_args) do
+    {:ok, %{}}
+  end
+
   def handle_call(:list, _from, receivers) do
-    zones = Enum.map receivers, fn({_id, zone}) -> zone end
-    {:reply, {:ok, zones}, receivers}
+    {:reply, {:ok, Map.values(receivers)}, receivers}
   end
 
   def handle_call({:find, id}, _from, receivers) do
-    {:reply, find_by_id(receivers, id), receivers}
-  end
-
-  def handle_call({:time_sync, {start}}, _from, receivers) do
-    {:reply, {:ok, {start, monotonic_microseconds}}, receivers}
+    {:reply, Map.fetch(receivers, id), receivers}
   end
 
   def handle_cast({:add, receiver}, receivers) do
     {:ok, id} = Receiver.id(receiver)
-    {:noreply, [{id, receiver} | receivers]}
+    # Otis.State.Events.notify({:receiver_, id, %{ name: name }})
+    {:noreply, Map.put(receivers, id, receiver)}
   end
 
   def handle_cast({:remove, receiver}, receivers) do
     {:ok, id} = Receiver.id(receiver)
     Otis.Receiver.shutdown(receiver)
     {:noreply, Enum.reject(receivers, fn({rid, _rec}) -> rid == id end) }
-  end
-
-  def handle_cast({:receiver_latency, node_name, latency}, receivers) do
-    # Logger.debug "Update latency #{node_name} : #{latency}"
-    id = Otis.Receiver.id_from_node(node_name)
-    {:ok, receiver} = find_by_id(receivers, id)
-    GenServer.cast(receiver, {:update_latency, latency})
-    {:noreply, receivers}
-  end
-
-  defp find_by_id(receivers, id) do
-    receivers[id] |> find_result
-  end
-
-  defp find_result(nil) do
-    {:error, :not_found}
-  end
-
-  defp find_result(receiver) do
-    {:ok, receiver}
   end
 end

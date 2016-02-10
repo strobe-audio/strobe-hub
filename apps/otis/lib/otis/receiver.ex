@@ -2,6 +2,8 @@ defmodule Otis.Receiver do
   use     GenServer
   require Logger
 
+  defstruct [:id, :pid]
+
   defmodule S do
     defstruct id: :"00-00-00-00-00-00",
               name: "Receiver",
@@ -15,43 +17,54 @@ defmodule Otis.Receiver do
     "receiver-#{id}" |> String.to_atom
   end
 
-  defp to_id(id_string) do
-    String.to_atom(id_string)
+  def start_link(id, zone, config, channel, %{"latency" => latency} = _connection) do
+    GenServer.start_link(__MODULE__, {id, zone, config, channel, latency}, name: receiver_register_name(id))
   end
 
-  def start_link(channel, id, %{"latency" => latency} = _connection) do
-    GenServer.start_link(__MODULE__, {channel, to_id(id), latency}, name: receiver_register_name(id))
-  end
-
-  def init({channel, id, latency}) do
-    Logger.info "Starting receiver #{inspect(id)}; latency: #{latency}"
+  def init({id, zone, config, channel, latency} = args) do
+    Logger.info "Starting receiver #{inspect(args)}"
     monitor = Process.monitor(channel)
     Process.flag(:trap_exit, true)
-    state = %S{id: id, latency: latency, channel_monitor: monitor}
-    restore_state(self, id)
+    state = %S{id: id,
+      latency: latency,
+      channel_monitor: monitor,
+      zone: zone,
+    }
+    |> restore_state(config)
+    |> join_zone
     {:ok, state}
   end
 
-  def id(pid) do
-    GenServer.call(pid, :id)
+  def id!(%__MODULE__{id: id}) do
+    id
   end
-
-  def id!(pid) do
+  def id!(pid) when is_pid(pid) do
     {:ok, id} = GenServer.call(pid, :id)
     id
   end
 
-  def latency(pid) do
-    GenServer.call(pid, :get_latency)
+  def id(%__MODULE__{id: id}) do
+    {:ok, id}
   end
 
-  def restore_state(pid, id) do
-    Otis.State.restore_receiver(pid, id)
+  def id(pid) when is_pid(pid) do
+    GenServer.call(pid, :id)
   end
 
-  def join_zone(pid, zone, broadcast_address) do
-    GenServer.cast(pid, {:join_zone, zone, broadcast_address})
+  def latency(%__MODULE__{pid: pid}) do
+    latency(pid)
   end
+  def latency(receiver) when is_pid(receiver) do
+    GenServer.call(receiver, :get_latency)
+  end
+
+  def restore_state(state, %{volume: volume} = _config) do
+    %S{state | volume: volume}
+  end
+
+  # def join_zone(pid, zone, broadcast_address) do
+  #   GenServer.cast(pid, {:join_zone, zone, broadcast_address})
+  # end
 
   def shutdown(pid) do
     GenServer.cast(pid, :shutdown)
@@ -77,29 +90,27 @@ defmodule Otis.Receiver do
     {:reply, {:ok, volume}, receiver}
   end
 
-  def handle_cast({:update_latency, latency}, %S{id: id, latency: nil} = state) do
-    Logger.info "New player ready #{id}: latency: #{latency}"
-    {:noreply, %S{state | latency: latency}}
-  end
+  # def handle_cast({:update_latency, latency}, %S{id: id, latency: nil} = state) do
+  #   Logger.info "New player ready #{id}: latency: #{latency}"
+  #   {:noreply, %S{state | latency: latency}}
+  # end
+  #
+  # def handle_cast({:update_latency, latency}, %S{latency: old_latency} = state) do
+  #   l = Enum.max [latency, old_latency]
+  #   # Logger.debug "Update latency #{old_latency} -> #{latency} = #{l}"
+  #   {:noreply, %S{state | latency: l}}
+  # end
 
-  def handle_cast({:update_latency, latency}, %S{latency: old_latency} = state) do
-    l = Enum.max [latency, old_latency]
-    # Logger.debug "Update latency #{old_latency} -> #{latency} = #{l}"
-    {:noreply, %S{state | latency: l}}
-  end
-
-  def handle_cast({:join_zone, zone, {port}}, state) do
-    # {:ok, {port}} = Otis.Zone.broadcast_address(zone)
-    # Now I want to send the ip:port info to the receiver which should cause it
-    # to launch a player instance attached to that udp address (along with the
-    # necessary linked processes)
+  def join_zone(%S{id: id, zone: zone} = state) do
+    {:ok, {port}} = Otis.Zone.broadcast_address(zone)
     broadcast!(state, "join_zone", %{
       port: port,
       interval: Otis.stream_interval_ms,
       size: Otis.stream_bytes_per_step,
-      volume: 0.5
+      volume: state.volume
     })
-    {:noreply, %S{ state | zone: zone }}
+    Otis.Zone.add_receiver(zone, %__MODULE__{id: id, pid: self})
+    state
   end
 
   def handle_cast({:set_volume, volume}, state) do
@@ -141,7 +152,7 @@ defmodule Otis.Receiver do
   end
 
   defp channel_name(%S{id: id}) do
-    "receiver:" <> Atom.to_string(id)
+    "receiver:" <> id
   end
 
   defp sanitize_volume(volume) when volume > 1.0 do
