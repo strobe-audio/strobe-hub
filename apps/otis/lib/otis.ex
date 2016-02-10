@@ -41,6 +41,6 @@ defmodule Otis do
   end
 
   def uuid do
-    UUID.uuid1()
+    UUID.uuid4()
   end
 end
