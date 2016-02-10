@@ -18,32 +18,16 @@ defmodule Otis.Receivers do
   def start(registry, id, zone, config, channel, connection_info) do
     Logger.info "Start receiver #{inspect id} #{inspect zone} #{inspect(connection_info)}"
     {:ok, pid} = response = Otis.Receivers.Supervisor.start_receiver(id, zone, config, channel, connection_info)
-    add(%Receiver{id: id, pid: pid})
+    add(id, %Receiver{id: id, pid: pid})
     response
   end
 
-  # def start_receiver(channel, id, connection) do
-  #   start_receiver(@registry, channel, id, connection)
-  # end
-
-  # def start_receiver(receivers, channel, id, connection) do
-  #   Logger.debug "Start receiver #{inspect id} #{inspect(connection)}"
-  #   response = Otis.Receivers.Supervisor.start_receiver(Otis.Receivers.Supervisor, channel, id, connection)
-  #   case response do
-  #     {:ok, receiver} ->
-  #       add(receivers, receiver)
-  #       response
-  #     {:error, {:already_started, receiver}} ->
-  #       {:ok, receiver}
-  #   end
-  # end
-
-  def add(receiver) do
-    add(@registry, receiver)
+  def add(id, receiver) do
+    add(@registry, id, receiver)
   end
 
-  def add(registry, receiver) do
-    GenServer.cast(registry, {:add, receiver})
+  def add(registry, id, receiver) do
+    GenServer.call(registry, {:add, id, receiver})
   end
 
   def remove(receiver) do
@@ -106,10 +90,9 @@ defmodule Otis.Receivers do
     {:reply, Map.fetch(receivers, id), receivers}
   end
 
-  def handle_cast({:add, receiver}, receivers) do
-    {:ok, id} = Receiver.id(receiver)
-    # Otis.State.Events.notify({:receiver_, id, %{ name: name }})
-    {:noreply, Map.put(receivers, id, receiver)}
+  def handle_call({:add, id, receiver}, _from, receivers) do
+    Otis.State.Events.notify({:receiver_started, id})
+    {:reply, :ok, Map.put(receivers, id, receiver)}
   end
 
   def handle_cast({:remove, receiver}, receivers) do

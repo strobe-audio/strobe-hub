@@ -10,6 +10,12 @@ defmodule Otis.State.Persistence.Receivers do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
+  def handle_event({:receiver_started, id}, state) do
+    receiver = id |> receiver
+    # Emit an event that the UI can listen to
+    Otis.State.Events.notify({:receiver_joined, id, receiver.zone_id, %{ name: receiver.name, volume: receiver.volume }})
+    {:ok, state}
+  end
   # = so we have a connection from a receiver
   # = see if we have the given id in the db
   # if yes:
@@ -22,7 +28,7 @@ defmodule Otis.State.Persistence.Receivers do
   #   - or a :start call if the receiver existed
   # = once receiver has started it broadcasts an event which arrives back here
   #   and allows us to persist any changes
-  def handle_event({:receiver_connected, id, channel, connection_info} = e, state) do
+  def handle_event({:receiver_connected, id, channel, connection_info}, state) do
     Otis.State.Repo.transaction(fn ->
       id |> receiver |> receiver_connected(id, channel, connection_info)
     end)
