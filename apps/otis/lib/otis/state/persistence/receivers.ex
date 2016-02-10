@@ -10,20 +10,19 @@ defmodule Otis.State.Persistence.Receivers do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
+  # = so we have a connection from a receiver
+  # = see if we have the given id in the db
+  # if yes:
+  #   - find id of zone it belongs to
+  # if no:
+  #   - choose some default zone from the db (first when order by position..)
+  # = map id to zone pid
+  # = start receiver process using given id & zone etc
+  #   - this should be a :create call if the receiver is new
+  #   - or a :start call if the receiver existed
+  # = once receiver has started it broadcasts an event which arrives back here
+  #   and allows us to persist any changes
   def handle_event({:receiver_connected, id, channel, connection_info} = e, state) do
-    # = so we have a connection from a receiver
-    # = see if we have the given id in the db
-    # if yes:
-    #   - find id of zone it belongs to
-    # if no:
-    #   - choose some default zone from the db (first when order by position..)
-    # = map id to zone pid
-    # = start receiver process using given id & zone etc
-    #   - this should be a :create call if the receiver is new
-    #   - or a :start call if the receiver existed
-    # = once receiver has started it broadcasts an event which arrives back here
-    #   and allows us to persist any changes
-
     Otis.State.Repo.transaction(fn ->
       id |> receiver |> receiver_connected(id, channel, connection_info)
     end)
