@@ -62,10 +62,6 @@ defmodule Otis.Receiver do
     %S{state | volume: volume}
   end
 
-  # def join_zone(pid, zone, broadcast_address) do
-  #   GenServer.cast(pid, {:join_zone, zone, broadcast_address})
-  # end
-
   def shutdown(pid) do
     GenServer.cast(pid, :shutdown)
   end
@@ -89,17 +85,6 @@ defmodule Otis.Receiver do
   def handle_call(:get_volume, _from, %S{volume: volume} = receiver) do
     {:reply, {:ok, volume}, receiver}
   end
-
-  # def handle_cast({:update_latency, latency}, %S{id: id, latency: nil} = state) do
-  #   Logger.info "New player ready #{id}: latency: #{latency}"
-  #   {:noreply, %S{state | latency: latency}}
-  # end
-  #
-  # def handle_cast({:update_latency, latency}, %S{latency: old_latency} = state) do
-  #   l = Enum.max [latency, old_latency]
-  #   # Logger.debug "Update latency #{old_latency} -> #{latency} = #{l}"
-  #   {:noreply, %S{state | latency: l}}
-  # end
 
   def join_zone(%S{id: id, zone: zone} = state) do
     {:ok, {port}} = Otis.Zone.broadcast_address(zone)
