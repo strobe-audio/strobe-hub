@@ -13,7 +13,7 @@ defmodule Otis.State.Persistence.Receivers do
   def handle_event({:receiver_started, id}, state) do
     receiver = id |> receiver
     # Emit an event that the UI can listen to
-    Otis.State.Events.notify({:receiver_joined, id, receiver.zone_id, %{ name: receiver.name, volume: receiver.volume }})
+    Otis.State.Events.notify({:receiver_joined, id, receiver.zone_id, receiver})
     {:ok, state}
   end
   # = so we have a connection from a receiver
