@@ -67,9 +67,7 @@ defmodule Otis.Zones do
 
 
   defp add(action, registry, id, config) do
-    IO.inspect [:add, action, id, config]
     {:ok, zone} = Otis.Zones.Supervisor.start_zone(id, config)
-    IO.inspect [:done]
     add(action, registry, zone, id, config)
   end
   defp add(action, registry, zone, id, config) do
