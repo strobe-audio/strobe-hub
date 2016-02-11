@@ -14,7 +14,6 @@ defmodule Otis.State.Receiver do
 
   schema "receivers" do
     field :name, :string
-    # field :zone_id, :string
     field :volume, :float, default: 1.0
 
     belongs_to :zone, Otis.State.Zone
