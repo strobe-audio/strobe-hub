@@ -180,6 +180,7 @@ defmodule Otis.Zone do
   def handle_call({:volume, volume}, _from, zone) do
     volume = Otis.sanitize_volume(volume)
     Otis.State.Events.notify({:zone_volume_change, zone.id, volume})
+    Enum.each(zone.receivers, &Otis.Receiver.update_volume/1)
     {:reply, {:ok, volume}, %S{zone | volume: volume}}
   end
 

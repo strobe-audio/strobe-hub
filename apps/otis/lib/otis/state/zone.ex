@@ -76,7 +76,7 @@ defmodule Otis.State.Zone do
     create!(Otis.uuid, "Default zone")
   end
 
-  def default do
+  def default_for_receiver do
     Zone
     |> order_by(:position)
     |> limit(1)

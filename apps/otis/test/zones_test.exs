@@ -89,7 +89,7 @@ defmodule Otis.ZoneTest do
         :stop -> :ok
       end
     end)
-    {:ok, zone} = Otis.Zone.start_link(zone_id, %{ name: "Something", volume: 1.0 })
+    {:ok, zone} = Otis.Zones.create(zone_id, "Something")
     {:ok, receiver} = Otis.Receivers.start(
       receiver_id,
       %Otis.Zone{ id: zone_id, pid: zone },
@@ -185,6 +185,42 @@ defmodule Otis.ZoneTest do
     {:ok, 0.5} = Otis.Zone.volume(context.zone)
     event = {:zone_volume_change, context.zone_id, 0.5}
     assert_receive ^event
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
+
+  require Phoenix.ChannelTest
+  use     Phoenix.ChannelTest
+  @endpoint Elvis.Endpoint
+
+  test "sets the receivers volume", context do
+    # TODO: this actually tests that a websocket connection starts a receiver
+    # process with the right id... I need to dupe this test & put it somewhere
+    # more meaningful
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    id = Otis.uuid
+    Otis.Receiver.volume context.receiver, 0.3
+    {:ok, socket} = connect(Elvis.ReceiverSocket, %{"id" => id})
+    {:ok, _, socket} = subscribe_and_join(socket, "receiver:#{id}", %{"latency" => 100})
+    assert_receive {:receiver_connected, ^id, _, _}
+    assert_receive {:receiver_started, ^id}
+    assert_receive {:receiver_joined, ^id, _, _}
+    {:ok, receivers} = Otis.Receivers.list
+    receiver = Enum.find receivers, fn(r) ->
+      r.id == id
+    end
+    refute is_nil(receiver)
+
+    Otis.Receiver.volume receiver, 0.5
+
+    assert_broadcast "set_volume", %{volume: 0.5}
+
+    Otis.Zone.volume context.zone, 0.1
+    zone_id = context.zone_id
+    assert_receive {:zone_volume_change, ^zone_id, 0.1}
+
+    assert_broadcast "set_volume", %{volume: 0.05}
+
     Otis.State.Events.remove_handler(MessagingHandler, self)
     assert_receive :remove_messaging_handler, 100
   end

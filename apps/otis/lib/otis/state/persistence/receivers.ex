@@ -62,7 +62,7 @@ defmodule Otis.State.Persistence.Receivers do
   end
 
   defp zone do
-    Zone.default
+    Zone.default_for_receiver
   end
   defp zone(receiver) do
     receiver.zone

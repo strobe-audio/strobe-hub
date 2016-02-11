@@ -62,11 +62,23 @@ defmodule Otis.Receiver do
     %S{state | volume: volume}
   end
 
-  def volume(pid) do
-    GenServer.call(pid, :get_volume)
+  def update_volume(%__MODULE__{pid: pid}) do
+    update_volume(pid)
+  end
+  def update_volume(pid) when is_pid(pid) do
+    GenServer.cast(pid, :update_volume)
   end
 
-  def volume(pid, volume) do
+  def volume(%__MODULE__{pid: pid}) do
+    volume(pid)
+  end
+  def volume(pid) when is_pid(pid) do
+    GenServer.call(pid, :get_volume)
+  end
+  def volume(%__MODULE__{pid: pid}, volume) do
+    volume(pid, volume)
+  end
+  def volume(pid, volume) when is_pid(pid) do
     GenServer.cast(pid, {:set_volume, volume})
   end
 
@@ -82,26 +94,14 @@ defmodule Otis.Receiver do
     {:reply, {:ok, volume}, receiver}
   end
 
-  def record(%S{id: id} = _state) do
-    %__MODULE__{id: id, pid: self}
-  end
-
-  def join_zone(%S{zone: zone} = state) do
-    {:ok, {port}} = Otis.Zone.broadcast_address(zone)
-    broadcast!(state, "join_zone", %{
-      port: port,
-      interval: Otis.stream_interval_ms,
-      size: Otis.stream_bytes_per_step,
-      volume: state.volume
-    })
-    Otis.Zone.add_receiver(zone, record(state))
-    state
-  end
-
   def handle_cast({:set_volume, volume}, state) do
-    volume = Otis.sanitize_volume(volume)
-    broadcast!(state, "set_volume", %{volume: volume})
-    {:noreply, %S{ state | volume: volume }}
+    state = state |> _set_volume(volume)
+    {:noreply, state}
+  end
+
+  def handle_cast(:update_volume, %S{zone: zone, volume: volume} = state) do
+    _set_volume(state)
+    {:noreply, state}
   end
 
   def handle_info({:DOWN, monitor, :process, _channel, :noproc}, %{channel_monitor: monitor} = state) do
@@ -115,6 +115,36 @@ defmodule Otis.Receiver do
     {:stop, {:shutdown, :disconnect}, %S{state | channel_monitor: nil}}
   end
 
+  defp _set_volume(%S{ volume: volume } = state) do
+    _set_volume(state, volume)
+  end
+  defp _set_volume(state, volume) do
+    volume = Otis.sanitize_volume(volume)
+    state = %S{ state | volume: volume }
+    broadcast!(state, "set_volume", %{volume: _calculated_volume(state)})
+    state
+  end
+
+  defp _calculated_volume(%S{volume: volume} = state) do
+    {:ok, zone_volume} = Otis.Zone.volume(state.zone)
+    Otis.sanitize_volume(volume * zone_volume)
+  end
+
+  def record(%S{id: id} = _state) do
+    %__MODULE__{id: id, pid: self}
+  end
+
+  def join_zone(%S{zone: zone} = state) do
+    {:ok, {port}} = Otis.Zone.broadcast_address(zone)
+    broadcast!(state, "join_zone", %{
+      port: port,
+      interval: Otis.stream_interval_ms,
+      size: Otis.stream_bytes_per_step,
+      volume: state.volume # FIXME: change this to _calculated_volume(state)
+    })
+    Otis.Zone.add_receiver(zone, record(state))
+    state
+  end
   def terminate(_reason, _state) do
     :ok
   end
