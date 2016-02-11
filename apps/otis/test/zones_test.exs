@@ -83,9 +83,22 @@ defmodule Otis.ZoneTest do
 
   setup do
     zone_id = Otis.uuid
+    receiver_id = Otis.uuid
+    channel = spawn(fn ->
+      receive do
+        :stop -> :ok
+      end
+    end)
     {:ok, zone} = Otis.Zone.start_link(zone_id)
-    {:ok, receiver} = Otis.Receiver.start_link(self, "receiver_2", %{ "latency" => 0 })
-    {:ok, zone: zone, receiver: receiver, zone_id: zone_id}
+    {:ok, receiver} = Otis.Receivers.start(
+      receiver_id,
+      %Otis.Zone{ id: zone_id, pid: zone },
+      %Otis.State.Receiver{ id: receiver_id, name: "Receiver", volume: 1 },
+      channel,
+      %{ "latency" => 0 }
+    )
+    receiver = %Otis.Receiver{id: receiver_id, pid: receiver}
+    {:ok, zone: zone, receiver: receiver, zone_id: zone_id, channel: channel}
   end
 
   test "gives its id", %{zone: zone, zone_id: zone_id} do
@@ -93,29 +106,41 @@ defmodule Otis.ZoneTest do
     assert id == zone_id
   end
 
-  test "starts with an empty receiver list", %{zone: zone} do
-    {:ok, receivers} = Otis.Zone.receivers(zone)
-    assert receivers == []
-  end
-
-  test "allows you to add a receiver", %{zone: zone, receiver: receiver} do
-    :ok = Otis.Zone.add_receiver(zone, receiver)
+  test "starts with the assigned receiver", %{zone: zone, receiver: receiver} do
     {:ok, receivers} = Otis.Zone.receivers(zone)
     assert receivers == [receiver]
+  end
+
+  test "allows you to add a receiver", %{zone: zone, receiver: receiver} = context do
+    receiver_id = Otis.uuid
+    {:ok, receiver2} = Otis.Receiver.start_link(
+      receiver_id,
+      %Otis.Zone{ id: context.zone_id, pid: zone },
+      %Otis.State.Receiver{ id: receiver_id, name: "Receiver 2", volume: 1 },
+      self,
+      %{ "latency" => 0 }
+    )
+    receiver2 = %Otis.Receiver{id: receiver_id, pid: receiver2}
+    :ok = Otis.Zone.add_receiver(zone, receiver2)
+    {:ok, receivers} = Otis.Zone.receivers(zone)
+    assert receivers == [receiver, receiver2]
   end
 
   test "ignores duplicate receivers", %{zone: zone, receiver: receiver} do
     :ok = Otis.Zone.add_receiver(zone, receiver)
-    :ok = Otis.Zone.add_receiver(zone, receiver)
     {:ok, receivers} = Otis.Zone.receivers(zone)
     assert receivers == [receiver]
   end
 
-  test "allows you to remove a receiver", %{zone: zone, receiver: receiver} do
-    :ok = Otis.Zone.add_receiver(zone, receiver)
-    :ok = Otis.Zone.remove_receiver(zone, receiver)
-    {:ok, receivers} = Otis.Zone.receivers(zone)
+  test "removes receiver when it stops", context do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    send context.channel, :stop
+    receiver_id = context.receiver.id
+    assert_receive {:receiver_disconnected, ^receiver_id}
+    {:ok, receivers} = Otis.Zone.receivers(context.zone)
     assert receivers == []
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
   end
 
   test "allows you to query the play pause state", %{zone: zone} do
@@ -135,7 +160,7 @@ defmodule Otis.ZoneTest do
     :ok = Otis.State.Events.add_handler(TestHandler, [])
     :ok = Otis.Zone.add_receiver(zone, receiver)
     messages = Otis.State.Events.call(TestHandler, :messages)
-    assert messages == [{:receiver_added, context.zone_id, {:receiver_2}}]
+    assert messages == [{:receiver_added, context.zone_id, {receiver.id}}]
     Otis.State.Events.remove_handler(TestHandler)
   end
 end

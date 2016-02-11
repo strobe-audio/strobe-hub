@@ -11,9 +11,7 @@ defmodule Otis.State.Persistence.Receivers do
   end
 
   def handle_event({:receiver_started, id}, state) do
-    receiver = id |> receiver
-    # Emit an event that the UI can listen to
-    Otis.State.Events.notify({:receiver_joined, id, receiver.zone_id, receiver})
+    id |> receiver |> receiver_started(id)
     {:ok, state}
   end
   # = so we have a connection from a receiver
@@ -40,6 +38,13 @@ defmodule Otis.State.Persistence.Receivers do
 
   defp receiver(id) do
     Receiver.find(id, preload: :zone)
+  end
+
+  defp receiver_started(nil, _id) do
+    # Can happen in tests
+  end
+  defp receiver_started(receiver, id) do
+    Otis.State.Events.notify({:receiver_joined, id, receiver.zone_id, receiver})
   end
 
   # if this receiver is not in the db, receiver at this point is nil
