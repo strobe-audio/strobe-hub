@@ -95,15 +95,7 @@ defmodule Otis.Receivers do
   end
 
   def handle_cast({:stop, id}, receivers) do
-    {receiver, receivers} = Map.pop(receivers, id)
-    stop_receiver(receiver, id)
-    {:noreply, receivers}
-  end
-
-  defp stop_receiver(nil, id) do
-    Logger.warn "Attempt to stop unknown receiver #{ id }"
-  end
-  defp stop_receiver(receiver, _id) do
-    Otis.Receiver.shutdown(receiver)
+    Otis.State.Events.notify({:receiver_disconnected, id})
+    {:noreply, Map.delete(receivers, id)}
   end
 end

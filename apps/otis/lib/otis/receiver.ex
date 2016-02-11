@@ -62,13 +62,6 @@ defmodule Otis.Receiver do
     %S{state | volume: volume}
   end
 
-  def shutdown(%__MODULE__{pid: pid}) do
-    shutdown(pid)
-  end
-  def shutdown(receiver) when is_pid(receiver) do
-    GenServer.cast(receiver, :shutdown)
-  end
-
   def volume(pid) do
     GenServer.call(pid, :get_volume)
   end
@@ -111,22 +104,16 @@ defmodule Otis.Receiver do
     {:noreply, %S{ state | volume: volume }}
   end
 
-
-  def handle_cast(:shutdown, %S{id: id, zone: zone} = state) do
-    Logger.warn "Receiver shutting down #{id}"
-    remove_from_zone(zone, state)
-    Otis.State.Events.notify({:receiver_disconnected, id})
-    {:stop, :shutdown, %S{state | zone: nil}}
-  end
-
   def handle_info({:DOWN, monitor, :process, _channel, :noproc}, %{channel_monitor: monitor} = state) do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, monitor, :process, _channel, reason}, %{id: id, channel_monitor: monitor} = state) do
+  def handle_info({:DOWN, monitor, :process, _channel, reason}, %{id: id, channel_monitor: monitor, zone: zone} = state) do
     Logger.warn "Receiver disconnected... #{inspect reason}"
+    # I could effect this removal through the events system...
+    remove_from_zone(zone, state)
     Otis.Receivers.stop(id)
-    {:noreply, state}
+    {:stop, :shutdown, state}
   end
 
   def terminate(_reason, _state) do
