@@ -1,5 +1,6 @@
 defmodule Otis.Startup do
-  use GenServer
+  use     GenServer
+  require Logger
 
   def start_link(state, zones_supervisor, receivers_supervisor) do
     GenServer.start_link(__MODULE__, [state, zones_supervisor, receivers_supervisor], [])
