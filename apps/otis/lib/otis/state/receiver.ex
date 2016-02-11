@@ -10,6 +10,7 @@ defmodule Otis.State.Receiver do
 
   @primary_key {:id, :string, []}
   @foreign_key_type :binary_id
+  @derive {Poison.Encoder, only: [:id, :name, :volume, :zone_id]}
 
   schema "receivers" do
     field :name, :string

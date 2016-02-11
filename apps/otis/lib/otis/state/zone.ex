@@ -30,6 +30,7 @@ defmodule Otis.State.Zone do
 
   @primary_key {:id, :string, []}
   @foreign_key_type :binary_id
+  @derive {Poison.Encoder, only: [:id, :name, :volume, :position]}
 
   schema "zones" do
     field :name, :string
