@@ -93,15 +93,15 @@ defmodule Otis.Receivers do
     {:noreply, receivers}
   end
 
-  def receiver_shutdown(state, pid, []) do
+  defp receiver_shutdown(state, pid, []) do
     Logger.warn "Unknown receiver shutdown #{ inspect pid } #{ inspect state }"
     state
   end
-  def receiver_shutdown(state, pid, [%Otis.Receiver{pid: pid, id: id} | _receivers]) do
+  defp receiver_shutdown(state, pid, [%Otis.Receiver{pid: pid, id: id} | _receivers]) do
     Otis.State.Events.notify({:receiver_disconnected, id})
     Map.delete(state, id)
   end
-  def receiver_shutdown(state, pid, [_ | receivers]) do
+  defp receiver_shutdown(state, pid, [_ | receivers]) do
     receiver_shutdown(state, pid, receivers)
   end
 end
