@@ -12,8 +12,18 @@ defmodule Otis.Startup do
   end
 
   defp start_zones(_state, zones_supervisor) do
-    zones = Otis.State.Zone.all
-    zones |> guarantee_zone |> start_zone(zones_supervisor)
+    try do
+      zones = Otis.State.Zone.all
+      zones |> guarantee_zone |> start_zone(zones_supervisor)
+    rescue
+      Sqlite.Ecto.Error ->
+        case Mix.env do
+          :test -> nil
+          _ ->
+            Logger.error "Invalid db schema"
+        end
+      :ok
+    end
   end
 
   defp guarantee_zone([]) do

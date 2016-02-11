@@ -11,4 +11,5 @@ project_root_path = Path.expand(Path.join(__DIR__, "../../.."))
 config :otis, Otis.State.Repo,
   adapter: Sqlite.Ecto,
   database: ":memory:",
+  # database: Path.join(project_root_path, "_state/dev.sqlite3"),
   pool: Ecto.Adapters.SQL.Sandbox
