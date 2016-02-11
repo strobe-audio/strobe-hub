@@ -4,7 +4,7 @@ defmodule Otis.State.Repo.Migrations.CreateReceivers do
   def change do
     create table(:receivers, primary_key: false) do
       add :id, :string, primary_key: true
-      add :zone_id, :string, references(:zones)
+      add :zone_id, :string
       add :name, :string
       add :volume, :float, default: 1.0
     end
