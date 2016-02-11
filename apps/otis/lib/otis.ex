@@ -43,4 +43,14 @@ defmodule Otis do
   def uuid do
     UUID.uuid4()
   end
+
+  def sanitize_volume(volume) when volume > 1.0 do
+    1.0
+  end
+  def sanitize_volume(volume) when volume < 0.0 do
+    0.0
+  end
+  def sanitize_volume(volume) do
+    volume
+  end
 end

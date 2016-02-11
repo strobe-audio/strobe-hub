@@ -36,7 +36,7 @@ defmodule Otis.Startup do
 
   defp start_zone([zone | rest], zones_supervisor) do
     Logger.info "===> Starting zone #{ zone.id } #{ inspect zone.name }"
-    zones_supervisor.start(zone.id, zone.name)
+    zones_supervisor.start(zone.id, zone)
     start_zone(rest, zones_supervisor)
   end
 

@@ -17,6 +17,10 @@ defmodule Otis.State.Persistence.Zones do
     Zone.find(id) |> remove_zone(id)
     {:ok, state}
   end
+  def handle_event({:zone_volume_change, id, volume}, state) do
+    id |> Zone.find |> volume_change(id, volume)
+    {:ok, state}
+  end
   def handle_event(_evt, state) do
     {:ok, state}
   end
@@ -36,5 +40,12 @@ defmodule Otis.State.Persistence.Zones do
   end
   defp remove_zone(zone, _id) do
     Zone.delete!(zone)
+  end
+
+  defp volume_change(nil, id, _volume) do
+    Logger.warn "Volume change for unknown zone #{ id }"
+  end
+  defp volume_change(zone, _id, volume) do
+    Zone.volume(zone, volume)
   end
 end

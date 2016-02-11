@@ -99,7 +99,7 @@ defmodule Otis.Receiver do
   end
 
   def handle_cast({:set_volume, volume}, state) do
-    volume = sanitize_volume(volume)
+    volume = Otis.sanitize_volume(volume)
     broadcast!(state, "set_volume", %{volume: volume})
     {:noreply, %S{ state | volume: volume }}
   end
@@ -126,15 +126,5 @@ defmodule Otis.Receiver do
 
   defp channel_name(%S{id: id}) do
     "receiver:" <> id
-  end
-
-  defp sanitize_volume(volume) when volume > 1.0 do
-    1.0
-  end
-  defp sanitize_volume(volume) when volume < 0.0 do
-    0.0
-  end
-  defp sanitize_volume(volume) do
-    volume
   end
 end

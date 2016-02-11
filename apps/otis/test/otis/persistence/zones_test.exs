@@ -72,4 +72,35 @@ defmodule Otis.Persistence.ZonesTest do
     assert_receive :remove_messaging_handler, 100
   end
 
+  test "initializes a zone with the persisted volume", context do
+    id = Otis.uuid
+    zone = Otis.State.Zone.create!(id, "Donal")
+    zone = Otis.State.Zone.volume(zone, 0.11)
+    zone = Otis.State.Zone.find(id)
+    assert zone.volume == 0.11
+
+    {:ok, pid} = Otis.Zones.start(id, zone)
+
+    {:ok, 0.11} = Otis.Zone.volume(pid)
+  end
+
+  test "persists volume changes" do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+
+    assert Otis.State.Zone.all == []
+    id = Otis.uuid
+    name = "A new zone"
+    {:ok, zone} = Otis.Zones.create(id, name)
+    assert_receive {:zone_added, ^id, %{name: ^name}}, 200
+
+    Otis.Zone.volume(zone, 0.33)
+    assert_receive {:zone_volume_change, ^id, 0.33}
+
+    zone = Otis.State.Zone.find(id)
+
+    assert zone.volume == 0.33
+
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
 end

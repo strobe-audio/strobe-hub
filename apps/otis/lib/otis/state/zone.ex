@@ -27,6 +27,7 @@ defmodule Otis.State.Zone do
 
   alias Otis.State.Zone
   alias Otis.State.Repo
+  alias Ecto.Changeset
 
   @primary_key {:id, :string, []}
   @foreign_key_type :binary_id
@@ -80,6 +81,10 @@ defmodule Otis.State.Zone do
     |> order_by(:position)
     |> limit(1)
     |> Repo.one
+  end
+
+  def volume(zone, volume) do
+    Changeset.change(zone, volume: volume) |> Repo.update!
   end
 #
 #   def create(name)

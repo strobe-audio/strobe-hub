@@ -163,4 +163,28 @@ defmodule Otis.ZoneTest do
     assert messages == [{:receiver_added, context.zone_id, {receiver.id}}]
     Otis.State.Events.remove_handler(TestHandler)
   end
+
+  test "can have its volume set", context do
+    Enum.each [context.zone, %Otis.Zone{pid: context.zone, id: context.zone_id}], fn(zone) ->
+      {:ok, 1.0} = Otis.Zone.volume(zone)
+      Otis.Zone.volume(zone, 0.5)
+      {:ok, 0.5} = Otis.Zone.volume(zone)
+      Otis.Zone.volume(zone, 1.5)
+      {:ok, 1.0} = Otis.Zone.volume(zone)
+      Otis.Zone.volume(zone, -1.5)
+      {:ok, 0.0} = Otis.Zone.volume(zone)
+      Otis.Zone.volume(zone, 1.0)
+    end
+  end
+
+  test "broadcasts an event when the volume is changed", context do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    {:ok, 1.0} = Otis.Zone.volume(context.zone)
+    Otis.Zone.volume(context.zone, 0.5)
+    {:ok, 0.5} = Otis.Zone.volume(context.zone)
+    event = {:zone_volume_change, context.zone_id, 0.5}
+    assert_receive ^event
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
 end

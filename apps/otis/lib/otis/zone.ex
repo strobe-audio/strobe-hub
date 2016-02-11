@@ -12,7 +12,8 @@ defmodule Otis.Zone do
       clock:             nil,
       audio_stream:      nil,
       broadcast_address: nil,
-      socket:            nil
+      socket:            nil,
+      volume:            1.0,
     ]
   end
 
@@ -22,32 +23,31 @@ defmodule Otis.Zone do
   @buffer_latency     50_000
   @buffer_size        25
 
-  def start_link(id) do
-    start_link(id, Otis.SourceList.empty(id))
+  def start_link(id, config) do
+    start_link(id, config, Otis.SourceList.empty(id))
   end
 
-  def start_link(id, source_list) when is_atom(id) do
-    start_link(Atom.to_string(id), source_list)
+  def start_link(id, config, {:ok, source_list}) do
+    start_link(id, config, source_list)
   end
 
-  def start_link(id, {:ok, source_list}) do
-    start_link(id, source_list)
+  def start_link(id, config, source_list) do
+    GenServer.start_link(__MODULE__, {id, config, source_list}, name: String.to_atom("zone-#{id}"))
   end
 
-  def start_link(id, source_list) do
-    GenServer.start_link(__MODULE__, %S{ id: id, source_list: source_list, broadcaster: nil }, name: String.to_atom("zone-#{id}"))
-  end
-
-  def init(%S{ source_list: source_list } = zone) do
-    Logger.info "#{__MODULE__} starting... #{ inspect zone }"
+  def init({id, config, source_list}) do
+    Logger.info "#{__MODULE__} starting... #{ id }"
     {:ok, port} = Otis.PortSequence.next
     {:ok, socket} = Otis.Zone.Socket.start_link(port)
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, Otis.stream_bytes_per_step)
     {:ok, stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
-    {:ok, %S{ zone |
+    {:ok, %S{
+        id: id,
+        source_list: source_list,
         audio_stream: stream,
         socket: socket,
-        broadcast_address: {port}
+        broadcast_address: {port},
+        volume: config.volume
       }
     }
   end
@@ -96,6 +96,19 @@ defmodule Otis.Zone do
 
   def broadcast_address(zone) when is_pid(zone) do
     GenServer.call(zone, :get_broadcast_address)
+  end
+
+  def volume(%__MODULE__{pid: pid}) do
+    volume(pid)
+  end
+  def volume(zone) when is_pid(zone) do
+    GenServer.call(zone, :volume)
+  end
+  def volume(%__MODULE__{pid: pid}, volume) do
+    volume(pid, volume)
+  end
+  def volume(zone, volume) when is_pid(zone) do
+    GenServer.call(zone, {:volume, volume})
   end
 
   @doc "Called by the broadcaster in order to keep our state in sync"
@@ -160,6 +173,14 @@ defmodule Otis.Zone do
 
   def handle_call(:get_broadcast_address, _from, %S{broadcast_address: broadcast_address} = zone) do
     {:reply, {:ok, broadcast_address}, zone}
+  end
+  def handle_call(:volume, _from, %S{volume: volume} = zone) do
+    {:reply, {:ok, volume}, zone}
+  end
+  def handle_call({:volume, volume}, _from, zone) do
+    volume = Otis.sanitize_volume(volume)
+    Otis.State.Events.notify({:zone_volume_change, zone.id, volume})
+    {:reply, {:ok, volume}, %S{zone | volume: volume}}
   end
 
   def handle_cast(:stream_finished, zone) do
