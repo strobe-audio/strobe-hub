@@ -74,13 +74,6 @@ defmodule Otis.Zone do
     GenServer.call(zone, {:add_receiver, receiver})
   end
 
-  def remove_receiver(%Otis.Zone{pid: pid}, receiver) do
-    remove_receiver(pid, receiver)
-  end
-  def remove_receiver(zone, receiver) when is_pid(zone) do
-    GenServer.call(zone, {:remove_receiver, receiver})
-  end
-
   def state(zone) do
     GenServer.call(zone, :get_state)
   end
@@ -148,12 +141,6 @@ defmodule Otis.Zone do
     {:reply, :ok, zone}
   end
 
-  def handle_call({:remove_receiver, receiver}, _from, %S{receivers: receivers} = state) do
-    Logger.debug "Zone removing receiver... #{ inspect receiver }"
-    state = %S{ state | receivers: Set.delete(receivers, receiver) }
-    {:reply, :ok, state}
-  end
-
   def handle_call(:play_pause, _from, zone) do
     zone = zone |> toggle_state
     {:reply, {:ok, zone.state}, zone}
@@ -185,6 +172,22 @@ defmodule Otis.Zone do
     {:noreply, set_state(zone, :play)}
   end
 
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
+    state = receiver_shutdown(state, pid, Set.to_list(state.receivers))
+    {:noreply, state}
+  end
+
+  def receiver_shutdown(state, pid, []) do
+    Logger.warn "Unknown receiver shutdown #{ inspect pid } #{ inspect Set.to_list(state.receivers)}"
+    state
+  end
+  def receiver_shutdown(state, pid, [%Otis.Receiver{pid: pid} = receiver | _receivers]) do
+    %S{ state | receivers: Set.delete(state.receivers, receiver) }
+  end
+  def receiver_shutdown(state, pid, [_ | receivers]) do
+    receiver_shutdown(state, pid, receivers)
+  end
+
   defp flush(zone) do
     Otis.Stream.flush(zone.audio_stream)
     zone
@@ -205,6 +208,7 @@ defmodule Otis.Zone do
   end
 
   defp add_receiver_to_zone(receiver, %S{receivers: receivers} = zone) do
+    Process.monitor(receiver.pid)
     event!(:receiver_added, {Otis.Receiver.id!(receiver)}, zone)
     %S{ zone | receivers: Set.put(receivers, receiver) }
   end

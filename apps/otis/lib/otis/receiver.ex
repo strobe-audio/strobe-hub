@@ -86,7 +86,7 @@ defmodule Otis.Receiver do
     %__MODULE__{id: id, pid: self}
   end
 
-  def join_zone(%S{id: id, zone: zone} = state) do
+  def join_zone(%S{zone: zone} = state) do
     {:ok, {port}} = Otis.Zone.broadcast_address(zone)
     broadcast!(state, "join_zone", %{
       port: port,
@@ -108,22 +108,15 @@ defmodule Otis.Receiver do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, monitor, :process, _channel, reason}, %{id: id, channel_monitor: monitor, zone: zone} = state) do
+  # Refs to this receiver in zone & Receivers are removed by process monitor
+  # callbacks so all we have to do is stop
+  def handle_info({:DOWN, monitor, :process, _channel, reason}, %{channel_monitor: monitor} = state) do
     Logger.warn "Receiver disconnected... #{inspect reason}"
-    # I could effect this removal through the events system...
-    remove_from_zone(zone, state)
-    Otis.Receivers.stop(id)
-    {:stop, :shutdown, state}
+    {:stop, {:shutdown, :disconnect}, %S{state | channel_monitor: nil}}
   end
 
   def terminate(_reason, _state) do
     :ok
-  end
-
-  defp remove_from_zone(nil, _state) do
-  end
-  defp remove_from_zone(zone, state) do
-    Otis.Zone.remove_receiver(zone, record(state))
   end
 
   defp broadcast!(state, event, msg) do

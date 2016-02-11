@@ -22,13 +22,6 @@ defmodule Otis.Receivers do
     response
   end
 
-  def stop(id) do
-    stop(@registry, id)
-  end
-  def stop(registry, id) do
-    GenServer.cast(registry, {:stop, id})
-  end
-
   def add(id, receiver) do
     add(@registry, id, receiver)
   end
@@ -90,12 +83,25 @@ defmodule Otis.Receivers do
   end
 
   def handle_call({:add, id, receiver}, _from, receivers) do
+    Process.monitor(receiver.pid)
     Otis.State.Events.notify({:receiver_started, id})
     {:reply, :ok, Map.put(receivers, id, receiver)}
   end
 
-  def handle_cast({:stop, id}, receivers) do
+  def handle_info({:DOWN, _ref, :process, pid, {:shutdown, :disconnect}}, receivers) do
+    receivers = receiver_shutdown(receivers, pid, Map.values(receivers))
+    {:noreply, receivers}
+  end
+
+  def receiver_shutdown(state, pid, []) do
+    Logger.warn "Unknown receiver shutdown #{ inspect pid } #{ inspect state }"
+    state
+  end
+  def receiver_shutdown(state, pid, [%Otis.Receiver{pid: pid, id: id} | _receivers]) do
     Otis.State.Events.notify({:receiver_disconnected, id})
-    {:noreply, Map.delete(receivers, id)}
+    Map.delete(state, id)
+  end
+  def receiver_shutdown(state, pid, [_ | receivers]) do
+    receiver_shutdown(state, pid, receivers)
   end
 end
