@@ -74,7 +74,10 @@ defmodule Otis.Zone do
     GenServer.call(zone, {:add_receiver, receiver})
   end
 
-  def remove_receiver(zone, receiver) do
+  def remove_receiver(%Otis.Zone{pid: pid}, receiver) do
+    remove_receiver(pid, receiver)
+  end
+  def remove_receiver(zone, receiver) when is_pid(zone) do
     GenServer.call(zone, {:remove_receiver, receiver})
   end
 
@@ -145,9 +148,10 @@ defmodule Otis.Zone do
     {:reply, :ok, zone}
   end
 
-  def handle_call({:remove_receiver, receiver}, _from, %S{receivers: receivers} = zone) do
-    Logger.debug "Zone removing receiver..."
-    {:reply, :ok, %S{ zone | receivers: Set.delete(receivers, receiver) }}
+  def handle_call({:remove_receiver, receiver}, _from, %S{receivers: receivers} = state) do
+    Logger.debug "Zone removing receiver... #{ inspect receiver }"
+    state = %S{ state | receivers: Set.delete(receivers, receiver) }
+    {:reply, :ok, state}
   end
 
   def handle_call(:play_pause, _from, zone) do

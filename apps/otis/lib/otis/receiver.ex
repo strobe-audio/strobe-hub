@@ -62,8 +62,11 @@ defmodule Otis.Receiver do
     %S{state | volume: volume}
   end
 
-  def shutdown(pid) do
-    GenServer.cast(pid, :shutdown)
+  def shutdown(%__MODULE__{pid: pid}) do
+    shutdown(pid)
+  end
+  def shutdown(receiver) when is_pid(receiver) do
+    GenServer.cast(receiver, :shutdown)
   end
 
   def volume(pid) do
@@ -86,6 +89,10 @@ defmodule Otis.Receiver do
     {:reply, {:ok, volume}, receiver}
   end
 
+  def record(%S{id: id} = _state) do
+    %__MODULE__{id: id, pid: self}
+  end
+
   def join_zone(%S{id: id, zone: zone} = state) do
     {:ok, {port}} = Otis.Zone.broadcast_address(zone)
     broadcast!(state, "join_zone", %{
@@ -94,7 +101,7 @@ defmodule Otis.Receiver do
       size: Otis.stream_bytes_per_step,
       volume: state.volume
     })
-    Otis.Zone.add_receiver(zone, %__MODULE__{id: id, pid: self})
+    Otis.Zone.add_receiver(zone, record(state))
     state
   end
 
@@ -107,7 +114,8 @@ defmodule Otis.Receiver do
 
   def handle_cast(:shutdown, %S{id: id, zone: zone} = state) do
     Logger.warn "Receiver shutting down #{id}"
-    remove_from_zone(zone)
+    remove_from_zone(zone, state)
+    Otis.State.Events.notify({:receiver_disconnected, id})
     {:stop, :shutdown, %S{state | zone: nil}}
   end
 
@@ -115,9 +123,9 @@ defmodule Otis.Receiver do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, monitor, :process, _channel, reason}, %{channel_monitor: monitor} = state) do
+  def handle_info({:DOWN, monitor, :process, _channel, reason}, %{id: id, channel_monitor: monitor} = state) do
     Logger.warn "Receiver disconnected... #{inspect reason}"
-    Otis.Receivers.remove(self)
+    Otis.Receivers.stop(id)
     {:noreply, state}
   end
 
@@ -125,10 +133,10 @@ defmodule Otis.Receiver do
     :ok
   end
 
-  defp remove_from_zone(nil) do
+  defp remove_from_zone(nil, _state) do
   end
-  defp remove_from_zone(zone) do
-    Otis.Zone.remove_receiver(zone, self)
+  defp remove_from_zone(zone, state) do
+    Otis.Zone.remove_receiver(zone, record(state))
   end
 
   defp broadcast!(state, event, msg) do

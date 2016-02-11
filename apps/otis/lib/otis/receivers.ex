@@ -22,20 +22,19 @@ defmodule Otis.Receivers do
     response
   end
 
+  def stop(id) do
+    stop(@registry, id)
+  end
+  def stop(registry, id) do
+    GenServer.cast(registry, {:stop, id})
+  end
+
   def add(id, receiver) do
     add(@registry, id, receiver)
   end
 
   def add(registry, id, receiver) do
     GenServer.call(registry, {:add, id, receiver})
-  end
-
-  def remove(receiver) do
-    remove(@registry, receiver)
-  end
-
-  def remove(pid, receiver) do
-    GenServer.cast(pid, {:remove, receiver})
   end
 
   def list! do
@@ -95,9 +94,16 @@ defmodule Otis.Receivers do
     {:reply, :ok, Map.put(receivers, id, receiver)}
   end
 
-  def handle_cast({:remove, receiver}, receivers) do
-    {:ok, id} = Receiver.id(receiver)
+  def handle_cast({:stop, id}, receivers) do
+    {receiver, receivers} = Map.pop(receivers, id)
+    stop_receiver(receiver, id)
+    {:noreply, receivers}
+  end
+
+  defp stop_receiver(nil, id) do
+    Logger.warn "Attempt to stop unknown receiver #{ id }"
+  end
+  defp stop_receiver(receiver, _id) do
     Otis.Receiver.shutdown(receiver)
-    {:noreply, Enum.reject(receivers, fn({rid, _rec}) -> rid == id end) }
   end
 end
