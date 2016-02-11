@@ -6,12 +6,12 @@ defmodule Otis.Startup do
   end
 
   def init([state, zones_supervisor, _receivers_supervisor]) do
-    :ok = start_zones(state, zones_supervisor)
+    :ok = state |> start_zones(zones_supervisor)
     Otis.State.Events.add_handler(Otis.LoggerHandler, :events)
     :ignore
   end
 
-  defp start_zones(state, zones_supervisor) do
+  defp start_zones(_state, zones_supervisor) do
     zones = Otis.State.Zone.all
     zones |> guarantee_zone |> start_zone(zones_supervisor)
   end

@@ -39,8 +39,6 @@ defmodule Otis.State.Zone do
     has_many :receivers, Otis.State.Receiver
   end
 
-  defstruct id: :default_zone, name: "Default Zone", receiver_ids: []
-
   def all do
     Zone |> order_by(:position) |> Repo.all
   end

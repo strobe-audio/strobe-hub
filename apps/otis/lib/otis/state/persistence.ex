@@ -19,7 +19,8 @@ defmodule Otis.State.Persistence do
   end
 
   def handle_info({:gen_event_EXIT, handler, reason}, state) do
-    Logger.warn "Restarting persistence handler #{ inspect handler }"
+    Logger.warn "Persistence handler #{ inspect handler } exited with reason #{ inspect reason }"
+    Logger.warn "Restarting #{ inspect handler }"
     handler.register
     {:noreply, state}
   end

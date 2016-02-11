@@ -97,7 +97,7 @@ defmodule Otis.Zones do
     insert(zone_list, id, zone)
   end
 
-  def handle_call({:start, zone, id, name}, _from, zone_list) do
+  def handle_call({:start, zone, id, _name}, _from, zone_list) do
     insert(zone_list, id, zone)
   end
 

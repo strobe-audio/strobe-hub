@@ -18,7 +18,7 @@ defmodule Otis.Receivers do
   def start(registry, id, zone, config, channel, connection_info) do
     Logger.info "Start receiver #{inspect id} #{inspect zone} #{inspect(connection_info)}"
     {:ok, pid} = response = Otis.Receivers.Supervisor.start_receiver(id, zone, config, channel, connection_info)
-    add(id, %Receiver{id: id, pid: pid})
+    add(registry, id, %Receiver{id: id, pid: pid})
     response
   end
 

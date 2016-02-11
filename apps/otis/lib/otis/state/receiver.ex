@@ -23,10 +23,11 @@ defmodule Otis.State.Receiver do
     find_query(id, opts) |> Repo.one
   end
 
+  defp find_query(id, opts \\ [])
   defp find_query(id, preload: associations) do
     find_query(id) |> preload(^associations)
   end
-  defp find_query(id, _opts \\ []) do
+  defp find_query(id, _opts) do
     Receiver
     |> where(id: ^id)
     |> limit(1)
