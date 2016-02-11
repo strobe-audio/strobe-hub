@@ -47,7 +47,7 @@ defmodule Otis.Zone do
         audio_stream: stream,
         socket: socket,
         broadcast_address: {port},
-        volume: config.volume
+        volume: Map.get(config, :volume, 1.0)
       }
     }
   end
