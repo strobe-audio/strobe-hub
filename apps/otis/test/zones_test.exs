@@ -65,7 +65,7 @@ defmodule ZonesTest do
     :ok = Otis.State.Events.add_handler(MessagingHandler, self)
 
     id = Otis.uuid
-    {:ok, _zone} = Otis.Zones.start(zones, id, "Something")
+    {:ok, _zone} = Otis.Zones.start(zones, id, %{name: "Something"})
     refute_receive {:zone_added, ^id, _}
 
     assert zone_ids(zones) == [id]
@@ -89,7 +89,7 @@ defmodule Otis.ZoneTest do
         :stop -> :ok
       end
     end)
-    {:ok, zone} = Otis.Zone.start_link(zone_id)
+    {:ok, zone} = Otis.Zone.start_link(zone_id, %{ name: "Something", volume: 1.0 })
     {:ok, receiver} = Otis.Receivers.start(
       receiver_id,
       %Otis.Zone{ id: zone_id, pid: zone },
@@ -137,6 +137,7 @@ defmodule Otis.ZoneTest do
     send context.channel, :stop
     receiver_id = context.receiver.id
     assert_receive {:receiver_disconnected, ^receiver_id}
+    refute Process.alive?(context.receiver.pid)
     {:ok, receivers} = Otis.Zone.receivers(context.zone)
     assert receivers == []
     Otis.State.Events.remove_handler(MessagingHandler, self)
