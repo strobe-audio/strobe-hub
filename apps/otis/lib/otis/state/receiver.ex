@@ -19,6 +19,10 @@ defmodule Otis.State.Receiver do
     belongs_to :zone, Otis.State.Zone
   end
 
+  def all do
+    Receiver |> order_by(:zone_id) |> Repo.all
+  end
+
   def find(id, opts \\ []) do
     find_query(id, opts) |> Repo.one
   end
