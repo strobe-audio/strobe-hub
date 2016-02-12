@@ -72,10 +72,10 @@ defmodule Otis.Persistence.ZonesTest do
     assert_receive :remove_messaging_handler, 100
   end
 
-  test "initializes a zone with the persisted volume", context do
+  test "initializes a zone with the persisted volume", _context do
     id = Otis.uuid
     zone = Otis.State.Zone.create!(id, "Donal")
-    zone = Otis.State.Zone.volume(zone, 0.11)
+    Otis.State.Zone.volume(zone, 0.11)
     zone = Otis.State.Zone.find(id)
     assert zone.volume == 0.11
 

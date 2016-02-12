@@ -121,7 +121,7 @@ defmodule Otis.Receiver do
     Otis.State.Events.notify({:receiver_volume_change, state.id, volume})
     set_volume(state, volume, false)
   end
-  defp set_volume(state, volume, persist) do
+  defp set_volume(state, volume, false) do
     state = %S{ state | volume: volume }
     broadcast!(state, "set_volume", %{volume: calculated_volume(state)})
   end
