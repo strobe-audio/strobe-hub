@@ -95,14 +95,11 @@ defmodule Otis.Receiver do
   end
 
   def handle_cast({:set_volume, volume}, state) do
-    state = state |> set_volume(volume)
-    Otis.State.Events.notify({:receiver_volume_change, state.id, volume})
-    {:noreply, state}
+    {:noreply, set_volume(state, Otis.sanitize_volume(volume))}
   end
 
-  def handle_cast(:update_volume, %S{zone: zone, volume: volume} = state) do
-    set_volume(state)
-    {:noreply, state}
+  def handle_cast(:update_volume, state) do
+    {:noreply, set_volume(state)}
   end
 
   def handle_info({:DOWN, monitor, :process, _channel, :noproc}, %{channel_monitor: monitor} = state) do
@@ -117,13 +114,16 @@ defmodule Otis.Receiver do
   end
 
   defp set_volume(%S{ volume: volume } = state) do
-    set_volume(state, volume)
+    set_volume(state, volume, false)
   end
-  defp set_volume(state, volume) do
-    volume = Otis.sanitize_volume(volume)
+  defp set_volume(state, volume, persist \\ true)
+  defp set_volume(state, volume, true) do
+    Otis.State.Events.notify({:receiver_volume_change, state.id, volume})
+    set_volume(state, volume, false)
+  end
+  defp set_volume(state, volume, persist) do
     state = %S{ state | volume: volume }
     broadcast!(state, "set_volume", %{volume: calculated_volume(state)})
-    state
   end
 
   defp calculated_volume(%S{volume: volume} = state) do
@@ -153,6 +153,7 @@ defmodule Otis.Receiver do
   defp broadcast!(state, event, msg) do
     Logger.debug "Sending event #{channel_name(state)} -> #{inspect event} :: #{ inspect msg }"
     Elvis.Endpoint.broadcast!(channel_name(state), event, msg)
+    state
   end
 
   defp channel_name(%S{id: id}) do

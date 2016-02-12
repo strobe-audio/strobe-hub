@@ -83,6 +83,23 @@ defmodule RecieversTest do
     assert_receive :remove_messaging_handler, 100
   end
 
+  test "correctly casts integer volumes", context do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+
+    receiver = start_receiver(context)
+
+    Otis.Receiver.volume receiver, 1
+    event = {:receiver_volume_change, receiver.id, 1.0}
+    assert_receive ^event
+
+    record = Otis.State.Receiver.find receiver.id
+
+    assert record.volume == 1.0
+
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
+
   require Phoenix.ChannelTest
   use     Phoenix.ChannelTest
   @endpoint Elvis.Endpoint
