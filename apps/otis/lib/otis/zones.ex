@@ -65,6 +65,16 @@ defmodule Otis.Zones do
     GenServer.call(pid, {:find, id})
   end
 
+  def volume(%Otis.Zone{} = zone) do
+    Otis.Zone.volume(zone)
+  end
+  def volume(id) do
+    volume(@registry_name, id)
+  end
+  def volume(registry, id)
+  when is_pid(registry) and is_binary(id) do
+    Otis.Zone.volume(find!(registry, id))
+  end
 
   defp add(action, registry, id, config) do
     {:ok, zone} = Otis.Zones.Supervisor.start_zone(id, config)
