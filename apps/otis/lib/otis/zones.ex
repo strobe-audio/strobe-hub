@@ -53,7 +53,10 @@ defmodule Otis.Zones do
   end
 
   def find!(id) do
-    {:ok, pid} = find(id)
+    find!(@registry_name, id)
+  end
+  def find!(registry, id) do
+    {:ok, pid} = find(registry, id)
     pid
   end
 
