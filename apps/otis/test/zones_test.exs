@@ -82,6 +82,8 @@ defmodule Otis.ZoneTest do
   @moduletag :zone
 
   setup do
+    Otis.State.Receiver.delete_all
+    Otis.State.Zone.delete_all
     zone_id = Otis.uuid
     receiver_id = Otis.uuid
     channel = spawn(fn ->
@@ -89,15 +91,21 @@ defmodule Otis.ZoneTest do
         :stop -> :ok
       end
     end)
-    {:ok, zone} = Otis.Zones.create(zone_id, "Something")
+    zone_record = Otis.State.Zone.create!(zone_id, "Something")
+    {:ok, zone} = Otis.Zones.create(zone_id, zone_record.name)
+    receiver_record = Otis.State.Receiver.create!(zone_record, id: receiver_id, name: "Roger", volume: 1.0)
     {:ok, receiver} = Otis.Receivers.start(
       receiver_id,
       %Otis.Zone{ id: zone_id, pid: zone },
-      %Otis.State.Receiver{ id: receiver_id, name: "Receiver", volume: 1 },
+      receiver_record,
       channel,
       %{ "latency" => 0 }
     )
     receiver = %Otis.Receiver{id: receiver_id, pid: receiver}
+    on_exit fn ->
+      Otis.State.Receiver.delete_all
+      Otis.State.Zone.delete_all
+    end
     {:ok, zone: zone, receiver: receiver, zone_id: zone_id, channel: channel}
   end
 
@@ -123,7 +131,9 @@ defmodule Otis.ZoneTest do
     receiver2 = %Otis.Receiver{id: receiver_id, pid: receiver2}
     :ok = Otis.Zone.add_receiver(zone, receiver2)
     {:ok, receivers} = Otis.Zone.receivers(zone)
-    assert receivers == [receiver, receiver2]
+    expected = Enum.into [receiver, receiver2], HashSet.new
+    received = Enum.into receivers, HashSet.new
+    assert expected == received
   end
 
   test "ignores duplicate receivers", %{zone: zone, receiver: receiver} do
@@ -158,11 +168,12 @@ defmodule Otis.ZoneTest do
   end
 
   test "broadcasts an event when a receiver is added", %{zone: zone, receiver: receiver} = context do
-    :ok = Otis.State.Events.add_handler(TestHandler, [])
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     :ok = Otis.Zone.add_receiver(zone, receiver)
-    messages = Otis.State.Events.call(TestHandler, :messages)
-    assert messages == [{:receiver_added, context.zone_id, {receiver.id}}]
-    Otis.State.Events.remove_handler(TestHandler)
+    event = {:receiver_added, context.zone_id, {receiver.id}}
+    assert_receive ^event
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
   end
 
   test "can have its volume set", context do
@@ -189,6 +200,21 @@ defmodule Otis.ZoneTest do
     assert_receive :remove_messaging_handler, 100
   end
 
+  test "does not persist the receivers calculated volume", context do
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    {:ok, 1.0} = Otis.Zone.volume(context.zone)
+    Otis.Zone.volume(context.zone, 0.5)
+    {:ok, 0.5} = Otis.Zone.volume(context.zone)
+    event = {:zone_volume_change, context.zone_id, 0.5}
+    assert_receive ^event
+    zone = Otis.State.Zone.find context.zone_id
+    assert zone.volume == 0.5
+    receiver = Otis.State.Receiver.find context.receiver.id
+    assert receiver.volume == 1.0
+    Otis.State.Events.remove_handler(MessagingHandler, self)
+    assert_receive :remove_messaging_handler, 100
+  end
+
   require Phoenix.ChannelTest
   use     Phoenix.ChannelTest
   @endpoint Elvis.Endpoint
@@ -201,7 +227,7 @@ defmodule Otis.ZoneTest do
     id = Otis.uuid
     Otis.Receiver.volume context.receiver, 0.3
     {:ok, socket} = connect(Elvis.ReceiverSocket, %{"id" => id})
-    {:ok, _, socket} = subscribe_and_join(socket, "receiver:#{id}", %{"latency" => 100})
+    {:ok, _, _} = subscribe_and_join(socket, "receiver:#{id}", %{"latency" => 100})
     assert_receive {:receiver_connected, ^id, _, _}
     assert_receive {:receiver_started, ^id}
     assert_receive {:receiver_joined, ^id, _, _}
