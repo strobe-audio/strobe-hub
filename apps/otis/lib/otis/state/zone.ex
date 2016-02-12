@@ -1,26 +1,3 @@
-
-# defmodule Otis.State.Repo do
-#   use Behaviour
-#   # defcallback create_zone
-#   # defcallback destroy_zone
-# end
-
-# defmodule Otis.State.Repo.Sqlite do
-#   @behaviour Otis.State.Repo
-#   # actually writes to the db
-# end
-
-# defmodule Otis.State.Repo.Test do
-#   @behaviour Otis.State.Repo
-#   # just records the functions called
-# end
-
-# defmodule Otis.State.Supervisor do
-#   def start_link(repo) do
-#
-#   end
-# end
-
 defmodule Otis.State.Zone do
   use    Ecto.Schema
   import Ecto.Query
