@@ -32,6 +32,10 @@ defmodule Otis.State.Persistence.Receivers do
     end)
     {:ok, state}
   end
+  def handle_event({:receiver_volume_change, id, volume}, state) do
+    id |> receiver |> volume_change(id, volume)
+    {:ok, state}
+  end
   def handle_event(_evt, state) do
     {:ok, state}
   end
@@ -55,6 +59,13 @@ defmodule Otis.State.Persistence.Receivers do
   defp receiver_connected(receiver, id, channel, connection_info) do
     zone = zone(receiver) |> zone_process
     Otis.Receivers.start(id, zone, receiver, channel, connection_info)
+  end
+
+  defp volume_change(nil, id, _volume) do
+    Logger.warn "Volume change for unknown receiver #{ id }"
+  end
+  defp volume_change(receiver, _id, volume) do
+    Receiver.volume(receiver, volume)
   end
 
   defp create_receiver(zone, id) do

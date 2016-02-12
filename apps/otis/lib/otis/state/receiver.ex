@@ -1,12 +1,10 @@
-
 defmodule Otis.State.Receiver do
-  # defstruct id: nil, name: "Receiver"
-
   use    Ecto.Schema
   import Ecto.Query
 
   alias Otis.State.Receiver
   alias Otis.State.Repo
+  alias Ecto.Changeset
 
   @primary_key {:id, :string, []}
   @foreign_key_type :binary_id
@@ -47,5 +45,7 @@ defmodule Otis.State.Receiver do
     Receiver |> Repo.delete_all
   end
 
-  # def rename(receiver, name)
+  def volume(receiver, volume) do
+    Changeset.change(receiver, volume: volume) |> Repo.update!
+  end
 end

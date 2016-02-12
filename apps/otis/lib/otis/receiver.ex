@@ -95,12 +95,13 @@ defmodule Otis.Receiver do
   end
 
   def handle_cast({:set_volume, volume}, state) do
-    state = state |> _set_volume(volume)
+    state = state |> set_volume(volume)
+    Otis.State.Events.notify({:receiver_volume_change, state.id, volume})
     {:noreply, state}
   end
 
   def handle_cast(:update_volume, %S{zone: zone, volume: volume} = state) do
-    _set_volume(state)
+    set_volume(state)
     {:noreply, state}
   end
 
@@ -115,17 +116,17 @@ defmodule Otis.Receiver do
     {:stop, {:shutdown, :disconnect}, %S{state | channel_monitor: nil}}
   end
 
-  defp _set_volume(%S{ volume: volume } = state) do
-    _set_volume(state, volume)
+  defp set_volume(%S{ volume: volume } = state) do
+    set_volume(state, volume)
   end
-  defp _set_volume(state, volume) do
+  defp set_volume(state, volume) do
     volume = Otis.sanitize_volume(volume)
     state = %S{ state | volume: volume }
-    broadcast!(state, "set_volume", %{volume: _calculated_volume(state)})
+    broadcast!(state, "set_volume", %{volume: calculated_volume(state)})
     state
   end
 
-  defp _calculated_volume(%S{volume: volume} = state) do
+  defp calculated_volume(%S{volume: volume} = state) do
     {:ok, zone_volume} = Otis.Zone.volume(state.zone)
     Otis.sanitize_volume(volume * zone_volume)
   end
@@ -140,7 +141,7 @@ defmodule Otis.Receiver do
       port: port,
       interval: Otis.stream_interval_ms,
       size: Otis.stream_bytes_per_step,
-      volume: state.volume # FIXME: change this to _calculated_volume(state)
+      volume: calculated_volume(state)
     })
     Otis.Zone.add_receiver(zone, record(state))
     state
