@@ -7,7 +7,7 @@ config :elvis, Elvis.Endpoint,
   server: false
 
 # Print only warnings and errors during test
-config :logger, level: :warn
+config :logger, level: :error
 
 # Set a higher stacktrace during test
 config :phoenix, :stacktrace_depth, 20
