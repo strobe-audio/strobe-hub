@@ -20,42 +20,35 @@ defmodule Peel.Scanner do
   end
 
   def track(nil, path) do
-    file = Otis.Source.File.new!(path)
-    meta = Map.from_struct(file.metadata)
+    track = path |> metadata |> Enum.into(track_for_path(path))
 
-    # TODO: improve this ...
-    fields = Enum.filter Map.keys(Track.__struct__), fn
-      :__meta__   -> false
-      :__struct__ -> false
-      :album      -> false
-      :mtime      -> false
-      :path       -> false
-      _ -> true
-    end
-    track = Enum.reduce fields, track_for_path(path), fn(key, t) ->
-      case Map.get(meta, map_metadata(t, key)) do
-        nil   -> t
-        value -> Map.put(t, key, value)
-      end
-    end
     {:ok, _track} = Peel.Repo.transaction fn ->
       track |> Album.for_track |> Track.create!
     end
   end
-
   def track(%Peel.Track{}, _path) do
     # Exists - TODO: should check mtime for modifications and act...
   end
+
+  def metadata(path) do
+    path
+    |> Otis.Source.File.new!
+    |> Map.get(:metadata)
+    |> Map.from_struct
+    # Reject any nil values so that they don't overwrite defaults
+    |> Enum.reject(fn({_, v}) -> is_nil(v) end)
+    |> Enum.map(&translate_metadata_key/1)
+  end
+
+  # We reserve %Track.album to point to the album relation
+  def translate_metadata_key({:album, album}), do: {:album_title, album}
+  def translate_metadata_key(term), do: term
 
   def track_for_path(path) do
     stat = File.stat!(path)
     %Track{mtime: Ecto.DateTime.from_erl(stat.mtime), path: path}
   end
 
-  def map_metadata(%Track{}, :album_title), do: :album
-  def map_metadata(_struct, key) do
-    key
-  end
   def filetype_filter(path) do
     path |> Path.extname |> is_accepted_format
   end

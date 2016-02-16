@@ -61,3 +61,12 @@ defmodule Peel.Track do
   end
 end
 
+defimpl Collectable, for: Peel.Track do
+  def into(original) do
+    {original, fn
+      map, {:cont, {k, v}} -> :maps.put(k, v, map)
+      map, :done -> map
+      _, :halt -> :ok
+    end}
+  end
+end
