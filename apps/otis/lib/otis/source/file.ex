@@ -9,6 +9,10 @@ defmodule Otis.Source.File do
 
   @type t :: %__MODULE__{}
 
+  def metadata!(path) do
+    new!(path).metadata
+  end
+
   @doc """
   Returns a new file-with-metadata struct raising an exception if there's a problem
   """

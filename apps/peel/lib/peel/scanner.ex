@@ -11,8 +11,6 @@ defmodule Peel.Scanner do
     |> List.wrap
     |> Peel.DirWalker.stream
     |> Stream.filter(&filetype_filter/1)
-    # TODO: REMOVE REMOVE REMOVE
-    # |> Stream.take(5)
   end
 
   def scan(path) do
@@ -32,8 +30,7 @@ defmodule Peel.Scanner do
 
   def metadata(path) do
     path
-    |> Otis.Source.File.new!
-    |> Map.get(:metadata)
+    |> Otis.Source.File.metadata!
     |> Map.from_struct
     # Reject any nil values so that they don't overwrite defaults
     |> Enum.reject(fn({_, v}) -> is_nil(v) end)
