@@ -7,6 +7,8 @@ defmodule Peel.Track do
   alias  Peel.Album
   alias  Peel.Artist
 
+  @primary_key {:id, :string, []}
+
   schema "tracks" do
     # Musical info
     field :title, :string
@@ -21,6 +23,8 @@ defmodule Peel.Track do
     field :disk_total, :integer
     field :track_number, :integer
     field :track_total, :integer
+
+    field :duration_ms, :integer, default: 0
 
     # Peel metadata
     field :path, :string
@@ -39,6 +43,11 @@ defmodule Peel.Track do
 
   def create!(track) do
     track |> Repo.insert!
+  end
+
+  def new(path) do
+    stat = File.stat!(path)
+    %Track{id: Otis.uuid, mtime: Ecto.DateTime.from_erl(stat.mtime), path: path}
   end
 
   def from_path(path) do

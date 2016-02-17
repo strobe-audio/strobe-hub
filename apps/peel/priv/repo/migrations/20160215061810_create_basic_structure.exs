@@ -20,7 +20,8 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
     end
     create index(:albums, [:title, :disk_number])
 
-    create table(:tracks) do
+    create table(:tracks, primary_key: false) do
+      add :id, :string, primary_key: true
       add :title, :string
       add :album_title, :string
       add :composer, :string
@@ -31,6 +32,7 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
       add :disk_total, :integer
       add :track_number, :integer
       add :track_total, :integer
+      add :duration_ms, :integer, default: 0
 
       add :path, :string
       add :mtime, :datetime

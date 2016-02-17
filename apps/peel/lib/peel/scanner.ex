@@ -18,7 +18,7 @@ defmodule Peel.Scanner do
   end
 
   def track(nil, path) do
-    track = path |> metadata |> Enum.into(track_for_path(path))
+    track = path |> metadata |> Enum.into(Track.new(path))
 
     {:ok, _track} = Peel.Repo.transaction fn ->
       track |> Album.for_track |> Track.create!
@@ -40,11 +40,6 @@ defmodule Peel.Scanner do
   # We reserve %Track.album to point to the album relation
   def translate_metadata_key({:album, album}), do: {:album_title, album}
   def translate_metadata_key(term), do: term
-
-  def track_for_path(path) do
-    stat = File.stat!(path)
-    %Track{mtime: Ecto.DateTime.from_erl(stat.mtime), path: path}
-  end
 
   def filetype_filter(path) do
     path |> Path.extname |> is_accepted_format

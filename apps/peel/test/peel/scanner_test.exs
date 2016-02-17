@@ -22,6 +22,38 @@ defmodule Peel.Test.ScannerTest do
     assert length(tracks) == context.track_count
   end
 
+  test "it assigns a UUID as the primary key", context do
+    Peel.Scanner.start(context.path)
+    [track] = Track.all
+    assert is_binary(track.id)
+    assert String.length(track.id) == 36
+  end
+
+  test "it sets the track data from the file", context do
+    Peel.Scanner.start(context.path)
+    [track] = Track.all
+    assert track.title == "I Feel Free"
+    assert track.album_title == "Fresh Cream"
+    assert track.performer == "Cream"
+    assert track.genre == "Rock"
+    assert track.composer == "Peter Brown & Jack Bruce"
+    assert track.date == "1966"
+  end
+
+  test "it sets the mtime from the file", context do
+    Peel.Scanner.start(context.path)
+    [track] = Track.all
+    [path | _] = context.paths
+    %{mtime: mtime} = File.stat!(path)
+    assert track.mtime == Ecto.DateTime.from_erl(mtime)
+  end
+
+  test "it correctly sets the track duration", context do
+    Peel.Scanner.start(context.path)
+    [track] = Track.all
+    assert track.duration_ms == 173662
+  end
+
   test "it creates an album when one isn't available", context do
     assert length(Album.all) == 0
     Peel.Scanner.start(context.path)
