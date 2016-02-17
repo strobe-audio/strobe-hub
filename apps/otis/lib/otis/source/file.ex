@@ -60,6 +60,10 @@ defmodule Otis.Source.File do
     {:ok, %__MODULE__{id: path_to_id(path), path: path, metadata: result.data}}
   end
 
+  defp sax_event({:characters, 'UTC ' ++ date}, %{field: :date} = state) do
+    sax_event({:characters, parse_date(date)}, state)
+  end
+
   Enum.each [
     :album, :composer, :date, :extension, :filename, :genre, :mime_type,
     :performer, :title
@@ -131,5 +135,10 @@ defmodule Otis.Source.File do
 
   defp mediainfo do
     System.find_executable("mediainfo")
+  end
+
+  # Converts dates like '1966-01-01 08:00:00' to a year '1966'
+  defp parse_date(date_time) do
+    date_time |> Enum.take_while(&(&1 != ?-))
   end
 end
