@@ -18,7 +18,7 @@ defmodule Peel.Scanner do
   end
 
   def track(nil, path) do
-    track = path |> metadata |> Enum.into(Track.new(path))
+    track = path |> Track.new |> struct(metadata(path))
 
     {:ok, _track} = Peel.Repo.transaction fn ->
       track |> Album.for_track |> Track.create!

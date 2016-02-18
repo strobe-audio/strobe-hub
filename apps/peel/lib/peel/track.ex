@@ -66,16 +66,6 @@ defmodule Peel.Track do
   def strip_leading_dot("." <> rest), do: rest
 end
 
-defimpl Collectable, for: Peel.Track do
-  def into(original) do
-    {original, fn
-      map, {:cont, {k, v}} -> :maps.put(k, v, map)
-      map, :done -> map
-      _, :halt -> :ok
-    end}
-  end
-end
-
 defimpl Otis.Source, for: Peel.Track do
   alias Peel.Track
 
