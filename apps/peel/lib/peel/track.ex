@@ -25,6 +25,7 @@ defmodule Peel.Track do
     field :track_total, :integer
 
     field :duration_ms, :integer, default: 0
+    field :mime_type, :string
 
     # Peel metadata
     field :path, :string
@@ -73,6 +74,11 @@ defmodule Peel.Track do
   def lookup_artist(track) do
     track |> Artist.for_track
   end
+
+  def extension(%Track{path: path}) do
+    path |> Path.extname |> strip_leading_dot
+  end
+  def strip_leading_dot("." <> rest), do: rest
 end
 
 defimpl Collectable, for: Peel.Track do
@@ -82,5 +88,30 @@ defimpl Collectable, for: Peel.Track do
       map, :done -> map
       _, :halt -> :ok
     end}
+  end
+end
+
+defimpl Otis.Source, for: Peel.Track do
+  alias Peel.Track
+
+  def id(track) do
+    track.id
+  end
+
+  def open!(%Track{path: path}, packet_size_bytes) do
+    Elixir.File.stream!(path, [], packet_size_bytes)
+  end
+
+  def close(%Track{}, stream) do
+    Elixir.File.close(stream)
+  end
+
+  def audio_type(track) do
+    {Track.extension(track), track.mime_type}
+  end
+
+  # TODO: what should this return?
+  def metadata(track) do
+    track
   end
 end

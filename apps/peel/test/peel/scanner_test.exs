@@ -54,6 +54,12 @@ defmodule Peel.Test.ScannerTest do
     assert track.duration_ms == 173662
   end
 
+  test "it correctly sets the track mime type", context do
+    Peel.Scanner.start(context.path)
+    [track] = Track.all
+    assert track.mime_type == "audio/mp4"
+  end
+
   test "it creates an album when one isn't available", context do
     assert length(Album.all) == 0
     Peel.Scanner.start(context.path)

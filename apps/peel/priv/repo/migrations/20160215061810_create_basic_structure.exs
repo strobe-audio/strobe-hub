@@ -34,7 +34,9 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
       add :disk_total, :integer
       add :track_number, :integer
       add :track_total, :integer
+
       add :duration_ms, :integer, default: 0
+      add :mime_type, :string
 
       add :path, :string
       add :mtime, :datetime
