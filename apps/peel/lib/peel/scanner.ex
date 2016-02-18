@@ -14,18 +14,21 @@ defmodule Peel.Scanner do
   end
 
   def scan(path) do
-    path |> Peel.Track.from_path |> track(path)
+    Peel.Repo.transaction fn ->
+      path |> Peel.Track.from_path |> track(path)
+    end
   end
 
   def track(nil, path) do
-    track = path |> Track.new |> struct(metadata(path))
-
-    {:ok, _track} = Peel.Repo.transaction fn ->
-      track |> Album.for_track |> Track.create!
-    end
+    path
+    |> Track.new
+    |> struct(metadata(path))
+    |> Album.for_track
+    |> Track.create!
   end
-  def track(%Peel.Track{}, _path) do
+  def track(%Peel.Track{} = track, _path) do
     # Exists - TODO: should check mtime for modifications and act...
+    track
   end
 
   def metadata(path) do
