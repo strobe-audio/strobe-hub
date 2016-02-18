@@ -27,7 +27,7 @@ defmodule Peel.Artist do
   end
 
   def for_album(%Album{performer: nil} = album) do
-    %Album{ album | performer: "Unknown artist" }
+    %Album{ album | performer: "Unknown artist" } |> for_album
   end
   def for_album(%Album{performer: performer} = album) do
     Artist
