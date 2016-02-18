@@ -1,6 +1,6 @@
 defmodule Peel.Album do
-  use    Ecto.Schema
-  import Ecto.Query
+  use    Peel.Model
+
   alias  Peel.Repo
   alias  Peel.Album
   alias  Peel.Track
@@ -23,23 +23,11 @@ defmodule Peel.Album do
     has_many   :tracks, Peel.Track
   end
 
-  def all do
-    Album |> Repo.all
-  end
-
-  def first do
-    Album |> order_by(:id) |> limit(1) |> Repo.one
-  end
-
   def by_title(title) do
     Album
     |> where(title: ^title)
     |> limit(1)
     |> Repo.one
-  end
-
-  def delete_all do
-    Album |> Repo.delete_all
   end
 
   def for_track(%Track{disk_number: nil} = track) do

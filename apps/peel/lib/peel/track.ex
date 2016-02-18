@@ -1,6 +1,5 @@
 defmodule Peel.Track do
-  use    Ecto.Schema
-  import Ecto.Query
+  use    Peel.Model
 
   alias  Peel.Repo
   alias  Peel.Track
@@ -34,14 +33,6 @@ defmodule Peel.Track do
     belongs_to :album, Peel.Album, type: Ecto.UUID
   end
 
-  def first do
-    Track |> order_by(:id) |> limit(1) |> Repo.one
-  end
-
-  def all do
-    Track |> Repo.all
-  end
-
   def create!(track) do
     track |> Repo.insert!
   end
@@ -61,10 +52,6 @@ defmodule Peel.Track do
     |> where(path: ^path)
     |> limit(1)
     |> Repo.one
-  end
-
-  def delete_all do
-    Track |> Repo.delete_all
   end
 
   def lookup_album(track) do
