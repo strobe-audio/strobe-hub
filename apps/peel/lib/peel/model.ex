@@ -20,6 +20,14 @@ defmodule Peel.Model do
       def delete_all do
         M |> Repo.delete_all
       end
+
+      def search(title) do
+        match = "%#{title}%"
+        query = from(c in M,
+        where: like(c.title, ^match))
+        query |> Repo.all
+        # M |> ilike(:title, "%#{title}%") |> Repo.all
+      end
     end
   end
 end
