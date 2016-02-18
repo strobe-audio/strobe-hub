@@ -4,6 +4,8 @@ defmodule Peel.Model do
       import Ecto.Query
       use    Ecto.Schema
 
+      @primary_key {:id, :binary_id, autogenerate: true}
+
       alias  Peel.Repo
       alias  __MODULE__, as: M
 

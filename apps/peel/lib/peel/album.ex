@@ -6,8 +6,6 @@ defmodule Peel.Album do
   alias  Peel.Track
   alias  Peel.Artist
 
-  @primary_key {:id, :binary_id, autogenerate: true}
-
   schema "albums" do
     # Musical info
     field :title, :string

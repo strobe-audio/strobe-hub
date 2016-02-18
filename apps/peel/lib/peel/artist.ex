@@ -1,10 +1,9 @@
 defmodule Peel.Artist do
   use    Peel.Model
+
   alias  Peel.Repo
   alias  Peel.Artist
   alias  Peel.Album
-
-  @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "artists" do
     # Musical info
@@ -12,18 +11,6 @@ defmodule Peel.Artist do
 
     has_many   :albums, Peel.Album
   end
-
-  # def first do
-  #   Artist |> order_by(:id) |> limit(1) |> Repo.one
-  # end
-
-  # def all do
-  #   Artist |> Repo.all
-  # end
-
-  # def delete_all do
-  #   Artist |> Repo.delete_all
-  # end
 
   def for_album(%Album{performer: nil} = album) do
     %Album{ album | performer: "Unknown artist" } |> for_album
