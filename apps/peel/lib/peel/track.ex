@@ -7,7 +7,7 @@ defmodule Peel.Track do
   alias  Peel.Album
   alias  Peel.Artist
 
-  @primary_key {:id, :string, []}
+  @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "tracks" do
     # Musical info
@@ -30,7 +30,7 @@ defmodule Peel.Track do
     field :path, :string
     field :mtime, Ecto.DateTime
 
-    belongs_to :album, Peel.Album
+    belongs_to :album, Peel.Album, type: Ecto.UUID
   end
 
   def first do
@@ -46,8 +46,13 @@ defmodule Peel.Track do
   end
 
   def new(path) do
-    stat = File.stat!(path)
-    %Track{id: Otis.uuid, mtime: Ecto.DateTime.from_erl(stat.mtime), path: path}
+    new(path, File.stat!(path))
+  end
+  def new(path, %File.Stat{mtime: mtime}) do
+    %Track{
+      mtime: Ecto.DateTime.from_erl(mtime),
+      path: path
+    }
   end
 
   def from_path(path) do

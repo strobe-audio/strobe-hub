@@ -6,6 +6,8 @@ defmodule Peel.Album do
   alias  Peel.Track
   alias  Peel.Artist
 
+  @primary_key {:id, :binary_id, autogenerate: true}
+
   schema "albums" do
     # Musical info
     field :title, :string
@@ -17,7 +19,7 @@ defmodule Peel.Album do
     field :disk_total, :integer
     field :track_total, :integer
 
-    belongs_to :artist, Peel.Artist
+    belongs_to :artist, Peel.Artist, type: Ecto.UUID
     has_many   :tracks, Peel.Track
   end
 

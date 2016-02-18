@@ -2,12 +2,14 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
   use Ecto.Migration
 
   def change do
-    create table(:artists) do
+    create table(:artists, primary_key: false) do
+      add :id, :uuid, primary_key: true
       add :name, :string
     end
     create index(:artists, [:name])
 
-    create table(:albums) do
+    create table(:albums, primary_key: false) do
+      add :id, :uuid, primary_key: true
       add :title, :string
       add :date, :string
       add :genre, :string
@@ -16,12 +18,12 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
       add :disk_total, :integer
       add :track_total, :integer
 
-      add :artist_id, references(:artists)
+      add :artist_id, references(:artists, type: :string)
     end
     create index(:albums, [:title, :disk_number])
 
     create table(:tracks, primary_key: false) do
-      add :id, :string, primary_key: true
+      add :id, :uuid, primary_key: true
       add :title, :string
       add :album_title, :string
       add :composer, :string
@@ -37,7 +39,7 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
       add :path, :string
       add :mtime, :datetime
 
-      add :album_id, references(:albums)
+      add :album_id, references(:albums, type: :string)
     end
     create index(:tracks, [:path])
   end
