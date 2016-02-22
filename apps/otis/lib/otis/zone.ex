@@ -190,8 +190,8 @@ defmodule Otis.Zone do
 
   # TODO: handle the case where we skip past the end of the source list...
   def handle_cast({:skip, id}, zone) do
-    zone = zone |> set_state(:skip) |> flush |> skip_to(id)
-    {:noreply, set_state(zone, :play)}
+    zone = zone |> set_state(:skip) |> flush |> skip_to(id) |> set_state(:play)
+    {:noreply, zone}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
