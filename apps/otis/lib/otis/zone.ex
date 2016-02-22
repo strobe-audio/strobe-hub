@@ -3,6 +3,7 @@ defmodule Otis.Zone do
   require Logger
 
   defmodule S do
+    @moduledoc "The state struct for Zone processes"
     defstruct [
       id:                nil,
       source_list:       nil,
