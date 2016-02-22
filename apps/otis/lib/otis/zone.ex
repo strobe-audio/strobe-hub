@@ -9,7 +9,7 @@ defmodule Otis.Zone do
       receivers:         HashSet.new,
       state:             :stop,
       broadcaster:       nil,
-      clock:             nil,
+      ctrl:              nil,
       audio_stream:      nil,
       broadcast_address: nil,
       socket:            nil,
@@ -263,7 +263,7 @@ defmodule Otis.Zone do
     zone
   end
   defp stream_has_finished(zone) do
-    Otis.Broadcaster.Controller.done(zone.clock)
+    Otis.Broadcaster.Controller.done(zone.ctrl)
     %S{zone | broadcaster: nil}
   end
 
@@ -279,15 +279,15 @@ defmodule Otis.Zone do
     %S{ zone | state: state } |> change_state
   end
 
-  defp change_state(%S{state: :play, clock: nil} = zone) do
-    # TODO: share a clock between all zones
-    clock = Otis.Zone.Controller.new(Otis.stream_interval_us)
-    %S{ zone | clock: clock } |> change_state
+  defp change_state(%S{state: :play, ctrl: nil} = zone) do
+    # TODO: share a ctrl between all zones
+    ctrl = Otis.Zone.Controller.new(Otis.stream_interval_us)
+    %S{ zone | ctrl: ctrl } |> change_state
   end
-  defp change_state(%S{state: :play, broadcaster: nil, clock: clock} = zone) do
+  defp change_state(%S{state: :play, broadcaster: nil, ctrl: ctrl} = zone) do
     {:ok, broadcaster} = start_broadcaster(zone)
-    clock = Otis.Broadcaster.Controller.start(clock, broadcaster, broadcaster_latency(zone), @buffer_size)
-    %S{ zone | broadcaster: broadcaster, clock: clock }
+    ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(zone), @buffer_size)
+    %S{ zone | broadcaster: broadcaster, ctrl: ctrl }
   end
   defp change_state(%S{state: :play} = zone) do
     zone
@@ -297,15 +297,15 @@ defmodule Otis.Zone do
     zone_is_stopped(zone)
   end
   defp change_state(%S{state: :stop, broadcaster: broadcaster} = zone) do
-    clock = Otis.Broadcaster.Controller.stop(zone.clock, broadcaster)
-    change_state(%S{ zone | broadcaster: nil, clock: clock })
+    ctrl = Otis.Broadcaster.Controller.stop(zone.ctrl, broadcaster)
+    change_state(%S{ zone | broadcaster: nil, ctrl: ctrl })
   end
   defp change_state(%S{state: :skip, broadcaster: nil} = zone) do
     zone
   end
   defp change_state(%S{id: _id, state: :skip, broadcaster: broadcaster} = zone) do
-    clock = Otis.Broadcaster.Controller.skip(zone.clock, broadcaster)
-    change_state(%S{ zone | broadcaster: nil, clock: clock })
+    ctrl = Otis.Broadcaster.Controller.skip(zone.ctrl, broadcaster)
+    change_state(%S{ zone | broadcaster: nil, ctrl: ctrl })
   end
 
   defp broadcaster_latency(zone) do
