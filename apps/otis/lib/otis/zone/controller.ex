@@ -1,4 +1,14 @@
 defmodule Otis.Zone.Controller do
+  @moduledoc """
+  Sits between a zone and a broadcaster and is responsible for providing the
+  broadcaster with a clock implementation and periodically polling it to
+  trigger the emission of packets at the required intervals.
+
+  This separation of concerns is mostly to allow for providing non-realtime
+  versions of these actions in tests i.e. a non-wallclock based poll and clock
+  implementation.
+  """
+
   use     GenServer
   require Monotonic
 
@@ -7,9 +17,9 @@ defmodule Otis.Zone.Controller do
       :stream_interval,
       :poll_interval,
       :broadcaster,
-      :clock,
       :next_tick_us,
-      :timer
+      :timer,
+      clock: Otis.Zone.Clock.new,
     ]
   end
 
@@ -34,14 +44,10 @@ defmodule Otis.Zone.Controller do
   end
 
   def init([stream_interval, poll_interval]) do
+    # The regularity of our clock events is in the critical path for ensuring
+    # packets are emitted at the correct times.
     Process.flag(:priority, :high)
-    state = %S{
-      stream_interval: stream_interval,
-      poll_interval: poll_interval,
-      broadcaster: nil,
-      clock: Otis.Zone.Clock.new
-    }
-    {:ok, state}
+    {:ok, %S{ stream_interval: stream_interval, poll_interval: poll_interval }}
   end
 
   def handle_cast(:done, %S{timer: nil} = state) do

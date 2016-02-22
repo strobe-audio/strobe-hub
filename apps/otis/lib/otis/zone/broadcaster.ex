@@ -70,6 +70,7 @@ defmodule Otis.Zone.Broadcaster do
     {:ok, state}
   end
 
+  @doc "Pre-fills the buffer - can be used to minimise startup delays in certain circumstances"
   def handle_call(:prebuffer, _from, state) do
     Otis.AudioStream.buffer(state.audio_stream)
     {:reply, :ok, state}
@@ -79,6 +80,7 @@ defmodule Otis.Zone.Broadcaster do
     {:reply, :ok, start(clock, latency, buffer_size, state)}
   end
 
+  @doc "Called periodically by the assigned controller instance to prompt for new packets"
   def handle_call({:emit, interval}, _from, state) do
     state |> potentially_emit(interval) |> monitor_finish(:call)
   end
@@ -87,19 +89,28 @@ defmodule Otis.Zone.Broadcaster do
     state |> potentially_emit(interval) |> monitor_finish(:cast)
   end
 
-  # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
-  # but pushes back any unplayed packets to the source stream so that when
-  # we press play again, we start from where we left off.
+  @doc """
+  This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
+  but pushes back any unplayed packets to the source stream so that when
+  we press play again, we start from where we left off.
+  """
   def handle_cast({:stop, :stop}, state) do
     {:stop, {:shutdown, :stopped}, stop!(state)}
   end
 
-  # This stops the broadcaster & drops any unsent packets
-  # Used during track skipping
+  @doc """
+  This stops the broadcaster & drops any unsent packets
+  Used during track skipping
+  """
   def handle_cast({:stop, :skip}, state) do
     {:stop, {:shutdown, :stopped}, kill!(state)}
   end
 
+  # The internal implementation of the start action called by the
+  # controller. It's responsible for setting up the initial state
+  # and sending out the initial flood of packets that will ensure
+  # the receiver's have a good buffer of packets ready to play but
+  # won't delay the actual start of the music playing.
   defp start(clock, latency, buffer_size, state) do
     Logger.info ">>>>>>>>>>>>> Fast send start......"
     {packets, packet_number} = next_packet(buffer_size, state)
