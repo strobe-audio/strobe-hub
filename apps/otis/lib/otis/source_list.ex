@@ -77,6 +77,18 @@ defmodule Otis.SourceList do
     GenServer.call(list, :list)
   end
 
+  @doc "Silently replaces the contents of the source list"
+  def replace(list, sources) do
+    GenServer.call(list, {:replace, sources})
+  end
+
+  # def move(list, id, new_position) do
+    # can be implemented by
+    # matches = fn({source_id, source}) -> source_id == id end
+    # value = Enum.find(matches)
+    # list |> Enum.reject(matches) |> List.insert_at(new_position, value)
+  # end
+
   ###### GenServer Callbacks
 
   def init({id, sources}) do
@@ -119,6 +131,9 @@ defmodule Otis.SourceList do
 
   def handle_call(:list, _from, %{sources: sources} = state) do
     {:reply, {:ok, sources}, state}
+  end
+  def handle_call({:replace, new_sources}, _from, state) do
+    {:reply, :ok, %{state | sources: new_sources}}
   end
 
   # Converts an insertion position (e.g. -1 for end into

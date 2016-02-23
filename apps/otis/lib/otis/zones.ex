@@ -16,6 +16,9 @@ defmodule Otis.Zones do
   end
 
   @doc "Start an existing zone"
+  def start(%Otis.State.Zone{} = zone) do
+    start(@registry_name, zone.id, zone)
+  end
   def start(id, config) do
     start(@registry_name, id, config)
   end
@@ -75,7 +78,7 @@ defmodule Otis.Zones do
     volume(@registry_name, id)
   end
   def volume(registry, id)
-  when is_pid(registry) and is_binary(id) do
+  when is_binary(id) do
     Otis.Zone.volume(find!(registry, id))
   end
 

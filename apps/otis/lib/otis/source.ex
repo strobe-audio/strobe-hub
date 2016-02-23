@@ -9,6 +9,9 @@ defprotocol Otis.Source do
   @spec id(t) :: binary
   def id(source)
 
+  @spec type(t) :: atom
+  def type(source)
+
   @doc """
   Returns a stream of raw PCM audio data
   """
@@ -34,6 +37,10 @@ defimpl Otis.Source, for: Otis.Source.File do
 
   def id(file) do
     file.id
+  end
+
+  def type(_file) do
+    Otis.Source.File
   end
 
   def open!(%File{path: path}, packet_size_bytes) do

@@ -24,7 +24,10 @@ defmodule RecieversTest do
     Otis.State.Zone.delete_all
     Otis.State.Receiver.delete_all
     {:ok, recs} = Otis.Receivers.start_link(:receivers_test)
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     on_exit fn ->
+      Otis.State.Events.remove_handler(MessagingHandler, self)
+      assert_receive :remove_messaging_handler, 100
       Otis.State.Zone.delete_all
       Otis.State.Receiver.delete_all
       Process.exit(recs, :kill)
@@ -54,21 +57,14 @@ defmodule RecieversTest do
   end
 
   test "broadcasts an event on volume change", context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     receiver = start_receiver(context)
 
     Otis.Receiver.volume receiver, 0.33
     event = {:receiver_volume_change, receiver.id, 0.33}
     assert_receive ^event
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "updates the persisted receiver volume", context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     receiver = start_receiver(context)
 
     Otis.Receiver.volume receiver, 0.33
@@ -78,14 +74,9 @@ defmodule RecieversTest do
     record = Otis.State.Receiver.find receiver.id
 
     assert record.volume == 0.33
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "correctly casts integer volumes", context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     receiver = start_receiver(context)
 
     Otis.Receiver.volume receiver, 1
@@ -95,9 +86,6 @@ defmodule RecieversTest do
     record = Otis.State.Receiver.find receiver.id
 
     assert record.volume == 1.0
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   require Phoenix.ChannelTest
@@ -108,7 +96,6 @@ defmodule RecieversTest do
     # TODO: this actually tests that a websocket connection starts a receiver
     # process with the right id... I need to dupe this test & put it somewhere
     # more meaningful
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     Otis.Zone.volume context.zone, 0.1
     assert_receive {:zone_volume_change, _, 0.1}
     id = Otis.uuid
@@ -125,9 +112,6 @@ defmodule RecieversTest do
     refute is_nil(receiver)
 
     assert_broadcast "join_zone", %{volume: 0.1}
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 end
 

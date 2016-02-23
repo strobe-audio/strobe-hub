@@ -73,6 +73,10 @@ defimpl Otis.Source, for: Peel.Track do
     track.id
   end
 
+  def type(_track) do
+    Peel.Track
+  end
+
   def open!(%Track{path: path}, packet_size_bytes) do
     Elixir.File.stream!(path, [], packet_size_bytes)
   end
@@ -88,5 +92,11 @@ defimpl Otis.Source, for: Peel.Track do
   # TODO: what should this return?
   def metadata(track) do
     track
+  end
+end
+
+defimpl Otis.Source.Origin, for: Peel.Track do
+  def load!(track) do
+    Peel.Track.find(track.id)
   end
 end

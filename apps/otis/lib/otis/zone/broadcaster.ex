@@ -245,21 +245,21 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
   defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: nil} = state) do
-    source_changed(source_id, state)
+    source_changed(source_id, nil, state)
     monitor_source(packets, %S{ state | source_id:  source_id })
   end
   defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: source_id} = state) do
     monitor_source(packets, state)
   end
-  defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: playing_source_id} = state)
-  when source_id != playing_source_id do
-    source_changed(source_id, state)
-    monitor_source(packets, %S{ state | source_id:  source_id })
+  defp monitor_source([{_, _, new_source_id, _} | packets], %S{source_id: old_source_id} = state)
+  when new_source_id != old_source_id do
+    source_changed(new_source_id, old_source_id, state)
+    monitor_source(packets, %S{ state | source_id:  new_source_id })
   end
 
-  defp source_changed(new_source_id, state) do
-    Logger.info "SOURCE CHANGED #{ new_source_id }"
-    Otis.State.Events.notify({:source_changed, state.id, new_source_id})
+  defp source_changed(new_source_id, old_source_id, state) do
+    Logger.info "SOURCE CHANGED #{ old_source_id } => #{ new_source_id }"
+    Otis.State.Events.notify({:source_changed, state.id, old_source_id, new_source_id})
   end
 
   # Take all the in flight packets that we know haven't been played
