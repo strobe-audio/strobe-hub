@@ -59,8 +59,11 @@ defmodule Peel.Model do
         # M |> ilike(:title, "%#{title}%") |> Repo.all
       # end
 
+      def validate_record(nil, id) do
+        raise "not valid"
+      end
       def validate_record(m, id) do
-        # %M{id: ^id} = m
+        m
       end
     end
   end
