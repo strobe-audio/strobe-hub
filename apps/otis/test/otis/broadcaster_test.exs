@@ -155,9 +155,9 @@ defmodule Otis.BroadcasterTest do
     zone_id = Otis.uuid
     {:ok, zone} = Otis.Zones.create(zone_id, "Zone")
     packets1 = (1..10) |> Enum.map(&Integer.to_string(&1, 10))
-    source1 = ["source-1", packets1]
+    source1 = [Otis.uuid, packets1]
     packets2 = (11..20) |> Enum.map(&Integer.to_string(&1, 10))
-    source2 = ["source-2", packets2]
+    source2 = [Otis.uuid, packets2]
     # - a audio stream that emits known packets
     {:ok, stream} = Otis.Test.ArrayAudioStream.start_link([source1, source2], self)
     # - an emitter impl that records the packets emitted (& when!)

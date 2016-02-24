@@ -5,15 +5,14 @@ defmodule Otis.State.Source do
   alias Otis.State.Source
   alias Otis.State.Repo
 
-  @primary_key {:id, :string, []}
-  @foreign_key_type :binary_id
+  @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "sources" do
     field :position,    :integer
     field :source_type, :string
     field :source_id,   :string
 
-    belongs_to :zone, Otis.State.Zone
+    belongs_to :zone, Otis.State.Zone, type: Ecto.UUID
   end
 
   def delete_all do

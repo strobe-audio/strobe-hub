@@ -6,15 +6,14 @@ defmodule Otis.State.Receiver do
   alias Otis.State.Repo
   alias Ecto.Changeset
 
-  @primary_key {:id, :string, []}
-  @foreign_key_type :binary_id
+  @primary_key {:id, :binary_id, autogenerate: true}
   @derive {Poison.Encoder, only: [:id, :name, :volume, :zone_id]}
 
   schema "receivers" do
     field :name, :string
     field :volume, :float, default: 1.0
 
-    belongs_to :zone, Otis.State.Zone
+    belongs_to :zone, Otis.State.Zone, type: Ecto.UUID
   end
 
   def all do

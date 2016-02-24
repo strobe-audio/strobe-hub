@@ -28,8 +28,8 @@ defmodule RecieversTest do
     on_exit fn ->
       Otis.State.Events.remove_handler(MessagingHandler, self)
       assert_receive :remove_messaging_handler, 100
-      Otis.State.Zone.delete_all
       Otis.State.Receiver.delete_all
+      Otis.State.Zone.delete_all
       Process.exit(recs, :kill)
     end
     zone_id = Otis.uuid

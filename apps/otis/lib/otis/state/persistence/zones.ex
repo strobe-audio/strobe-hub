@@ -4,21 +4,28 @@ defmodule Otis.State.Persistence.Zones do
   require Logger
 
   alias Otis.State.Zone
+  alias Otis.State.Repo
 
   def register do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
   def handle_event({:zone_added, id, %{name: name}}, state) do
-    Zone.find(id) |> add_zone(id, name)
+    Repo.transaction fn ->
+      Zone.find(id) |> add_zone(id, name)
+    end
     {:ok, state}
   end
   def handle_event({:zone_removed, id}, state) do
-    Zone.find(id) |> remove_zone(id)
+    Repo.transaction fn ->
+      Zone.find(id) |> remove_zone(id)
+    end
     {:ok, state}
   end
   def handle_event({:zone_volume_change, id, volume}, state) do
-    id |> Zone.find |> volume_change(id, volume)
+    Repo.transaction fn ->
+      id |> Zone.find |> volume_change(id, volume)
+    end
     {:ok, state}
   end
   def handle_event(_evt, state) do

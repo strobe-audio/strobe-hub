@@ -47,31 +47,31 @@ defmodule Otis.Persistence.SourceTest do
 
   setup_all do
     on_exit fn ->
-      Otis.State.Zone.delete_all
       Otis.State.Source.delete_all
+      Otis.State.Zone.delete_all
     end
-    Otis.State.Zone.delete_all
-    Otis.State.Source.delete_all
-    zone_record = Otis.State.Zone.create!(Otis.uuid, "Test Zone")
-    {:ok, zone} = Otis.Zones.start(zone_record)
-    {:ok, source_list} = Otis.Zone.source_list(zone)
-    {:ok,
-      zone: %Otis.Zone{pid: zone, id: zone_record.id},
-      zone_record: zone_record,
-      source_list: source_list,
-    }
+    {:ok, zone_id: Otis.uuid }
   end
 
   setup context do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
-    pid = self
-    :ok = Otis.State.Events.add_handler(MessagingHandler, pid)
-    Otis.SourceList.clear(context.source_list)
+    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+
+    zone_record = Otis.State.Zone.create!(context.zone_id, "Test Zone")
+    {:ok, zone} = Otis.Zones.start(zone_record)
+    {:ok, source_list} = Otis.Zone.source_list(zone)
+
     on_exit fn ->
+      Otis.Zones.destroy!(context.zone_id)
       Otis.State.Events.remove_handler(MessagingHandler, self)
       assert_receive :remove_messaging_handler, 100
     end
-    :ok
+
+    {:ok,
+      zone: %Otis.Zone{pid: zone, id: zone_record.id},
+      source_list: source_list,
+      zone_record: zone_record,
+    }
   end
 
   test "adding a source to a list persists to the db", context do
@@ -161,7 +161,7 @@ defmodule Otis.Persistence.SourceTest do
   test "a skip deletes every unplayed source from the db", context do
     sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new, TestSource.new]
     Otis.SourceList.append_sources(context.source_list, sources)
-    assert_receive {:new_source_created, _}
+    assert_receive {:new_source_created, _}, 200
     {:ok, entries} = Otis.SourceList.list(context.source_list)
     ids = Enum.map(entries, fn({id, _}) -> id end)
     skip_to = Enum.at(ids, -2)

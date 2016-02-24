@@ -25,6 +25,7 @@ defmodule Otis.State.Persistence.Sources do
     Repo.transaction fn ->
       skipped_ids |> Enum.map(&load_source/1) |> sources_skipped(zone_id)
     end
+    {:ok, state}
   end
   def handle_event(_evt, state) do
     {:ok, state}

@@ -6,8 +6,7 @@ defmodule Otis.State.Zone do
   alias Otis.State.Repo
   alias Ecto.Changeset
 
-  @primary_key {:id, :string, []}
-  @foreign_key_type :binary_id
+  @primary_key {:id, :binary_id, autogenerate: true}
   @derive {Poison.Encoder, only: [:id, :name, :volume, :position]}
 
   schema "zones" do

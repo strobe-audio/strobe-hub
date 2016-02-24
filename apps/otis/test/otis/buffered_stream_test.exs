@@ -29,13 +29,13 @@ defmodule Otis.BufferedStreamTest do
   end
 
   test "audio stream returns :stopped immediately if the stream is empty" do
-    source_id = "source-1"
+    source_id = Otis.uuid
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, [])
     :stopped = Otis.AudioStream.frame(audio_stream)
   end
 
   test "audio stream returns all the frames for a short stream" do
-    source_id = "source-1"
+    source_id = Otis.uuid
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, [
       "01",
       "02",
@@ -50,14 +50,14 @@ defmodule Otis.BufferedStreamTest do
   end
 
   test "buffered stream returns :stopped immediately if the stream is empty" do
-    source_id = "source-1"
+    source_id = Otis.uuid
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, [])
     {:ok, buffered_stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
     :stopped = Otis.AudioStream.frame(buffered_stream)
   end
 
   test "buffered stream returns all the frames for a short stream" do
-    source_id = "source-1"
+    source_id = Otis.uuid
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, [
       "01",
       "02",
@@ -74,7 +74,7 @@ defmodule Otis.BufferedStreamTest do
   end
 
   test "buffered stream allows for pre-filling without affecting delivered packets" do
-    source_id = "source-1"
+    source_id = Otis.uuid
     buffer_size = 8
     packets = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, packets)
@@ -89,7 +89,7 @@ defmodule Otis.BufferedStreamTest do
   end
 
   test "calling buffer multiple times does nothing" do
-    source_id = "source-1"
+    source_id = Otis.uuid
     buffer_size = 8
     packets = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, packets)

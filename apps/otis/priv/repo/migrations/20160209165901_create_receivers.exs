@@ -3,10 +3,10 @@ defmodule Otis.State.Repo.Migrations.CreateReceivers do
 
   def change do
     create table(:receivers, primary_key: false) do
-      add :id, :string, primary_key: true
-      add :zone_id, :string
-      add :name, :string
-      add :volume, :float, default: 1.0
+      add :id,      :uuid, primary_key: true
+      add :zone_id, :uuid
+      add :name,    :string
+      add :volume,  :float, default: 1.0
     end
     create index(:receivers, [:zone_id])
   end
