@@ -54,7 +54,7 @@ So much.
 
 **Core:**
 
-- [ ] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on `:strings`
+- [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on `:strings`
   but I think this is a mistake
 - [ ] replace nanomsg with [simple TCP sockets]
   - All receivers connect to the same port? Must send the id
