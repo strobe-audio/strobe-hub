@@ -50,18 +50,39 @@ Synchronised Player
 TODO
 ----
 
-- [x] automatically add player to zone once it's online & synced
-- [x] tell next source in list to prepare (e.g. open files etc) to ensure seamless playback
-- [ ] make janis sockets understand some commands:
-      - [ ] "flsh" i.e. "flush". Discard any unplayed packets that you have
-      - [ ] "stop". Doesn't do anything at present but could be used to switch to a lower-power state
-            i.e. stop the broadcaster process looping
-- [ ] implement 'skip' etc as a broadcaster flush + stop and launch new broadcaster
+So much.
+
+UI
+--
+
+### Clojurescript?
+
+- [re-frame](https://github.com/Day8/re-frame)
+
+Pros:
+
+- interesting ecosystem, full of ideas
+- purely functional like the backend
+
+Cons:
+
+- clojurescript! I hate lisps.
 
 
-- broadcast at 48000 sample rate (a la DVD)? Why?
-  - http://forum.doom9.org/archive/index.php/t-131642.html
-  - http://shibatch.sourceforge.net/
+### React+redux+mori
+
+- https://github.com/reactjs/redux
+- http://swannodette.github.io/mori/
+
+Pros:
+
+- I'll be much more productive - webpack, es2015 etc are things I know
+- Easier access to things like react-canvas (I will have loong lists of things
+  to render)
+
+Cons:
+
+- Not as interesting technically
 
 Ideas
 -----
@@ -82,47 +103,11 @@ http://superuser.com/questions/730288/why-do-some-wifi-routers-block-multicast-p
 
 Simplest solution would be to exclusively use TCP streams for the audio.
 
-But, if we can find a way to detect if UDP multicast between the broadcaster and a specific receiver works (which shouldn't be too hard really) then we can start to do more intelligent things:
-
-- if the UDP multicast doesn't work then fallback to a TCP stream for the receiver
-
-or, for extra points:
-
-work out the UDP multicast connectivity between all nodes (peer to peer). This would allow us to group them into UDP-multicast-able pools. Say for a mixed wifi-wired network there would probably be two pools: the receivers on wifi and those on ethernet.
-
-Assuming that the broadcaster belongs to one of those pools then we need to bridge UDP across to the other(s).
-
-If the receivers in a pool (different from the broadcaster) elect a leader (using raft e.g.) then the broadcaster could use TCP to stream to it (accross the UDP divide) and then it could re-transmit the data to the other receivers in its pool using UDP multicast.
-
-Use alternate protocol instead of raw UDP?
-
-I just saw things:
-
-- http://jungerl.sourceforge.net/ `spread_drv` - "This driver is for Spread, a reliable multicast library"
-  http://www.spread.org/
-
-What about 0MQ (and it's children): http://zeromq.org/bindings:erlang
-Worth reading this: http://zguide.zeromq.org/php:chapter8 - it would be nice if 0MQ could do discovery + transport
-
-How about nanomsg?
-
-- http://nanomsg.org/
-- https://github.com/basho/enm
-
-would need to figure out topology & see how to map zones onto that.
-
-Seems like nanomsg's 'survey' pattern makes this easy!
-
-- http://bravenewgeek.com/tag/service-discovery/
-
-However both 0mq & nanomsg are TCP only, which means I lose the efficiency of
-UDP multicast. Is this a problem? I need to soul search...
-
-
 Getting music onto the server
 -----------------------------
 
 WebDAV is a good solution. Mounts natively in windows & mac and Yaws does it out of the box: http://yaws.hyber.org/
+
 Sound File metadata
 -------------------
 
@@ -132,15 +117,13 @@ Ideas:
 
 - http://www.mega-nerd.com/libsndfile/api.html "Functions for Reading and Writing String Data". Write a quick erlang wrapper around the required bits of the api (not a nif or anything else that might crash the vm... http://www.erlang.org/doc/tutorial/erl_interface.html)
 
+### Need to extract cover art
+
 Bugs
 ----
 
-- [x] can't read aac files (m4a). Replace sox with avconv/ffmpeg (see here re [converting to raw/pcm][])
-- [x] adding sources to a source stream after all sources have played won't start again
-- [ ] can't replay a source
 - [ ] zone should call audio stream for most api functions
 
-[converting to raw/pcm]: http://stackoverflow.com/questions/4854513/can-ffmpeg-convert-audio-to-raw-pcm-if-so-how
 
 Time Sync
 =========
@@ -162,12 +145,15 @@ The problems with this are:
 
 - https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Deployment_Guide/s1-Using_PTP.html
 
-It's not feasible to re-implement the PTP system in Erlang/Elixir - too big a
-job and it just doesn't have the primitives (e.g. low-level access to network
-stack).
+It would be possible to approximate the core actions of PTP in elixir/erlang.
 
+Using https://github.com/travelping/gen_socket I can get low-level access to
+sockets and actually apply `SO_TIMESTAMP` behaviour -- this will get rid of a
+major source of error in the current latency calculations (which are currently
+~30us off on localhost, probably much more on WiFi).
 
-*BUT* precision time sync is vital...
+Wikipedia has a good overview of the protocol, which actually isn't that far off
+what I'm already doing.
 
 [Precise Time Protocol]: http://sourceforge.net/p/ptpd/wiki/Home/
 
