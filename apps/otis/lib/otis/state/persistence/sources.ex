@@ -3,18 +3,28 @@ defmodule Otis.State.Persistence.Sources do
   require Logger
 
   alias Otis.State.Source
+  alias Otis.State.Repo
 
   def register do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
   def handle_event({:new_source, zone_id, position, source}, state) do
-    source |> load_source |> new_source(zone_id, position, source)
+    Repo.transaction fn ->
+      source |> load_source |> new_source(zone_id, position, source)
+    end
     {:ok, state}
   end
   def handle_event({:source_changed, zone_id, old_source_id, _new_source_id}, state) do
-    old_source_id |> load_source |> source_changed(old_source_id, zone_id)
+    Repo.transaction fn ->
+      old_source_id |> load_source |> source_changed(old_source_id, zone_id)
+    end
     {:ok, state}
+  end
+  def handle_event({:sources_skipped, zone_id, skipped_ids}, state) do
+    Repo.transaction fn ->
+      skipped_ids |> Enum.map(&load_source/1) |> sources_skipped(zone_id)
+    end
   end
   def handle_event(_evt, state) do
     {:ok, state}
@@ -48,13 +58,25 @@ defmodule Otis.State.Persistence.Sources do
   defp source_changed(nil, source_id, zone_id) do
     Logger.warn "Change of unknown source #{source_id} Zone:#{ zone_id }"
   end
-  defp source_changed(source, source_id, _zone_id) do
-    source |> Source.delete!
+  defp source_changed(source, source_id, zone_id) do
+    source |> Source.played!(zone_id)
     notify(source_id, :old_source_removed)
   end
 
+  defp sources_skipped([], zone_id) do
+    Source.renumber(zone_id)
+  end
+  defp sources_skipped([nil | sources], zone_id) do
+    Logger.warn "Missing record for source zone:#{ zone_id }"
+    sources_skipped(sources, zone_id)
+  end
+  defp sources_skipped([source | sources], zone_id) do
+    source |> Source.delete!
+    sources_skipped(sources, zone_id)
+  end
+
   defp source_type(source) do
-    Otis.Source.type(source) |> to_string
+    source |> Otis.Source.type |> to_string
   end
 
   defp source_id(source) do

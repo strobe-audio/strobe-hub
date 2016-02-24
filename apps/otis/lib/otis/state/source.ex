@@ -64,4 +64,17 @@ defmodule Otis.State.Source do
   def create!(source) do
     source |> Repo.insert!
   end
+
+  def played!(source, zone_id) do
+    source |> delete!
+    renumber(zone_id)
+  end
+
+  def renumber(zone_id) do
+    zone_id
+    |> for_zone
+    |> Enum.with_index
+    |> Enum.map(fn({s, p}) -> Ecto.Changeset.change(s, position: p) end)
+    |> Enum.each(&Repo.update!/1)
+  end
 end

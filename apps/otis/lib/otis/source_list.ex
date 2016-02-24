@@ -125,8 +125,9 @@ defmodule Otis.SourceList do
 
   # TODO: replace count with the source's list id
   def handle_call({:skip, id}, _from, %{sources: sources} = state) do
-    sources = sources |> Enum.drop_while(fn({source_id, _}) -> source_id != id end)
-    {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
+    {drop, keep} = sources |> Enum.split_while(fn({source_id, _}) -> source_id != id end)
+    Otis.State.Events.notify({:sources_skipped, state.id, Enum.map(drop, &(elem(&1, 0)))})
+    {:reply, {:ok, length(keep)}, %{ state | sources: keep }}
   end
 
   def handle_call(:list, _from, %{sources: sources} = state) do
