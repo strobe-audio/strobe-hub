@@ -1,4 +1,26 @@
 defmodule Peel.Model do
+  def search_version(string) do
+    string
+    |> String.normalize(:nfd)
+    |> String.codepoints
+    |> Enum.reject(&search_version_strip?/1)
+    |> Enum.join
+    |> normalize_whitespace
+    |> String.downcase
+  end
+
+  # http://www.regular-expressions.info/unicode.html
+  @mark_regex ~r/(\p{M}|\p{P}|\p{S}|\p{C})/u
+  @whitespace_regex ~r/\p{Z}+/u
+
+  def search_version_strip?(char) do
+    Regex.match?(@mark_regex, char)
+  end
+
+  def normalize_whitespace(string) do
+    Regex.replace(@whitespace_regex, string, " ")
+  end
+
   defmacro __using__(_opts) do
     quote do
       import Ecto.Query
