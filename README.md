@@ -52,6 +52,36 @@ TODO
 
 So much.
 
+**Core:**
+
+- [ ] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on `:strings`
+  but I think this is a mistake
+- [ ] replace nanomsg with [simple TCP sockets]
+  - All receivers connect to the same port? Must send the id
+  - `Otis.Zone.Socket` has a list of receiver sockets and sends data to all
+    sockets in that list
+  - Zones manage socket instances' list of receiver sockets
+  - A keepalive on the socket? Monitor & pull-down receiver when it drops?
+    Ignoring TCP keepalive stuff as it's complicated, the socket process could
+    just have an interval timer that sends some `PING` packet. This interval
+    could be reset whenever data is actually sent.
+- [ ] move receiver between zones
+- [ ] better receiver behaviour when broadcaster drops out (currently the processes
+  don't crash until the timesync times-out)
+- [ ] replace phoenix websocket connection with raw TCP for control messages?
+  phoenix channel stuff is too complex for my needs. Would need solid
+  keepalive/drop detection (see above re receiver behaviour when b-caster
+  drops)
+- [ ] zones stop when all receievers removed
+
+**Nice to have:**
+
+- [ ] Look at protocols for adding of albums in a single step (would love to have
+  the UI show an album in the source list, which I think involves native
+  support for groups of tracks as entries in source lists)
+
+[simple TCP sockets]: http://stackoverflow.com/questions/4081502/sending-raw-binary-using-tcp-in-erlang
+
 UI
 --
 
@@ -72,7 +102,7 @@ Cons:
 ### React+redux+mori
 
 - https://github.com/reactjs/redux
-- http://swannodette.github.io/mori/
+- http://swannodette.github.io/mori/ - gives me all the enum goodness
 
 Pros:
 
