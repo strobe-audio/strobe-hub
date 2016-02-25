@@ -52,6 +52,9 @@ TODO
 
 So much.
 
+**BUGS**:
+
+
 **Core:**
 
 - [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on `:strings`
@@ -72,6 +75,9 @@ So much.
   phoenix channel stuff is too complex for my needs. Would need solid
   keepalive/drop detection (see above re receiver behaviour when b-caster
   drops)
+- [ ] Fix rebuffering of new receivers
+- [ ] No way of getting the currently playing track... Should be a method on the zone
+- [ ] Move all source list manipulations into the zone
 - [ ] zones stop when all receievers removed
 
 **Nice to have:**
