@@ -17,6 +17,10 @@ defmodule Otis.State.Zone do
     has_many :receivers, Otis.State.Receiver
   end
 
+  def first do
+    Zone |> order_by(:position) |> limit(1) |> Repo.one
+  end
+
   def all do
     Zone |> order_by(:position) |> Repo.all
   end
