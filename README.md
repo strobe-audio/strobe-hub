@@ -57,8 +57,8 @@ So much.
 
 **Core:**
 
-- [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on `:strings`
-  but I think this is a mistake
+- [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on
+	`:string` but I think this is a mistake
 - [ ] replace nanomsg with [simple TCP sockets]
   - All receivers connect to the same port? Must send the id
   - `Otis.Zone.Socket` has a list of receiver sockets and sends data to all
@@ -74,11 +74,20 @@ So much.
 - [ ] replace phoenix websocket connection with raw TCP for control messages?
   phoenix channel stuff is too complex for my needs. Would need solid
   keepalive/drop detection (see above re receiver behaviour when b-caster
-  drops)
-- [ ] Fix rebuffering of new receivers
-- [ ] No way of getting the currently playing track... Should be a method on the zone
+	drops). Should keep with JSON (rather than Erlang encoding) as the message
+	format (because we might end up re-implementing receivers in many languages).
+- [ ] Replace `SourceList.append_source` and `SourceList.append_sources` with
+	`SourceList.append`
+- [ ] No way of getting the currently playing track... Should be a method on
+	the zone. In fact the current source list behaviour needs work. The current
+	song is popped off the source list when played, so it only exists in the db
+	and the zone process. But on re-start un-finished songs just pop back to the
+	top of the source-list. Gotta think of a consistent way to deal with this. It
+	definitely involves some kind of `progress` field on the source record (and a
+	corresponding 'start from this offset' function in the actual playback).
 - [ ] Move all source list manipulations into the zone
 - [ ] zones stop when all receievers removed
+- [ ] Fix rebuffering of new receivers
 
 **Nice to have:**
 
