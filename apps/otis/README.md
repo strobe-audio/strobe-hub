@@ -68,6 +68,7 @@ Otis.SourceList.append_source(ss, source)
 Otis.Zone.play_pause(zone)
 
 {:ok, zone} = Otis.Zones.find "office"
+{:ok, zone} = Otis.Zones.find(Otis.State.Zone.first.id)
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/shubert-piano-quintet.m4a")
 Otis.SourceList.append_source(ss, source)
