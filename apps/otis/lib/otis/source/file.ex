@@ -142,8 +142,7 @@ end
 defimpl Otis.Source.Origin, for: Otis.Source.File do
   alias Otis.Source.File
 
-  def load!(%File{id: id} = source) do
-    IO.inspect [:looad!, id]
+  def load!(%File{id: id}) do
     File.new!(id)
   end
 end
