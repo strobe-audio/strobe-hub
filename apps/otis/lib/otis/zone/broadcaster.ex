@@ -128,7 +128,7 @@ defmodule Otis.Zone.Broadcaster do
   defp start(clock, latency, buffer_size, state) do
     Logger.info ">>>>>>>>>>>>> Fast send start......"
     {packets, packet_number} = next_packet(buffer_size, state)
-    now = Otis.Broadcaster.Clock.time(clock)
+    now = current_time(clock)
     state = %S{ state |
       clock: clock,
       start_time: now,
@@ -186,7 +186,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp potentially_emit(state, interval) do
-    time = Otis.Broadcaster.Clock.time(state.clock)
+    time = current_time(state)
     next_check = time + interval
     diff = (next_check - state.emit_time)
     if (abs(diff) < interval) || (diff > 0) do
@@ -261,7 +261,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp partition_in_flight(state) do
-    time = Otis.Broadcaster.Clock.time(state.clock)
+    time = current_time(state)
     Enum.partition state.in_flight, fn({_, timestamp, _, _}) ->
       timestamp > time
     end
@@ -306,7 +306,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp unplayed_packets(state) do
-    time = Otis.Broadcaster.Clock.time(state.clock)
+    time = current_time(state)
     state |> unplayed_packets(time)
   end
 
@@ -355,5 +355,12 @@ defmodule Otis.Zone.Broadcaster do
         buf = [:stop | buf]
         next_packet(0, buf, packet_number + 1, audio_stream)
     end
+  end
+
+  defp current_time(%S{} = state) do
+    Otis.Broadcaster.Clock.time(state.clock)
+  end
+  defp current_time(%Otis.Zone.Clock{} = clock) do
+    Otis.Broadcaster.Clock.time(clock)
   end
 end
