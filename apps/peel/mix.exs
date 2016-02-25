@@ -38,7 +38,7 @@ defmodule Peel.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [
+    [ {:otis, in_umbrella: true},
       {:uuid, "~> 1.1"},
       {:sqlite_ecto, "~> 1.0.0"},
       {:ecto, "~> 1.0"}
