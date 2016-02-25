@@ -222,7 +222,11 @@ defmodule Otis.Zone do
   end
 
   defp receiver_joined(receiver, %S{state: :play, broadcaster: broadcaster} = zone) do
-    Otis.Zone.Broadcaster.buffer_receiver(broadcaster)
+    # TODO: Fix this rebuffering system. It currently causes complete mayhem
+    # But first see if it's necessary -- without it you just get a ~2s delay
+    # before the music starts. This is ok really, especially if I fix the bug
+    # where you can play a zone with no receivers attached.
+    # Otis.Zone.Broadcaster.buffer_receiver(broadcaster)
     add_receiver_to_zone(receiver, zone)
   end
 

@@ -57,6 +57,11 @@ defmodule Otis.Zone.Broadcaster do
     GenServer.start_link(__MODULE__, opts, [])
   end
 
+  def buffer_receiver(broadcaster) do
+    GenServer.cast(broadcaster, :buffer_receiver)
+  end
+
+
   def init(opts) do
     Logger.info "Starting broadcaster #{inspect opts}"
     # Logger.disable(self)
@@ -96,6 +101,15 @@ defmodule Otis.Zone.Broadcaster do
   """
   def handle_cast({:stop, :stop}, state) do
     {:stop, {:shutdown, :stopped}, stop!(state)}
+  end
+
+  # The resend_packets system just resulted in the newly joined receiver
+  # trying to play very stale packets and hence joining the zone with
+  # very out-of-sync audio.
+  def handle_cast(:buffer_receiver, state) do
+    packets = state |> bufferable_packets
+    resend_packets(packets, state)
+    {:noreply, state}
   end
 
   @doc """
@@ -181,6 +195,18 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
+  defp resend_packets(packets, state) do
+    resend_packets(packets, state, current_time(state) + 2_000, buffer_interval(state.stream_interval))
+  end
+  defp resend_packets([packet | packets], state, emit_time, emit_time_increment) do
+    Logger.info "Resending packet..."
+    emit_packet!(packet, state.emitter, emit_time)
+    resend_packets(packets, state, emit_time + emit_time_increment, emit_time_increment)
+  end
+
+  defp resend_packets([], _state, _emit_time, _emit_time_increment) do
+  end
+
   defp send_next_packet(state) do
     {packets, packet_number} = next_packet(1, state)
     state = %S{state | packet_number: packet_number}
@@ -224,14 +250,14 @@ defmodule Otis.Zone.Broadcaster do
     } |> monitor_in_flight
   end
 
-  defp monitor_in_flight(state) do
-    {unplayed, played} = state |> partition_in_flight
-    monitor_source(played, %S{ state | in_flight: unplayed })
-  end
-
   defp emit_packet!({timestamp, source_id, data}, emitter, emit_time) do
     {:emitter, emitter} = Otis.Broadcaster.Emitter.emit(emitter, emit_time, {timestamp, data})
     {emitter, timestamp, source_id, data}
+  end
+
+  defp monitor_in_flight(state) do
+    {unplayed, played} = state |> partition_in_flight
+    monitor_source(played, %S{ state | in_flight: unplayed })
   end
 
   defp partition_in_flight(state) do
@@ -272,8 +298,19 @@ defmodule Otis.Zone.Broadcaster do
     %S{ state | in_flight: [] }
   end
 
+  defp bufferable_packets(state) do
+    state
+    |> unplayed_packets(current_time(state) + state.latency)
+    |> Enum.map(fn({_, timestamp, source_id, data}) -> {timestamp, source_id, data} end)
+    |> Enum.reverse
+  end
+
   defp unplayed_packets(state) do
     time = Otis.Broadcaster.Clock.time(state.clock)
+    state |> unplayed_packets(time)
+  end
+
+  defp unplayed_packets(state, time) do
     Enum.reject(state.in_flight, fn({_, timestamp, _, _}) -> timestamp <= time end)
   end
 
