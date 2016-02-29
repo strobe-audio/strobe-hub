@@ -8,6 +8,7 @@ defmodule ZonesTest do
   end
 
   setup do
+    MessagingHandler.attach
     {:ok, zones} = Otis.Zones.start_link(:test_zones)
     {:ok, zones: zones}
   end
@@ -39,16 +40,12 @@ defmodule ZonesTest do
   end
 
   test "broadcasts an event when a zone is added", %{zones: zones} do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     id = Otis.uuid
     {:ok, _zone} = Otis.Zones.create(zones, id, "My New Zone")
     assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "broadcasts an event when a zone is removed", %{zones: zones} do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     id = Otis.uuid
     {:ok, zone} = Otis.Zones.create(zones, id, "My New Zone")
     assert_receive {:zone_added, ^id, %{name: "My New Zone"}}, 200
@@ -56,22 +53,14 @@ defmodule ZonesTest do
     Otis.Zones.destroy!(zones, id)
     assert_receive {:zone_removed, ^id}, 200
     assert Process.alive?(zone) == false
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "doesn't broadcast an event when starting a zone", %{zones: zones} do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     id = Otis.uuid
     {:ok, _zone} = Otis.Zones.start(zones, id, %{name: "Something"})
     refute_receive {:zone_added, ^id, _}
 
     assert zone_ids(zones) == [id]
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 end
 
@@ -82,6 +71,7 @@ defmodule Otis.ZoneTest do
   @moduletag :zone
 
   setup do
+    MessagingHandler.attach
     Otis.State.Receiver.delete_all
     Otis.State.Zone.delete_all
     zone_id = Otis.uuid
@@ -143,15 +133,12 @@ defmodule Otis.ZoneTest do
   end
 
   test "removes receiver when it stops", context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     send context.channel, :stop
     receiver_id = context.receiver.id
     assert_receive {:receiver_disconnected, ^receiver_id}
     refute Process.alive?(context.receiver.pid)
     {:ok, receivers} = Otis.Zone.receivers(context.zone)
     assert receivers == []
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "allows you to query the play pause state", %{zone: zone} do
@@ -168,12 +155,9 @@ defmodule Otis.ZoneTest do
   end
 
   test "broadcasts an event when a receiver is added", %{zone: zone, receiver: receiver} = context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     :ok = Otis.Zone.add_receiver(zone, receiver)
     event = {:receiver_added, context.zone_id, {receiver.id}}
     assert_receive ^event
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "can have its volume set", context do
@@ -190,18 +174,14 @@ defmodule Otis.ZoneTest do
   end
 
   test "broadcasts an event when the volume is changed", context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     {:ok, 1.0} = Otis.Zone.volume(context.zone)
     Otis.Zone.volume(context.zone, 0.5)
     {:ok, 0.5} = Otis.Zone.volume(context.zone)
     event = {:zone_volume_change, context.zone_id, 0.5}
     assert_receive ^event
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "does not persist the receivers calculated volume", context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     {:ok, 1.0} = Otis.Zone.volume(context.zone)
     Otis.Zone.volume(context.zone, 0.5)
     {:ok, 0.5} = Otis.Zone.volume(context.zone)
@@ -211,8 +191,6 @@ defmodule Otis.ZoneTest do
     assert zone.volume == 0.5
     receiver = Otis.State.Receiver.find context.receiver.id
     assert receiver.volume == 1.0
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   require Phoenix.ChannelTest
@@ -223,7 +201,6 @@ defmodule Otis.ZoneTest do
     # TODO: this actually tests that a websocket connection starts a receiver
     # process with the right id... I need to dupe this test & put it somewhere
     # more meaningful
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     id = Otis.uuid
     Otis.Receiver.volume context.receiver, 0.3
     {:ok, socket} = connect(Elvis.ReceiverSocket, %{"id" => id})
@@ -246,8 +223,5 @@ defmodule Otis.ZoneTest do
     assert_receive {:zone_volume_change, ^zone_id, 0.1}
 
     assert_broadcast "set_volume", %{volume: 0.05}
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 end

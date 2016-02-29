@@ -19,6 +19,7 @@ defmodule Otis.SourceListTest do
   alias Otis.Source.Test, as: TS
 
   setup do
+    MessagingHandler.attach
     sources = [
       TS.new("a"),
       TS.new("b"),
@@ -102,21 +103,14 @@ defmodule Otis.SourceListTest do
   end
 
   test "emits a state change event when appending a source", %{id: list_id} = context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     source = TS.new("e")
     Otis.SourceList.append_source(context.source_list, source)
     {:ok, sources} = Otis.SourceList.list(context.source_list)
     {source_id, _} = List.last(sources)
     assert_receive {:new_source, ^list_id, 4, {^source_id, %{id: "e"}}}, 200
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "emits a state change event when inserting a source", %{id: list_id} = context do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     source = TS.new("e")
     Otis.SourceList.insert_source(context.source_list, source, 0)
     {:ok, sources} = Otis.SourceList.list(context.source_list)
@@ -128,9 +122,6 @@ defmodule Otis.SourceListTest do
     {:ok, sources} = Otis.SourceList.list(context.source_list)
     {source_id, _} = Enum.at(sources, -3)
     assert_receive {:new_source, ^list_id, 3, {^source_id, %{id: "f"}}}, 200
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 200
   end
 
   # actually I don't think this is necessary -- the source change event emitted

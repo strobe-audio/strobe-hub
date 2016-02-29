@@ -55,7 +55,7 @@ defmodule Otis.Persistence.SourceTest do
 
   setup context do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
+    MessagingHandler.attach
 
     zone_record = Otis.State.Zone.create!(context.zone_id, "Test Zone")
     {:ok, zone} = Otis.Zones.start(zone_record)
@@ -63,8 +63,6 @@ defmodule Otis.Persistence.SourceTest do
 
     on_exit fn ->
       Otis.Zones.destroy!(context.zone_id)
-      Otis.State.Events.remove_handler(MessagingHandler, self)
-      assert_receive :remove_messaging_handler, 100
     end
 
     {:ok,

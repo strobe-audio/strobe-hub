@@ -53,6 +53,10 @@ end
 defmodule MessagingHandler do
   use GenEvent
 
+  def attach do
+    :ok = Otis.State.Events.add_mon_handler(__MODULE__, self)
+  end
+
   def init(parent) do
     {:ok, parent}
   end

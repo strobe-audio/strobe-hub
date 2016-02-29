@@ -21,13 +21,11 @@ defmodule RecieversTest do
   end
 
   setup do
+    MessagingHandler.attach
     Otis.State.Zone.delete_all
     Otis.State.Receiver.delete_all
     {:ok, recs} = Otis.Receivers.start_link(:receivers_test)
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
     on_exit fn ->
-      Otis.State.Events.remove_handler(MessagingHandler, self)
-      assert_receive :remove_messaging_handler, 100
       Otis.State.Receiver.delete_all
       Otis.State.Zone.delete_all
       Process.exit(recs, :kill)

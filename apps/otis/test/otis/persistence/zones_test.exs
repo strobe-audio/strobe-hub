@@ -10,13 +10,12 @@ defmodule Otis.Persistence.ZonesTest do
 
   setup do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
+    MessagingHandler.attach
     :ok
   end
 
 
   test "it persists a new zone" do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     assert Otis.State.Zone.all == []
     id = Otis.uuid
     name = "A new zone"
@@ -25,14 +24,9 @@ defmodule Otis.Persistence.ZonesTest do
     zones = Otis.State.Zone.all
     assert length(zones) == 1
     [%Otis.State.Zone{id: ^id, name: ^name}] = zones
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "it deletes a record when a zone is removed" do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     assert Otis.State.Zone.all == []
     id = Otis.uuid
     name = "A new zone"
@@ -44,14 +38,9 @@ defmodule Otis.Persistence.ZonesTest do
 
     zones = Otis.State.Zone.all
     assert length(zones) == 0
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "doesn't persist an existing zone" do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     assert Otis.State.Zone.all == []
     id = Otis.uuid
     name = "A new zone"
@@ -67,9 +56,6 @@ defmodule Otis.Persistence.ZonesTest do
     zones = Otis.State.Zone.all
     assert length(zones) == 1
     [%Otis.State.Zone{id: ^id, name: ^name}] = zones
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "initializes a zone with the persisted volume", _context do
@@ -85,8 +71,6 @@ defmodule Otis.Persistence.ZonesTest do
   end
 
   test "persists volume changes" do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     assert Otis.State.Zone.all == []
     id = Otis.uuid
     name = "A new zone"
@@ -99,8 +83,5 @@ defmodule Otis.Persistence.ZonesTest do
     zone = Otis.State.Zone.find(id)
 
     assert zone.volume == 0.33
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 end

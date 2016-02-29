@@ -149,6 +149,8 @@ defmodule Otis.BroadcasterTest do
   use   ExUnit.Case
 
   setup do
+    MessagingHandler.attach
+
     latency    = 500
     start_time = 5000
 
@@ -179,15 +181,6 @@ defmodule Otis.BroadcasterTest do
     timestamp = &Otis.Zone.Broadcaster.timestamp_for_packet(&1, start_time, opts.stream_interval, latency)
     emit_time = &(start_time + (&1 * opts.stream_interval))
 
-
-    on_exit fn ->
-      Otis.State.Events.remove_handler(MessagingHandler, self)
-      receive do
-        :remove_messaging_handler -> nil
-      after 100 ->
-        nil
-      end
-    end
 
     {:ok,
       zone_id: zone_id,
@@ -308,8 +301,6 @@ defmodule Otis.BroadcasterTest do
 
   test "it broadcasts a source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = state do
 
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     buffer_size = 5
     poll_interval = round(state.opts.stream_interval / 1)
 
@@ -337,15 +328,9 @@ defmodule Otis.BroadcasterTest do
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
       assert_receive {:emit, _, _}, 200
     end
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "it broadcasts a stream finished event", %{ zone_id: zone_id } = state do
-
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     buffer_size = 5
     poll_interval = round(state.opts.stream_interval / 1)
 
@@ -365,21 +350,13 @@ defmodule Otis.BroadcasterTest do
 
     Otis.Test.SteppingController.step(clock, time + (21 * poll_interval), poll_interval)
     assert_receive {:zone_finished, ^zone_id}, 200
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "it broadcasts a stream stop event", %{ zone_id: zone_id } = state do
-    :ok = Otis.State.Events.add_handler(MessagingHandler, self)
-
     buffer_size = 5
     _clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
     _clock = Otis.Test.SteppingController.stop(state.clock, state.broadcaster)
     assert_receive {:zone_stop, ^zone_id}, 200
-
-    Otis.State.Events.remove_handler(MessagingHandler, self)
-    assert_receive :remove_messaging_handler, 100
   end
 
   test "it rebuffers in-flight packets when stopped", state do
