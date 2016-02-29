@@ -360,7 +360,7 @@ defmodule Otis.Zone.Broadcaster do
   defp current_time(%S{} = state) do
     Otis.Broadcaster.Clock.time(state.clock)
   end
-  defp current_time(%Otis.Zone.Clock{} = clock) do
+  defp current_time(clock) do
     Otis.Broadcaster.Clock.time(clock)
   end
 end
