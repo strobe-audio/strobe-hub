@@ -1,11 +1,27 @@
 
 defmodule MockReceiver do
   alias Otis.ReceiverSocket, as: RS
+  defstruct [:id, :data_socket, :ctrl_socket, :latency]
 
   def connect!(id, latency, opts \\ []) do
-    {:ok, data_socket} = data_connect(id, latency, opts)
-    {:ok, ctrl_socket} = ctrl_connect(id, opts)
-    {:ok, data_socket, ctrl_socket}
+    data_socket = data_connect(id, latency, opts)
+    ctrl_socket = ctrl_connect(id, opts)
+    %__MODULE__{id: id, data_socket: data_socket, ctrl_socket: ctrl_socket, latency: latency}
+  end
+
+  def ctrl_recv(%__MODULE__{ctrl_socket: socket}, timeout \\ 200) do
+    recv(socket, timeout)
+  end
+
+  def data_recv(%__MODULE__{data_socket: socket}, timeout \\ 200) do
+    recv(socket, timeout)
+  end
+
+  defp recv(socket, timeout) do
+    case :gen_tcp.recv(socket, 0, timeout) do
+      {:ok, data} -> {:ok, Poison.decode!(data)}
+      error -> error
+    end
   end
 
   def data_connect(id, latency, opts \\ []) do
@@ -19,7 +35,7 @@ defmodule MockReceiver do
   end
 
   defp tcp_connect(port, params, opts) do
-    opts = Keyword.merge([active: false], opts)
+    opts = Keyword.merge([mode: :binary, active: false], opts)
     {:ok, socket} = :gen_tcp.connect({127,0,0,1}, port, opts)
     :gen_tcp.send(socket, Poison.encode!(params))
     {:ok, socket}

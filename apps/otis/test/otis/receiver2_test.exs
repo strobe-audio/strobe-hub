@@ -46,13 +46,12 @@ defmodule Otis.Receiver2Test do
 
   test "setting the volume sends the right command", _context do
     id = Otis.uuid
-    data_connect(id, 1234)
-    socket = ctrl_connect(id)
+    mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = RS.receiver(id)
     Receiver.volume receiver, 0.13
-    msg = case :gen_tcp.recv(socket, 0, 200) do
-      {:ok, data} -> Poison.decode! data
+    msg = case ctrl_recv(mock) do
+      {:ok, data} -> data
       error ->
         flunk "Failed to read from socket #{ inspect error }"
     end
