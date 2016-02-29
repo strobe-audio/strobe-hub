@@ -21,6 +21,7 @@ defmodule Otis.Supervisor do
       worker(Otis.State.Events, []),
       worker(Otis.State.Persistence, []),
       worker(Otis.PortSequence, [5040, 10]),
+      worker(Otis.ReceiverSocket, []),
 
       :poolboy.child_spec(Otis.EmitterPool, emitter_pool_options, [
         interval: packet_interval,

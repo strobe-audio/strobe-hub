@@ -33,3 +33,7 @@ config :otis, Otis.DNSSD,
   port: 5045,
   multicast_port: 5050
 
+config :otis, Otis.ReceiverSocket,
+  data_port: 5540,
+  ctrl_port: 5541
+

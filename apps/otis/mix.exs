@@ -19,7 +19,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:porcelain, :logger, :dnssd, :monotonic, :enm, :sqlite_ecto, :ecto, :peel],
+    [applications: [:porcelain, :logger, :dnssd, :monotonic, :enm, :sqlite_ecto, :ecto, :peel, :ranch],
      mod: {Otis, []}]
   end
 
@@ -33,8 +33,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [
-      {:porcelain, "~> 2.0"},
+    [ {:porcelain, "~> 2.0"},
       {:dnssd, github: "benoitc/dnssd_erlang"},
       {:poolboy, "~> 1.4"},
       {:monotonic, github: "magnetised/monotonic.ex"},
@@ -43,6 +42,7 @@ defmodule Otis.Mixfile do
       {:uuid, "~> 1.1"},
       {:sqlite_ecto, "~> 1.0.0"},
       {:ecto, "~> 1.0"},
+      {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
       {:faker, "~> 0.5", only: :test},
     ]
   end
