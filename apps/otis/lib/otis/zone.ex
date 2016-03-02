@@ -1,6 +1,7 @@
 defmodule Otis.Zone do
   use     GenServer
   require Logger
+  alias   Otis.Receiver2, as: Receiver
 
   defmodule S do
     @moduledoc "The state struct for Zone processes"
@@ -99,6 +100,11 @@ defmodule Otis.Zone do
     GenServer.call(zone, :get_broadcast_address)
   end
 
+  def volume!(zone) do
+    {:ok, volume} = volume(zone)
+    volume
+  end
+
   def volume(%__MODULE__{pid: pid}) do
     volume(pid)
   end
@@ -151,6 +157,7 @@ defmodule Otis.Zone do
 
   def handle_call({:add_receiver, receiver}, _from, %S{id: id} = zone) do
     Logger.info "Adding receiver to zone #{id} #{inspect receiver}"
+    IO.inspect [:add_receiver, receiver, zone]
     zone = receiver_joined(receiver, zone)
     {:reply, :ok, zone}
   end
@@ -181,7 +188,7 @@ defmodule Otis.Zone do
   def handle_call({:volume, volume}, _from, zone) do
     volume = Otis.sanitize_volume(volume)
     Otis.State.Events.notify({:zone_volume_change, zone.id, volume})
-    Enum.each(zone.receivers, &Otis.Receiver.update_volume/1)
+    Enum.each(zone.receivers, &Receiver.volume_multiplier(&1, volume))
     {:reply, {:ok, volume}, %S{zone | volume: volume}}
   end
 
@@ -196,20 +203,20 @@ defmodule Otis.Zone do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    state = receiver_shutdown(state, pid, Set.to_list(state.receivers))
+    # state = receiver_shutdown(state, pid, Set.to_list(state.receivers))
     {:noreply, state}
   end
 
-  def receiver_shutdown(state, pid, []) do
-    Logger.warn "Unknown receiver shutdown #{ inspect pid } #{ inspect Set.to_list(state.receivers)}"
-    state
-  end
-  def receiver_shutdown(state, pid, [%Otis.Receiver{pid: pid} = receiver | _receivers]) do
-    %S{ state | receivers: Set.delete(state.receivers, receiver) }
-  end
-  def receiver_shutdown(state, pid, [_ | receivers]) do
-    receiver_shutdown(state, pid, receivers)
-  end
+  # def receiver_shutdown(state, pid, []) do
+  #   Logger.warn "Unknown receiver shutdown #{ inspect pid } #{ inspect Set.to_list(state.receivers)}"
+  #   state
+  # end
+  # def receiver_shutdown(state, pid, [%Receiver{pid: pid} = receiver | _receivers]) do
+  #   %S{ state | receivers: Set.delete(state.receivers, receiver) }
+  # end
+  # def receiver_shutdown(state, pid, [_ | receivers]) do
+  #   receiver_shutdown(state, pid, receivers)
+  # end
 
   defp flush(zone) do
     Otis.Stream.flush(zone.audio_stream)
@@ -235,8 +242,13 @@ defmodule Otis.Zone do
   end
 
   defp add_receiver_to_zone(receiver, %S{receivers: receivers} = zone) do
-    Process.monitor(receiver.pid)
-    event!(:receiver_added, {Otis.Receiver.id!(receiver)}, zone)
+    # TODO: re-do this - easier to monitor a pid than create & funnel events?
+    # in which case i'd need some little process 'alive' process that just gets
+    # killed when the receiver goes into !alive? ([:zombie, :dead]) states.
+    # Process.monitor(receiver.pid)
+    # TODO: pass the receiver onto the socket
+    Receiver.volume_multiplier(receiver, zone.volume)
+    event!(:receiver_added, {Receiver.id!(receiver)}, zone)
     %S{ zone | receivers: Set.put(receivers, receiver) }
   end
 
@@ -254,10 +266,7 @@ defmodule Otis.Zone do
   end
 
   defp _receiver_latency(recs) do
-    recs |> Enum.map(fn(rec) ->
-      {:ok, latency} = Otis.Receiver.latency(rec)
-      latency
-    end) |> Enum.max
+    recs |> Enum.map(&Receiver.latency!/1) |> Enum.max
   end
 
   defp stream_finished!(zone) do

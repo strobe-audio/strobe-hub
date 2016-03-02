@@ -11,6 +11,14 @@ defmodule Otis.Receiver2 do
     struct(receiver, extract_params(values))
   end
 
+  def id!(receiver) do
+    receiver.id
+  end
+
+  def latency!(receiver) do
+    receiver.latency
+  end
+
   @doc "An alive receiver has an id, and both a data & control connection"
   def alive?(%R{id: id, data_socket: data_socket, ctrl_socket: ctrl_socket})
   when is_binary(id) and not is_nil(data_socket) and not is_nil(ctrl_socket) do
@@ -91,13 +99,20 @@ defmodule Otis.Receiver2 do
     Otis.ReceiverSocket.ControlConnection.get_volume_multiplier(ctrl_socket)
   end
 
-  def join_zone(receiver, zone, configuration) do
-    # need to actually join the zone here
-    # the receivers need a set_volume/3 function
-    # set_volume(receiver, receiver_volume, zone_volume)
-    # so that the receiver volume setting can be persisted
-    # without any effect from its containing zone
-    IO.inspect [:join_zone, receiver, zone, configuration]
+  # TODO: what else do we need to do here? actions remaining
+  # - tell the zone we belong to it, so the zone:
+  #   - adds the receiver to its list (for volume changes)
+  #   - adds the receiver to its socket (for audio changes)
+  # - emit some zone change event (for persistence)
+  #
+  @doc "Change the zone for an already running & configured receiver"
+  def join_zone(receiver, zone) do
+    Otis.Zone.add_receiver(zone, receiver)
+  end
+  @doc "Configure the receiver from the db and join it to the zone"
+  def configure_and_join_zone(receiver, state, zone) do
+    set_volume(receiver, state.volume, Otis.Zone.volume!(zone))
+    join_zone(receiver, zone)
   end
 
   def configure(receiver, %Otis.State.Receiver{volume: volume} = _config) do

@@ -19,7 +19,7 @@ defmodule MockReceiver do
 
   defp recv(socket, timeout) do
     case :gen_tcp.recv(socket, 0, timeout) do
-      {:ok, data} -> {:ok, Poison.decode!(data)}
+      {:ok, data} -> Poison.decode(data)
       error -> error
     end
   end
@@ -35,7 +35,7 @@ defmodule MockReceiver do
   end
 
   defp tcp_connect(port, params, opts) do
-    opts = Keyword.merge([mode: :binary, active: false], opts)
+    opts = Keyword.merge([mode: :binary, active: false, packet: 4], opts)
     {:ok, socket} = :gen_tcp.connect({127,0,0,1}, port, opts)
     :gen_tcp.send(socket, Poison.encode!(params))
     {:ok, socket}

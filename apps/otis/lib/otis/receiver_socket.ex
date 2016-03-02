@@ -16,7 +16,7 @@ defmodule Otis.ReceiverSocket do
         def init(ref, socket, transport, opts \\ []) do
           :ok = :proc_lib.init_ack({:ok, self})
           :ok = :ranch.accept_ack(ref)
-          :ok = transport.setopts(socket, [active: :once])
+          :ok = transport.setopts(socket, [packet: 4, active: :once])
           state = %S{
             socket: socket,
             transport: transport,
@@ -56,7 +56,6 @@ defmodule Otis.ReceiverSocket do
         def send_data(data, state) do
           state.transport.send(state.socket, data)
         end
-
       end
     end
   end
@@ -196,7 +195,7 @@ defmodule Otis.ReceiverSocket do
   end
 
   defp start_listener(name, port, protocol) do
-    :ranch.start_listener(name, 10, :ranch_tcp, [port: port, packet: 4], protocol, [supervisor: @name])
+    :ranch.start_listener(name, 10, :ranch_tcp, [port: port], protocol, [supervisor: @name])
   end
 
   def handle_cast({:connect, :data, id, pid, params}, %S{receivers: receivers} = state) do

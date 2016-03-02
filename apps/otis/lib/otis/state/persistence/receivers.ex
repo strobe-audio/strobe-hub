@@ -26,9 +26,10 @@ defmodule Otis.State.Persistence.Receivers do
   #   - or a :start call if the receiver existed
   # = once receiver has started it broadcasts an event which arrives back here
   #   and allows us to persist any changes
-  def handle_event({:receiver_connected, id, channel, connection_info}, state) do
+  # def handle_event({:receiver_connected, id, channel, connection_info}, state) do
+  def handle_event({:receiver_connected, id, recv}, state) do
     Otis.State.Repo.transaction(fn ->
-      id |> receiver |> receiver_connected(id, channel, connection_info)
+      id |> receiver |> receiver_connected(id, recv)
     end)
     {:ok, state}
   end
@@ -51,14 +52,17 @@ defmodule Otis.State.Persistence.Receivers do
     Otis.State.Events.notify({:receiver_joined, id, receiver.zone_id, receiver})
   end
 
-  # if this receiver is not in the db, receiver at this point is nil
-  defp receiver_connected(nil, id, channel, connection_info) do
-    receiver = create_receiver(zone, id)
-    receiver_connected(receiver, id, channel, connection_info)
+  # if neither the receiver nor the given zone are in the db, receiver at this
+  # point is nil
+  defp receiver_connected(:error, _id, _recv) do
   end
-  defp receiver_connected(receiver, id, channel, connection_info) do
-    zone = zone(receiver) |> zone_process
-    Otis.Receivers.start(id, zone, receiver, channel, connection_info)
+  defp receiver_connected(nil, id, receiver) do
+    receiver_state = create_receiver(zone, id)
+    receiver_connected(receiver_state, id, receiver)
+  end
+  defp receiver_connected(receiver_state, id, receiver) do
+    zone = zone(receiver_state) |> zone_process
+    Otis.Receiver2.configure_and_join_zone(receiver, receiver_state, zone)
   end
 
   defp volume_change(nil, id, _volume) do
@@ -68,6 +72,10 @@ defmodule Otis.State.Persistence.Receivers do
     Receiver.volume(receiver, volume)
   end
 
+  defp create_receiver(nil, id) do
+    Logger.warn "Attempt to create receiver #{id} with a nil zone"
+    :error
+  end
   defp create_receiver(zone, id) do
     Receiver.create!(zone, id: id, name: invented_name(id))
   end
