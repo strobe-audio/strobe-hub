@@ -1,8 +1,8 @@
 defmodule Otis.Receiver2Test do
   use ExUnit.Case
 
-  alias Otis.ReceiverSocket, as: RS
-  alias Otis.Receiver2, as: Receiver
+  alias  Otis.ReceiverSocket, as: RS
+  alias  Otis.Receiver2, as: Receiver
   import MockReceiver
 
   setup do
@@ -50,12 +50,70 @@ defmodule Otis.Receiver2Test do
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = RS.receiver(id)
     Receiver.volume receiver, 0.13
-    msg = case ctrl_recv(mock) do
-      {:ok, data} -> data
-      error ->
-        flunk "Failed to read from socket #{ inspect error }"
-    end
+    assert_receive {:receiver_volume_change, ^id, 0.13}
+    {:ok, msg} = ctrl_recv(mock)
     assert msg == %{ "volume" => 0.13 }
+    {:ok, 0.13} = Receiver.volume receiver
+  end
+
+  test "setting the volume multiplier sends the right command", _context do
+    id = Otis.uuid
+    mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, ^id, _}
+    {:ok, receiver} = RS.receiver(id)
+
+    Receiver.volume receiver, 0.13
+    assert_receive {:receiver_volume_change, ^id, 0.13}
+    {:ok, msg} = ctrl_recv(mock)
+    assert msg == %{ "volume" => 0.13 }
+
+    Receiver.volume_multiplier receiver, 0.5
+    refute_receive {:receiver_volume_change, ^id, _}
+    {:ok, msg} = ctrl_recv(mock)
+    assert msg == %{ "volume" => 0.065 }
+    {:ok, 0.5} = Receiver.volume_multiplier receiver
+
+    Receiver.volume receiver, 0.6
+    assert_receive {:receiver_volume_change, ^id, 0.6}
+    {:ok, msg} = ctrl_recv(mock)
+    assert msg == %{ "volume" => 0.3 }
+
+    Receiver.volume_multiplier receiver, 0.1
+    refute_receive {:receiver_volume_change, ^id, _}
+    {:ok, msg} = ctrl_recv(mock)
+    assert msg == %{ "volume" => 0.06 }
+  end
+
+  test "setting the volume & multiplier simultaneously", _context do
+    id = Otis.uuid
+    mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, ^id, _}
+    {:ok, receiver} = RS.receiver(id)
+
+    Receiver.volume receiver, 0.3, 0.1
+    assert_receive {:receiver_volume_change, ^id, 0.3}
+    {:ok, msg} = ctrl_recv(mock)
+    assert msg == %{ "volume" => 0.03 }
+
+    Receiver.volume receiver, 0.1, 0.3
+    assert_receive {:receiver_volume_change, ^id, 0.1}
+    # Could assert that no volume change message is sent, but really, who cares!?
+    {:ok, msg} = ctrl_recv(mock)
+    assert msg == %{ "volume" => 0.03 }
+
+    Receiver.volume receiver, 0.9, 0.1
+    assert_receive {:receiver_volume_change, ^id, 0.9}
+    {:ok, %{ "volume" => volume }} = ctrl_recv(mock)
+    assert_in_delta volume, 0.09, 0.0001
+  end
+
+  test "broadcasts an event on volume change" do
+    id = Otis.uuid
+    connect!(id, 1234)
+    assert_receive {:receiver_connected, ^id, _}
+    {:ok, receiver} = RS.receiver(id)
+    Receiver.volume receiver, 0.13
+    assert_receive {:receiver_volume_change, id, 0.13}
   end
 
   test "the receiver remembers its volume setting", _context do
