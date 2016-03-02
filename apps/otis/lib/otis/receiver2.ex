@@ -1,5 +1,7 @@
 defmodule Otis.Receiver2 do
-  defstruct [:id, :data_socket, :ctrl_socket, :latency]
+  @moduledoc "Represents a receiver"
+
+  defstruct [:id, :data, :ctrl, :latency]
 
   alias __MODULE__, as: R
 
@@ -20,8 +22,8 @@ defmodule Otis.Receiver2 do
   end
 
   @doc "An alive receiver has an id, and both a data & control connection"
-  def alive?(%R{id: id, data_socket: data_socket, ctrl_socket: ctrl_socket})
-  when is_binary(id) and not is_nil(data_socket) and not is_nil(ctrl_socket) do
+  def alive?(%R{id: id, data: data, ctrl: ctrl})
+  when is_binary(id) and not is_nil(data) and not is_nil(ctrl) do
     true
   end
   def alive?(_receiver) do
@@ -29,8 +31,9 @@ defmodule Otis.Receiver2 do
   end
 
   @doc "An zombie receiver still has one valid connection, either data or control"
-  def zombie?(%R{id: id, data_socket: data_socket, ctrl_socket: ctrl_socket})
-  when is_binary(id) and (not(is_nil(data_socket)) or not(is_nil(ctrl_socket))) do
+
+  def zombie?(%R{id: id, data: data, ctrl: ctrl})
+  when is_binary(id) and (not(is_nil(data)) or not(is_nil(ctrl))) do
     true
   end
   def zombie?(_receiver) do
@@ -38,9 +41,9 @@ defmodule Otis.Receiver2 do
   end
 
   @doc "A dead receiver has neither a data nor control connection"
-  def dead?(%R{data_socket: data_socket, ctrl_socket: ctrl_socket})
-  when (is_nil(data_socket) and is_nil(ctrl_socket))
-  do
+
+  def dead?(%R{data: data, ctrl: ctrl})
+  when (is_nil(data) and is_nil(ctrl)) do
     true
   end
   def dead?(_receiver) do
@@ -51,8 +54,8 @@ defmodule Otis.Receiver2 do
     set_volume(receiver, Otis.sanitize_volume(volume), Otis.sanitize_volume(multiplier))
   end
 
-  defp set_volume(%R{ctrl_socket: ctrl_socket} = receiver, volume, multiplier) do
-    Otis.ReceiverSocket.ControlConnection.set_volume(ctrl_socket, volume, multiplier)
+  defp set_volume(%R{ctrl: {pid, _socket}} = receiver, volume, multiplier) do
+    Otis.ReceiverSocket.ControlConnection.set_volume(pid, volume, multiplier)
     receiver
   end
 
@@ -60,8 +63,8 @@ defmodule Otis.Receiver2 do
     set_volume(receiver, Otis.sanitize_volume(volume))
   end
 
-  defp set_volume(%R{ctrl_socket: ctrl_socket} = receiver, volume) do
-    Otis.ReceiverSocket.ControlConnection.set_volume(ctrl_socket, volume)
+  defp set_volume(%R{ctrl: {pid, _socket}} = receiver, volume) do
+    Otis.ReceiverSocket.ControlConnection.set_volume(pid, volume)
     receiver
   end
 
@@ -69,8 +72,8 @@ defmodule Otis.Receiver2 do
     get_volume(receiver)
   end
 
-  defp get_volume(%R{ctrl_socket: ctrl_socket}) do
-    Otis.ReceiverSocket.ControlConnection.get_volume(ctrl_socket)
+  defp get_volume(%R{ctrl: {pid, _socket}}) do
+    Otis.ReceiverSocket.ControlConnection.get_volume(pid)
   end
 
   @doc """
@@ -87,16 +90,16 @@ defmodule Otis.Receiver2 do
     set_volume_multiplier(receiver, Otis.sanitize_volume(multiplier))
   end
 
-  defp set_volume_multiplier(%R{ctrl_socket: ctrl_socket}, multiplier) do
-    Otis.ReceiverSocket.ControlConnection.set_volume_multiplier(ctrl_socket, multiplier)
+  defp set_volume_multiplier(%R{ctrl: {pid, _socket}}, multiplier) do
+    Otis.ReceiverSocket.ControlConnection.set_volume_multiplier(pid, multiplier)
   end
 
   def volume_multiplier(receiver) do
     get_volume_multiplier(receiver)
   end
 
-  defp get_volume_multiplier(%R{ctrl_socket: ctrl_socket}) do
-    Otis.ReceiverSocket.ControlConnection.get_volume_multiplier(ctrl_socket)
+  defp get_volume_multiplier(%R{ctrl: {pid, _socket}}) do
+    Otis.ReceiverSocket.ControlConnection.get_volume_multiplier(pid)
   end
 
   # TODO: what else do we need to do here? actions remaining

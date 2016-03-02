@@ -36,13 +36,13 @@ defmodule Otis.ReceiverSocket do
           {:noreply, state}
         end
         def handle_info({:tcp_closed, _socket}, %S{id: id} = state) do
-          GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id, self})
+          GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id})
           {:noreply, state}
         end
 
         def process_message({id, params}, state) do
           Logger.info "Receiver connection #{unquote(opts[:type])} #{id} => #{ inspect params }"
-          GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, self, params})
+          GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self, state.socket}, params})
           %S{ state | id: id }
         end
         def process_message(_msg, state) do
@@ -67,7 +67,7 @@ defmodule Otis.ReceiverSocket do
   end
 
   defmodule ControlConnection do
-    use Protocol, type: :control
+    use Protocol, type: :ctrl
 
     def set_volume(connection, volume) do
       GenServer.cast(connection, {:set_volume, volume})
@@ -198,22 +198,22 @@ defmodule Otis.ReceiverSocket do
     :ranch.start_listener(name, 10, :ranch_tcp, [port: port], protocol, [supervisor: @name])
   end
 
-  def handle_cast({:connect, :data, id, pid, params}, %S{receivers: receivers} = state) do
-    state = connect(:data, id, pid, params, Map.get(state.receivers, id), state)
+  def handle_cast({:connect, :data, id, {pid, socket}, params}, %S{receivers: receivers} = state) do
+    state = connect(:data, id, {pid, socket}, params, Map.get(state.receivers, id), state)
     # IO.inspect [:connect, :data, state]
     {:noreply, state}
   end
-  def handle_cast({:connect, :control, id, pid, params}, state) do
-    state = connect(:control, id, pid, params, Map.get(state.receivers, id), state)
-    # IO.inspect [:connect, :control, state]
+  def handle_cast({:connect, :ctrl, id, {pid, socket}, params}, state) do
+    state = connect(:ctrl, id, {pid, socket}, params, Map.get(state.receivers, id), state)
+    # IO.inspect [:connect, :ctrl, state]
     {:noreply, state}
   end
-  def handle_cast({:disconnect, :data, id, pid}, state) do
-    state = disconnect(:data, id, pid, Map.get(state.receivers, id), state)
+  def handle_cast({:disconnect, :data, id}, state) do
+    state = disconnect(:data, id, Map.get(state.receivers, id), state)
     {:noreply, state}
   end
-  def handle_cast({:disconnect, :control, id, pid}, state) do
-    state = disconnect(:control, id, pid, Map.get(state.receivers, id), state)
+  def handle_cast({:disconnect, :ctrl, id}, state) do
+    state = disconnect(:ctrl, id, Map.get(state.receivers, id), state)
     {:noreply, state}
   end
 
@@ -225,28 +225,28 @@ defmodule Otis.ReceiverSocket do
     {:reply, Map.fetch(receivers, id), state}
   end
 
-  def connect(:control, id, socket, params, nil, state) do
-    Receiver.new(id: id, ctrl_socket: socket, params: params) |> update_connect(id, state)
+  def connect(:ctrl, id, {pid, socket}, params, nil, state) do
+    Receiver.new(id: id, ctrl: {pid, socket}, params: params) |> update_connect(id, state)
   end
-  def connect(:control, id, socket, params, receiver, state) do
-    Receiver.update(receiver, ctrl_socket: socket, params: params) |> update_connect(id, state)
-  end
-
-  def connect(:data, id, socket, params, nil, state) do
-    Receiver.new(id: id, data_socket: socket, params: params) |> update_connect(id, state)
-  end
-  def connect(:data, id, socket, params, receiver, state) do
-    Receiver.update(receiver, data_socket: socket, params: params) |> update_connect(id, state)
+  def connect(:ctrl, id, {pid, socket}, params, receiver, state) do
+    Receiver.update(receiver, ctrl: {pid, socket}, params: params) |> update_connect(id, state)
   end
 
-  def disconnect(type, id, pid, nil, state) do
+  def connect(:data, id, {pid, socket}, params, nil, state) do
+    Receiver.new(id: id, data: {pid, socket}, params: params) |> update_connect(id, state)
+  end
+  def connect(:data, id, {pid, socket}, params, receiver, state) do
+    Receiver.update(receiver, data: {pid, socket}, params: params) |> update_connect(id, state)
+  end
+
+  def disconnect(type, id, nil, state) do
     Logger.warn "#{ inspect type } disconnect from unknown receiver #{ id }"
   end
-  def disconnect(:data, id, pid, receiver, state) do
-    Receiver.update(receiver, data_socket: nil) |> update_disconnect(id, state)
+  def disconnect(:data, id, receiver, state) do
+    Receiver.update(receiver, data: nil) |> update_disconnect(id, state)
   end
-  def disconnect(:control, id, pid, receiver, state) do
-    Receiver.update(receiver, ctrl_socket: nil) |> update_disconnect(id, state)
+  def disconnect(:ctrl, id, receiver, state) do
+    Receiver.update(receiver, ctrl: nil) |> update_disconnect(id, state)
   end
 
   def update_connect(receiver, id, state) do
