@@ -25,6 +25,26 @@ defmodule Otis.Persistence.ReceiversTest do
     assert msg == %{ "volume" => (0.34 * context.zone_volume) }
   end
 
-  test "receiver volume changes get persisted to the db"
-  test "receivers get attached to the assigned zone"
+  test "receiver volume changes get persisted to the db", context do
+    id = Otis.uuid
+    zone = Otis.State.Zone.find(context.zone.id)
+    record = Otis.State.Receiver.create!(zone, id: id, name: "Receiver", volume: 0.34)
+    mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, ^id, _}
+    Otis.State.Events.sync_notify {:receiver_volume_change, id, 0.98}
+    assert_receive {:receiver_volume_change, ^id, 0.98}
+    record = Otis.State.Receiver.find id
+    assert record.volume == 0.98
+  end
+
+  test "receivers get attached to the assigned zone", context do
+    id = Otis.uuid
+    zone = Otis.State.Zone.find(context.zone.id)
+    record = Otis.State.Receiver.create!(zone, id: id, name: "Receiver", volume: 0.34)
+    mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, ^id, _}
+    {:ok, receiver} = RS.receiver(id)
+    {:ok, receivers} = Otis.Zone.receivers context.zone
+    assert receivers == [receiver]
+  end
 end

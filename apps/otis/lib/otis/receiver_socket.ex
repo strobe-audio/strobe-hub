@@ -1,5 +1,6 @@
 defmodule Otis.ReceiverSocket do
   defmodule Protocol do
+    @moduledoc false
     defmacro __using__(opts) do
       quote do
         use     GenServer
@@ -16,7 +17,7 @@ defmodule Otis.ReceiverSocket do
         def init(ref, socket, transport, opts \\ []) do
           :ok = :proc_lib.init_ack({:ok, self})
           :ok = :ranch.accept_ack(ref)
-          :ok = transport.setopts(socket, [packet: 4, active: :once])
+          :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once])
           state = %S{
             socket: socket,
             transport: transport,
@@ -33,11 +34,19 @@ defmodule Otis.ReceiverSocket do
         end
 
         def handle_info({:tcp_closed, _socket}, %S{id: nil} = state) do
-          {:noreply, state}
+          {:stop, :normal, state}
         end
         def handle_info({:tcp_closed, _socket}, %S{id: id} = state) do
           GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id})
-          {:noreply, state}
+          {:stop, :normal, state}
+        end
+
+        def handle_info({:tcp_error, _, reason}, %S{id: nil} = state) do
+          {:stop, reason, state}
+        end
+        def handle_info({:tcp_error, _, reason}, %S{id: id} = state) do
+          GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id})
+          {:stop, reason, state}
         end
 
         def process_message({id, params}, state) do
@@ -124,7 +133,7 @@ defmodule Otis.ReceiverSocket do
     defp monitor_volume(state, _values, volume, volume) do
       state
     end
-    defp monitor_volume(state, values, initial_volume, final_volume) do
+    defp monitor_volume(state, values, _initial_volume, final_volume) do
       volume = calculated_volume(final_volume)
       %{ volume: volume } |> Poison.encode! |> send_data(state)
       notify_volume(state, values)
@@ -198,22 +207,13 @@ defmodule Otis.ReceiverSocket do
     :ranch.start_listener(name, 10, :ranch_tcp, [port: port], protocol, [supervisor: @name])
   end
 
-  def handle_cast({:connect, :data, id, {pid, socket}, params}, %S{receivers: receivers} = state) do
-    state = connect(:data, id, {pid, socket}, params, Map.get(state.receivers, id), state)
-    # IO.inspect [:connect, :data, state]
+  def handle_cast({:connect, type, id, {pid, socket}, params}, state) do
+    state = connect(type, id, {pid, socket}, params, Map.get(state.receivers, id), state)
     {:noreply, state}
   end
-  def handle_cast({:connect, :ctrl, id, {pid, socket}, params}, state) do
-    state = connect(:ctrl, id, {pid, socket}, params, Map.get(state.receivers, id), state)
-    # IO.inspect [:connect, :ctrl, state]
-    {:noreply, state}
-  end
-  def handle_cast({:disconnect, :data, id}, state) do
-    state = disconnect(:data, id, Map.get(state.receivers, id), state)
-    {:noreply, state}
-  end
-  def handle_cast({:disconnect, :ctrl, id}, state) do
-    state = disconnect(:ctrl, id, Map.get(state.receivers, id), state)
+
+  def handle_cast({:disconnect, type, id}, state) do
+    state = disconnect(type, id, Map.get(state.receivers, id), state)
     {:noreply, state}
   end
 
@@ -239,7 +239,7 @@ defmodule Otis.ReceiverSocket do
     Receiver.update(receiver, data: {pid, socket}, params: params) |> update_connect(id, state)
   end
 
-  def disconnect(type, id, nil, state) do
+  def disconnect(type, id, nil, _state) do
     Logger.warn "#{ inspect type } disconnect from unknown receiver #{ id }"
   end
   def disconnect(:data, id, receiver, state) do
@@ -275,7 +275,7 @@ defmodule Otis.ReceiverSocket do
     Otis.State.Events.notify({:receiver_connected, receiver.id, receiver})
     state
   end
-  def start_valid_receiver(state, receiver, false) do
+  def start_valid_receiver(state, _receiver, false) do
     state
   end
 
@@ -283,7 +283,7 @@ defmodule Otis.ReceiverSocket do
     Otis.State.Events.notify({:receiver_disconnected, receiver.id, receiver})
     state
   end
-  def disable_zombie_receiver(state, receiver, false) do
+  def disable_zombie_receiver(state, _receiver, false) do
     state
   end
 
@@ -291,7 +291,7 @@ defmodule Otis.ReceiverSocket do
     Otis.State.Events.notify({:receiver_offline, receiver.id, receiver})
     %{state | receivers: Map.delete(state.receivers, receiver.id)}
   end
-  def remove_dead_receiver(state, receiver, false) do
+  def remove_dead_receiver(state, _receiver, false) do
     state
   end
 end

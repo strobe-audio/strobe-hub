@@ -1,19 +1,15 @@
 defmodule Otis.Zone.Socket do
-  use GenServer
+  use     GenServer
   require Logger
+  alias   Otis.Receiver2, as: Receiver
 
-  def start_link(address) do
-    GenServer.start_link(__MODULE__, address, [])
+  def start_link(id) do
+    GenServer.start_link(__MODULE__, id, [])
   end
 
-  def init(port) do
-    Logger.debug "Starting socket with address #{bind(port)}"
-    {:ok, socket} = :enm.pub(bind: bind(port), nodelay: true)
-    {:ok, {socket, port, 1}}
-  end
-
-  def bind(port) do
-    "tcp://*:#{port}"
+  def init(id) do
+    Logger.debug "Starting socket with id #{id}"
+    {:ok, {id, [], 0}}
   end
 
   def send(pid, timestamp, data) do
@@ -24,26 +20,71 @@ defmodule Otis.Zone.Socket do
     GenServer.cast(pid, :stop)
   end
 
+  def add_receiver(pid, receiver) do
+    GenServer.cast(pid, {:add_receiver, receiver})
+  end
+
+  def remove_receiver(pid, receiver) do
+    GenServer.cast(pid, {:remove_receiver, receiver})
+  end
+
+  def receivers(pid) do
+    GenServer.call(pid, :receivers)
+  end
+
+  def handle_call(:receivers, _from, {_, receivers, _} = state) do
+    {:reply, {:ok, receivers}, state}
+  end
+
   def handle_cast({:send, _timestamp, :stopped}, state) do
     {:noreply, state}
   end
 
-  def handle_cast({:send, timestamp, audio}, {socket, port, count} = _state) do
+  def handle_cast({:send, timestamp, audio}, {id, receivers, count} = _state) do
     packet = <<
       count     :: size(64)-little-unsigned-integer,
       timestamp :: size(64)-little-signed-integer,
       audio     :: binary
     >>
-    _send(socket, packet)
-    {:noreply, {socket, port, count + 1}}
+    _send(receivers, packet)
+    {:noreply, {id, receivers, count + 1}}
   end
 
-  def handle_cast(:stop, {socket, port, _count} = _state) do
-    _send(socket, <<"STOP">>)
-    {:noreply, {socket, port, 0}}
+  def handle_cast(:stop, {id, receivers, _count} = _state) do
+    _send(receivers, <<"STOP">>)
+    {:noreply, {id, receivers, 0}}
   end
 
-  defp _send(socket, data) do
-    :enm.send(socket, data)
+  def handle_cast({:add_receiver, receiver}, {id, receivers, count}) do
+    Receiver.monitor(receiver)
+    {:noreply, {id, [receiver | receivers], count}}
+  end
+
+  def handle_cast({:remove_receiver, receiver}, state) do
+    state = state |> _remove_receiver(receiver)
+    {:noreply, state}
+  end
+
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
+    state = state |> _remove_receiver(pid)
+    {:noreply, state}
+  end
+
+  defp _remove_receiver(state, nil) do
+    state
+  end
+  defp _remove_receiver({_, receivers, _} = state, pid) when is_pid(pid) do
+    _remove_receiver(state, Receiver.matching_pid(receivers, pid))
+  end
+  defp _remove_receiver({id, receivers, count}, receiver) do
+    receivers = receivers |> Enum.reject(&Receiver.equal?(&1, receiver))
+    {id, receivers, count}
+  end
+
+  defp _send([], data) do
+    nil
+  end
+  defp _send([receiver | receivers], data) do
+    Receiver.send_data(receiver, data)
   end
 end

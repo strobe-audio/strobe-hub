@@ -8,7 +8,7 @@ defmodule Otis.Zone do
     defstruct [
       id:                nil,
       source_list:       nil,
-      receivers:         HashSet.new,
+      receivers:         MapSet.new,
       state:             :stop,
       broadcaster:       nil,
       ctrl:              nil,
@@ -65,8 +65,18 @@ defmodule Otis.Zone do
     GenServer.call(zone, :id)
   end
 
+  def receivers(%__MODULE__{pid: pid} = _zone) do
+    receivers(pid)
+  end
   def receivers(zone) do
     GenServer.call(zone, :receivers)
+  end
+
+  def socket(%__MODULE__{pid: pid} = _zone) do
+    socket(pid)
+  end
+  def socket(zone) do
+    GenServer.call(zone, :socket)
   end
 
   def add_receiver(%__MODULE__{pid: pid} = _zone, receiver) do
@@ -155,9 +165,12 @@ defmodule Otis.Zone do
     {:reply, {:ok, Set.to_list(receivers)}, zone}
   end
 
+  def handle_call(:socket, _from, %S{socket: socket} = zone) do
+    {:reply, {:ok, socket}, zone}
+  end
+
   def handle_call({:add_receiver, receiver}, _from, %S{id: id} = zone) do
     Logger.info "Adding receiver to zone #{id} #{inspect receiver}"
-    IO.inspect [:add_receiver, receiver, zone]
     zone = receiver_joined(receiver, zone)
     {:reply, :ok, zone}
   end
@@ -187,8 +200,8 @@ defmodule Otis.Zone do
   end
   def handle_call({:volume, volume}, _from, zone) do
     volume = Otis.sanitize_volume(volume)
-    Otis.State.Events.notify({:zone_volume_change, zone.id, volume})
     Enum.each(zone.receivers, &Receiver.volume_multiplier(&1, volume))
+    Otis.State.Events.notify({:zone_volume_change, zone.id, volume})
     {:reply, {:ok, volume}, %S{zone | volume: volume}}
   end
 
@@ -203,20 +216,17 @@ defmodule Otis.Zone do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    # state = receiver_shutdown(state, pid, Set.to_list(state.receivers))
+    state = Receiver.matching_pid(state.receivers, pid) |> receiver_shutdown(state)
     {:noreply, state}
   end
 
-  # def receiver_shutdown(state, pid, []) do
-  #   Logger.warn "Unknown receiver shutdown #{ inspect pid } #{ inspect Set.to_list(state.receivers)}"
-  #   state
-  # end
-  # def receiver_shutdown(state, pid, [%Receiver{pid: pid} = receiver | _receivers]) do
-  #   %S{ state | receivers: Set.delete(state.receivers, receiver) }
-  # end
-  # def receiver_shutdown(state, pid, [_ | receivers]) do
-  #   receiver_shutdown(state, pid, receivers)
-  # end
+  def receiver_shutdown(nil, state) do
+    Logger.warn "Received shutdown from unknown receiver #{ state.id }"
+    state
+  end
+  def receiver_shutdown(receiver, state) do
+    %S{ state | receivers: MapSet.delete(state.receivers, receiver) }
+  end
 
   defp flush(zone) do
     Otis.Stream.flush(zone.audio_stream)
@@ -241,32 +251,17 @@ defmodule Otis.Zone do
     add_receiver_to_zone(receiver, zone)
   end
 
-  defp add_receiver_to_zone(receiver, %S{receivers: receivers} = zone) do
-    # TODO: re-do this - easier to monitor a pid than create & funnel events?
-    # in which case i'd need some little process 'alive' process that just gets
-    # killed when the receiver goes into !alive? ([:zombie, :dead]) states.
-    # Process.monitor(receiver.pid)
-    # TODO: pass the receiver onto the socket
+  defp add_receiver_to_zone(receiver, %S{receivers: receivers, socket: socket} = zone) do
+    Receiver.monitor(receiver)
     Receiver.volume_multiplier(receiver, zone.volume)
+    Otis.Zone.Socket.add_receiver(socket, receiver)
+    # TODO: reorder this zone_id, receiver_id, receiver
     event!(:receiver_added, {Receiver.id!(receiver)}, zone)
     %S{ zone | receivers: Set.put(receivers, receiver) }
   end
 
   defp event!(name, params, zone) do
     Otis.State.Events.notify({name, zone.id, params})
-  end
-
-  def receiver_latency(%S{receivers: %HashSet{} = recs}) do
-    _receiver_latency(Set.to_list(recs))
-  end
-
-  defp _receiver_latency([]) do
-    Logger.warn "No receivers attached to zone..."
-    0
-  end
-
-  defp _receiver_latency(recs) do
-    recs |> Enum.map(&Receiver.latency!/1) |> Enum.max
   end
 
   defp stream_finished!(zone) do
@@ -324,6 +319,14 @@ defmodule Otis.Zone do
 
   defp broadcaster_latency(zone) do
     receiver_latency(zone) + @buffer_latency
+  end
+
+  def receiver_latency(%S{receivers: receivers}) when map_size(receivers) == 0 do
+    Logger.warn "No receivers attached to zone..."
+    0
+  end
+  def receiver_latency(%S{receivers: receivers}) do
+    receivers |> Enum.map(&Receiver.latency!/1) |> Enum.max
   end
 
   defp zone_is_stopped(zone) do

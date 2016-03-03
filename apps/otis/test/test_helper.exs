@@ -10,18 +10,26 @@ defmodule MockReceiver do
   end
 
   def ctrl_recv(%__MODULE__{ctrl_socket: socket}, timeout \\ 200) do
-    recv(socket, timeout)
+    recv_json(socket, timeout)
   end
 
   def data_recv(%__MODULE__{data_socket: socket}, timeout \\ 200) do
-    recv(socket, timeout)
+    recv_json(socket, timeout)
   end
 
-  defp recv(socket, timeout) do
+  def data_recv_raw(%__MODULE__{data_socket: socket}, timeout \\ 200) do
+    recv_raw(socket, timeout)
+  end
+
+  defp recv_json(socket, timeout) do
     case :gen_tcp.recv(socket, 0, timeout) do
       {:ok, data} -> Poison.decode(data)
       error -> error
     end
+  end
+
+  defp recv_raw(socket, timeout) do
+    :gen_tcp.recv(socket, 0, timeout)
   end
 
   def data_connect(id, latency, opts \\ []) do
@@ -35,8 +43,9 @@ defmodule MockReceiver do
   end
 
   defp tcp_connect(port, params, opts) do
-    opts = Keyword.merge([mode: :binary, active: false, packet: 4], opts)
+    opts = Keyword.merge([mode: :binary, active: false, packet: 4, nodelay: true], opts)
     {:ok, socket} = :gen_tcp.connect({127,0,0,1}, port, opts)
+    # :inet.setopts(socket, opts)
     :gen_tcp.send(socket, Poison.encode!(params))
     {:ok, socket}
   end

@@ -60,7 +60,7 @@ defmodule Otis.State.Persistence.Receivers do
     receiver_state = create_receiver(zone, id)
     receiver_connected(receiver_state, id, receiver)
   end
-  defp receiver_connected(receiver_state, id, receiver) do
+  defp receiver_connected(receiver_state, _id, receiver) do
     zone = zone(receiver_state) |> zone_process
     Otis.Receiver2.configure_and_join_zone(receiver, receiver_state, zone)
   end

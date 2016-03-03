@@ -1,9 +1,13 @@
 defmodule Otis.Receiver2 do
-  @moduledoc "Represents a receiver"
+  @moduledoc ~S"""
+  Represents a receiver with an id, control and data connections.
+  """
 
-  defstruct [:id, :data, :ctrl, :latency]
+  require Logger
+  alias   __MODULE__, as: R
 
-  alias __MODULE__, as: R
+  defstruct [:id, :data, :ctrl, :latency, :pid]
+
 
   def new(values) do
     struct(%R{}, extract_params(values))
@@ -21,7 +25,13 @@ defmodule Otis.Receiver2 do
     receiver.latency
   end
 
-  @doc "An alive receiver has an id, and both a data & control connection"
+  def equal?(receiver1, receiver2) do
+    receiver1.id == receiver2.id
+  end
+
+  @doc ~S"""
+  An alive receiver has an id, and both a data & control connection
+  """
   def alive?(%R{id: id, data: data, ctrl: ctrl})
   when is_binary(id) and not is_nil(data) and not is_nil(ctrl) do
     true
@@ -30,8 +40,9 @@ defmodule Otis.Receiver2 do
     false
   end
 
-  @doc "An zombie receiver still has one valid connection, either data or control"
-
+  @doc ~S"""
+  An zombie receiver still has one valid connection, either data or control
+  """
   def zombie?(%R{id: id, data: data, ctrl: ctrl})
   when is_binary(id) and (not(is_nil(data)) or not(is_nil(ctrl))) do
     true
@@ -40,8 +51,9 @@ defmodule Otis.Receiver2 do
     false
   end
 
-  @doc "A dead receiver has neither a data nor control connection"
-
+  @doc ~S"""
+  A dead receiver has neither a data nor control connection
+  """
   def dead?(%R{data: data, ctrl: ctrl})
   when (is_nil(data) and is_nil(ctrl)) do
     true
@@ -50,6 +62,31 @@ defmodule Otis.Receiver2 do
     false
   end
 
+  @doc ~S"""
+  Monitor the receiver by monitoring both of the connections.
+  """
+  def monitor(%R{data: {data_pid, _}, ctrl: {ctrl_pid, _}}) do
+    data_ref = Process.monitor(data_pid)
+    ctrl_ref = Process.monitor(ctrl_pid)
+    {data_ref, ctrl_ref}
+  end
+
+  @doc ~S"""
+  Processes monitoring receivers will get a :DOWN message with a pid. This
+  is a convenience function to pull the receiver matching that pid from a list.
+  """
+  def matching_pid(receivers, pid) do
+    receivers |> Enum.find(&matches_pid?(&1, pid))
+  end
+
+  @doc false
+  def matches_pid?(%R{data: {dpid, _}, ctrl: {cpid, _}}, pid) do
+    (dpid == pid) || (cpid == pid)
+  end
+
+  @doc ~S"""
+  Set the volume and multiplier simultaneously.
+  """
   def volume(receiver, volume, multiplier) do
     set_volume(receiver, Otis.sanitize_volume(volume), Otis.sanitize_volume(multiplier))
   end
@@ -76,7 +113,7 @@ defmodule Otis.Receiver2 do
     Otis.ReceiverSocket.ControlConnection.get_volume(pid)
   end
 
-  @doc """
+  @doc ~S"""
   Volume multiplier is the way through which the zones control all of
   their receivers' volumes.
 
@@ -108,11 +145,16 @@ defmodule Otis.Receiver2 do
   #   - adds the receiver to its socket (for audio changes)
   # - emit some zone change event (for persistence)
   #
-  @doc "Change the zone for an already running & configured receiver"
+  @doc ~S"""
+  Change the zone for an already running & configured receiver
+  """
   def join_zone(receiver, zone) do
     Otis.Zone.add_receiver(zone, receiver)
   end
-  @doc "Configure the receiver from the db and join it to the zone"
+
+  @doc ~S"""
+  Configure the receiver from the db and join it to the zone
+  """
   def configure_and_join_zone(receiver, state, zone) do
     set_volume(receiver, state.volume, Otis.Zone.volume!(zone))
     join_zone(receiver, zone)
@@ -120,6 +162,15 @@ defmodule Otis.Receiver2 do
 
   def configure(receiver, %Otis.State.Receiver{volume: volume} = _config) do
     volume(receiver, volume)
+  end
+
+  def send_data(%{data: {_pid, socket}} = receiver, data) do
+    case :gen_tcp.send(socket, data) do
+      {:error, _} = error ->
+        Logger.warn "Error #{ inspect error }sending data to receiver #{ inspect receiver } #{ inspect data }"
+        error
+      ok -> ok
+    end
   end
 
   def extract_params(values) do
@@ -135,5 +186,4 @@ defmodule Otis.Receiver2 do
       latency -> Keyword.merge(values, [latency: latency])
     end
   end
-
 end
