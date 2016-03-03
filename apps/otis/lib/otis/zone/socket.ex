@@ -81,10 +81,11 @@ defmodule Otis.Zone.Socket do
     {id, receivers, count}
   end
 
-  defp _send([], data) do
+  defp _send([], _data) do
     nil
   end
   defp _send([receiver | receivers], data) do
     Receiver.send_data(receiver, data)
+    _send(receivers, data)
   end
 end
