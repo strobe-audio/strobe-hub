@@ -92,7 +92,7 @@ defmodule Otis.Receiver do
   end
 
   defp set_volume(%R{ctrl: {pid, _socket}} = receiver, volume, multiplier) do
-    Otis.ReceiverSocket.ControlConnection.set_volume(pid, volume, multiplier)
+    Otis.Receivers.ControlConnection.set_volume(pid, volume, multiplier)
     receiver
   end
 
@@ -101,7 +101,7 @@ defmodule Otis.Receiver do
   end
 
   defp set_volume(%R{ctrl: {pid, _socket}} = receiver, volume) do
-    Otis.ReceiverSocket.ControlConnection.set_volume(pid, volume)
+    Otis.Receivers.ControlConnection.set_volume(pid, volume)
     receiver
   end
 
@@ -110,7 +110,7 @@ defmodule Otis.Receiver do
   end
 
   defp get_volume(%R{ctrl: {pid, _socket}}) do
-    Otis.ReceiverSocket.ControlConnection.get_volume(pid)
+    Otis.Receivers.ControlConnection.get_volume(pid)
   end
 
   @doc ~S"""
@@ -121,14 +121,14 @@ defmodule Otis.Receiver do
   actual receiver's volume, but doesn't persist the calculated volume to the
   db. Only the `volume` setting is persisted.
 
-  See the corresponding logic in `Otis.ReceiverSocket.ControlConnection`.
+  See the corresponding logic in `Otis.Receivers.ControlConnection`.
   """
   def volume_multiplier(receiver, multiplier) do
     set_volume_multiplier(receiver, Otis.sanitize_volume(multiplier))
   end
 
   defp set_volume_multiplier(%R{ctrl: {pid, _socket}}, multiplier) do
-    Otis.ReceiverSocket.ControlConnection.set_volume_multiplier(pid, multiplier)
+    Otis.Receivers.ControlConnection.set_volume_multiplier(pid, multiplier)
   end
 
   def volume_multiplier(receiver) do
@@ -136,7 +136,7 @@ defmodule Otis.Receiver do
   end
 
   defp get_volume_multiplier(%R{ctrl: {pid, _socket}}) do
-    Otis.ReceiverSocket.ControlConnection.get_volume_multiplier(pid)
+    Otis.Receivers.ControlConnection.get_volume_multiplier(pid)
   end
 
   # TODO: what else do we need to do here? actions remaining

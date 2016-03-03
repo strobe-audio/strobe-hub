@@ -1,8 +1,8 @@
 defmodule Otis.ReceiverTest do
   use ExUnit.Case
 
-  alias  Otis.ReceiverSocket, as: RS
-  alias  Otis.Receiver, as: Receiver
+  alias  Otis.Receivers
+  alias  Otis.Receiver
   import MockReceiver
 
   setup do
@@ -40,7 +40,7 @@ defmodule Otis.ReceiverTest do
     data_connect(id, 1234)
     ctrl_connect(id)
     assert_receive {:receiver_connected, ^id, _}
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
     assert receiver.latency == 1234
   end
 
@@ -48,7 +48,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
     Receiver.volume receiver, 0.13
     assert_receive {:receiver_volume_change, ^id, 0.13}
     {:ok, msg} = ctrl_recv(mock)
@@ -60,7 +60,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
 
     Receiver.volume receiver, 0.13
     assert_receive {:receiver_volume_change, ^id, 0.13}
@@ -88,7 +88,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
 
     Receiver.volume receiver, 0.3, 0.1
     assert_receive {:receiver_volume_change, ^id, 0.3}
@@ -111,7 +111,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
     Receiver.volume receiver, 0.13
     assert_receive {:receiver_volume_change, id, 0.13}
   end
@@ -121,7 +121,7 @@ defmodule Otis.ReceiverTest do
     data_connect(id, 1234)
     ctrl_connect(id)
     assert_receive {:receiver_connected, ^id, _}
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
     Receiver.volume receiver, 0.13
     assert {:ok, 0.13} == Receiver.volume receiver
   end
@@ -133,7 +133,7 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_connected, ^id, _}
     :ok = :gen_tcp.close(socket)
     assert_receive {:receiver_disconnected, ^id, _}, 200
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
     assert receiver.id == id
   end
 
@@ -144,7 +144,7 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_connected, ^id, _}
     :ok = :gen_tcp.close(socket)
     assert_receive {:receiver_disconnected, ^id, _}, 200
-    {:ok, receiver} = RS.receiver(id)
+    {:ok, receiver} = Receivers.receiver(id)
     assert receiver.id == id
   end
 
@@ -157,6 +157,6 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_disconnected, ^id, _}
     :ok = :gen_tcp.close(ctrl_socket)
     assert_receive {:receiver_offline, ^id, _}
-    :error = RS.receiver(id)
+    :error = Receivers.receiver(id)
   end
 end

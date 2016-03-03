@@ -1,6 +1,7 @@
 
 defmodule MockReceiver do
-  alias Otis.ReceiverSocket, as: RS
+  alias Otis.Receivers
+
   defstruct [:id, :data_socket, :ctrl_socket, :latency]
 
   def connect!(id, latency, opts \\ []) do
@@ -33,12 +34,12 @@ defmodule MockReceiver do
   end
 
   def data_connect(id, latency, opts \\ []) do
-    {:ok, socket} = tcp_connect(RS.data_port, %{id: id, latency: latency}, opts)
+    {:ok, socket} = tcp_connect(Receivers.data_port, %{id: id, latency: latency}, opts)
     socket
   end
 
   def ctrl_connect(id, opts \\ []) do
-    {:ok, socket} = tcp_connect(RS.ctrl_port, %{id: id}, opts)
+    {:ok, socket} = tcp_connect(Receivers.ctrl_port, %{id: id}, opts)
     socket
   end
 

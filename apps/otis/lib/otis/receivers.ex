@@ -1,4 +1,4 @@
-defmodule Otis.ReceiverSocket do
+defmodule Otis.Receivers do
   defmodule Protocol do
     @moduledoc false
     defmacro __using__(opts) do
@@ -160,7 +160,7 @@ defmodule Otis.ReceiverSocket do
   require Logger
   alias   Otis.Receiver, as: Receiver
 
-  @name Otis.ReceiverSocket
+  @name Otis.Receivers
 
   defmodule S do
     defstruct [receivers: %{}]

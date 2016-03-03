@@ -1,7 +1,6 @@
 defmodule Otis.ZoneTest do
   use    ExUnit.Case
-  alias  Otis.Receiver, as: Receiver
-  alias  Otis.ReceiverSocket, as: RS
+  alias  Otis.Receivers
   import MockReceiver
 
   @moduletag :zone
@@ -21,10 +20,10 @@ defmodule Otis.ZoneTest do
 
     zone_record = Otis.State.Zone.create!(zone_id, "Something")
     {:ok, zone} = Otis.Zones.create(zone_id, zone_record.name)
-    receiver_record = Otis.State.Receiver.create!(zone_record, id: receiver_id, name: "Roger", volume: 1.0)
+    _receiver_record = Otis.State.Receiver.create!(zone_record, id: receiver_id, name: "Roger", volume: 1.0)
     mock = connect!(receiver_id, 1234)
     assert_receive {:receiver_connected, ^receiver_id, _}
-    {:ok, receiver} = RS.receiver(receiver_id)
+    {:ok, receiver} = Receivers.receiver(receiver_id)
     on_exit fn ->
       Otis.State.Receiver.delete_all
       Otis.State.Zone.delete_all
@@ -48,11 +47,11 @@ defmodule Otis.ZoneTest do
     assert receivers == [receiver]
   end
 
-  test "allows you to add a receiver", %{zone: zone, receiver: receiver} = context do
+  test "allows you to add a receiver", %{zone: zone, receiver: receiver} do
     receiver_id = Otis.uuid
-    mock = connect!(receiver_id, 2298)
+    _mock = connect!(receiver_id, 2298)
     assert_receive {:receiver_connected, ^receiver_id, _}
-    {:ok, receiver2} = RS.receiver(receiver_id)
+    {:ok, receiver2} = Receivers.receiver(receiver_id)
     :ok = Otis.Zone.add_receiver(zone, receiver2)
     {:ok, receivers} = Otis.Zone.receivers(zone)
     expected = Enum.into [receiver, receiver2], HashSet.new
@@ -72,7 +71,6 @@ defmodule Otis.ZoneTest do
     :ok = :gen_tcp.close(mock.data_socket)
     assert_receive {:receiver_disconnected, ^receiver_id, _}
     {:ok, receivers} = Otis.Zone.receivers(context.zone)
-    {pid, socket} = context.receiver.data
     assert receivers == []
   end
 
@@ -88,7 +86,6 @@ defmodule Otis.ZoneTest do
 
   test "sends data to receiver", context do
     mock = context.mock_receiver
-    receiver_id = context.receiver.id
     # Receiver.send_data(context.receiver <<"something">>)
     {:ok, socket} = Otis.Zone.socket(context.zone)
     Otis.Zone.Socket.send(socket, 1234, <<"something">>)
