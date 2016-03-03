@@ -13,7 +13,6 @@ defmodule Otis.Zone do
       broadcaster:       nil,
       ctrl:              nil,
       audio_stream:      nil,
-      broadcast_address: nil,
       socket:            nil,
       volume:            1.0,
     ]
@@ -39,8 +38,7 @@ defmodule Otis.Zone do
 
   def init({id, config, source_list}) do
     Logger.info "#{__MODULE__} starting... #{ id }"
-    {:ok, port} = Otis.PortSequence.next
-    {:ok, socket} = Otis.Zone.Socket.start_link(port)
+    {:ok, socket} = Otis.Zone.Socket.start_link(id)
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, Otis.stream_bytes_per_step)
     {:ok, stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
     {:ok, %S{
@@ -48,17 +46,9 @@ defmodule Otis.Zone do
         source_list: source_list,
         audio_stream: stream,
         socket: socket,
-        broadcast_address: {port},
         volume: Map.get(config, :volume, 1.0)
       }
     }
-  end
-
-  def get_broadcast_address do
-    case Otis.IPPool.next_address do
-      {:ok, ip, port} -> {ip, port}
-      _ = response -> raise "bad ip #{inspect response}"
-    end
   end
 
   def id(zone) do
@@ -100,14 +90,6 @@ defmodule Otis.Zone do
 
   def audio_stream(zone) do
     GenServer.call(zone, :get_audio_stream)
-  end
-
-  def broadcast_address(%__MODULE__{pid: pid} = _zone) do
-    broadcast_address(pid)
-  end
-
-  def broadcast_address(zone) when is_pid(zone) do
-    GenServer.call(zone, :get_broadcast_address)
   end
 
   def volume!(zone) do
@@ -192,9 +174,6 @@ defmodule Otis.Zone do
     {:reply, {:ok, source_list}, zone}
   end
 
-  def handle_call(:get_broadcast_address, _from, %S{broadcast_address: broadcast_address} = zone) do
-    {:reply, {:ok, broadcast_address}, zone}
-  end
   def handle_call(:volume, _from, %S{volume: volume} = zone) do
     {:reply, {:ok, volume}, zone}
   end
