@@ -1,7 +1,7 @@
 defmodule Otis.Zone.Socket do
   use     GenServer
   require Logger
-  alias   Otis.Receiver2, as: Receiver
+  alias   Otis.Receiver, as: Receiver
 
   def start_link(id) do
     GenServer.start_link(__MODULE__, id, [])

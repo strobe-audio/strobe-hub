@@ -1,4 +1,4 @@
-defmodule Otis.Receiver2 do
+defmodule Otis.Receiver do
   @moduledoc ~S"""
   Represents a receiver with an id, control and data connections.
   """

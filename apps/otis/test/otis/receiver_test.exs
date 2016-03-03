@@ -1,8 +1,8 @@
-defmodule Otis.Receiver2Test do
+defmodule Otis.ReceiverTest do
   use ExUnit.Case
 
   alias  Otis.ReceiverSocket, as: RS
-  alias  Otis.Receiver2, as: Receiver
+  alias  Otis.Receiver, as: Receiver
   import MockReceiver
 
   setup do

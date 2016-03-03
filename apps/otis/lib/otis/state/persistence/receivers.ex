@@ -62,7 +62,7 @@ defmodule Otis.State.Persistence.Receivers do
   end
   defp receiver_connected(receiver_state, _id, receiver) do
     zone = zone(receiver_state) |> zone_process
-    Otis.Receiver2.configure_and_join_zone(receiver, receiver_state, zone)
+    Otis.Receiver.configure_and_join_zone(receiver, receiver_state, zone)
   end
 
   defp volume_change(nil, id, _volume) do

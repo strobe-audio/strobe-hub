@@ -158,7 +158,7 @@ defmodule Otis.ReceiverSocket do
 
   use     GenServer
   require Logger
-  alias   Otis.Receiver2, as: Receiver
+  alias   Otis.Receiver, as: Receiver
 
   @name Otis.ReceiverSocket
 

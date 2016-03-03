@@ -1,7 +1,7 @@
 defmodule Otis.Zone do
   use     GenServer
   require Logger
-  alias   Otis.Receiver2, as: Receiver
+  alias   Otis.Receiver, as: Receiver
 
   defmodule S do
     @moduledoc "The state struct for Zone processes"

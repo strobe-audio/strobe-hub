@@ -1,6 +1,6 @@
 defmodule Otis.ZoneTest do
   use    ExUnit.Case
-  alias  Otis.Receiver2, as: Receiver
+  alias  Otis.Receiver, as: Receiver
   alias  Otis.ReceiverSocket, as: RS
   import MockReceiver
 
