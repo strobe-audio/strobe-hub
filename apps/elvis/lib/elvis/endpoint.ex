@@ -1,8 +1,6 @@
 defmodule Elvis.Endpoint do
   use Phoenix.Endpoint, otp_app: :elvis
 
-  socket "/receive", Elvis.ReceiverSocket
-
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phoenix.digest
