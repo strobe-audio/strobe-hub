@@ -199,8 +199,11 @@ defmodule Otis.Zone do
     {:noreply, state}
   end
 
+  def receiver_shutdown(nil, %S{receivers: receivers} = state)
+  when map_size(receivers) == 0 do
+    state
+  end
   def receiver_shutdown(nil, state) do
-    Logger.warn "Received shutdown from unknown receiver #{ state.id }"
     state
   end
   def receiver_shutdown(receiver, state) do
