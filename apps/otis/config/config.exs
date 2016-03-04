@@ -12,9 +12,9 @@ use Mix.Config
 #
 config :logger, :console,
   level: :debug,
-  format: "$date $time [$level] $metadata$message\n",
+  format: "$date $time $metadata [$level]$levelpad $message\n",
   sync_threshold: 1_000_000,
-  metadata: [],
+  metadata: [:module, :line],
   colors: [info: :green]
 
 # It is also possible to import configuration files, relative to this
