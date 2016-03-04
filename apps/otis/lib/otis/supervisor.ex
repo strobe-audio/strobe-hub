@@ -15,7 +15,7 @@ defmodule Otis.Supervisor do
 
     children = [
       worker(Otis.DNSSD, []),
-      worker(Otis.SNTP, []),
+      worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
       worker(Otis.State, []),
       worker(Otis.State.Repo, []),
       worker(Otis.State.Events, []),
@@ -35,5 +35,9 @@ defmodule Otis.Supervisor do
       worker(Otis.Startup, [Otis.State, Otis.Zones, Otis.Receivers], restart: :transient)
     ]
     supervise(children, strategy: :one_for_one)
+  end
+
+  def config(mod) do
+    Application.get_env :otis, mod
   end
 end
