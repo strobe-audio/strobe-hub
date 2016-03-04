@@ -6,8 +6,7 @@ defmodule Otis.Receiver do
   require Logger
   alias   __MODULE__, as: R
 
-  defstruct [:id, :data, :ctrl, :latency, :pid]
-
+  defstruct [:id, :data, :ctrl, :latency]
 
   def new(values) do
     struct(%R{}, extract_params(values))
