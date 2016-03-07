@@ -24,6 +24,7 @@ defmodule Otis.Receivers do
             supervisor: opts[:supervisor],
             settings: initial_settings(),
           }
+          state = monitor_connection(state)
           :gen_server.enter_loop(__MODULE__, [], state)
         end
 
@@ -49,6 +50,9 @@ defmodule Otis.Receivers do
           {:stop, reason, state}
         end
 
+        def process_message({_id, %{"pong" => _pong}}, state) do
+          state
+        end
         def process_message({id, params}, state) do
           Logger.info "Receiver connection #{unquote(opts[:type])} #{id} => #{ inspect params }"
           GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self, state.socket}, params})
@@ -73,10 +77,13 @@ defmodule Otis.Receivers do
     use Protocol, type: :data
 
     defp initial_settings, do: %{}
+    defp monitor_connection(state), do: state
   end
 
   defmodule ControlConnection do
     use Protocol, type: :ctrl
+
+    @monitor_interval 1000
 
     def set_volume(connection, volume) do
       GenServer.cast(connection, {:set_volume, volume})
@@ -121,6 +128,13 @@ defmodule Otis.Receivers do
       {:reply, Map.fetch(state.settings, :volume_multiplier), state}
     end
 
+    def handle_info(:ping, state) do
+      %{ ping: :erlang.unique_integer([:positive, :monotonic]) }
+      |> Poison.encode!
+      |> send_data(state)
+      {:noreply, monitor_connection(state)}
+    end
+
     defp initial_settings, do: %{volume: 1.0, volume_multiplier: 1.0}
 
     defp change_volume(state, values) do
@@ -153,6 +167,11 @@ defmodule Otis.Receivers do
     end
     defp calculated_volume(%{volume: volume, volume_multiplier: multiplier}) do
       volume * multiplier
+    end
+
+    defp monitor_connection(state) do
+      Process.send_after(self, :ping, @monitor_interval)
+      state
     end
   end
 
