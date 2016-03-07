@@ -63,7 +63,7 @@ So much.
 	`zone_finished` message but no `source_finished` equivalent. Could issue a
 	`{:source_changed, "<zone_id>", "<source_id>", nil}` at the end to mirror the
 	`{:source_changed, "<zone_id>", nil, "<source_id>"}` at the beginning.
-- [ ] replace nanomsg with [simple TCP sockets]
+- [x] replace nanomsg with [simple TCP sockets]
   - All receivers connect to the same port? Must send the id
   - `Otis.Zone.Socket` has a list of receiver sockets and sends data to all
     sockets in that list
@@ -73,9 +73,9 @@ So much.
     just have an interval timer that sends some `PING` packet. This interval
     could be reset whenever data is actually sent.
 - [ ] move receiver between zones
-- [ ] better receiver behaviour when broadcaster drops out (currently the processes
+- [x] better receiver behaviour when broadcaster drops out (currently the processes
   don't crash until the timesync times-out)
-- [ ] replace phoenix websocket connection with raw TCP for control messages?
+- [x] replace phoenix websocket connection with raw TCP for control messages?
   phoenix channel stuff is too complex for my needs. Would need solid
   keepalive/drop detection (see above re receiver behaviour when b-caster
 	drops). Should keep with JSON (rather than Erlang encoding) as the message
