@@ -57,6 +57,8 @@ So much.
 
 **Core:**
 
+- [ ] receiver connection keepalive/monitoring. ping-pong messages so that if a
+  connection gets cut-off the receiver(s) in question get removed.
 - [ ] Last source in the zone doesn't get deleted from the db. We get a
 	`zone_finished` message but no `source_finished` equivalent. Could issue a
 	`{:source_changed, "<zone_id>", "<source_id>", nil}` at the end to mirror the
