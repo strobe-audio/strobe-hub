@@ -58,31 +58,35 @@ So much.
 **Core:**
 
 - [ ] receiver connection keepalive/monitoring. ping-pong messages so that if a
-  connection gets cut-off the receiver(s) in question get removed.
+  connection gets cut-off the receiver(s) in question get removed. This could
+  just happen periodically on the control connection -- no need to mess with
+  audio data delivery. If the control connection goes down then could trigger a
+  test of the data connection (if we're playing we'll get quick notification of
+  a connection being down...)
 - [ ] Playback progress.
 - [ ] move receiver between zones
 - [ ] Replace `SourceList.append_source` and `SourceList.append_sources` with
-	`SourceList.append`
-- [ ] No way of getting the currently playing track... Should be a method on
-	the zone. In fact the current source list behaviour needs work. The current
-	song is popped off the source list when played, so it only exists in the db
-	and the zone process. But on re-start un-finished songs just pop back to the
-	top of the source-list. Gotta think of a consistent way to deal with this. It
-	definitely involves some kind of `progress` field on the source record (and a
-	corresponding 'start from this offset' function in the actual playback).
+  `SourceList.append`
+  - [ ] No way of getting the currently playing track... Should be a method on
+  the zone. In fact the current source list behaviour needs work. The current
+  song is popped off the source list when played, so it only exists in the db
+  and the zone process. But on re-start un-finished songs just pop back to the
+  top of the source-list. Gotta think of a consistent way to deal with this. It
+  definitely involves some kind of `progress` field on the source record (and a
+  corresponding 'start from this offset' function in the actual playback).
 - [ ] Move all source list manipulations into the zone
 - [ ] zones stop when all receievers removed
 - [ ] Fix rebuffering of new receivers
 - [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on
-	`:string` but I think this is a mistake
+  `:string` but I think this is a mistake
 - [x] replace phoenix websocket connection with raw TCP for control messages
 - [x] better receiver behaviour when broadcaster drops out (currently the processes
   don't crash until the timesync times-out)
 - [x] replace nanomsg with [simple TCP sockets]
 - [x] Last source in the zone doesn't get deleted from the db. We get a
-	`zone_finished` message but no `source_finished` equivalent. Could issue a
-	`{:source_changed, "<zone_id>", "<source_id>", nil}` at the end to mirror the
-	`{:source_changed, "<zone_id>", nil, "<source_id>"}` at the beginning.
+  `zone_finished` message but no `source_finished` equivalent. Could issue a
+  `{:source_changed, "<zone_id>", "<source_id>", nil}` at the end to mirror the
+  `{:source_changed, "<zone_id>", nil, "<source_id>"}` at the beginning.
 
 **Nice to have:**
 
@@ -98,9 +102,9 @@ So much.
 - ui gets updated (every second) but can interpolate in the meantime
 - sources have a playback position in seconds.
 - playback position can be passed to ffmpeg using the `-ss <seconds>` input
-	param https://trac.ffmpeg.org/wiki/Seeking
+  param https://trac.ffmpeg.org/wiki/Seeking
 - sources must have an idea of their length? how can I calculate the playback
-	position from within the audio pipeline?
+  position from within the audio pipeline?
 
 UI
 --
