@@ -54,6 +54,15 @@ So much.
 
 **BUGS**:
 
+- [ ] Fix janis crash when connecting over vpn:
+      ```
+      2016-03-07 21:56:33.778  [error] GenServer Otis.DNSSD terminating
+      ** (MatchError) no match of right hand side value: nil
+      (janis) lib/janis/network.ex:24: Janis.Network.best_ip/2
+      (janis) lib/janis/broadcaster.ex:66: Janis.Broadcaster.new/3
+      (janis) lib/janis/broadcaster.ex:28: Janis.Broadcaster.start_broadcaster/4
+      (janis) lib/janis/dnssd.ex:32: Janis.DNSSD.handle_info/2
+      ```
 
 **Core:**
 
