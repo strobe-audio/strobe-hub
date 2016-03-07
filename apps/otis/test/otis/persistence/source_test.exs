@@ -141,6 +141,18 @@ defmodule Otis.Persistence.SourceTest do
     assert record2.source_type == to_string(TestSource)
   end
 
+  test "a final source played event leaves the source list empty", context do
+    Otis.SourceList.append_sources(context.source_list, [TestSource.new, TestSource.new])
+    {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
+    {source_id1, _source1} = entry1
+    {source_id2, _source2} = entry2
+    Otis.State.Events.notify({:source_changed, context.zone.id, source_id1, source_id2})
+    assert_receive {:old_source_removed, ^source_id1}
+    Otis.State.Events.notify({:source_changed, context.zone.id, source_id2, nil})
+    assert_receive {:old_source_removed, ^source_id2}
+    [] = Otis.State.Source.all
+  end
+
   test "a source played event updates the db positions", context do
     sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new]
     Otis.SourceList.append_sources(context.source_list, sources)

@@ -177,6 +177,7 @@ defmodule Otis.Zone.Broadcaster do
   end
   defp finish(%S{in_flight: [], zone: zone, state: :play} = state) do
     Logger.debug "Stream finished"
+    source_changed(nil, state.source_id, state)
     Otis.State.Events.notify({:zone_finished, state.id})
     Otis.Zone.stream_finished(zone)
     %S{ state | state: :stopped }

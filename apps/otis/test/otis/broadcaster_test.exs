@@ -352,6 +352,32 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:zone_finished, ^zone_id}, 200
   end
 
+  test "it broadcasts a final source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = state do
+    buffer_size = 5
+    poll_interval = round(state.opts.stream_interval / 1)
+
+    clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
+
+    time = state.timestamp.(0)
+
+    Enum.each 1..10, fn(n) ->
+      Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
+      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+    end
+
+    Enum.each 11..20, fn(n) ->
+      Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
+      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+    end
+
+    Otis.Test.SteppingController.step(clock, time + (21 * poll_interval), poll_interval)
+    assert_receive {:zone_finished, ^zone_id}, 200
+
+    [source_id2, _] = source2
+
+    assert_receive {:source_changed, ^zone_id, ^source_id2, nil}, 200
+  end
+
   test "it broadcasts a stream stop event", %{ zone_id: zone_id } = state do
     buffer_size = 5
     _clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
