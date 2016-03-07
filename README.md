@@ -57,30 +57,12 @@ So much.
 
 **Core:**
 
-- [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on
-	`:string` but I think this is a mistake
 - [ ] Last source in the zone doesn't get deleted from the db. We get a
 	`zone_finished` message but no `source_finished` equivalent. Could issue a
 	`{:source_changed, "<zone_id>", "<source_id>", nil}` at the end to mirror the
 	`{:source_changed, "<zone_id>", nil, "<source_id>"}` at the beginning.
 - [ ] Playback progress.
-- [x] replace nanomsg with [simple TCP sockets]
-  - All receivers connect to the same port? Must send the id
-  - `Otis.Zone.Socket` has a list of receiver sockets and sends data to all
-    sockets in that list
-  - Zones manage socket instances' list of receiver sockets
-  - A keepalive on the socket? Monitor & pull-down receiver when it drops?
-    Ignoring TCP keepalive stuff as it's complicated, the socket process could
-    just have an interval timer that sends some `PING` packet. This interval
-    could be reset whenever data is actually sent.
 - [ ] move receiver between zones
-- [x] better receiver behaviour when broadcaster drops out (currently the processes
-  don't crash until the timesync times-out)
-- [x] replace phoenix websocket connection with raw TCP for control messages?
-  phoenix channel stuff is too complex for my needs. Would need solid
-  keepalive/drop detection (see above re receiver behaviour when b-caster
-	drops). Should keep with JSON (rather than Erlang encoding) as the message
-	format (because we might end up re-implementing receivers in many languages).
 - [ ] Replace `SourceList.append_source` and `SourceList.append_sources` with
 	`SourceList.append`
 - [ ] No way of getting the currently playing track... Should be a method on
@@ -93,6 +75,12 @@ So much.
 - [ ] Move all source list manipulations into the zone
 - [ ] zones stop when all receievers removed
 - [ ] Fix rebuffering of new receivers
+- [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on
+	`:string` but I think this is a mistake
+- [x] replace phoenix websocket connection with raw TCP for control messages
+- [x] better receiver behaviour when broadcaster drops out (currently the processes
+  don't crash until the timesync times-out)
+- [x] replace nanomsg with [simple TCP sockets]
 
 **Nice to have:**
 
