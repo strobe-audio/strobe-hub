@@ -63,6 +63,7 @@ So much.
 	`zone_finished` message but no `source_finished` equivalent. Could issue a
 	`{:source_changed, "<zone_id>", "<source_id>", nil}` at the end to mirror the
 	`{:source_changed, "<zone_id>", nil, "<source_id>"}` at the beginning.
+- [ ] Playback progress.
 - [x] replace nanomsg with [simple TCP sockets]
   - All receivers connect to the same port? Must send the id
   - `Otis.Zone.Socket` has a list of receiver sockets and sends data to all
@@ -100,6 +101,16 @@ So much.
   support for groups of tracks as entries in source lists)
 
 [simple TCP sockets]: http://stackoverflow.com/questions/4081502/sending-raw-binary-using-tcp-in-erlang
+
+#### Playback progress
+
+- source in db gets updated (every second)
+- ui gets updated (every second) but can interpolate in the meantime
+- sources have a playback position in seconds.
+- playback position can be passed to ffmpeg using the `-ss <seconds>` input
+	param https://trac.ffmpeg.org/wiki/Seeking
+- sources must have an idea of their length? how can I calculate the playback
+	position from within the audio pipeline?
 
 UI
 --
