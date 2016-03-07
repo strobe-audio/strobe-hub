@@ -108,7 +108,7 @@ defmodule Otis.AudioStreamSingleTest do
     assert result == :stopped
 
     {:ok, source} = Otis.Source.File.new("test/fixtures/silent.mp3")
-    {:ok, 1} = Otis.SourceList.append_source(source_list, source)
+    {:ok, 1} = Otis.SourceList.append(source_list, source)
 
     Enum.each 0..round(Float.ceil(n) - 2), fn(_) ->
       { :ok, _, frame } = Otis.AudioStream.frame(audio_stream)

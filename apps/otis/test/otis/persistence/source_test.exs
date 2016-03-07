@@ -73,7 +73,7 @@ defmodule Otis.Persistence.SourceTest do
   end
 
   test "adding a source to a list persists to the db", context do
-    Otis.SourceList.append_source(context.source_list, TestSource.new)
+    Otis.SourceList.append(context.source_list, TestSource.new)
     {:ok, [entry]} = Otis.SourceList.list(context.source_list)
     {source_id, source} = entry
     assert_receive {:new_source_created, _}
@@ -85,7 +85,7 @@ defmodule Otis.Persistence.SourceTest do
   end
 
   test "adding multiple sources persists to the db", context do
-    Otis.SourceList.append_sources(context.source_list, [TestSource.new, TestSource.new])
+    Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, source1} = entry1
     {source_id2, source2} = entry2
@@ -106,7 +106,7 @@ defmodule Otis.Persistence.SourceTest do
   end
 
   test "you can lookup sources for a zone", context do
-    Otis.SourceList.append_sources(context.source_list, [TestSource.new, TestSource.new])
+    Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     assert_receive {:new_source_created, _}
     assert_receive {:new_source_created, _}
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
@@ -128,7 +128,7 @@ defmodule Otis.Persistence.SourceTest do
   end
 
   test "a source played event deletes the corresponding db record", context do
-    Otis.SourceList.append_sources(context.source_list, [TestSource.new, TestSource.new])
+    Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, _source1} = entry1
     {source_id2, source2} = entry2
@@ -142,7 +142,7 @@ defmodule Otis.Persistence.SourceTest do
   end
 
   test "a final source played event leaves the source list empty", context do
-    Otis.SourceList.append_sources(context.source_list, [TestSource.new, TestSource.new])
+    Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, _source1} = entry1
     {source_id2, _source2} = entry2
@@ -155,7 +155,7 @@ defmodule Otis.Persistence.SourceTest do
 
   test "a source played event updates the db positions", context do
     sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new]
-    Otis.SourceList.append_sources(context.source_list, sources)
+    Otis.SourceList.append(context.source_list, sources)
     assert_receive {:new_source_created, _}
     {:ok, [{id1, _source1}, {id2, _source2}, {id3, _source3}, {id4, _source4}]} = Otis.SourceList.list(context.source_list)
     ids = [id1, id2, id3, id4]
@@ -170,7 +170,7 @@ defmodule Otis.Persistence.SourceTest do
 
   test "a skip deletes every unplayed source from the db", context do
     sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new, TestSource.new]
-    Otis.SourceList.append_sources(context.source_list, sources)
+    Otis.SourceList.append(context.source_list, sources)
     assert_receive {:new_source_created, _}, 200
     {:ok, entries} = Otis.SourceList.list(context.source_list)
     ids = Enum.map(entries, fn({id, _}) -> id end)
@@ -194,7 +194,7 @@ defmodule Otis.Persistence.SourceTest do
     assert_receive {:new_source_created, _}
     {:ok, []} = Otis.SourceList.list(context.source_list)
     Otis.Startup.restore_source_lists(Otis.State, Otis.Zones)
-    # Otis.SourceList.append_sources(context.source_list, [TestSource.new, TestSource.new])
+    # Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     [{id1, source1}, {id2, source2}] = sources
     {:ok, [{ed1, entry1}, {ed2, entry2}]} = Otis.SourceList.list(context.source_list)
     assert id1 == ed1

@@ -43,7 +43,7 @@ defmodule Otis.SourceListTest do
     source = TS.new("e")
     {:ok, sources} = Otis.SourceList.list(list)
     l = length(sources)
-    Otis.SourceList.append_source(list, source)
+    Otis.SourceList.append(list, source)
     {:ok, sources} = Otis.SourceList.list(list)
     ids = Enum.map sources, fn({id, _source}) -> id end
     assert length(Enum.uniq(ids)) == length(ids)
@@ -54,7 +54,7 @@ defmodule Otis.SourceListTest do
     new_sources = [TS.new("e"), TS.new("f")]
     {:ok, sources} = Otis.SourceList.list(list)
     l = length(sources)
-    Otis.SourceList.append_sources(list, new_sources)
+    Otis.SourceList.append(list, new_sources)
     {:ok, sources} = Otis.SourceList.list(list)
     ids = Enum.map sources, fn({id, _source}) -> id end
     assert length(Enum.uniq(ids)) == length(ids)
@@ -104,7 +104,7 @@ defmodule Otis.SourceListTest do
 
   test "emits a state change event when appending a source", %{id: list_id} = context do
     source = TS.new("e")
-    Otis.SourceList.append_source(context.source_list, source)
+    Otis.SourceList.append(context.source_list, source)
     {:ok, sources} = Otis.SourceList.list(context.source_list)
     {source_id, _} = List.last(sources)
     assert_receive {:new_source, ^list_id, 4, {^source_id, %{id: "e"}}}, 200

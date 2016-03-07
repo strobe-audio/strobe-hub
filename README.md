@@ -65,9 +65,7 @@ So much.
   a connection being down...)
 - [ ] Playback progress.
 - [ ] move receiver between zones
-- [ ] Replace `SourceList.append_source` and `SourceList.append_sources` with
-  `SourceList.append`
-  - [ ] No way of getting the currently playing track... Should be a method on
+- [ ] No way of getting the currently playing track... Should be a method on
   the zone. In fact the current source list behaviour needs work. The current
   song is popped off the source list when played, so it only exists in the db
   and the zone process. But on re-start un-finished songs just pop back to the
@@ -87,6 +85,8 @@ So much.
   `zone_finished` message but no `source_finished` equivalent. Could issue a
   `{:source_changed, "<zone_id>", "<source_id>", nil}` at the end to mirror the
   `{:source_changed, "<zone_id>", nil, "<source_id>"}` at the beginning.
+- [x] Replace `SourceList.append_source` and `SourceList.append_sources` with
+  `SourceList.append`
 
 **Nice to have:**
 

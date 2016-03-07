@@ -32,18 +32,18 @@ defmodule Otis.SourceList do
   end
 
   @doc "Appends the given List of Sources"
-  @spec append_sources(pid, list(Otis.Source.t)) :: {:ok, integer}
-  def append_sources(list, []) do
+  @spec append(pid, list(Otis.Source.t)) :: {:ok, integer}
+  def append(list, []) do
     {:ok, count(list)}
   end
-  def append_sources(list, [source | sources]) do
-    append_source(list, source)
-    append_sources(list, sources)
+  def append(list, [source | sources]) do
+    append(list, source)
+    append(list, sources)
   end
 
   @doc "Appends the given Source to the list"
-  @spec append_source(pid, Otis.Source.t) :: :ok
-  def append_source(list, source) do
+  @spec append(pid, Otis.Source.t) :: :ok
+  def append(list, source) do
     insert_source(list, source, -1)
   end
 
