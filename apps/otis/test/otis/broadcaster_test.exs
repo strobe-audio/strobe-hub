@@ -213,35 +213,35 @@ defmodule Otis.BroadcasterTest do
     :stopped = Otis.AudioStream.frame(stream)
   end
 
-  test "it sends the right number of buffer packets", state do
+  test "it sends the right number of buffer packets", context do
     buffer_size = 5
 
-    _clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
+    _clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
 
     Enum.each 0..(buffer_size - 1), fn(n) ->
-      ts = state.timestamp.(n)
-      et = state.start_time + (n * Otis.Zone.Broadcaster.buffer_interval(state.opts.stream_interval))
-      {:ok, packet} = Enum.fetch state.packets1, n
+      ts = context.timestamp.(n)
+      et = context.start_time + (n * Otis.Zone.Broadcaster.buffer_interval(context.opts.stream_interval))
+      {:ok, packet} = Enum.fetch context.packets1, n
       expect = {:emit, et, {ts, packet}}
       assert_receive ^expect, 1000, "Not received #{n}"
     end
   end
 
-  test "it sends audio packets when stepped", state do
+  test "it sends audio packets when stepped", context do
     buffer_size = 5
-    poll_interval = round(state.opts.stream_interval / 2)
+    poll_interval = round(context.opts.stream_interval / 2)
 
-    clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
+    clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
 
     Enum.each 0..(buffer_size - 1), fn(n) ->
-      time = state.timestamp.(n)
+      time = context.timestamp.(n)
       assert_receive {:emit, _, {^time, _}}, 1000, "Not received buffer packet #{n}"
     end
 
     n = buffer_size
-    ts = state.timestamp.(n)
+    ts = context.timestamp.(n)
 
-    time = state.start_time + poll_interval
+    time = context.start_time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
     refute_receive {:emit, _, _}, 200
 
@@ -251,19 +251,7 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:emit, ^emit_time, {^ts, _}}, 200
 
     n = n + 1
-    ts = state.timestamp.(n)
-
-    time = time + poll_interval
-    Otis.Test.SteppingController.step(clock, time, poll_interval)
-    refute_receive {:emit, _, _}, 200
-
-    time = time + poll_interval
-    emit_time = time + poll_interval
-    Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
-
-    n = n + 1
-    ts = state.timestamp.(n)
+    ts = context.timestamp.(n)
 
     time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
@@ -275,7 +263,7 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:emit, ^emit_time, {^ts, _}}, 200
 
     n = n + 1
-    ts = state.timestamp.(n)
+    ts = context.timestamp.(n)
 
     time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
@@ -287,7 +275,19 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:emit, ^emit_time, {^ts, _}}, 200
 
     n = n + 1
-    ts = state.timestamp.(n)
+    ts = context.timestamp.(n)
+
+    time = time + poll_interval
+    Otis.Test.SteppingController.step(clock, time, poll_interval)
+    refute_receive {:emit, _, _}, 200
+
+    time = time + poll_interval
+    emit_time = time + poll_interval
+    Otis.Test.SteppingController.step(clock, time, poll_interval)
+    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+
+    n = n + 1
+    ts = context.timestamp.(n)
 
     time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
@@ -299,17 +299,17 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:emit, ^emit_time, {^ts, _}}, 200
   end
 
-  test "it broadcasts a source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = state do
+  test "it broadcasts a source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = context do
 
     buffer_size = 5
-    poll_interval = round(state.opts.stream_interval / 1)
+    poll_interval = round(context.opts.stream_interval / 1)
 
-    clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
+    clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
 
     [source_id1, _] = source1
     [source_id2, _] = source2
 
-    time = state.timestamp.(0)
+    time = context.timestamp.(0)
     Otis.Test.SteppingController.step(clock, time, poll_interval)
     assert_receive {:emit, _, _}, 200
 
@@ -330,13 +330,13 @@ defmodule Otis.BroadcasterTest do
     end
   end
 
-  test "it broadcasts a stream finished event", %{ zone_id: zone_id } = state do
+  test "it broadcasts a stream finished event", %{ zone_id: zone_id } = context do
     buffer_size = 5
-    poll_interval = round(state.opts.stream_interval / 1)
+    poll_interval = round(context.opts.stream_interval / 1)
 
-    clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
+    clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
 
-    time = state.timestamp.(0)
+    time = context.timestamp.(0)
 
     Enum.each 1..10, fn(n) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
@@ -352,13 +352,13 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:zone_finished, ^zone_id}, 200
   end
 
-  test "it broadcasts a final source change event", %{ zone_id: zone_id, source2: source2 } = state do
+  test "it broadcasts a final source change event", %{ zone_id: zone_id, source2: source2 } = context do
     buffer_size = 5
-    poll_interval = round(state.opts.stream_interval / 1)
+    poll_interval = round(context.opts.stream_interval / 1)
 
-    clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
+    clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
 
-    time = state.timestamp.(0)
+    time = context.timestamp.(0)
 
     Enum.each 1..10, fn(n) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
@@ -378,37 +378,37 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:source_changed, ^zone_id, ^source_id2, nil}, 200
   end
 
-  test "it broadcasts a stream stop event", %{ zone_id: zone_id } = state do
+  test "it broadcasts a stream stop event", %{ zone_id: zone_id } = context do
     buffer_size = 5
-    _clock = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
-    _clock = Otis.Test.SteppingController.stop(state.clock, state.broadcaster)
+    _clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
+    _clock = Otis.Test.SteppingController.stop(context.clock, context.broadcaster)
     assert_receive {:zone_stop, ^zone_id}, 200
   end
 
-  test "it rebuffers in-flight packets when stopped", state do
+  test "it rebuffers in-flight packets when stopped", context do
     buffer_size = 5
-    poll_interval = round(state.opts.stream_interval / 4)
+    poll_interval = round(context.opts.stream_interval / 4)
     steps = 25
-    time = state.start_time
-    controller = Otis.Broadcaster.Controller.start(state.clock, state.broadcaster, state.latency, buffer_size)
+    time = context.start_time
+    controller = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
 
     Enum.each 1..steps, fn(n) ->
       Otis.Test.SteppingController.step(controller, time + (n * poll_interval), poll_interval)
     end
 
-    ts = state.timestamp.(7)
+    ts = context.timestamp.(7)
     assert_receive {:emit, _, {^ts, "8"}}, 1000
 
-    Otis.Test.SteppingClock.step(state.clock.clock, state.timestamp.(7) + 1)
+    Otis.Test.SteppingClock.step(context.clock.clock, context.timestamp.(7) + 1)
 
-    Otis.Broadcaster.Controller.stop(state.clock, state.broadcaster)
+    Otis.Broadcaster.Controller.stop(context.clock, context.broadcaster)
     assert_receive {:rebuffer, packets}, 200
 
     assert length(packets) == 4, "Expected 4 packets but got #{ length(packets) }"
 
     [p1, p2, p3, p4] = packets
-    [source_id1, packets1] = state.source1
-    [source_id2, packets2] = state.source2
+    [source_id1, packets1] = context.source1
+    [source_id2, packets2] = context.source2
 
     packets1_1 = Enum.fetch!(packets1, -2)
     packets1_2 = Enum.fetch!(packets1, -1)
