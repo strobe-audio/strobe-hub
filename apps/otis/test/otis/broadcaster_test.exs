@@ -352,7 +352,7 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:zone_finished, ^zone_id}, 200
   end
 
-  test "it broadcasts a final source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = state do
+  test "it broadcasts a final source change event", %{ zone_id: zone_id, source2: source2 } = state do
     buffer_size = 5
     poll_interval = round(state.opts.stream_interval / 1)
 
