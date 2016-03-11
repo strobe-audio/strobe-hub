@@ -31,10 +31,3 @@ config :porcelain, :goon_driver_path, "#{__DIR__}/../bin/goon_darwin_amd64"
 config :otis, Otis.DNSSD,
   name: "_peep-broadcaster._tcp"
 
-config :otis, Otis.SNTP,
-  port: 5045
-
-config :otis, Otis.Receivers,
-  data_port: 5540,
-  ctrl_port: 5541
-
