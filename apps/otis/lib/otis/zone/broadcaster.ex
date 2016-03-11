@@ -253,7 +253,9 @@ defmodule Otis.Zone.Broadcaster do
 
   defp monitor_in_flight(state) do
     {unplayed, played} = state |> partition_in_flight
-    monitor_source(played, %S{ state | in_flight: unplayed })
+    %S{ state | in_flight: unplayed }
+    |> monitor_source(played)
+    |> update_progress(played)
   end
 
   defp partition_in_flight(state) do
@@ -263,20 +265,27 @@ defmodule Otis.Zone.Broadcaster do
     end
   end
 
-  defp monitor_source([], state) do
+  defp monitor_source(state, []) do
     state
   end
-  defp monitor_source([{_, _, %Packet{source_id: source_id}, _} | packets], %S{source_id: nil} = state) do
+  defp monitor_source(%S{source_id: nil} = state, [{_, _, %Packet{source_id: source_id}, _} | packets]) do
     source_changed(source_id, nil, state)
-    monitor_source(packets, %S{ state | source_id:  source_id })
+    monitor_source(%S{ state | source_id:  source_id }, packets)
   end
-  defp monitor_source([{_, _, %Packet{source_id: source_id}, _} | packets], %S{source_id: source_id} = state) do
-    monitor_source(packets, state)
+  defp monitor_source(%S{source_id: source_id} = state, [{_, _, %Packet{source_id: source_id}, _} | packets]) do
+    monitor_source(state, packets)
   end
-  defp monitor_source([{_, _, %Packet{source_id: new_source_id}, _} | packets], %S{source_id: old_source_id} = state)
+  defp monitor_source(%S{source_id: old_source_id} = state, [{_, _, %Packet{source_id: new_source_id}, _} | packets])
   when new_source_id != old_source_id do
     source_changed(new_source_id, old_source_id, state)
-    monitor_source(packets, %S{ state | source_id:  new_source_id })
+    monitor_source(%S{ state | source_id:  new_source_id }, packets)
+  end
+
+  defp update_progress(state, played) do
+    Enum.each(played, fn({_, _, packet, _}) ->
+      Otis.State.Events.notify({:source_progress, state.id, packet.source_id, packet.position, packet.duration})
+    end)
+    state
   end
 
   defp source_changed(new_source_id, old_source_id, state) do

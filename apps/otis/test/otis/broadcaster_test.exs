@@ -1,5 +1,5 @@
 defmodule TestPacket do
-  def new(id), do: Otis.Packet.new(id, 0, 0, 1000)
+  def new(id), do: Otis.Packet.new(id, 0, 60_000, 3528)
 end
 defmodule Otis.Test.ArrayAudioStream do
   use GenServer
@@ -9,7 +9,7 @@ defmodule Otis.Test.ArrayAudioStream do
   end
 
   def init({sources, parent}) do
-    {:ok, %{ sources: sources, packets: [], source_id: nil, parent: parent }}
+    {:ok, %{ sources: sources, packets: [], packet: nil, parent: parent }}
   end
 
   def handle_call(:frame, _from, state) do
@@ -27,10 +27,10 @@ defmodule Otis.Test.ArrayAudioStream do
   end
   def next_packet(%{packets: [], sources: [source | sources]} = state) do
     [source_id, packets] = source
-    next_packet(%{ state | packets: packets, source_id: source_id, sources: sources})
+    next_packet(%{ state | packets: packets, packet: TestPacket.new(source_id), sources: sources})
   end
-  def next_packet(%{packets: [packet | packets], source_id: source_id} = state) do
-    { {:ok, TestPacket.new(source_id), packet}, %{ state | packets: packets } }
+  def next_packet(%{packets: [data | packets], packet: packet} = state) do
+    { {:ok, state.packet, data}, %{ state | packets: packets, packet: Otis.Packet.step(state.packet) } }
   end
 end
 
@@ -206,12 +206,18 @@ defmodule Otis.BroadcasterTest do
 
   test "audio stream sends right packets & source ids", %{source1: source1, source2: source2, stream: stream} do
     [source_id1, packets1] = source1
-    Enum.each packets1, fn(packet) ->
-      {:ok, %Otis.Packet{source_id: ^source_id1}, ^packet} = Otis.AudioStream.frame(stream)
+    p = TestPacket.new(source_id1)
+    Enum.reduce packets1, p, fn(data, packet) ->
+      frame = Otis.AudioStream.frame(stream)
+      assert {:ok, packet, data} == frame
+      Otis.Packet.step(packet)
     end
     [source_id2, packets2] = source2
-    Enum.each packets2, fn(packet) ->
-      {:ok, %Otis.Packet{source_id: ^source_id2}, ^packet} = Otis.AudioStream.frame(stream)
+    p = TestPacket.new(source_id2)
+    Enum.reduce packets2, p, fn(data, packet) ->
+      frame = Otis.AudioStream.frame(stream)
+      assert {:ok, packet, data} == frame
+      Otis.Packet.step(packet)
     end
     :stopped = Otis.AudioStream.frame(stream)
   end
@@ -418,13 +424,29 @@ defmodule Otis.BroadcasterTest do
     packets2_1 = Enum.fetch!(packets2, 0)
     packets2_2 = Enum.fetch!(packets2, 1)
 
-    assert {TestPacket.new(source_id2), packets2_2} == p1
+    assert {Otis.Packet.step(TestPacket.new(source_id2)), packets2_2} == p1
     assert {TestPacket.new(source_id2), packets2_1} == p2
-    assert {TestPacket.new(source_id1), packets1_2} == p3
-    assert {TestPacket.new(source_id1), packets1_1} == p4
+    assert {%Otis.Packet{TestPacket.new(source_id1) | index: 9, position: 180}, packets1_2} == p3
+    assert {%Otis.Packet{TestPacket.new(source_id1) | index: 8, position: 160}, packets1_1} == p4
   end
 
-  test "it broadcasts source playback position", _context do
+  test "it broadcasts source playback position", %{ zone_id: zone_id, source1: source1, source2: source2 } = context do
+    buffer_size = 5
+    poll_interval = round(context.opts.stream_interval / 1)
 
+    clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
+
+    time = context.timestamp.(0)
+
+    [source_id1, _] = source1
+    [source_id2, _] = source2
+
+    Enum.reduce 1..10, TestPacket.new(source_id1), fn(n, packet) ->
+      Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
+      assert_receive {:emit, _, _}, 200, "Not received #{n}"
+      %{ position: position } = packet
+      assert_receive {:source_progress, ^zone_id, ^source_id1, ^position, 60_000}
+      Otis.Packet.step(packet)
+    end
   end
 end

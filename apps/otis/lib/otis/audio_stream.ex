@@ -62,10 +62,10 @@ defmodule Otis.AudioStream do
     audio_frame(enumerate_source(state))
   end
 
-  defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
+  defp audio_frame(%S{ state: :stopped, packet: packet, buffer: buffer } = state)
   when byte_size(buffer) > 0 do
     state = %S{state | buffer: <<>> } |> update_packet
-    {:frame, {:ok, state.packet, buffer}, state}
+    {:frame, {:ok, packet, buffer}, state}
   end
 
   defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
@@ -83,10 +83,10 @@ defmodule Otis.AudioStream do
     stream |> Otis.SourceStream.chunk |> append_and_send(state)
   end
 
-  defp audio_frame(%S{ buffer: buffer, packet_size: packet_size } = state) do
+  defp audio_frame(%S{ buffer: buffer, packet: packet, packet_size: packet_size } = state) do
     << data :: binary-size(packet_size), rest :: binary >> = buffer
     state = %S{ state | buffer: rest } |> update_packet
-    {:frame, {:ok, state.packet, data}, state}
+    {:frame, {:ok, packet, data}, state}
   end
 
   defp append_and_send({:ok, data}, %S{buffer: buffer } = state) do
