@@ -3,10 +3,13 @@ defmodule Otis do
 
   @sample_freq 44100
   @sample_bits 16
+  @sample_bytes round(@sample_bits / 8)
   @sample_channels 2
 
   @stream_frame_bits  192
   @stream_frame_bytes 24
+
+  @bytes_per_second  (@sample_freq * @sample_bytes * @sample_channels)
 
   # Final bitrate  is 176,400 Bytes/s
   # So 176400 = @stream_bytes_per_step * ( 1000 / @stream_interval_ms)
@@ -26,11 +29,13 @@ defmodule Otis do
 
   def sample_freq, do: @sample_freq
   def sample_bits, do: @sample_bits
+  def sample_bytes, do: @sample_bytes
   def sample_channels, do: @sample_channels
 
   def stream_interval_ms, do: @stream_interval_ms
   def stream_interval_us, do: @stream_interval_us
   def stream_bytes_per_step, do: @stream_bytes_per_step
+  def stream_bytes_per_second, do: @bytes_per_second
 
   def start(_type, _args) do
     Otis.Supervisor.start_link([packet_interval: @stream_interval_us, packet_size: @stream_bytes_per_step])

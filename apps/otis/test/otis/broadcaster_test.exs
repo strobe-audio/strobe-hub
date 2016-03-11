@@ -1,3 +1,6 @@
+defmodule TestPacket do
+  def new(id), do: Otis.Packet.new(id, 0, 0, 1000)
+end
 defmodule Otis.Test.ArrayAudioStream do
   use GenServer
 
@@ -27,7 +30,7 @@ defmodule Otis.Test.ArrayAudioStream do
     next_packet(%{ state | packets: packets, source_id: source_id, sources: sources})
   end
   def next_packet(%{packets: [packet | packets], source_id: source_id} = state) do
-    { {:ok, source_id, packet}, %{ state | packets: packets } }
+    { {:ok, TestPacket.new(source_id), packet}, %{ state | packets: packets } }
   end
 end
 
@@ -204,11 +207,11 @@ defmodule Otis.BroadcasterTest do
   test "audio stream sends right packets & source ids", %{source1: source1, source2: source2, stream: stream} do
     [source_id1, packets1] = source1
     Enum.each packets1, fn(packet) ->
-      {:ok, ^source_id1, ^packet} = Otis.AudioStream.frame(stream)
+      {:ok, %Otis.Packet{source_id: ^source_id1}, ^packet} = Otis.AudioStream.frame(stream)
     end
     [source_id2, packets2] = source2
     Enum.each packets2, fn(packet) ->
-      {:ok, ^source_id2, ^packet} = Otis.AudioStream.frame(stream)
+      {:ok, %Otis.Packet{source_id: ^source_id2}, ^packet} = Otis.AudioStream.frame(stream)
     end
     :stopped = Otis.AudioStream.frame(stream)
   end
@@ -415,9 +418,13 @@ defmodule Otis.BroadcasterTest do
     packets2_1 = Enum.fetch!(packets2, 0)
     packets2_2 = Enum.fetch!(packets2, 1)
 
-    assert {source_id2, packets2_2} == p1
-    assert {source_id2, packets2_1} == p2
-    assert {source_id1, packets1_2} == p3
-    assert {source_id1, packets1_1} == p4
+    assert {TestPacket.new(source_id2), packets2_2} == p1
+    assert {TestPacket.new(source_id2), packets2_1} == p2
+    assert {TestPacket.new(source_id1), packets1_2} == p3
+    assert {TestPacket.new(source_id1), packets1_1} == p4
+  end
+
+  test "it broadcasts source playback position", _context do
+
   end
 end

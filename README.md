@@ -122,6 +122,12 @@ So much.
 - sources must have an idea of their length? how can I calculate the playback
   position from within the audio pipeline?
 
+- sources give their position and duration in ms (or us -- whatever's easier)
+- new sources must start at position 0
+- half played sources must start at previous position
+- events update db record
+- events come every 1s
+
 UI
 --
 

@@ -8,9 +8,10 @@ defmodule Otis.State.Source do
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "sources" do
-    field :position,    :integer
-    field :source_type, :string
-    field :source_id,   :string
+    field :position,          :integer
+    field :source_type,       :string
+    field :source_id,         :string
+    field :playback_position, :integer
 
     belongs_to :zone, Otis.State.Zone, type: Ecto.UUID
   end
@@ -53,7 +54,7 @@ defmodule Otis.State.Source do
               |> String.to_atom
               |> struct(id: record.source_id)
               |> Otis.Source.Origin.load!
-    {record.id, source}
+    {record.id, record.playback_position, source}
   end
 
   def find(id) do

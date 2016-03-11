@@ -99,8 +99,8 @@ defmodule Otis.SourceList do
   def handle_call(:next_source, _from, %{sources: []} = state) do
     {:reply, :done, state}
   end
-  def handle_call(:next_source, _from, %{sources: [{id, source} | sources]} = state) do
-    {:reply, {:ok, id, source}, %{ state | sources: sources }}
+  def handle_call(:next_source, _from, %{sources: [{id, playback_position, source} | sources]} = state) do
+    {:reply, {:ok, id, playback_position, source}, %{ state | sources: sources }}
   end
 
   def handle_call(:clear, _from, state) do
@@ -125,7 +125,7 @@ defmodule Otis.SourceList do
 
   # TODO: replace count with the source's list id
   def handle_call({:skip, id}, _from, %{sources: sources} = state) do
-    {drop, keep} = sources |> Enum.split_while(fn({source_id, _}) -> source_id != id end)
+    {drop, keep} = sources |> Enum.split_while(fn({source_id, _, _}) -> source_id != id end)
     Otis.State.Events.notify({:sources_skipped, state.id, Enum.map(drop, &(elem(&1, 0)))})
     {:reply, {:ok, length(keep)}, %{ state | sources: keep }}
   end
@@ -149,7 +149,7 @@ defmodule Otis.SourceList do
   end
 
   def source_with_id(source) do
-    {next_source_id(source), source}
+    {next_source_id(source), 0, source}
   end
 
   # Has to be valid/unique across all source lists and across broadcaster restarts

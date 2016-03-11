@@ -1,3 +1,40 @@
+defmodule TestUtils do
+  def md5(extract) do
+    md5(extract, :crypto.hash_init(:md5))
+  end
+
+  defp md5(extract, md5) do
+    _md5(extract.(), extract, md5)
+  end
+
+  defp _md5({:ok, data}, extract, md5) do
+    _md5(extract.(), extract, :crypto.hash_update(md5, data))
+  end
+
+  defp _md5(:stopped, _extract, md5) do
+    :crypto.hash_final(md5) |> Base.encode16 |> String.downcase
+  end
+
+  defp _md5(:done, _extract, md5) do
+    :crypto.hash_final(md5) |> Base.encode16 |> String.downcase
+  end
+
+  def acc_stream(stream) do
+    acc_stream(stream, <<>>)
+  end
+
+  defp acc_stream(stream, acc) do
+    _acc_stream(stream, Otis.AudioStream.frame(stream), acc)
+  end
+
+  defp _acc_stream(stream, {:ok, _source_id, data}, acc) do
+    _acc_stream(stream, Otis.AudioStream.frame(stream), << acc <> data >>)
+  end
+
+  defp _acc_stream(_stream, :stopped, acc) do
+    acc
+  end
+end
 
 defmodule MockReceiver do
   alias Otis.Receivers

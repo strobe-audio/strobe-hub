@@ -30,6 +30,9 @@ defprotocol Otis.Source do
 
   @spec metadata(t) :: Otis.Source.Metadata.t
   def metadata(source)
+
+  @spec duration(t) :: {:ok, integer}
+  def duration(source)
 end
 
 defimpl Otis.Source, for: Otis.Source.File do
@@ -57,5 +60,9 @@ defimpl Otis.Source, for: Otis.Source.File do
 
   def metadata(%File{metadata: metadata}) do
     metadata
+  end
+
+  def duration(%File{metadata: metadata}) do
+    {:ok, metadata.duration_ms}
   end
 end

@@ -1,8 +1,13 @@
 defmodule Otis.SourceStream do
+  @moduledoc """
+  Given a Source instance returns a process that will open the source and read
+  chunks of data from it.
+  """
+
   require Logger
   use     GenServer
 
-  @doc "Gives the next chunk of datea from the source"
+  @doc "Gives the next chunk of data from the source"
   def chunk(pid) do
     GenServer.call(pid, :chunk)
   end
@@ -16,14 +21,16 @@ defmodule Otis.SourceStream do
   end
 
   @doc "Returns a new SourceStream for the given source"
-  def new(id, source) do
-    {:ok, pid} = start_link(source)
-    {:ok, id, pid}
+  def new(id, playback_position, source) do
+    {:ok, pid} = start_link(source, playback_position)
+    {:ok, duration} = Otis.Source.duration(source)
+    {:ok, id, playback_position, duration, pid}
   end
 
-  def start_link(source) do
+  def start_link(source, playback_position) do
     state = %{
       source: source,
+      playback_position: playback_position,
       outputstream: nil,
       inputstream: nil,
       transcode_pid: nil,
@@ -63,8 +70,9 @@ defmodule Otis.SourceStream do
     {:reply, :done, %{state | inputstream: nil, outputstream: nil, transcode_pid: nil}}
   end
 
-  defp open(%{pending_streams: nil} = state) do
+  defp open(%{pending_streams: nil, playback_position: playback_position} = state) do
     inputstream = input_stream(state)
+    # IO.inspect [:stream_offset_ms, playback_position]
     { pid, outputstream } = Otis.Transcoders.Avconv.transcode(inputstream, stream_type(state))
     %{state | pending_streams: {inputstream, outputstream, pid} }
   end

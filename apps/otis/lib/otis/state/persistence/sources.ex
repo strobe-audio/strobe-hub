@@ -34,17 +34,18 @@ defmodule Otis.State.Persistence.Sources do
   defp load_source(nil) do
     nil
   end
-  defp load_source({id, _source}) do
+  defp load_source({id, _position, _source}) do
     load_source(id)
   end
   defp load_source(id) when is_binary(id) do
     Source.find(id)
   end
 
-  defp new_source(nil, zone_id, position, {id, source}) do
+  defp new_source(nil, zone_id, position, {id, playback_position, source}) do
     %Source{
       id: id,
       position: position,
+      playback_position: playback_position,
       zone_id: zone_id,
       source_id: source_id(source),
       source_type: source_type(source),

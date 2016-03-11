@@ -8,7 +8,14 @@ defmodule Otis.AudioStream do
   require Logger
 
   defmodule S do
-    defstruct source_list: nil, source_id: nil, source: nil, buffer: <<>>, chunk_size: 3528, state: :stopped
+    defstruct [
+      :source_list,
+      :packet,
+      :stream,
+      buffer:      <<>>,
+      packet_size:  3528,
+      state:       :stopped
+    ]
   end
 
   def frame(pid) do
@@ -19,16 +26,16 @@ defmodule Otis.AudioStream do
     GenServer.call(pid, :buffer)
   end
 
-  @doc """
-  Create a new source list with the given SourceSource which is anything that
-  implements Enumerable
-  """
-  def start_link(source_list, chunk_size) do
-    GenServer.start_link(__MODULE__, %S{source_list: source_list, chunk_size: chunk_size})
+  def start_link(source_list, packet_size) do
+    GenServer.start_link(__MODULE__, %S{source_list: source_list, packet_size: packet_size})
   end
 
   def start_link(source_list) do
     GenServer.start_link(__MODULE__, %S{source_list: source_list})
+  end
+
+  def init(state) do
+    {:ok, state}
   end
 
   # TODO: Do I need to implement this
@@ -36,7 +43,7 @@ defmodule Otis.AudioStream do
     {:reply, :ok, state}
   end
 
-  def handle_call(:frame, _from, %S{source: nil, state: :stopped} = state) do
+  def handle_call(:frame, _from, %S{stream: nil, state: :stopped} = state) do
     state = %S{ state | state: :starting }
     {:frame, frame, state } = audio_frame(state)
     {:reply, frame, state}
@@ -48,37 +55,38 @@ defmodule Otis.AudioStream do
   end
 
   def handle_call(:flush, _from, state) do
-    {:reply, :ok, %S{ state | source: nil, state: :stopped, buffer: <<>> }}
+    {:reply, :ok, %S{ state | stream: nil, state: :stopped, buffer: <<>> }}
   end
 
-  defp audio_frame(%S{source: nil, state: :starting} = state) do
+  defp audio_frame(%S{stream: nil, state: :starting} = state) do
     audio_frame(enumerate_source(state))
   end
 
   defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
   when byte_size(buffer) > 0 do
-    {:frame, { :ok, state.source_id, buffer }, %S{state | buffer: <<>> }}
+    state = %S{state | buffer: <<>> } |> update_packet
+    {:frame, {:ok, state.packet, buffer}, state}
   end
 
   defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
   when byte_size(buffer) == 0 do
-    {:frame, :stopped, %S{ state | source: nil} }
+    {:frame, :stopped, %S{ state | stream: nil }}
   end
 
-  defp audio_frame(%S{ source: nil, buffer: buffer, chunk_size: chunk_size} = state)
-  when byte_size(buffer) < chunk_size do
-    audio_frame(enumerate_source(state))
+  defp audio_frame(%S{ stream: nil, buffer: buffer, packet_size: packet_size} = state)
+  when byte_size(buffer) < packet_size do
+    state |> enumerate_source |> audio_frame
   end
 
-  defp audio_frame(%S{ source: source, buffer: buffer, chunk_size: chunk_size} = state)
-  when byte_size(buffer) < chunk_size do
-    source |> Otis.SourceStream.chunk |> append_and_send(state)
+  defp audio_frame(%S{ stream: stream, buffer: buffer, packet_size: packet_size} = state)
+  when byte_size(buffer) < packet_size do
+    stream |> Otis.SourceStream.chunk |> append_and_send(state)
   end
 
-  defp audio_frame(%S{ buffer: buffer, chunk_size: chunk_size } = state) do
-    << data :: binary-size(chunk_size), rest :: binary >> = buffer
-    frame = {:ok, state.source_id, data}
-    {:frame, frame, %S{ state | buffer: rest } }
+  defp audio_frame(%S{ buffer: buffer, packet_size: packet_size } = state) do
+    << data :: binary-size(packet_size), rest :: binary >> = buffer
+    state = %S{ state | buffer: rest } |> update_packet
+    {:frame, {:ok, state.packet, data}, state}
   end
 
   defp append_and_send({:ok, data}, %S{buffer: buffer } = state) do
@@ -86,25 +94,44 @@ defmodule Otis.AudioStream do
   end
 
   defp append_and_send(:done, state) do
-    audio_frame(%S{state | source: nil})
+    audio_frame(%S{state | stream: nil})
   end
 
-  defp enumerate_source(%S{source_list: source_list, source: nil} = state) do
-    case open_source(Otis.SourceList.next(source_list)) do
-      {:ok, id, source_stream} ->
-        %S{ state | source_id: id, source: source_stream, state: :playing }
-      :done ->
-        %S{ state | state: :stopped }
-    end
+  defp enumerate_source(%S{stream: nil} = state) do
+    state |> next_source |> open_source |> use_stream(state)
   end
   defp enumerate_source(state) do
     state
   end
 
+  defp next_source(state) do
+    Otis.SourceList.next(state.source_list)
+  end
+
   defp open_source(:done) do
     :done
   end
-  defp open_source({:ok, id, source}) do
-    Otis.SourceStream.new(id, source)
+  defp open_source({:ok, id, playback_position, source}) do
+    Otis.SourceStream.new(id, playback_position, source)
+  end
+
+  # TODO: use source needs the stream & id, *and* the playback position and
+  # duration, *or* some object that will manage the playback progress every
+  # packet we emit needs to be tagged with the {position, duration} tuple
+  # so that the broadcaster can use that info to emit position information when
+  # the packet has been played ( i.e. t >= packet timestamp )
+  defp use_stream({:ok, id, playback_position, duration, stream}, state) do
+    %S{ state | stream: stream } |> new_packet(id, playback_position, duration)
+  end
+  defp use_stream(:done, state) do
+    %S{ state | state: :stopped }
+  end
+
+  defp new_packet(state, id, position, duration) do
+    %S{ state | state: :playing, packet: Otis.Packet.new(id, position, duration, state.packet_size) }
+  end
+
+  defp update_packet(%S{packet: packet} = state) do
+    %S{ state | packet: Otis.Packet.step(packet) }
   end
 end

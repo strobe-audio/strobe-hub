@@ -7,6 +7,7 @@ defmodule Otis.Zone.Broadcaster do
 
   use     GenServer
   require Logger
+  alias   Otis.Packet
 
   # initial packets are sent out with this interval
   @fast_emit_interval 10_000
@@ -65,13 +66,7 @@ defmodule Otis.Zone.Broadcaster do
   def init(opts) do
     Logger.info "Starting broadcaster #{inspect opts}"
     # Logger.disable(self)
-    state = %S{
-      id: opts.id,
-      zone: opts.zone,
-      audio_stream: opts.audio_stream,
-      emitter: opts.emitter,
-      stream_interval: opts.stream_interval
-    }
+    state = struct(%S{}, opts)
     {:ok, state}
   end
 
@@ -251,9 +246,9 @@ defmodule Otis.Zone.Broadcaster do
     } |> monitor_in_flight
   end
 
-  defp emit_packet!({timestamp, source_id, data}, emitter, emit_time) do
+  defp emit_packet!({timestamp, packet, data}, emitter, emit_time) do
     {:emitter, emitter} = Otis.Broadcaster.Emitter.emit(emitter, emit_time, {timestamp, data})
-    {emitter, timestamp, source_id, data}
+    {emitter, timestamp, packet, data}
   end
 
   defp monitor_in_flight(state) do
@@ -271,14 +266,14 @@ defmodule Otis.Zone.Broadcaster do
   defp monitor_source([], state) do
     state
   end
-  defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: nil} = state) do
+  defp monitor_source([{_, _, %Packet{source_id: source_id}, _} | packets], %S{source_id: nil} = state) do
     source_changed(source_id, nil, state)
     monitor_source(packets, %S{ state | source_id:  source_id })
   end
-  defp monitor_source([{_, _, source_id, _} | packets], %S{source_id: source_id} = state) do
+  defp monitor_source([{_, _, %Packet{source_id: source_id}, _} | packets], %S{source_id: source_id} = state) do
     monitor_source(packets, state)
   end
-  defp monitor_source([{_, _, new_source_id, _} | packets], %S{source_id: old_source_id} = state)
+  defp monitor_source([{_, _, %Packet{source_id: new_source_id}, _} | packets], %S{source_id: old_source_id} = state)
   when new_source_id != old_source_id do
     source_changed(new_source_id, old_source_id, state)
     monitor_source(packets, %S{ state | source_id:  new_source_id })
@@ -294,7 +289,7 @@ defmodule Otis.Zone.Broadcaster do
   # the audio starts where it left off rather than losing a buffer's worth
   # of audio.
   defp rebuffer_in_flight(%{audio_stream: audio_stream} = state) do
-    packets = state |> unplayed_packets |> Enum.map(fn({_, _, source_id, data}) -> {source_id, data} end)
+    packets = state |> unplayed_packets |> Enum.map(fn({_, _, packet, data}) -> {packet, data} end)
     GenServer.cast(audio_stream, {:rebuffer, packets})
     %S{ state | in_flight: [] }
   end
@@ -302,7 +297,7 @@ defmodule Otis.Zone.Broadcaster do
   defp bufferable_packets(state) do
     state
     |> unplayed_packets(current_time(state) + state.latency)
-    |> Enum.map(fn({_, timestamp, source_id, data}) -> {timestamp, source_id, data} end)
+    |> Enum.map(fn({_, timestamp, packet, data}) -> {timestamp, packet, data} end)
     |> Enum.reverse
   end
 
@@ -322,13 +317,13 @@ defmodule Otis.Zone.Broadcaster do
   defp do_stop_inflight_packets([]) do
   end
 
-  defp do_stop_inflight_packets([{emitter, timestamp, _source_id, _data} = _packet | packets]) do
+  defp do_stop_inflight_packets([{emitter, timestamp, _packet, _data} | packets]) do
     Otis.Zone.Emitter.discard!(emitter, timestamp)
     do_stop_inflight_packets(packets)
   end
 
-  defp timestamp_packet({packet_number, source_id, data}, state) do
-    {timestamp_for_packet(packet_number, state), source_id, data}
+  defp timestamp_packet({packet_number, packet, data}, state) do
+    {timestamp_for_packet(packet_number, state), packet, data}
   end
 
   defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = _state) do
@@ -349,8 +344,8 @@ defmodule Otis.Zone.Broadcaster do
 
   defp next_packet(n, buf, packet_number, audio_stream) do
     case Otis.AudioStream.frame(audio_stream) do
-      {:ok, source_id, packet} ->
-        buf = [{packet_number, source_id, packet} | buf]
+      {:ok, packet, data} ->
+        buf = [{packet_number, packet, data} | buf]
         next_packet(n - 1, buf, packet_number + 1, audio_stream)
       :stopped ->
         buf = [:stop | buf]

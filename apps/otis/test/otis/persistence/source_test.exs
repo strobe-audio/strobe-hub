@@ -1,10 +1,11 @@
 defmodule Otis.Test.TestSource do
   defstruct [
     :id,
+    duration: 60000,
     loaded: false,
   ]
-  def new do
-    %__MODULE__{id: Otis.uuid}
+  def new(duration \\ 60000) do
+    %__MODULE__{id: Otis.uuid, duration: duration}
   end
 end
 
@@ -31,6 +32,10 @@ defimpl Otis.Source, for: Otis.Test.TestSource do
 
   def metadata(_track) do
     # noop
+  end
+
+  def duration(track) do
+    {:ok, track.duration}
   end
 end
 
@@ -75,7 +80,7 @@ defmodule Otis.Persistence.SourceTest do
   test "adding a source to a list persists to the db", context do
     Otis.SourceList.append(context.source_list, TestSource.new)
     {:ok, [entry]} = Otis.SourceList.list(context.source_list)
-    {source_id, source} = entry
+    {source_id, 0, source} = entry
     assert_receive {:new_source_created, _}
     [record] = Otis.State.Source.all
     assert record.id == source_id
@@ -87,8 +92,8 @@ defmodule Otis.Persistence.SourceTest do
   test "adding multiple sources persists to the db", context do
     Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
-    {source_id1, source1} = entry1
-    {source_id2, source2} = entry2
+    {source_id1, 0, source1} = entry1
+    {source_id2, 0, source2} = entry2
     assert_receive {:new_source_created, _}
     assert_receive {:new_source_created, _}
     [record1, record2] = Otis.State.Source.all
@@ -110,8 +115,8 @@ defmodule Otis.Persistence.SourceTest do
     assert_receive {:new_source_created, _}
     assert_receive {:new_source_created, _}
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
-    {source_id1, source1} = entry1
-    {source_id2, source2} = entry2
+    {source_id1, 0, source1} = entry1
+    {source_id2, 0, source2} = entry2
     [record1, record2] = Source.for_zone(context.zone)
 
     assert record1.id == source_id1
@@ -130,8 +135,8 @@ defmodule Otis.Persistence.SourceTest do
   test "a source played event deletes the corresponding db record", context do
     Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
-    {source_id1, _source1} = entry1
-    {source_id2, source2} = entry2
+    {source_id1, 0, _source1} = entry1
+    {source_id2, 0, source2} = entry2
     Otis.State.Events.notify({:source_changed, context.zone.id, source_id1, source_id2})
     assert_receive {:old_source_removed, ^source_id1}
     [record2] = Otis.State.Source.all
@@ -144,8 +149,8 @@ defmodule Otis.Persistence.SourceTest do
   test "a final source played event leaves the source list empty", context do
     Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
-    {source_id1, _source1} = entry1
-    {source_id2, _source2} = entry2
+    {source_id1, 0, _source1} = entry1
+    {source_id2, 0, _source2} = entry2
     Otis.State.Events.notify({:source_changed, context.zone.id, source_id1, source_id2})
     assert_receive {:old_source_removed, ^source_id1}
     Otis.State.Events.notify({:source_changed, context.zone.id, source_id2, nil})
@@ -157,7 +162,7 @@ defmodule Otis.Persistence.SourceTest do
     sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new]
     Otis.SourceList.append(context.source_list, sources)
     assert_receive {:new_source_created, _}
-    {:ok, [{id1, _source1}, {id2, _source2}, {id3, _source3}, {id4, _source4}]} = Otis.SourceList.list(context.source_list)
+    {:ok, [{id1, 0, _source1}, {id2, 0, _source2}, {id3, 0, _source3}, {id4, 0, _source4}]} = Otis.SourceList.list(context.source_list)
     ids = [id1, id2, id3, id4]
     positions = ids |> Enum.map(fn(id) -> Otis.State.Source.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1, 2, 3] == positions
@@ -173,7 +178,7 @@ defmodule Otis.Persistence.SourceTest do
     Otis.SourceList.append(context.source_list, sources)
     assert_receive {:new_source_created, _}, 200
     {:ok, entries} = Otis.SourceList.list(context.source_list)
-    ids = Enum.map(entries, fn({id, _}) -> id end)
+    ids = Enum.map(entries, fn({id, _, _}) -> id end)
     skip_to = Enum.at(ids, -2)
     skipped_ids = Enum.take_while(ids, fn(id) -> id != skip_to end)
     kept_ids = Enum.drop_while(ids, fn(id) -> id != skip_to end)
@@ -195,8 +200,8 @@ defmodule Otis.Persistence.SourceTest do
     {:ok, []} = Otis.SourceList.list(context.source_list)
     Otis.Startup.restore_source_lists(Otis.State, Otis.Zones)
     # Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
-    [{id1, source1}, {id2, source2}] = sources
-    {:ok, [{ed1, entry1}, {ed2, entry2}]} = Otis.SourceList.list(context.source_list)
+    [{id1, 0, source1}, {id2, 0, source2}] = sources
+    {:ok, [{ed1, 0, entry1}, {ed2, 0, entry2}]} = Otis.SourceList.list(context.source_list)
     assert id1 == ed1
     assert id2 == ed2
     assert %TestSource{source1 | loaded: true} == entry1
