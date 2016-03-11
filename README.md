@@ -63,6 +63,7 @@ So much.
       (janis) lib/janis/broadcaster.ex:28: Janis.Broadcaster.start_broadcaster/4
       (janis) lib/janis/dnssd.ex:32: Janis.DNSSD.handle_info/2
       ```
+- [ ] SourceList.clear doesn't send any events or delete any sources from the db
 
 **Core:**
 
