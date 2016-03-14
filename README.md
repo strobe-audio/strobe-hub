@@ -65,6 +65,8 @@ So much.
       ```
 - [ ] SourceList.clear doesn't send any events or delete any sources from the db
 
+- [ ] 'Progress event for unknown source' -- why? Last track maybe?
+
 **Core:**
 
 - [ ] receiver connection keepalive/monitoring. ping-pong messages so that if a
@@ -75,6 +77,8 @@ So much.
   a connection being down...)
 
 - [ ] Playback progress.
+
+- [ ] Wrap all zone pids in Zone struct
 
 - [ ] move receiver between zones
 
