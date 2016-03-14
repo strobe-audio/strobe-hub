@@ -188,7 +188,7 @@ Otis.SourceList.append(ss, source)
 {:ok, zone} = Otis.Zones.find "office"
 {:ok, ss} = Otis.Zone.source_list(zone)
 
-{:ok, zone} = Otis.Zones.find "office"
+{:ok, zone} = Otis.Zones.find(Otis.State.Zone.first.id)
 {:ok, ss} = Otis.Zone.source_list(zone)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/song.mp3")
 Otis.SourceList.append(ss, source)
@@ -213,6 +213,7 @@ Otis.SourceList.append(ss, source)
 {:ok, source} = Otis.Source.File.new("/Users/garry/Seafile/Peep/audio/song.mp3")
 Otis.SourceList.append(ss, source)
 
+{:ok, zone} = Otis.Zones.find(Otis.State.Zone.first.id)
 Otis.Zone.play_pause(zone)
 
 #############
