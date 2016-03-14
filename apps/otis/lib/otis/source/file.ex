@@ -143,6 +143,8 @@ defimpl Otis.Source.Origin, for: Otis.Source.File do
   alias Otis.Source.File
 
   def load!(%File{id: id}) do
-    File.new!(id)
+    Otis.Source.File.Cache.lookup(id, fn ->
+      File.new!(id)
+    end)
   end
 end
