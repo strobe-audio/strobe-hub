@@ -104,6 +104,8 @@ So much.
   `{:source_changed, "<zone_id>", nil, "<source_id>"}` at the beginning.
 - [x] Replace `SourceList.append_source` and `SourceList.append_sources` with
   `SourceList.append`
+- [x] Leaking SourceStream processes (can return `{stop,Reason,Reply,NewState}`
+  from `next_chunk`)
 
 **Nice to have:**
 

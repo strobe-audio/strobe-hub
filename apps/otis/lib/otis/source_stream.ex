@@ -22,7 +22,7 @@ defmodule Otis.SourceStream do
 
   @doc "Returns a new SourceStream for the given source"
   def new(id, playback_position, source) do
-    {:ok, pid} = start_link(source, playback_position)
+    {:ok, pid} = Otis.SourceStreamSupervisor.start(source, playback_position)
     {:ok, duration} = Otis.Source.duration(source)
     {:ok, id, playback_position, duration, pid}
   end
@@ -65,9 +65,12 @@ defmodule Otis.SourceStream do
   end
 
   defp next_chunk(:error, %{source: source, inputstream: inputstream} = state) do
-    # TODO: can I tell the transcode process to exit or will it just get GC'd
     Otis.Source.close(source, inputstream)
-    {:reply, :done, %{state | inputstream: nil, outputstream: nil, transcode_pid: nil}}
+    {:stop,
+      {:shutdown, :done},
+      :done, # reply
+      %{state | inputstream: nil, outputstream: nil, transcode_pid: nil}
+    }
   end
 
   defp open(%{pending_streams: nil, playback_position: playback_position} = state) do
