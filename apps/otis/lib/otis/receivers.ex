@@ -205,6 +205,14 @@ defmodule Otis.Receivers do
     GenServer.call(pid, {:receiver, id})
   end
 
+  @doc "A useful wrapper command to set the volume for a given receiver id"
+  def volume(id, volume)
+  when is_binary(id) do
+    {:ok, receiver} = receiver(id)
+    Otis.Receiver.volume receiver, volume
+    {:ok, receiver}
+  end
+
   defp config do
     Application.get_env :otis, __MODULE__
   end
