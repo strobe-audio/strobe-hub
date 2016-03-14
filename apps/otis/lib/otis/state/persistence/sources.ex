@@ -27,6 +27,12 @@ defmodule Otis.State.Persistence.Sources do
     end
     {:ok, state}
   end
+  def handle_event({:source_progress, _zone_id, source_id, position, _duration}, state) do
+    Repo.transaction fn ->
+      source_id |> load_source |> source_progress(source_id, position)
+    end
+    {:ok, state}
+  end
   def handle_event(_evt, state) do
     {:ok, state}
   end
@@ -75,6 +81,14 @@ defmodule Otis.State.Persistence.Sources do
   defp sources_skipped([source | sources], zone_id) do
     source |> Source.delete!
     sources_skipped(sources, zone_id)
+  end
+
+  defp source_progress(nil, id, position) do
+    Logger.warn "Progress event for unknown source #{ inspect id } (#{ position })"
+    nil
+  end
+  defp source_progress(source, _id, position) do
+    Source.playback_position(source, position)
   end
 
   defp source_type(source) do

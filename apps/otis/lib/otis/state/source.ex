@@ -77,4 +77,10 @@ defmodule Otis.State.Source do
     |> Enum.map(fn({s, p}) -> Ecto.Changeset.change(s, position: p) end)
     |> Enum.each(&Repo.update!/1)
   end
+
+  def playback_position(source, position) do
+    source
+    |> Ecto.Changeset.change(playback_position: position)
+    |> Repo.update!
+  end
 end

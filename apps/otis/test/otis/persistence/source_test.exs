@@ -207,4 +207,16 @@ defmodule Otis.Persistence.SourceTest do
     assert %TestSource{source1 | loaded: true} == entry1
     assert %TestSource{source2 | loaded: true} == entry2
   end
+
+  test "source progress events update the matching db record", context do
+    sources = [TestSource.new, TestSource.new]
+    Otis.SourceList.append(context.source_list, sources)
+    assert_receive {:new_source_created, _}, 200
+    {:ok, entries} = Otis.SourceList.list(context.source_list)
+    assert [0, 0] == Enum.map entries, fn({_id, position, _source}) -> position end
+    [{id1, _, _}, _] = entries
+    Otis.State.Events.sync_notify({:source_progress, context.zone.id, id1, 1000, 2000})
+    source = Otis.State.Source.find(id1)
+    assert source.playback_position == 1000
+  end
 end
