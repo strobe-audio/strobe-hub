@@ -1,4 +1,10 @@
 defmodule Otis.Source.File.Cache do
+  @moduledoc """
+  In dev mode Source.File lookup is slow enough that having a lot of sources
+  means initialization can take a long time. This wraps the file metadata
+  lookup with a cache to avoid that problem.
+  """
+
   use     GenServer
   require Logger
 
