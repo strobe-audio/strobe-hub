@@ -72,8 +72,7 @@ defmodule Otis.SourceStream do
 
   defp open(%{pending_streams: nil, playback_position: playback_position} = state) do
     inputstream = input_stream(state)
-    # IO.inspect [:stream_offset_ms, playback_position]
-    { pid, outputstream } = Otis.Transcoders.Avconv.transcode(inputstream, stream_type(state))
+    { pid, outputstream } = Otis.Transcoders.Avconv.transcode(inputstream, stream_type(state), playback_position)
     %{state | pending_streams: {inputstream, outputstream, pid} }
   end
 
