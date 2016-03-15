@@ -88,8 +88,6 @@ So much.
       2016-03-15 12:27:07.385 [info]  EVENT: {:old_source_removed, "f32db771-39b4-4992-954d-0bf1b616d2fa"}
       ```
 
-- [ ] Crash attempting to play a zone with no attached receivers
-
 **Core:**
 
 - [ ] receiver connection keepalive/monitoring. ping-pong messages so that if a
@@ -141,6 +139,7 @@ So much.
   from `next_chunk`)
 - [x] Playback progress.
 - [x] Zone.skip doesn't delete the source db entry for the currently playing source
+- [x] Crash attempting to play a zone with no attached receivers
 
 **Nice to have:**
 

@@ -303,11 +303,14 @@ defmodule Otis.Zone do
     receiver_latency(zone) + @buffer_latency
   end
 
-  def receiver_latency(%S{receivers: receivers}) when map_size(receivers) == 0 do
-    Logger.warn "No receivers attached to zone..."
+  def receiver_latency(%S{receivers: receivers} = state) do
+    receivers |> MapSet.to_list |> receiver_latency(state)
+  end
+  def receiver_latency([], state) do
+    Logger.warn "No receivers attached to zone #{ state.id }"
     0
   end
-  def receiver_latency(%S{receivers: receivers}) do
+  def receiver_latency(receivers, _state) do
     receivers |> Enum.map(&Receiver.latency!/1) |> Enum.max
   end
 
