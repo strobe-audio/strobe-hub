@@ -63,6 +63,10 @@ defmodule Otis.State.Persistence.Sources do
     Logger.warn "Adding source with duplicate id #{id} zone:#{zone_id}"
   end
 
+  # Happens when a zone starts playing
+  defp source_changed(nil, nil, _zone_id) do
+    nil
+  end
   defp source_changed(nil, source_id, zone_id) do
     Logger.warn "Change of unknown source #{source_id} Zone:#{ zone_id }"
   end
