@@ -65,7 +65,30 @@ So much.
       ```
 - [ ] SourceList.clear doesn't send any events or delete any sources from the db
 
-- [ ] 'Progress event for unknown source' -- why? Last track maybe?
+- [ ] 'Progress event for unknown source' -- why?
+
+      ```
+      2016-03-15 12:27:07.060 [info]  SOURCE CHANGED f32db771-39b4-4992-954d-0bf1b616d2fa => f4449b2e-60c3-49a8-9e0d-19285602ffbe
+      2016-03-15 12:27:07.060 [info]  SOURCE CHANGED f4449b2e-60c3-49a8-9e0d-19285602ffbe => f32db771-39b4-4992-954d-0bf1b616d2fa
+      2016-03-15 12:27:07.060 [warn]  Late emitter: emit time (ms): -547.68; packet play in (ms): 1378
+      2016-03-15 12:27:07.060 [warn]  Late emitter: emit time (ms): -447.84; packet play in (ms): 1478
+      2016-03-15 12:27:07.061 [warn]  Late emitter: emit time (ms): -349.12; packet play in (ms): 1576
+      2016-03-15 12:27:07.062 [warn]  Late emitter: emit time (ms): -249.84; packet play in (ms): 1676
+      2016-03-15 12:27:07.062 [warn]  deleting source "f32db771-39b4-4992-954d-0bf1b616d2fa"
+      2016-03-15 12:27:07.206 [info]  EVENT: {:source_changed, "f058c281-9186-4585-81f5-b61399c8c729", "f32db771-39b4-4992-954d-0bf1b616d2fa", "f4449b2e-60c3-49a8-9e0d-19285602ffbe"}
+      2016-03-15 12:27:07.207 [warn]  deleting source "f4449b2e-60c3-49a8-9e0d-19285602ffbe"
+      2016-03-15 12:27:07.208 [info]  SOURCE CHANGED f32db771-39b4-4992-954d-0bf1b616d2fa => f4449b2e-60c3-49a8-9e0d-19285602ffbe
+      2016-03-15 12:27:07.345 [info]  EVENT: {:source_changed, "f058c281-9186-4585-81f5-b61399c8c729", "f4449b2e-60c3-49a8-9e0d-19285602ffbe", "f32db771-39b4-4992-954d-0bf1b616d2fa"}
+      2016-03-15 12:27:07.346 [error] Progress event for unknown source "f4449b2e-60c3-49a8-9e0d-19285602ffbe" (400)
+      2016-03-15 12:27:07.356 [error] Progress event for unknown source "f32db771-39b4-4992-954d-0bf1b616d2fa" (451100)
+      2016-03-15 12:27:07.360 [info]  EVENT: {:old_source_removed, "f32db771-39b4-4992-954d-0bf1b616d2fa"}
+      2016-03-15 12:27:07.361 [warn]  deleting source "f32db771-39b4-4992-954d-0bf1b616d2fa"
+      2016-03-15 12:27:07.381 [info]  EVENT: {:source_changed, "f058c281-9186-4585-81f5-b61399c8c729", "f32db771-39b4-4992-954d-0bf1b616d2fa", "f4449b2e-60c3-49a8-9e0d-19285602ffbe"}
+      2016-03-15 12:27:07.385 [info]  EVENT: {:old_source_removed, "f4449b2e-60c3-49a8-9e0d-19285602ffbe"}
+      2016-03-15 12:27:07.385 [info]  EVENT: {:old_source_removed, "f32db771-39b4-4992-954d-0bf1b616d2fa"}
+      ```
+
+- [ ] Crash attempting to play a zone with no attached receivers
 
 **Core:**
 
@@ -78,21 +101,29 @@ So much.
 
 - [ ] Wrap all zone pids in Zone struct
 
+- [ ] Fix rebuffering of new receivers
+
 - [ ] move receiver between zones
 
 - [ ] No way of getting the currently playing track... Should be a method on
   the zone. In fact the current source list behaviour needs work. The current
   song is popped off the source list when played, so it only exists in the db
   and the zone process. But on re-start un-finished songs just pop back to the
-  top of the source-list. Gotta think of a consistent way to deal with this. It
-  definitely involves some kind of `progress` field on the source record (and a
-  corresponding 'start from this offset' function in the actual playback).
+  top of the source-list. Gotta think of a consistent way to deal with this.
 
 - [ ] Move all source list manipulations into the zone
 
 - [ ] zones stop when all receievers removed
 
-- [ ] Fix rebuffering of new receivers
+- [ ] rename `Zone` to `Channel` or `Station` -- zones are just static
+  pre-configured playlists. 'zone' is geographic but we want to think of the
+  setup more like 'tuning in' to a particular playlist -- more like a radio
+  station than a room. Want to think of the 'zone' system as a way to keep a
+  set of playlists -- we should be light about them -- it's ok to keep loads
+  (say as a way to pop ideas for songs to play later) and then drop some number
+  of receivers on to them to listen.
+
+- [ ] move source list entries between zones
 
 - [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on
   `:string` but I think this is a mistake
