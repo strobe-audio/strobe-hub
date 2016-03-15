@@ -91,27 +91,32 @@ defmodule Otis.SourceList do
 
   ###### GenServer Callbacks
 
+  defmodule S do
+    @moduledoc false
+    defstruct [:id, :sources, :position, :active]
+  end
+
   def init({id, sources}) do
-    state = %{id: id, sources: sources, position: 0}
+    state = %S{id: id, sources: sources, position: 0}
     {:ok, state}
   end
 
-  def handle_call(:next_source, _from, %{sources: []} = state) do
+  def handle_call(:next_source, _from, %S{sources: []} = state) do
     {:reply, :done, state}
   end
-  def handle_call(:next_source, _from, %{sources: [{id, playback_position, source} | sources]} = state) do
-    {:reply, {:ok, id, playback_position, source}, %{ state | sources: sources }}
+  def handle_call(:next_source, _from, %S{sources: [{id, playback_position, source} = active | sources]} = state) do
+    {:reply, {:ok, id, playback_position, source}, %S{ state | sources: sources, active: active }}
   end
 
   def handle_call(:clear, _from, state) do
-    {:reply, :ok, %{ state | sources: [] }}
+    {:reply, :ok, %S{ state | sources: [] }}
   end
 
   def handle_call(:count, _from, state) do
     {:reply, length(state.sources), state}
   end
 
-  def handle_call({:add_source, source, index}, _from, %{sources: sources} = state) do
+  def handle_call({:add_source, source, index}, _from, %S{sources: sources} = state) do
     entry = source_with_id(source)
     sources = sources |> List.insert_at(index, entry)
     Otis.State.Events.notify({
@@ -120,21 +125,22 @@ defmodule Otis.SourceList do
       insert_offset_to_position(sources, index),
       entry
     })
-    {:reply, {:ok, length(sources)}, %{ state | sources: sources }}
+    {:reply, {:ok, length(sources)}, %S{ state | sources: sources }}
   end
 
-  # TODO: replace count with the source's list id
-  def handle_call({:skip, id}, _from, %{sources: sources} = state) do
+  def handle_call({:skip, id}, _from, %S{sources: sources} = state) do
     {drop, keep} = sources |> Enum.split_while(fn({source_id, _, _}) -> source_id != id end)
+    # Make sure that we also flag the current source as needing deletion from the db
+    drop = [state.active | drop]
     Otis.State.Events.notify({:sources_skipped, state.id, Enum.map(drop, &(elem(&1, 0)))})
-    {:reply, {:ok, length(keep)}, %{ state | sources: keep }}
+    {:reply, {:ok, length(keep)}, %S{ state | sources: keep }}
   end
 
-  def handle_call(:list, _from, %{sources: sources} = state) do
+  def handle_call(:list, _from, %S{sources: sources} = state) do
     {:reply, {:ok, sources}, state}
   end
   def handle_call({:replace, new_sources}, _from, state) do
-    {:reply, :ok, %{state | sources: new_sources}}
+    {:reply, :ok, %S{state | sources: new_sources}}
   end
 
   # Converts an insertion position (e.g. -1 for end into

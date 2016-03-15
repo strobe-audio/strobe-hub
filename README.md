@@ -110,6 +110,7 @@ So much.
   `SourceList.append`
 - [x] Leaking SourceStream processes (can return `{stop,Reason,Reply,NewState}`
   from `next_chunk`)
+- [x] Zone.skip doesn't delete the source db entry for the currently playing source
 
 **Nice to have:**
 

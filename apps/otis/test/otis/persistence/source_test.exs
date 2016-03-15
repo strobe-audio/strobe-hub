@@ -190,6 +190,21 @@ defmodule Otis.Persistence.SourceTest do
     assert [0, 1] == positions
   end
 
+  test "a skip deletes the currently playing source from the db", context do
+    sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new, TestSource.new]
+    Otis.SourceList.append(context.source_list, sources)
+    assert_receive {:new_source_created, _}, 200
+    {:ok, entries} = Otis.SourceList.list(context.source_list)
+    {:ok, id, 0, source} = Otis.SourceList.next(context.source_list)
+    ids = Enum.map(entries, fn({id, _, _}) -> id end)
+    skip_to = Enum.at(ids, -2)
+    skipped_ids = Enum.take_while(ids, fn(id) -> id != skip_to end)
+    kept_ids = Enum.drop_while(ids, fn(id) -> id != skip_to end)
+    {:ok, 2} = Otis.SourceList.skip(context.source_list, skip_to)
+    zone_id = context.zone.id
+    assert_receive {:sources_skipped, ^zone_id, ^skipped_ids}
+  end
+
   test "restores source lists from db", context do
     sources = Enum.map [TestSource.new, TestSource.new], &Otis.SourceList.source_with_id/1
     sources |> Enum.with_index |> Enum.each(fn({source, position}) ->
