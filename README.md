@@ -76,8 +76,6 @@ So much.
   test of the data connection (if we're playing we'll get quick notification of
   a connection being down...)
 
-- [ ] Playback progress.
-
 - [ ] Wrap all zone pids in Zone struct
 
 - [ ] move receiver between zones
@@ -110,6 +108,7 @@ So much.
   `SourceList.append`
 - [x] Leaking SourceStream processes (can return `{stop,Reason,Reply,NewState}`
   from `next_chunk`)
+- [x] Playback progress.
 - [x] Zone.skip doesn't delete the source db entry for the currently playing source
 
 **Nice to have:**
@@ -119,22 +118,6 @@ So much.
   support for groups of tracks as entries in source lists)
 
 [simple TCP sockets]: http://stackoverflow.com/questions/4081502/sending-raw-binary-using-tcp-in-erlang
-
-#### Playback progress
-
-- source in db gets updated (every second)
-- ui gets updated (every second) but can interpolate in the meantime
-- sources have a playback position in seconds.
-- playback position can be passed to ffmpeg using the `-ss <seconds>` input
-  param https://trac.ffmpeg.org/wiki/Seeking
-- sources must have an idea of their length? how can I calculate the playback
-  position from within the audio pipeline?
-
-- sources give their position and duration in ms (or us -- whatever's easier)
-- new sources must start at position 0
-- half played sources must start at previous position
-- events update db record
-- events come every 1s
 
 UI
 --
