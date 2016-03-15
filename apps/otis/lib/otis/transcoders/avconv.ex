@@ -8,13 +8,12 @@ defmodule Otis.Transcoders.Avconv do
   Takes an input stream of the given format type and returns
   an PCM output stream
   """
-  def transcode(inputstream, type, offset_ms) do
+  def transcode(inputstream, type, offset_ms \\ 0) do
     opts = [out: :stream, in: inputstream]
     _proc = %Porcelain.Process{pid: pid, out: outstream } = Porcelain.spawn(executable, params(type, offset_ms), opts)
     {pid, outstream}
   end
 
-  defp params(input_type, offset_ms \\ 0)
   defp params(input_type, offset_ms) do
     ["-ss", ms_to_s(offset_ms), "-f", strip_leading_dot(input_type), "-i", "-" | params]
   end
