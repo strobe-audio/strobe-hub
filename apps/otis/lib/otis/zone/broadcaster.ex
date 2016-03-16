@@ -58,8 +58,8 @@ defmodule Otis.Zone.Broadcaster do
     GenServer.start_link(__MODULE__, opts, [])
   end
 
-  def buffer_receiver(broadcaster) do
-    GenServer.cast(broadcaster, :buffer_receiver)
+  def buffer_receiver(broadcaster, zone, receiver) do
+    GenServer.cast(broadcaster, {:buffer_receiver, zone, receiver})
   end
 
 
@@ -89,21 +89,29 @@ defmodule Otis.Zone.Broadcaster do
     state |> potentially_emit(interval) |> monitor_finish(:cast)
   end
 
-  @doc """
-  This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
-  but pushes back any unplayed packets to the source stream so that when
-  we press play again, we start from where we left off.
-  """
+  # This stops the broadcaster quickly (sending a <<STOP>> to the receivers)
+  # but pushes back any unplayed packets to the source stream so that when
+  # we press play again, we start from where we left off.
   def handle_cast({:stop, :stop}, state) do
     {:stop, {:shutdown, :stopped}, stop!(state)}
   end
 
-  # The resend_packets system just resulted in the newly joined receiver
-  # trying to play very stale packets and hence joining the zone with
-  # very out-of-sync audio.
-  def handle_cast(:buffer_receiver, state) do
-    packets = state |> bufferable_packets
-    resend_packets(packets, state)
+  # XXX: pre-buffering new receivers is very difficult to do without strange
+  # behavioural artifacts which are much worse than just having to wait a couple
+  # of seconds for the music to start.
+  # I will re-visit this at some point.
+  def handle_cast({:buffer_receiver, zone, receiver}, state) do
+    # packets = state |> bufferable_packets
+    # # We want to re-send the suitable unplayed packets without affecting the
+    # # playback of existing receivers, so do it in a separate process. The
+    # # resend_packets mechanism doesn't affect this process's state so it's safe
+    # # to do it in parallel.
+    # spawn(fn ->
+    #   resend_packets(packets, state)
+    #   # Once we're done, tell the zone to finish off...
+    #   Otis.Zone.receiver_buffered(zone, receiver)
+    # end)
+    Otis.Zone.receiver_buffered(zone, receiver)
     {:noreply, state}
   end
 
@@ -192,15 +200,18 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp resend_packets(packets, state) do
-    resend_packets(packets, state, current_time(state) + 2_000, buffer_interval(state.stream_interval))
+    # Perhaps what I need to do is figure out how much time I have and fit in
+    # as many packets as I can without compromising on the deliverability of
+    # those packets
+    resend_packets(packets, state.emitter, current_time(state) + 1_000, 500)
   end
-  defp resend_packets([packet | packets], state, emit_time, emit_time_increment) do
-    Logger.info "Resending packet..."
-    emit_packet!(packet, state.emitter, emit_time)
-    resend_packets(packets, state, emit_time + emit_time_increment, emit_time_increment)
+  defp resend_packets([packet | packets], emitter, emit_time, emit_time_increment) do
+    Logger.info "Resending packet... #{ packet.source_id }/#{inspect packet.source_index}"
+    emit_packet!(packet, emitter, emit_time)
+    resend_packets(packets, emitter, emit_time + emit_time_increment, emit_time_increment)
   end
 
-  defp resend_packets([], _state, _emit_time, _emit_time_increment) do
+  defp resend_packets([], _emitter, _emit_time, _emit_time_increment) do
   end
 
   defp send_next_packet(state) do

@@ -120,6 +120,10 @@ defmodule Otis.Zone do
     GenServer.cast(zone, {:skip, id})
   end
 
+  def receiver_buffered(zone, receiver) do
+    GenServer.cast(zone, {:receiver_buffered, receiver})
+  end
+
   # Things we can do to zones:
   # - list receivers
   # - add receiver
@@ -194,6 +198,12 @@ defmodule Otis.Zone do
     {:noreply, zone}
   end
 
+  # Called by the broadcaster when it has finished sending in-flight packets.
+  def handle_cast({:receiver_buffered, receiver}, state) do
+    state = receiver_ready(receiver, state)
+    {:noreply, state}
+  end
+
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
     state = Receiver.matching_pid(state.receivers, pid) |> receiver_shutdown(state)
     {:noreply, state}
@@ -220,26 +230,30 @@ defmodule Otis.Zone do
     zone
   end
 
-  defp receiver_joined(receiver, %S{state: :play, broadcaster: _broadcaster} = zone) do
-    # TODO: Fix this rebuffering system. It currently causes complete mayhem
-    # But first see if it's necessary -- without it you just get a ~2s delay
-    # before the music starts. This is ok really, especially if I fix the bug
-    # where you can play a zone with no receivers attached.
-    # Otis.Zone.Broadcaster.buffer_receiver(broadcaster)
-    add_receiver_to_zone(receiver, zone)
+  defp receiver_joined(receiver, %S{state: :play, broadcaster: broadcaster} = zone) do
+    configure_receiver(receiver, zone)
+    Otis.Zone.Broadcaster.buffer_receiver(broadcaster, self, receiver)
+    zone
   end
 
   defp receiver_joined(receiver, %S{state: :stop} = zone) do
-    add_receiver_to_zone(receiver, zone)
+    configure_receiver(receiver, zone)
+    receiver_ready(receiver, zone)
   end
 
-  defp add_receiver_to_zone(receiver, %S{receivers: receivers, socket: socket} = zone) do
+  defp configure_receiver(receiver, zone) do
     Receiver.monitor(receiver)
     Receiver.volume_multiplier(receiver, zone.volume)
-    Otis.Zone.Socket.add_receiver(socket, receiver)
+    # I have to add the receiver to the socket here because the quick-buffering
+    # system needs to send the packets to the receiver immediately.
+    Otis.Zone.Socket.add_receiver(zone.socket, receiver)
+  end
+
+  # Called by the broadcaster when it has finished sending in-flight packets.
+  defp receiver_ready(receiver, zone) do
     # TODO: reorder this zone_id, receiver_id, receiver
     event!(:receiver_added, {Receiver.id!(receiver)}, zone)
-    %S{ zone | receivers: Set.put(receivers, receiver) }
+    %S{ zone | receivers: Set.put(zone.receivers, receiver) }
   end
 
   defp event!(name, params, zone) do

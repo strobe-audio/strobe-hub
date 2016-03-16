@@ -99,8 +99,6 @@ So much.
 
 - [ ] Wrap all zone pids in Zone struct
 
-- [ ] Fix rebuffering of new receivers
-
 - [ ] move receiver between zones
 
 - [ ] No way of getting the currently playing track... Should be a method on
@@ -140,6 +138,7 @@ So much.
 - [x] Playback progress.
 - [x] Zone.skip doesn't delete the source db entry for the currently playing source
 - [x] Crash attempting to play a zone with no attached receivers
+- [x] Fix rebuffering of new receivers
 
 **Nice to have:**
 
@@ -148,6 +147,24 @@ So much.
   support for groups of tracks as entries in source lists)
 
 [simple TCP sockets]: http://stackoverflow.com/questions/4081502/sending-raw-binary-using-tcp-in-erlang
+
+New Receiver re-buffering
+-------------------------
+
+Buffering of new receivers is hit and miss -- I can try to send as many un-played
+packets as possible but the sending of 'real' packets interferes with this.
+
+What I need (I think) is some kind of per-receiver packet queue that makes sure
+that packets are received by the receiver in-order. That way I can flood-send
+old (but unplayed) packets as part of the receiver-join routine and this queue
+mechanism will ensure that they get to the receiver in the right order, rather
+than the real audio packets potentially getting there before their earlier siblings.
+
+This is a big change -- I would need to be monitoring the receivers queue(s) for
+packets to emit, rather than the broadcaster.
+
+The queue would have to manage emission times, based on the play times.
+
 
 UI
 --
