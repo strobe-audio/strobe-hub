@@ -135,7 +135,9 @@ defmodule Otis.Receivers do
       {:noreply, monitor_connection(state)}
     end
 
-    defp initial_settings, do: %{volume: 1.0, volume_multiplier: 1.0}
+    # the volume here must match the default volume setting in the audio
+    # driver C code
+    defp initial_settings, do: %{volume: 0.0, volume_multiplier: 1.0}
 
     defp change_volume(state, values) do
       v1 = Map.take(state.settings, [:volume, :volume_multiplier])
