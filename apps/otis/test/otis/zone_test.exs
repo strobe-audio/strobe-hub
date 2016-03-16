@@ -22,7 +22,7 @@ defmodule Otis.ZoneTest do
     {:ok, zone} = Otis.Zones.create(zone_id, zone_record.name)
     _receiver_record = Otis.State.Receiver.create!(zone_record, id: receiver_id, name: "Roger", volume: 1.0)
     mock = connect!(receiver_id, 1234)
-    assert_receive {:receiver_connected, ^receiver_id, _}
+    assert_receive {:receiver_connected, ^receiver_id, _}, 500
     {:ok, receiver} = Receivers.receiver(receiver_id)
     on_exit fn ->
       Otis.State.Receiver.delete_all
@@ -50,13 +50,49 @@ defmodule Otis.ZoneTest do
   test "allows you to add a receiver", %{zone: zone, receiver: receiver} do
     receiver_id = Otis.uuid
     _mock = connect!(receiver_id, 2298)
-    assert_receive {:receiver_connected, ^receiver_id, _}
+    assert_receive {:receiver_connected, ^receiver_id, _}, 500
     {:ok, receiver2} = Receivers.receiver(receiver_id)
     :ok = Otis.Zone.add_receiver(zone, receiver2)
     {:ok, receivers} = Otis.Zone.receivers(zone)
     expected = Enum.into [receiver, receiver2], HashSet.new
     received = Enum.into receivers, HashSet.new
     assert expected == received
+  end
+
+  test "allows you to remove a receiver", %{zone: zone, receiver: receiver} do
+    receiver_id = Otis.uuid
+    mock = connect!(receiver_id, 2298)
+    assert_receive {:receiver_connected, ^receiver_id, _}, 500
+    {:ok, receiver2} = Receivers.receiver(receiver_id)
+    :ok = Otis.Zone.add_receiver(zone, receiver2)
+    {:ok, receivers} = Otis.Zone.receivers(zone)
+    expected = Enum.into [receiver, receiver2], HashSet.new
+    received = Enum.into receivers, HashSet.new
+    assert expected == received
+
+    Otis.Zone.remove_receiver(zone, receiver2)
+    {:ok, receivers} = Otis.Zone.receivers(zone)
+    expected = Enum.into [receiver], HashSet.new
+    received = Enum.into receivers, HashSet.new
+    assert expected == received
+    msg = data_recv_raw(mock)
+    assert {:ok, "STOP"} == msg
+  end
+
+  test "removes receiver from socket when removed from zone", %{zone: zone, receiver: receiver} do
+    receiver_id = Otis.uuid
+    _mock = connect!(receiver_id, 2298)
+    assert_receive {:receiver_connected, ^receiver_id, _}
+    {:ok, receiver2} = Receivers.receiver(receiver_id)
+    :ok = Otis.Zone.add_receiver(zone, receiver2)
+
+    {:ok, socket} = Otis.Zone.socket(zone)
+    Otis.Zone.remove_receiver(zone, receiver2)
+
+    assert_receive {:receiver_removed, _, ^receiver_id}
+
+    {:ok, receivers} = Otis.Zone.Socket.receivers(socket)
+    assert receivers == [receiver]
   end
 
   test "ignores duplicate receivers", %{zone: zone, receiver: receiver} do
@@ -86,8 +122,8 @@ defmodule Otis.ZoneTest do
 
   test "sends data to receiver", context do
     mock = context.mock_receiver
-    # Receiver.send_data(context.receiver <<"something">>)
     {:ok, socket} = Otis.Zone.socket(context.zone)
+    data_reset(mock)
     Otis.Zone.Socket.send(socket, 1234, <<"something">>)
     {:ok, data} = data_recv_raw(mock)
     <<

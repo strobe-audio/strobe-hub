@@ -82,6 +82,13 @@ defmodule Otis.Zones do
     Otis.Zone.volume(find!(registry, id))
   end
 
+  def release_receiver(receiver, zone) do
+    release_receiver(@registry_name, receiver, zone)
+  end
+  def release_receiver(registry, receiver, zone) do
+    GenServer.cast(registry, {:release_receiver, receiver, zone})
+  end
+
   defp add(action, registry, id, config) do
     {:ok, zone} = Otis.Zones.Supervisor.start_zone(id, config)
     add(action, registry, zone, id, config)
@@ -115,6 +122,16 @@ defmodule Otis.Zones do
 
   def handle_call({:start, zone, id, _config}, _from, zone_list) do
     insert(zone_list, id, zone)
+  end
+
+  def handle_cast({:release_receiver, receiver, calling_zone}, zone_list) do
+    # IO.inspect [:release_receiver, receiver, calling_zone, zone_list]
+    Enum.each(zone_list, fn({_id, zone}) ->
+      unless calling_zone == zone do
+        Otis.Zone.remove_receiver(zone, receiver)
+      end
+    end)
+    {:noreply, zone_list}
   end
 
   def handle_cast({:remove, id}, zone_list) do

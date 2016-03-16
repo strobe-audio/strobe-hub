@@ -99,8 +99,6 @@ So much.
 
 - [ ] Wrap all zone pids in Zone struct
 
-- [ ] move receiver between zones
-
 - [ ] No way of getting the currently playing track... Should be a method on
   the zone. In fact the current source list behaviour needs work. The current
   song is popped off the source list when played, so it only exists in the db
@@ -139,6 +137,7 @@ So much.
 - [x] Zone.skip doesn't delete the source db entry for the currently playing source
 - [x] Crash attempting to play a zone with no attached receivers
 - [x] Fix rebuffering of new receivers
+- [x] move receiver between zones
 
 **Nice to have:**
 

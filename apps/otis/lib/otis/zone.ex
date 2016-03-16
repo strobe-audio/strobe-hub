@@ -76,6 +76,13 @@ defmodule Otis.Zone do
     GenServer.call(zone, {:add_receiver, receiver})
   end
 
+  def remove_receiver(%__MODULE__{pid: pid} = _zone, receiver) do
+    remove_receiver(pid, receiver)
+  end
+  def remove_receiver(zone, receiver) when is_pid(zone) do
+    GenServer.cast(zone, {:remove_receiver, receiver})
+  end
+
   def state(zone) do
     GenServer.call(zone, :get_state)
   end
@@ -157,8 +164,14 @@ defmodule Otis.Zone do
 
   def handle_call({:add_receiver, receiver}, _from, %S{id: id} = zone) do
     Logger.info "Adding receiver to zone #{id} #{inspect receiver}"
-    zone = receiver_joined(receiver, zone)
+    zone = add_receiver_to_zone(receiver, zone)
     {:reply, :ok, zone}
+  end
+
+  def handle_cast({:remove_receiver, receiver}, %S{id: id} = zone) do
+    Logger.info "Removing receiver from zone #{id} #{inspect receiver}"
+    zone = remove_receiver_from_zone(receiver, zone)
+    {:noreply, zone}
   end
 
   def handle_call(:play_pause, _from, zone) do
@@ -230,18 +243,26 @@ defmodule Otis.Zone do
     zone
   end
 
-  defp receiver_joined(receiver, %S{state: :play, broadcaster: broadcaster} = zone) do
-    configure_receiver(receiver, zone)
+  defp add_receiver_to_zone(receiver, %S{state: :play, broadcaster: broadcaster} = zone) do
+    adopt_receiver(receiver, zone)
     Otis.Zone.Broadcaster.buffer_receiver(broadcaster, self, receiver)
     zone
   end
 
-  defp receiver_joined(receiver, %S{state: :stop} = zone) do
-    configure_receiver(receiver, zone)
+  defp add_receiver_to_zone(receiver, %S{state: :stop} = zone) do
+    adopt_receiver(receiver, zone)
     receiver_ready(receiver, zone)
   end
 
-  defp configure_receiver(receiver, zone) do
+  defp remove_receiver_from_zone(receiver, zone) do
+    receivers = MapSet.delete(zone.receivers, receiver)
+    Otis.Zone.Socket.remove_receiver(zone.socket, receiver)
+    event!(:receiver_removed, Receiver.id!(receiver), zone)
+    %S{ zone | receivers: receivers }
+  end
+
+  defp adopt_receiver(receiver, zone) do
+    Otis.Zones.release_receiver(receiver, self)
     Receiver.monitor(receiver)
     Receiver.volume_multiplier(receiver, zone.volume)
     # I have to add the receiver to the socket here because the quick-buffering
@@ -252,7 +273,7 @@ defmodule Otis.Zone do
   # Called by the broadcaster when it has finished sending in-flight packets.
   defp receiver_ready(receiver, zone) do
     # TODO: reorder this zone_id, receiver_id, receiver
-    event!(:receiver_added, {Receiver.id!(receiver)}, zone)
+    event!(:receiver_added, Receiver.id!(receiver), zone)
     %S{ zone | receivers: Set.put(zone.receivers, receiver) }
   end
 

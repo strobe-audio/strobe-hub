@@ -34,7 +34,15 @@ defmodule Otis.State.Persistence.Receivers do
     {:ok, state}
   end
   def handle_event({:receiver_volume_change, id, volume}, state) do
-    id |> receiver |> volume_change(id, volume)
+    Otis.State.Repo.transaction(fn ->
+      id |> receiver |> volume_change(id, volume)
+    end)
+    {:ok, state}
+  end
+  def handle_event({:receiver_added, zone_id, id}, state) do
+    Otis.State.Repo.transaction(fn ->
+      id |> receiver |> zone_change(id, zone_id)
+    end)
     {:ok, state}
   end
   def handle_event(_evt, state) do
@@ -70,6 +78,13 @@ defmodule Otis.State.Persistence.Receivers do
   end
   defp volume_change(receiver, _id, volume) do
     Receiver.volume(receiver, volume)
+  end
+
+  defp zone_change(nil, id, zone_id) do
+    Logger.warn "Zone change for unknown receiver #{ id } -> zone #{ zone_id }"
+  end
+  defp zone_change(receiver, id, zone_id) do
+    Receiver.zone(receiver, zone_id)
   end
 
   defp create_receiver(nil, id) do

@@ -63,6 +63,13 @@ defmodule MockReceiver do
     recv_raw(socket, timeout)
   end
 
+  def data_reset(%__MODULE__{data_socket: socket} = receiver) do
+    case :gen_tcp.recv(socket, 0, 1) do
+      {:ok, _data} -> data_reset(receiver)
+      {:error, _} -> nil
+    end
+  end
+
   defp recv_json(socket, timeout) do
     case :gen_tcp.recv(socket, 0, timeout) do
       {:ok, data} -> Poison.decode(data)

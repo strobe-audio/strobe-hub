@@ -47,4 +47,8 @@ defmodule Otis.State.Receiver do
   def volume(receiver, volume) do
     Changeset.change(receiver, volume: volume) |> Repo.update!
   end
+
+  def zone(receiver, zone_id) do
+    Changeset.change(receiver, zone_id: zone_id) |> Repo.update!
+  end
 end
