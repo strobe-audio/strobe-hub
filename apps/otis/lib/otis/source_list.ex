@@ -128,10 +128,8 @@ defmodule Otis.SourceList do
     {:reply, {:ok, length(sources)}, %S{ state | sources: sources }}
   end
 
-  def handle_call({:skip, id}, _from, %S{sources: sources} = state) do
-    {drop, keep} = sources |> Enum.split_while(fn({source_id, _, _}) -> source_id != id end)
-    # Make sure that we also flag the current source as needing deletion from the db
-    drop = [state.active | drop]
+  def handle_call({:skip, id}, _from, state) do
+    {drop, keep} = skip_to(id, state)
     Otis.State.Events.notify({:sources_skipped, state.id, Enum.map(drop, &(elem(&1, 0)))})
     {:reply, {:ok, length(keep)}, %S{ state | sources: keep, active: nil }}
   end
@@ -141,6 +139,20 @@ defmodule Otis.SourceList do
   end
   def handle_call({:replace, new_sources}, _from, state) do
     {:reply, :ok, %S{state | sources: new_sources}}
+  end
+
+  defp skip_to(id, %S{active: active, sources: sources} = state) do
+    skip_to(id, active, sources, state)
+  end
+  defp skip_to(id, nil, sources, state) do
+    skip_to(id, sources, state)
+  end
+  # Make sure that we also flag the current source as needing deletion from the db
+  defp skip_to(id, active, sources, state) do
+    skip_to(id, [active | sources], state)
+  end
+  defp skip_to(id, sources, _state) do
+    sources |> Enum.split_while(fn({source_id, _, _}) -> source_id != id end)
   end
 
   # Converts an insertion position (e.g. -1 for end into
