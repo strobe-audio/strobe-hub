@@ -133,7 +133,7 @@ defmodule Otis.SourceList do
     # Make sure that we also flag the current source as needing deletion from the db
     drop = [state.active | drop]
     Otis.State.Events.notify({:sources_skipped, state.id, Enum.map(drop, &(elem(&1, 0)))})
-    {:reply, {:ok, length(keep)}, %S{ state | sources: keep }}
+    {:reply, {:ok, length(keep)}, %S{ state | sources: keep, active: nil }}
   end
 
   def handle_call(:list, _from, %S{sources: sources} = state) do
