@@ -159,4 +159,14 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_offline, ^id, _}
     :error = Receivers.receiver(id)
   end
+
+  test "stop sends the right data command", _context do
+    id = Otis.uuid
+    mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, ^id, _}
+    {:ok, receiver} = Receivers.receiver(id)
+    Receiver.stop(receiver)
+    {:ok, cmd} = data_recv_raw(mock)
+    assert cmd == "STOP"
+  end
 end

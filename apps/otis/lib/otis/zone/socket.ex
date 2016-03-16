@@ -1,7 +1,7 @@
 defmodule Otis.Zone.Socket do
   use     GenServer
   require Logger
-  alias   Otis.Receiver, as: Receiver
+  alias   Otis.Receiver
 
   def start_link(id) do
     GenServer.start_link(__MODULE__, id, [])
@@ -51,7 +51,7 @@ defmodule Otis.Zone.Socket do
   end
 
   def handle_cast(:stop, {id, receivers, _count} = _state) do
-    _send(receivers, <<"STOP">>)
+    _stop(receivers)
     {:noreply, {id, receivers, 0}}
   end
 
@@ -78,6 +78,7 @@ defmodule Otis.Zone.Socket do
   end
   defp _remove_receiver({id, receivers, count}, receiver) do
     receivers = receivers |> Enum.reject(&Receiver.equal?(&1, receiver))
+    Receiver.stop(receiver)
     {id, receivers, count}
   end
 
@@ -87,5 +88,13 @@ defmodule Otis.Zone.Socket do
   defp _send([receiver | receivers], data) do
     Receiver.send_data(receiver, data)
     _send(receivers, data)
+  end
+
+  defp _stop([]) do
+    nil
+  end
+  defp _stop([receiver | receivers]) do
+    Receiver.stop(receiver)
+    _stop(receivers)
   end
 end

@@ -163,6 +163,12 @@ defmodule Otis.Receiver do
     volume(receiver, volume)
   end
 
+  @stop_command <<"STOP">>
+
+  def stop(receiver) do
+    send_data(receiver, @stop_command)
+  end
+
   def send_data(%{data: {_pid, socket}} = receiver, data) do
     case :gen_tcp.send(socket, data) do
       {:error, _} = error ->
