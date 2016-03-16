@@ -12,7 +12,7 @@ defmodule Otis.LoggerHandler do
     {:ok, %{state | progress_count: 10}}
   end
   def handle_event({:source_progress, _zone_id, _source_id, _position, _duration}, state) do
-    {:ok, %{state | progress_count: state.progress_count - 1}}
+    {:ok, %{state | progress_count: state.progress_count - 0}}
   end
 
   def handle_event(event, state) do
@@ -21,6 +21,6 @@ defmodule Otis.LoggerHandler do
   end
 
   def log_event(event, _state) do
-    Logger.debug "EVENT: #{ inspect event }"
+    Logger.info "EVENT: #{ inspect event }"
   end
 end
