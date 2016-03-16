@@ -80,10 +80,7 @@ defmodule Otis.Zone.Emitter do
   end
 
   defp discard_packet?(time, {_loop, {_emit_time, packet, _socket}, _config} = _state) do
-    case {timestamp, _data} = packet do
-      _ when time == timestamp -> true
-      _ -> false
-    end
+    packet.timestamp == time
   end
 
   defp test_packet({{now, _, d}, {time, _packet, _socket}, _config} = state) do
@@ -109,10 +106,10 @@ defmodule Otis.Zone.Emitter do
     end
   end
 
-  defp emit_frame({_loop, {_time, {timestamp, data} = _packet, socket}, {_pi, _ps, pool} = _config} = state) do
+  defp emit_frame({_loop, {_time, packet, socket}, {_pi, _ps, pool} = _config} = state) do
     # now = monotonic_microseconds
     # Logger.debug "At #{_time - now}: emit #{timestamp - now} on socket #{inspect socket}"
-    Otis.Zone.Socket.send(socket, timestamp, data)
+    Otis.Zone.Socket.send(socket, packet.timestamp, packet.data)
     :poolboy.checkin(pool, self)
     start_waiting(state)
   end
@@ -138,8 +135,7 @@ defmodule Otis.Zone.Emitter do
   defp monitor_emit_time(time, now, packet) do
     case time - now do
       s when s < 0 ->
-        {ts, _data} = packet
-        play_latency = ts - now
+        play_latency = packet.timestamp - now
         if (abs(s)/play_latency) >= 0.1 do
           Logger.warn "Late emitter: emit time (ms): #{Float.round(s/1000, 2)}; packet play in (ms): #{round(play_latency/1000)}"
         end

@@ -246,9 +246,9 @@ defmodule Otis.Zone.Broadcaster do
     } |> monitor_in_flight
   end
 
-  defp emit_packet!({timestamp, packet, data}, emitter, emit_time) do
-    {:emitter, emitter} = Otis.Broadcaster.Emitter.emit(emitter, emit_time, {timestamp, data})
-    {emitter, timestamp, packet, data}
+  defp emit_packet!(%Packet{timestamp: timestamp, data: data} = packet, emitter, emit_time) do
+    {:emitter, emitter} = Otis.Broadcaster.Emitter.emit(emitter, emit_time, packet)
+    Packet.emit(packet, emitter)
   end
 
   defp monitor_in_flight(state) do
@@ -260,37 +260,41 @@ defmodule Otis.Zone.Broadcaster do
 
   defp partition_in_flight(state) do
     time = current_time(state)
-    Enum.partition state.in_flight, fn({_, timestamp, _, _}) ->
-      timestamp > time
-    end
+    Enum.partition state.in_flight, &(Packet.unplayed?(&1, time))
   end
 
   defp monitor_source(state, []) do
     state
   end
-  defp monitor_source(%S{source_id: nil} = state, [{_, _, %Packet{source_id: source_id}, _} | packets]) do
+  defp monitor_source(%S{source_id: nil} = state, [%Packet{source_id: source_id} | packets]) do
     source_changed(source_id, nil, state)
     monitor_source(%S{ state | source_id:  source_id }, packets)
   end
-  defp monitor_source(%S{source_id: source_id} = state, [{_, _, %Packet{source_id: source_id}, _} | packets]) do
+  defp monitor_source(%S{source_id: source_id} = state, [%Packet{source_id: source_id} | packets]) do
     monitor_source(state, packets)
   end
-  defp monitor_source(%S{source_id: old_source_id} = state, [{_, _, %Packet{source_id: new_source_id}, _} | packets])
+  defp monitor_source(%S{source_id: old_source_id} = state, [%Packet{source_id: new_source_id} | packets])
   when new_source_id != old_source_id do
     source_changed(new_source_id, old_source_id, state)
     monitor_source(%S{ state | source_id:  new_source_id }, packets)
   end
 
   defp update_progress(state, played) do
-    Enum.each(played, fn({_, _, packet, _}) ->
-      Otis.State.Events.notify({:source_progress, state.id, packet.source_id, packet.position, packet.duration})
+    Enum.each(played, fn(packet) ->
+      Otis.State.Events.notify({:source_progress, state.id, packet.source_id, packet.offset_ms, packet.duration_ms})
     end)
     state
   end
 
   defp source_changed(new_source_id, old_source_id, state) do
     Logger.info "SOURCE CHANGED #{ old_source_id } => #{ new_source_id }"
-    Otis.State.Events.notify({:source_changed, state.id, old_source_id, new_source_id})
+    confirmation = Enum.find(state.in_flight, &Packet.from_source?(&1, old_source_id))
+    if is_nil(confirmation) do
+      Otis.State.Events.notify({:source_changed, state.id, old_source_id, new_source_id})
+    else
+      Logger.error "Invalid source changed event"
+      Logger.error inspect(Enum.map(state.in_flight, fn(packet) -> packet end), limit: 1000, width: 200)
+    end
   end
 
   # Take all the in flight packets that we know haven't been played
@@ -298,7 +302,7 @@ defmodule Otis.Zone.Broadcaster do
   # the audio starts where it left off rather than losing a buffer's worth
   # of audio.
   defp rebuffer_in_flight(%{audio_stream: audio_stream} = state) do
-    packets = state |> unplayed_packets |> Enum.map(fn({_, _, packet, data}) -> {packet, data} end)
+    packets = state |> unplayed_packets |> Enum.map(&Packet.reset!/1)
     GenServer.cast(audio_stream, {:rebuffer, packets})
     %S{ state | in_flight: [] }
   end
@@ -306,7 +310,6 @@ defmodule Otis.Zone.Broadcaster do
   defp bufferable_packets(state) do
     state
     |> unplayed_packets(current_time(state) + state.latency)
-    |> Enum.map(fn({_, timestamp, packet, data}) -> {timestamp, packet, data} end)
     |> Enum.reverse
   end
 
@@ -316,7 +319,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp unplayed_packets(state, time) do
-    Enum.reject(state.in_flight, fn({_, timestamp, _, _}) -> timestamp <= time end)
+    state.in_flight |> Enum.reject(&Packet.played?(&1, time))
   end
 
   defp stop_inflight_packets(state) do
@@ -326,21 +329,21 @@ defmodule Otis.Zone.Broadcaster do
   defp do_stop_inflight_packets([]) do
   end
 
-  defp do_stop_inflight_packets([{emitter, timestamp, _packet, _data} | packets]) do
-    Otis.Zone.Emitter.discard!(emitter, timestamp)
+  defp do_stop_inflight_packets([packet | packets]) do
+    Otis.Zone.Emitter.discard!(packet.emitter, packet.timestamp)
     do_stop_inflight_packets(packets)
   end
 
-  defp timestamp_packet({packet_number, packet, data}, state) do
-    {timestamp_for_packet(packet_number, state), packet, data}
+  defp timestamp_packet(packet, state) do
+    Packet.timestamp(packet, packet_timestamp(packet, state))
   end
 
-  defp timestamp_for_packet(packet_number, %S{start_time: start_time, stream_interval: interval, latency: latency} = _state) do
-    timestamp_for_packet(packet_number, start_time, interval, latency)
+  defp packet_timestamp(packet, state) do
+    timestamp_for_packet_number(packet.packet_number, state.start_time, state.stream_interval, state.latency)
   end
 
-  def timestamp_for_packet(packet_number, start_time, interval, latency) do
-    start_time + latency + (packet_number * interval)
+  def timestamp_for_packet_number(packet_number, start_time, stream_interval, latency) do
+    start_time + latency + (packet_number * stream_interval)
   end
 
   defp next_packet(n, %S{audio_stream: audio_stream, packet_number: packet_number} = _state) do
@@ -353,8 +356,8 @@ defmodule Otis.Zone.Broadcaster do
 
   defp next_packet(n, buf, packet_number, audio_stream) do
     case Otis.AudioStream.frame(audio_stream) do
-      {:ok, packet, data} ->
-        buf = [{packet_number, packet, data} | buf]
+      {:ok, packet} ->
+        buf = [%Packet{packet | packet_number: packet_number} | buf]
         next_packet(n - 1, buf, packet_number + 1, audio_stream)
       :stopped ->
         buf = [:stop | buf]

@@ -4,8 +4,9 @@ defmodule Otis.AudioStream do
   bit rate of the desired audio stream
   """
 
-  use GenServer
+  use     GenServer
   require Logger
+  alias   Otis.Packet
 
   defmodule S do
     defstruct [
@@ -65,7 +66,7 @@ defmodule Otis.AudioStream do
   defp audio_frame(%S{ state: :stopped, packet: packet, buffer: buffer } = state)
   when byte_size(buffer) > 0 do
     state = %S{state | buffer: <<>> } |> update_packet
-    {:frame, {:ok, packet, buffer}, state}
+    {:frame, {:ok, Packet.attach(packet, buffer)}, state}
   end
 
   defp audio_frame(%S{ state: :stopped, buffer: buffer } = state)
@@ -86,7 +87,7 @@ defmodule Otis.AudioStream do
   defp audio_frame(%S{ buffer: buffer, packet: packet, packet_size: packet_size } = state) do
     << data :: binary-size(packet_size), rest :: binary >> = buffer
     state = %S{ state | buffer: rest } |> update_packet
-    {:frame, {:ok, packet, data}, state}
+    {:frame, {:ok, Packet.attach(packet, data)}, state}
   end
 
   defp append_and_send({:ok, data}, %S{buffer: buffer } = state) do
@@ -128,10 +129,10 @@ defmodule Otis.AudioStream do
   end
 
   defp new_packet(state, id, position, duration) do
-    %S{ state | state: :playing, packet: Otis.Packet.new(id, position, duration, state.packet_size) }
+    %S{ state | state: :playing, packet: Packet.new(id, position, duration, state.packet_size) }
   end
 
   defp update_packet(%S{packet: packet} = state) do
-    %S{ state | packet: Otis.Packet.step(packet) }
+    %S{ state | packet: Packet.step(packet) }
   end
 end

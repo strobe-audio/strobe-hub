@@ -36,6 +36,7 @@ defmodule Otis do
   def stream_interval_us, do: @stream_interval_us
   def stream_bytes_per_step, do: @stream_bytes_per_step
   def stream_bytes_per_second, do: @bytes_per_second
+  def stream_bytes_per_ms, do: (@bytes_per_second / 1000.0)
 
   def start(_type, _args) do
     Otis.Supervisor.start_link([packet_interval: @stream_interval_us, packet_size: @stream_bytes_per_step])

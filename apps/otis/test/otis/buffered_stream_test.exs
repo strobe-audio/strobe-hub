@@ -14,7 +14,8 @@ defmodule Test.ArrayAudioStream do
   end
 
   def handle_call(:frame, _from, {[ frame | frames ], source_id, sent}) do
-    {:reply, {:ok, source_id, frame}, {frames, source_id, [frame | sent]}}
+    packet = source_id |> TestUtils.packet |> Otis.Packet.attach(frame)
+    {:reply, {:ok, packet}, {frames, source_id, [packet | sent]}}
   end
 
   def handle_call(:sent, _from, {frames, source_id, sent}) do
@@ -24,6 +25,8 @@ end
 
 defmodule Otis.BufferedStreamTest do
   use   ExUnit.Case, async: true
+  alias Otis.Packet
+
   setup do
     :ok
   end
@@ -42,10 +45,10 @@ defmodule Otis.BufferedStreamTest do
       "03",
       "04"
     ])
-    {:ok, ^source_id, "01"} = Otis.AudioStream.frame(audio_stream)
-    {:ok, ^source_id, "02"} = Otis.AudioStream.frame(audio_stream)
-    {:ok, ^source_id, "03"} = Otis.AudioStream.frame(audio_stream)
-    {:ok, ^source_id, "04"} = Otis.AudioStream.frame(audio_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "01" }} == Otis.AudioStream.frame(audio_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "02" }} == Otis.AudioStream.frame(audio_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "03" }} == Otis.AudioStream.frame(audio_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "04" }} == Otis.AudioStream.frame(audio_stream)
     :stopped = Otis.AudioStream.frame(audio_stream)
   end
 
@@ -66,24 +69,25 @@ defmodule Otis.BufferedStreamTest do
     ])
 
     {:ok, buffered_stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
-    {:ok, ^source_id, "01"} = Otis.AudioStream.frame(buffered_stream)
-    {:ok, ^source_id, "02"} = Otis.AudioStream.frame(buffered_stream)
-    {:ok, ^source_id, "03"} = Otis.AudioStream.frame(buffered_stream)
-    {:ok, ^source_id, "04"} = Otis.AudioStream.frame(buffered_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "01" }} == Otis.AudioStream.frame(buffered_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "02" }} == Otis.AudioStream.frame(buffered_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "03" }} == Otis.AudioStream.frame(buffered_stream)
+    assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "04" }} == Otis.AudioStream.frame(buffered_stream)
     :stopped = Otis.AudioStream.frame(buffered_stream)
   end
 
   test "buffered stream allows for pre-filling without affecting delivered packets" do
     source_id = Otis.uuid
     buffer_size = 8
-    packets = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
-    {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, packets)
+    data = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
+    packets = data |> Enum.map(&%Packet{ TestUtils.packet(source_id) | data: &1 })
+    {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, data)
     {:ok, buffered_stream} = Otis.Zone.BufferedStream.start_link(audio_stream, buffer_size)
     :ok = Otis.AudioStream.buffer(buffered_stream)
     {:ok, sent} = GenServer.call(audio_stream, :sent)
-    assert sent == Enum.take(packets, buffer_size)
+    assert sent == packets |> Enum.take(buffer_size)
     Enum.each packets, fn(p) ->
-      {:ok, ^source_id, ^p} = Otis.AudioStream.frame(buffered_stream)
+      assert {:ok, p} == Otis.AudioStream.frame(buffered_stream)
     end
     :stopped = Otis.AudioStream.frame(buffered_stream)
   end
@@ -91,8 +95,12 @@ defmodule Otis.BufferedStreamTest do
   test "calling buffer multiple times does nothing" do
     source_id = Otis.uuid
     buffer_size = 8
-    packets = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
-    {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, packets)
+    data = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
+
+    packets = data |> Enum.map(fn(data) ->
+      Packet.attach TestUtils.packet(source_id), data
+    end)
+    {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, data)
     {:ok, buffered_stream} = Otis.Zone.BufferedStream.start_link(audio_stream, buffer_size)
 
     :ok = Otis.AudioStream.buffer(buffered_stream)
@@ -108,7 +116,7 @@ defmodule Otis.BufferedStreamTest do
     assert sent == []
 
     Enum.each packets, fn(p) ->
-      {:ok, ^source_id, ^p} = Otis.AudioStream.frame(buffered_stream)
+      {:ok, ^p} = Otis.AudioStream.frame(buffered_stream)
     end
     :stopped = Otis.AudioStream.frame(buffered_stream)
   end

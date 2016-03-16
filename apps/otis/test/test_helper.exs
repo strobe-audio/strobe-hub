@@ -1,4 +1,8 @@
 defmodule TestUtils do
+  def packet(source_id, offset_ms \\ 0, duration_ms \\ 60_000, packet_size \\ 3528) do
+    Otis.Packet.new(source_id, offset_ms, duration_ms, packet_size)
+  end
+
   def md5(extract) do
     md5(extract, :crypto.hash_init(:md5))
   end
@@ -27,8 +31,8 @@ defmodule TestUtils do
     _acc_stream(stream, Otis.AudioStream.frame(stream), acc)
   end
 
-  defp _acc_stream(stream, {:ok, _source_id, data}, acc) do
-    _acc_stream(stream, Otis.AudioStream.frame(stream), << acc <> data >>)
+  defp _acc_stream(stream, {:ok, packet}, acc) do
+    _acc_stream(stream, Otis.AudioStream.frame(stream), << acc <> packet.data >>)
   end
 
   defp _acc_stream(_stream, :stopped, acc) do

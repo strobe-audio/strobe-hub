@@ -15,11 +15,11 @@ defmodule Otis.AudioStreamSingleTest do
   test "source list", %{audio_stream: audio_stream, chunk_size: chunk_size} do
     n = @silent_raw_byte_size / chunk_size
     Enum.each 0..round(Float.floor(n) - 1 ), fn(_) ->
-      { :ok, _packet, frame } = Otis.AudioStream.frame(audio_stream)
-      assert byte_size(frame) == chunk_size
+      { :ok, packet } = Otis.AudioStream.frame(audio_stream)
+      assert byte_size(packet.data) == chunk_size
     end
-    {:ok, _, frame} = Otis.AudioStream.frame(audio_stream)
-    assert byte_size(frame) == rem(@silent_raw_byte_size, chunk_size)
+    {:ok, packet} = Otis.AudioStream.frame(audio_stream)
+    assert byte_size(packet.data) == rem(@silent_raw_byte_size, chunk_size)
     result = Otis.AudioStream.frame(audio_stream)
     assert result == :stopped
   end
@@ -27,12 +27,12 @@ defmodule Otis.AudioStreamSingleTest do
   test "adding a source after finishing the first", %{audio_stream: audio_stream, chunk_size: chunk_size, source_list: source_list} do
     n = @silent_raw_byte_size / chunk_size
     Enum.each 0..round(Float.floor(n) - 1), fn(_) ->
-      { :ok, _, frame } = Otis.AudioStream.frame(audio_stream)
-      assert byte_size(frame) == chunk_size
+      { :ok, packet } = Otis.AudioStream.frame(audio_stream)
+      assert byte_size(packet.data) == chunk_size
     end
 
-    {:ok, _, frame} = Otis.AudioStream.frame(audio_stream)
-    assert byte_size(frame) == rem(@silent_raw_byte_size, chunk_size)
+    {:ok, packet} = Otis.AudioStream.frame(audio_stream)
+    assert byte_size(packet.data) == rem(@silent_raw_byte_size, chunk_size)
 
     result = Otis.AudioStream.frame(audio_stream)
     assert result == :stopped
@@ -41,11 +41,11 @@ defmodule Otis.AudioStreamSingleTest do
     {:ok, 1} = Otis.SourceList.append(source_list, source)
 
     Enum.each 0..round(Float.ceil(n) - 2), fn(_) ->
-      { :ok, _, frame } = Otis.AudioStream.frame(audio_stream)
-      assert byte_size(frame) == chunk_size
+      { :ok, packet } = Otis.AudioStream.frame(audio_stream)
+      assert byte_size(packet.data) == chunk_size
     end
-    {:ok, _, frame} = Otis.AudioStream.frame(audio_stream)
-    assert byte_size(frame) == rem(@silent_raw_byte_size, chunk_size)
+    {:ok, packet} = Otis.AudioStream.frame(audio_stream)
+    assert byte_size(packet.data) == rem(@silent_raw_byte_size, chunk_size)
     :stopped = Otis.AudioStream.frame(audio_stream)
   end
 end
@@ -75,13 +75,13 @@ defmodule Otis.AudioStreamMultipleTest do
     test_frame_size(stream, size, Otis.AudioStream.frame(stream))
   end
 
-  defp test_frame_size(stream, size, {:ok, _source_id, data}) do
-    test_frame_size(stream, size, Otis.AudioStream.frame(stream), byte_size(data))
+  defp test_frame_size(stream, size, {:ok, packet}) do
+    test_frame_size(stream, size, Otis.AudioStream.frame(stream), byte_size(packet.data))
   end
 
-  defp test_frame_size(stream, size, {:ok, _source_id, data}, chunk_size) do
+  defp test_frame_size(stream, size, {:ok, packet}, chunk_size) do
     assert chunk_size == size
-    test_frame_size(stream, size, Otis.AudioStream.frame(stream), byte_size(data))
+    test_frame_size(stream, size, Otis.AudioStream.frame(stream), byte_size(packet.data))
   end
 
   defp test_frame_size(_stream, _size, :stopped, chunk_size) do

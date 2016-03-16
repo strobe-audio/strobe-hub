@@ -1,6 +1,3 @@
-defmodule TestPacket do
-  def new(id), do: Otis.Packet.new(id, 0, 60_000, 3528)
-end
 defmodule Otis.Test.ArrayAudioStream do
   use GenServer
 
@@ -27,10 +24,10 @@ defmodule Otis.Test.ArrayAudioStream do
   end
   def next_packet(%{packets: [], sources: [source | sources]} = state) do
     [source_id, packets] = source
-    next_packet(%{ state | packets: packets, packet: TestPacket.new(source_id), sources: sources})
+    next_packet(%{ state | packets: packets, packet: TestUtils.packet(source_id), sources: sources})
   end
   def next_packet(%{packets: [data | packets], packet: packet} = state) do
-    { {:ok, state.packet, data}, %{ state | packets: packets, packet: Otis.Packet.step(state.packet) } }
+    { {:ok, Otis.Packet.attach(packet, data)}, %{ state | packets: packets, packet: Otis.Packet.step(packet) } }
   end
 end
 
@@ -181,7 +178,7 @@ defmodule Otis.BroadcasterTest do
     {:ok, broadcaster} = Otis.Broadcaster.start_broadcaster(opts)
 
     # save a handy timestamp calculation function
-    timestamp = &Otis.Zone.Broadcaster.timestamp_for_packet(&1, start_time, opts.stream_interval, latency)
+    timestamp = &Otis.Zone.Broadcaster.timestamp_for_packet_number(&1, start_time, opts.stream_interval, latency)
     emit_time = &(start_time + (&1 * opts.stream_interval))
 
 
@@ -206,17 +203,19 @@ defmodule Otis.BroadcasterTest do
 
   test "audio stream sends right packets & source ids", %{source1: source1, source2: source2, stream: stream} do
     [source_id1, packets1] = source1
-    p = TestPacket.new(source_id1)
+    p = TestUtils.packet(source_id1)
     Enum.reduce packets1, p, fn(data, packet) ->
       frame = Otis.AudioStream.frame(stream)
-      assert {:ok, packet, data} == frame
+      packet = Otis.Packet.attach(packet, data)
+      assert {:ok, packet} == frame
       Otis.Packet.step(packet)
     end
     [source_id2, packets2] = source2
-    p = TestPacket.new(source_id2)
+    p = TestUtils.packet(source_id2)
     Enum.reduce packets2, p, fn(data, packet) ->
       frame = Otis.AudioStream.frame(stream)
-      assert {:ok, packet, data} == frame
+      packet = Otis.Packet.attach(packet, data)
+      assert {:ok, packet} == frame
       Otis.Packet.step(packet)
     end
     :stopped = Otis.AudioStream.frame(stream)
@@ -424,13 +423,13 @@ defmodule Otis.BroadcasterTest do
     packets2_1 = Enum.fetch!(packets2, 0)
     packets2_2 = Enum.fetch!(packets2, 1)
 
-    assert {Otis.Packet.step(TestPacket.new(source_id2)), packets2_2} == p1
-    assert {TestPacket.new(source_id2), packets2_1} == p2
-    assert {%Otis.Packet{TestPacket.new(source_id1) | index: 9, position: 180}, packets1_2} == p3
-    assert {%Otis.Packet{TestPacket.new(source_id1) | index: 8, position: 160}, packets1_1} == p4
+    assert %Otis.Packet{Otis.Packet.step(TestUtils.packet(source_id2)) | data: packets2_2 } == p1
+    assert %Otis.Packet{TestUtils.packet(source_id2) | data: packets2_1 } == p2
+    assert %Otis.Packet{TestUtils.packet(source_id1) | source_index: 9, offset_ms: 180, data: packets1_2} == p3
+    assert %Otis.Packet{TestUtils.packet(source_id1) | source_index: 8, offset_ms: 160, data: packets1_1} == p4
   end
 
-  test "it broadcasts source playback position", %{ zone_id: zone_id, source1: source1, source2: source2 } = context do
+  test "it broadcasts source playback position", %{ zone_id: zone_id, source1: source1 } = context do
     buffer_size = 5
     poll_interval = round(context.opts.stream_interval / 1)
 
@@ -439,12 +438,11 @@ defmodule Otis.BroadcasterTest do
     time = context.timestamp.(0)
 
     [source_id1, _] = source1
-    [source_id2, _] = source2
 
-    Enum.reduce 1..10, TestPacket.new(source_id1), fn(n, packet) ->
+    Enum.reduce 1..10, TestUtils.packet(source_id1), fn(n, packet) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
       assert_receive {:emit, _, _}, 200, "Not received #{n}"
-      %{ position: position } = packet
+      %{ offset_ms: position } = packet
       assert_receive {:source_progress, ^zone_id, ^source_id1, ^position, 60_000}
       Otis.Packet.step(packet)
     end
