@@ -254,11 +254,13 @@ defmodule Otis.Zone do
     receiver_ready(receiver, zone)
   end
 
-  defp remove_receiver_from_zone(receiver, zone) do
-    receivers = MapSet.delete(zone.receivers, receiver)
-    Otis.Zone.Socket.remove_receiver(zone.socket, receiver)
-    event!(:receiver_removed, Receiver.id!(receiver), zone)
-    %S{ zone | receivers: receivers }
+  defp remove_receiver_from_zone(receiver, state) do
+    receivers = MapSet.delete(state.receivers, receiver)
+    if MapSet.member?(state.receivers, receiver) do
+      Otis.Zone.Socket.remove_receiver(state.socket, receiver)
+      event!(state, :receiver_removed, Receiver.id!(receiver))
+    end
+    %S{ state | receivers: receivers }
   end
 
   defp adopt_receiver(receiver, zone) do
