@@ -51,6 +51,9 @@ defmodule Otis.Zone do
     }
   end
 
+  def id(%__MODULE__{id: id}) do
+    {:ok, id}
+  end
   def id(zone) do
     GenServer.call(zone, :id)
   end
@@ -150,65 +153,65 @@ defmodule Otis.Zone do
   # skip track
   # rewind track
 
-  def handle_call(:id, _from, %S{id: id} = zone) do
-    {:reply, {:ok, id}, zone}
+  def handle_call(:id, _from, %S{id: id} = state) do
+    {:reply, {:ok, id}, state}
   end
 
-  def handle_call(:receivers, _from, %S{receivers: receivers} = zone) do
-    {:reply, {:ok, Set.to_list(receivers)}, zone}
+  def handle_call(:receivers, _from, %S{receivers: receivers} = state) do
+    {:reply, {:ok, Set.to_list(receivers)}, state}
   end
 
-  def handle_call(:socket, _from, %S{socket: socket} = zone) do
-    {:reply, {:ok, socket}, zone}
+  def handle_call(:socket, _from, %S{socket: socket} = state) do
+    {:reply, {:ok, socket}, state}
   end
 
-  def handle_call({:add_receiver, receiver}, _from, %S{id: id} = zone) do
+  def handle_call({:add_receiver, receiver}, _from, %S{id: id} = state) do
     Logger.info "Adding receiver to zone #{id} #{inspect receiver}"
-    zone = add_receiver_to_zone(receiver, zone)
-    {:reply, :ok, zone}
+    state = add_receiver_to_zone(receiver, state)
+    {:reply, :ok, state}
   end
 
-  def handle_cast({:remove_receiver, receiver}, %S{id: id} = zone) do
+  def handle_cast({:remove_receiver, receiver}, %S{id: id} = state) do
     Logger.info "Removing receiver from zone #{id} #{inspect receiver}"
-    zone = remove_receiver_from_zone(receiver, zone)
-    {:noreply, zone}
+    state = remove_receiver_from_zone(receiver, state)
+    {:noreply, state}
   end
 
-  def handle_call(:play_pause, _from, zone) do
-    zone = zone |> toggle_state
-    {:reply, {:ok, zone.state}, zone}
+  def handle_call(:play_pause, _from, state) do
+    state = state |> toggle_state
+    {:reply, {:ok, state.state}, state}
   end
 
-  def handle_call(:get_state, _from, %S{state: state} = zone) do
-    {:reply, {:ok, state}, zone}
+  def handle_call(:get_state, _from, %S{state: state} = state) do
+    {:reply, {:ok, state}, state}
   end
 
-  def handle_call(:get_audio_stream, _from, %S{audio_stream: audio_stream} = zone) do
-    {:reply, {:ok, audio_stream}, zone}
+  def handle_call(:get_audio_stream, _from, %S{audio_stream: audio_stream} = state) do
+    {:reply, {:ok, audio_stream}, state}
   end
 
-  def handle_call(:get_source_list, _from, %S{source_list: source_list} = zone) do
-    {:reply, {:ok, source_list}, zone}
+  def handle_call(:get_source_list, _from, %S{source_list: source_list} = state) do
+    {:reply, {:ok, source_list}, state}
   end
 
-  def handle_call(:volume, _from, %S{volume: volume} = zone) do
-    {:reply, {:ok, volume}, zone}
+  def handle_call(:volume, _from, %S{volume: volume} = state) do
+    {:reply, {:ok, volume}, state}
   end
-  def handle_call({:volume, volume}, _from, zone) do
+  def handle_call({:volume, volume}, _from, state) do
     volume = Otis.sanitize_volume(volume)
-    Enum.each(zone.receivers, &Receiver.volume_multiplier(&1, volume))
-    Otis.State.Events.notify({:zone_volume_change, zone.id, volume})
-    {:reply, {:ok, volume}, %S{zone | volume: volume}}
+    Enum.each(state.receivers, &Receiver.volume_multiplier(&1, volume))
+    Otis.State.Events.notify({:zone_volume_change, state.id, volume})
+    {:reply, {:ok, volume}, %S{state | volume: volume}}
   end
 
-  def handle_cast(:stream_finished, zone) do
-    {:noreply, stream_finished!(zone)}
+  def handle_cast(:stream_finished, state) do
+    {:noreply, stream_finished!(state)}
   end
 
   # TODO: handle the case where we skip past the end of the source list...
-  def handle_cast({:skip, id}, zone) do
-    zone = zone |> set_state(:skip) |> flush |> skip_to(id) |> set_state(:play)
-    {:noreply, zone}
+  def handle_cast({:skip, id}, state) do
+    state = state |> set_state(:skip) |> flush |> skip_to(id) |> set_state(:play)
+    {:noreply, state}
   end
 
   # Called by the broadcaster when it has finished sending in-flight packets.
@@ -233,25 +236,25 @@ defmodule Otis.Zone do
     %S{ state | receivers: MapSet.delete(state.receivers, receiver) }
   end
 
-  defp flush(zone) do
-    Otis.Stream.flush(zone.audio_stream)
-    zone
+  defp flush(state) do
+    Otis.Stream.flush(state.audio_stream)
+    state
   end
 
-  defp skip_to(zone, id) do
-    {:ok, _} = Otis.SourceList.skip(zone.source_list, id)
-    zone
+  defp skip_to(state, id) do
+    {:ok, _} = Otis.SourceList.skip(state.source_list, id)
+    state
   end
 
-  defp add_receiver_to_zone(receiver, %S{state: :play, broadcaster: broadcaster} = zone) do
-    adopt_receiver(receiver, zone)
+  defp add_receiver_to_zone(receiver, %S{state: :play, broadcaster: broadcaster} = state) do
+    adopt_receiver(receiver, state)
     Otis.Zone.Broadcaster.buffer_receiver(broadcaster, self, receiver)
-    zone
+    state
   end
 
-  defp add_receiver_to_zone(receiver, %S{state: :stop} = zone) do
-    adopt_receiver(receiver, zone)
-    receiver_ready(receiver, zone)
+  defp add_receiver_to_zone(receiver, %S{state: :stop} = state) do
+    adopt_receiver(receiver, state)
+    receiver_ready(receiver, state)
   end
 
   defp remove_receiver_from_zone(receiver, state) do
@@ -263,81 +266,80 @@ defmodule Otis.Zone do
     %S{ state | receivers: receivers }
   end
 
-  defp adopt_receiver(receiver, zone) do
+  defp adopt_receiver(receiver, state) do
     Otis.Zones.release_receiver(receiver, self)
     Receiver.monitor(receiver)
-    Receiver.volume_multiplier(receiver, zone.volume)
+    Receiver.volume_multiplier(receiver, state.volume)
     # I have to add the receiver to the socket here because the quick-buffering
     # system needs to send the packets to the receiver immediately.
-    Otis.Zone.Socket.add_receiver(zone.socket, receiver)
+    Otis.Zone.Socket.add_receiver(state.socket, receiver)
   end
 
   # Called by the broadcaster when it has finished sending in-flight packets.
-  defp receiver_ready(receiver, zone) do
-    # TODO: reorder this zone_id, receiver_id, receiver
-    event!(:receiver_added, Receiver.id!(receiver), zone)
-    %S{ zone | receivers: Set.put(zone.receivers, receiver) }
+  defp receiver_ready(receiver, state) do
+    event!(state, :receiver_added, Receiver.id!(receiver))
+    %S{ state | receivers: Set.put(state.receivers, receiver) }
   end
 
-  defp event!(name, params, zone) do
-    Otis.State.Events.notify({name, zone.id, params})
+  defp event!(state, name, params) do
+    Otis.State.Events.notify({name, state.id, params})
   end
 
-  defp stream_finished!(zone) do
-    zone |> stream_has_finished |> set_state(:stop)
+  defp stream_finished!(state) do
+    state |> stream_has_finished |> set_state(:stop)
   end
 
-  defp stream_has_finished(%S{broadcaster: nil} = zone) do
-    zone
+  defp stream_has_finished(%S{broadcaster: nil} = state) do
+    state
   end
-  defp stream_has_finished(zone) do
-    Otis.Broadcaster.Controller.done(zone.ctrl)
-    %S{zone | broadcaster: nil}
-  end
-
-  defp toggle_state(%S{state: :play} = zone) do
-    set_state(zone, :stop)
+  defp stream_has_finished(state) do
+    Otis.Broadcaster.Controller.done(state.ctrl)
+    %S{state | broadcaster: nil}
   end
 
-  defp toggle_state(%S{state: :stop} = zone) do
-    set_state(zone, :play)
+  defp toggle_state(%S{state: :play} = state) do
+    set_state(state, :stop)
+  end
+
+  defp toggle_state(%S{state: :stop} = state) do
+    set_state(state, :play)
   end
 
   defp set_state(zone, state) do
     %S{ zone | state: state } |> change_state
   end
 
-  defp change_state(%S{state: :play, ctrl: nil} = zone) do
+  defp change_state(%S{state: :play, ctrl: nil} = state) do
     # TODO: share a ctrl between all zones
     ctrl = Otis.Zone.Controller.new(Otis.stream_interval_us)
-    %S{ zone | ctrl: ctrl } |> change_state
+    %S{ state | ctrl: ctrl } |> change_state
   end
-  defp change_state(%S{state: :play, broadcaster: nil, ctrl: ctrl} = zone) do
-    {:ok, broadcaster} = start_broadcaster(zone)
-    ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(zone), @buffer_size)
-    %S{ zone | broadcaster: broadcaster, ctrl: ctrl }
+  defp change_state(%S{state: :play, broadcaster: nil, ctrl: ctrl} = state) do
+    {:ok, broadcaster} = start_broadcaster(state)
+    ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(state), @buffer_size)
+    %S{ state | broadcaster: broadcaster, ctrl: ctrl }
   end
-  defp change_state(%S{state: :play} = zone) do
-    zone
+  defp change_state(%S{state: :play} = state) do
+    state
   end
-  defp change_state(%S{state: :stop, broadcaster: nil} = zone) do
+  defp change_state(%S{state: :stop, broadcaster: nil} = state) do
     Logger.debug("Zone stopped")
-    zone_is_stopped(zone)
+    zone_is_stopped(state)
   end
-  defp change_state(%S{state: :stop, broadcaster: broadcaster} = zone) do
-    ctrl = Otis.Broadcaster.Controller.stop(zone.ctrl, broadcaster)
-    change_state(%S{ zone | broadcaster: nil, ctrl: ctrl })
+  defp change_state(%S{state: :stop, broadcaster: broadcaster} = state) do
+    ctrl = Otis.Broadcaster.Controller.stop(state.ctrl, broadcaster)
+    change_state(%S{ state | broadcaster: nil, ctrl: ctrl })
   end
-  defp change_state(%S{state: :skip, broadcaster: nil} = zone) do
-    zone
+  defp change_state(%S{state: :skip, broadcaster: nil} = state) do
+    state
   end
-  defp change_state(%S{id: _id, state: :skip, broadcaster: broadcaster} = zone) do
-    ctrl = Otis.Broadcaster.Controller.skip(zone.ctrl, broadcaster)
-    change_state(%S{ zone | broadcaster: nil, ctrl: ctrl })
+  defp change_state(%S{id: _id, state: :skip, broadcaster: broadcaster} = state) do
+    ctrl = Otis.Broadcaster.Controller.skip(state.ctrl, broadcaster)
+    change_state(%S{ state | broadcaster: nil, ctrl: ctrl })
   end
 
-  defp broadcaster_latency(zone) do
-    receiver_latency(zone) + @buffer_latency
+  defp broadcaster_latency(state) do
+    receiver_latency(state) + @buffer_latency
   end
 
   def receiver_latency(%S{receivers: receivers} = state) do
@@ -351,9 +353,9 @@ defmodule Otis.Zone do
     receivers |> Enum.map(&Receiver.latency!/1) |> Enum.max
   end
 
-  defp zone_is_stopped(zone) do
-    Otis.Stream.reset(zone.audio_stream)
-    %S{ zone | broadcaster: nil}
+  defp zone_is_stopped(state) do
+    Otis.Stream.reset(state.audio_stream)
+    %S{ state | broadcaster: nil}
   end
 
   defp start_broadcaster(%S{id: id, audio_stream: audio_stream, socket: socket}) do
