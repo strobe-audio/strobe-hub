@@ -82,6 +82,10 @@ defmodule Otis.SourceList do
     GenServer.call(list, {:replace, sources})
   end
 
+  def active(list) do
+    GenServer.call(list, :active)
+  end
+
   # def move(list, id, new_position) do
     # can be implemented by
     # matches = fn({source_id, source}) -> source_id == id end
@@ -139,6 +143,10 @@ defmodule Otis.SourceList do
   end
   def handle_call({:replace, new_sources}, _from, state) do
     {:reply, :ok, %S{state | sources: new_sources}}
+  end
+
+  def handle_call(:active, _from, state) do
+    {:reply, {:ok, state.active}, state}
   end
 
   defp skip_to(id, %S{active: active, sources: sources} = state) do
