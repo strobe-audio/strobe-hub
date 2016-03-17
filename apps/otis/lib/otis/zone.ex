@@ -225,10 +225,6 @@ defmodule Otis.Zone do
     {:noreply, state}
   end
 
-  def receiver_shutdown(nil, %S{receivers: receivers} = state)
-  when map_size(receivers) == 0 do
-    state
-  end
   def receiver_shutdown(nil, state) do
     state
   end
