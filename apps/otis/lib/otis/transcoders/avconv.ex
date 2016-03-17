@@ -15,7 +15,7 @@ defmodule Otis.Transcoders.Avconv do
   end
 
   defp params(input_type, offset_ms) do
-    ["-ss", ms_to_s(offset_ms), "-f", strip_leading_dot(input_type), "-i", "-" | params]
+    ["-f", strip_leading_dot(input_type), "-i", "-", "-ss", ms_to_s(offset_ms) | params]
   end
 
   defp params do
