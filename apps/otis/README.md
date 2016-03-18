@@ -1,6 +1,18 @@
 Otis
 ====
 
+{:ok, z1} = Otis.Zones.find "f058c281-9186-4585-81f5-b61399c8c729"
+{:ok, z2} = Otis.Zones.find "b136576d-0cc2-40a0-a81b-61ef39dd1a92"
+
+{:ok, r1} = Otis.Receivers.receiver "626de8c0-b0ea-5ea4-bb63-48f55fee70fa"
+{:ok, r2} = Otis.Receivers.receiver "8437fa0f-0f19-5022-8140-b81b51674680"
+
+Otis.Zone.play_pause z1
+Otis.Zone.play_pause z2
+
+# etc
+Otis.Zone.add_receiver z2, r2
+
 ```elixir
 
 {:ok, zone} = Otis.Zones.start_zone("downstairs", "Downstairs")
