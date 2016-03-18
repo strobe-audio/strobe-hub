@@ -77,6 +77,11 @@ defmodule Otis.SourceList do
     GenServer.call(list, :list)
   end
 
+  @doc "Gives the duration of the current list"
+  def duration(list) do
+    GenServer.call(list, :duration)
+  end
+
   @doc "Silently replaces the contents of the source list"
   def replace(list, sources) do
     GenServer.call(list, {:replace, sources})
@@ -141,12 +146,21 @@ defmodule Otis.SourceList do
   def handle_call(:list, _from, %S{sources: sources} = state) do
     {:reply, {:ok, sources}, state}
   end
+
   def handle_call({:replace, new_sources}, _from, state) do
     {:reply, :ok, %S{state | sources: new_sources}}
   end
 
   def handle_call(:active, _from, state) do
     {:reply, {:ok, state.active}, state}
+  end
+
+  def handle_call(:duration, _from, state) do
+    duration = Enum.reduce(state.sources, 0, fn({_id, _offset, source}, acc) ->
+      {:ok, duration} = Otis.Source.duration(source)
+      acc + duration
+    end)
+    {:reply, {:ok, duration}, state}
   end
 
   defp skip_to(id, %S{active: active, sources: sources} = state) do

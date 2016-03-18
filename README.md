@@ -164,8 +164,6 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   and the zone process. But on re-start un-finished songs just pop back to the
   top of the source-list. Gotta think of a consistent way to deal with this.
 
-- [ ] Move all source list manipulations into the zone
-
 - [ ] zones stop when all receievers removed
 
 - [ ] rename `Zone` to `Channel` or `Station` -- zones are just static
@@ -210,6 +208,12 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   just receive a message meaning "let me go!" without having to go through
   Zones. Perhaps an genevent attached to the receiver? or some-other (simple)
   process that the zone can latch onto somehow.
+- [x] Move source list manipulations into the zone.
+  - [x] append
+  - [x] list
+  - [x] duration
+  - [x] skip
+
 
 **Nice to have:**
 

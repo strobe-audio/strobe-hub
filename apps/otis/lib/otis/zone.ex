@@ -119,12 +119,36 @@ defmodule Otis.Zone do
   end
 
   @doc "Skip to the source with the given id"
-  def skip(zone, id) do
-    GenServer.cast(zone, {:skip, id})
+  def skip(%__MODULE__{pid: pid}, source_id) do
+    skip(pid, source_id)
+  end
+  def skip(zone, source_id) do
+    GenServer.cast(zone, {:skip, source_id})
   end
 
   def receiver_buffered(zone, receiver) do
     GenServer.cast(zone, {:receiver_buffered, receiver})
+  end
+
+  def append(%__MODULE__{pid: pid}, sources) do
+    append(pid, sources)
+  end
+  def append(zone, sources) do
+    GenServer.call(zone, {:append_sources, sources})
+  end
+
+  def sources(%__MODULE__{pid: pid}) do
+    sources(pid)
+  end
+  def sources(zone) do
+    GenServer.call(zone, :sources)
+  end
+
+  def duration(%__MODULE__{pid: pid}) do
+    duration(pid)
+  end
+  def duration(zone) do
+    GenServer.call(zone, :duration)
   end
 
   # Things we can do to zones:
@@ -189,6 +213,21 @@ defmodule Otis.Zone do
     Enum.each(state.receivers, &Receiver.volume_multiplier(&1, volume))
     Otis.State.Events.notify({:zone_volume_change, state.id, volume})
     {:reply, {:ok, volume}, %S{state | volume: volume}}
+  end
+
+  def handle_call({:append_sources, sources}, _from, state) do
+    Otis.SourceList.append(state.source_list, sources)
+    {:reply, :ok, state}
+  end
+
+  def handle_call(:sources, _from, state) do
+    sources = Otis.SourceList.list(state.source_list)
+    {:reply, sources, state}
+  end
+
+  def handle_call(:duration, _from, state) do
+    duration = Otis.SourceList.duration(state.source_list)
+    {:reply, duration, state}
   end
 
   def handle_cast(:stream_finished, state) do
