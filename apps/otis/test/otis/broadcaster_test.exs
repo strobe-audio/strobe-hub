@@ -1,5 +1,5 @@
 defmodule Otis.Test.ArrayAudioStream do
-  use GenServer
+  use   GenServer
 
   def start_link(sources, parent) do
     Kernel.apply GenServer, :start_link, [__MODULE__, {sources, parent}]
@@ -147,6 +147,7 @@ end
 
 defmodule Otis.BroadcasterTest do
   use   ExUnit.Case
+  alias Otis.Packet
 
   setup do
     MessagingHandler.attach
@@ -221,17 +222,20 @@ defmodule Otis.BroadcasterTest do
     :stopped = Otis.AudioStream.frame(stream)
   end
 
-  test "it sends the right number of buffer packets", context do
+  test "it sends the right number of buffer packets", %{source1: source1} = context do
     buffer_size = 5
+    [source_id1, packets1] = source1
 
     _clock = Otis.Broadcaster.Controller.start(context.clock, context.broadcaster, context.latency, buffer_size)
 
-    Enum.each 0..(buffer_size - 1), fn(n) ->
+    packets = Enum.take(packets1, buffer_size - 1) |> Enum.zip(0..(buffer_size - 1))
+
+    Enum.reduce packets, TestUtils.packet(source_id1), fn({data, n}, packet) ->
       ts = context.timestamp.(n)
       et = context.start_time + (n * Otis.Zone.Broadcaster.buffer_interval(context.opts.stream_interval))
-      {:ok, packet} = Enum.fetch context.packets1, n
-      expect = {:emit, et, {ts, packet}}
-      assert_receive ^expect, 1000, "Not received #{n}"
+      p = packet |> Packet.attach(data) |> Packet.timestamp(ts, n)
+      assert_receive {:emit, ^et, ^p}, "Not received #{n}"
+      Packet.step(packet)
     end
   end
 
@@ -243,7 +247,7 @@ defmodule Otis.BroadcasterTest do
 
     Enum.each 0..(buffer_size - 1), fn(n) ->
       time = context.timestamp.(n)
-      assert_receive {:emit, _, {^time, _}}, 1000, "Not received buffer packet #{n}"
+      assert_receive {:emit, _, %Packet{timestamp: ^time}}, 1000, "Not received buffer packet #{n}"
     end
 
     n = buffer_size
@@ -256,7 +260,7 @@ defmodule Otis.BroadcasterTest do
     time = time + poll_interval
     emit_time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+    assert_receive {:emit, ^emit_time, %Packet{timestamp: ^ts}}, 200
 
     n = n + 1
     ts = context.timestamp.(n)
@@ -268,7 +272,7 @@ defmodule Otis.BroadcasterTest do
     time = time + poll_interval
     emit_time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+    assert_receive {:emit, ^emit_time, %Packet{timestamp: ^ts}}, 200
 
     n = n + 1
     ts = context.timestamp.(n)
@@ -280,7 +284,7 @@ defmodule Otis.BroadcasterTest do
     time = time + poll_interval
     emit_time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+    assert_receive {:emit, ^emit_time, %Packet{timestamp: ^ts}}, 200
 
     n = n + 1
     ts = context.timestamp.(n)
@@ -292,7 +296,7 @@ defmodule Otis.BroadcasterTest do
     time = time + poll_interval
     emit_time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+    assert_receive {:emit, ^emit_time, %Packet{timestamp: ^ts}}, 200
 
     n = n + 1
     ts = context.timestamp.(n)
@@ -304,7 +308,7 @@ defmodule Otis.BroadcasterTest do
     time = time + poll_interval
     emit_time = time + poll_interval
     Otis.Test.SteppingController.step(clock, time, poll_interval)
-    assert_receive {:emit, ^emit_time, {^ts, _}}, 200
+    assert_receive {:emit, ^emit_time, %Packet{timestamp: ^ts}}, 200
   end
 
   test "it broadcasts a source change event", %{ zone_id: zone_id, source1: source1, source2: source2 } = context do
@@ -405,7 +409,7 @@ defmodule Otis.BroadcasterTest do
     end
 
     ts = context.timestamp.(7)
-    assert_receive {:emit, _, {^ts, "8"}}, 1000
+    assert_receive {:emit, _, %Packet{timestamp: ^ts, data: "8"}}, 1000
 
     Otis.Test.SteppingClock.step(context.clock.clock, context.timestamp.(7) + 1)
 

@@ -49,6 +49,7 @@ defmodule Otis.ReceiverTest do
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
+    ctrl_reset(mock)
     Receiver.volume receiver, 0.13
     assert_receive {:receiver_volume_change, ^id, 0.13}
     {:ok, msg} = ctrl_recv(mock)
@@ -62,13 +63,16 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
 
+    ctrl_reset(mock)
+
     Receiver.volume receiver, 0.13
     assert_receive {:receiver_volume_change, ^id, 0.13}
     {:ok, msg} = ctrl_recv(mock)
     assert msg == %{ "volume" => 0.13 }
 
     Receiver.volume_multiplier receiver, 0.5
-    refute_receive {:receiver_volume_change, ^id, _}
+    refute_receive {:receiver_volume_change, ^id, 0.13}
+    refute_receive {:receiver_volume_change, ^id, 0.065}
     {:ok, msg} = ctrl_recv(mock)
     assert msg == %{ "volume" => 0.065 }
     {:ok, 0.5} = Receiver.volume_multiplier receiver
@@ -79,7 +83,8 @@ defmodule Otis.ReceiverTest do
     assert msg == %{ "volume" => 0.3 }
 
     Receiver.volume_multiplier receiver, 0.1
-    refute_receive {:receiver_volume_change, ^id, _}
+    refute_receive {:receiver_volume_change, ^id, 0.6}
+    refute_receive {:receiver_volume_change, ^id, 0.06}
     {:ok, msg} = ctrl_recv(mock)
     assert msg == %{ "volume" => 0.06 }
   end
@@ -89,6 +94,8 @@ defmodule Otis.ReceiverTest do
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
+
+    ctrl_reset(mock)
 
     Receiver.volume receiver, 0.3, 0.1
     assert_receive {:receiver_volume_change, ^id, 0.3}
@@ -176,7 +183,7 @@ defmodule Otis.ReceiverTest do
     {:ok, zone} = Otis.Zones.create(zone_id, zone_record.name)
 
     id = Otis.uuid
-    mock = connect!(id, 1234)
+    _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
     :ok = Otis.Zone.add_receiver(zone, receiver)

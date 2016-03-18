@@ -3,6 +3,14 @@ defmodule TestUtils do
     Otis.Packet.new(source_id, offset_ms, duration_ms, packet_size)
   end
 
+  def flush do
+    receive do
+      _ -> flush()
+    after
+      0 -> :ok
+    end
+  end
+
   def md5(extract) do
     md5(extract, :crypto.hash_init(:md5))
   end
@@ -63,9 +71,17 @@ defmodule MockReceiver do
     recv_raw(socket, timeout)
   end
 
-  def data_reset(%__MODULE__{data_socket: socket} = receiver) do
+  def data_reset(%__MODULE__{data_socket: socket}) do
+    reset(socket)
+  end
+
+  def ctrl_reset(%__MODULE__{ctrl_socket: socket}) do
+    reset(socket)
+  end
+
+  defp reset(socket) do
     case :gen_tcp.recv(socket, 0, 1) do
-      {:ok, _data} -> data_reset(receiver)
+      {:ok, _data} -> reset(socket)
       {:error, _} -> nil
     end
   end
