@@ -176,8 +176,8 @@ defmodule Otis.Zone do
     {:reply, {:ok, state.state}, state}
   end
 
-  def handle_call(:get_state, _from, %S{state: state} = state) do
-    {:reply, {:ok, state}, state}
+  def handle_call(:get_state, _from, %S{state: status} = state) do
+    {:reply, {:ok, status}, state}
   end
 
   def handle_call(:get_audio_stream, _from, %S{audio_stream: audio_stream} = state) do
