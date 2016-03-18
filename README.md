@@ -197,6 +197,13 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 - [x] Crash attempting to play a zone with no attached receivers
 - [x] Fix rebuffering of new receivers
 - [x] move receiver between zones
+- [x] what happens if a receiver tcp process crashes? The recevier process
+  should get torn down, both the tcp conns closed and the real recevier should
+  try to re-connect...
+  ```
+  {:ok, %{data: {pid, port}} = r1} = Otis.Receivers.receiver "626de8c0-b0ea-5ea4-bb63-48f55fee70fa"
+  Process.exit pid, :kill
+  ```
 
 **Nice to have:**
 
