@@ -171,12 +171,6 @@ defmodule Otis.Zone do
     {:reply, :ok, state}
   end
 
-  def handle_cast({:remove_receiver, receiver}, %S{id: id} = state) do
-    Logger.info "Removing receiver from zone #{id} #{inspect receiver}"
-    state = remove_receiver_from_zone(receiver, state)
-    {:noreply, state}
-  end
-
   def handle_call(:play_pause, _from, state) do
     state = state |> toggle_state
     {:reply, {:ok, state.state}, state}
@@ -217,6 +211,12 @@ defmodule Otis.Zone do
   # Called by the broadcaster when it has finished sending in-flight packets.
   def handle_cast({:receiver_buffered, receiver}, state) do
     state = receiver_ready(receiver, state)
+    {:noreply, state}
+  end
+
+  def handle_cast({:remove_receiver, receiver}, %S{id: id} = state) do
+    Logger.info "Removing receiver from zone #{id} #{inspect receiver}"
+    state = remove_receiver_from_zone(receiver, state)
     {:noreply, state}
   end
 
