@@ -64,9 +64,18 @@ defmodule Otis.Packet do
       iex> Otis.Packet.timestamp(packet, 1234987234)
       %Otis.Packet{ source_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0, timestamp: 1234987234 }
 
+      iex> packet = Otis.Packet.new("1234", 0, 100, 3528)
+      %Otis.Packet{ source_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0 }
+      iex> Otis.Packet.timestamp(packet, 1234987234, 99)
+      %Otis.Packet{ source_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0, timestamp: 1234987234, packet_number: 99 }
+
   """
   def timestamp(packet, timestamp) do
     %P{ packet | timestamp: timestamp }
+  end
+
+  def timestamp(packet, timestamp, packet_number) do
+    %P{packet | packet_number: packet_number} |> timestamp(timestamp)
   end
 
   @doc ~S"""
