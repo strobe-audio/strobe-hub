@@ -24,10 +24,6 @@ defmodule Otis.Zone.Socket do
     GenServer.cast(pid, {:add_receiver, receiver})
   end
 
-  def remove_receiver(pid, receiver) do
-    GenServer.cast(pid, {:remove_receiver, receiver})
-  end
-
   def receivers(pid) do
     GenServer.call(pid, :receivers)
   end
@@ -58,11 +54,6 @@ defmodule Otis.Zone.Socket do
   def handle_cast({:add_receiver, receiver}, {id, receivers, count}) do
     Receiver.monitor(receiver)
     {:noreply, {id, [receiver | receivers], count}}
-  end
-
-  def handle_cast({:remove_receiver, receiver}, state) do
-    state = state |> _remove_receiver(receiver)
-    {:noreply, state}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do

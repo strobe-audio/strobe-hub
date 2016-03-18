@@ -204,6 +204,12 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   {:ok, %{data: {pid, port}} = r1} = Otis.Receivers.receiver "626de8c0-b0ea-5ea4-bb63-48f55fee70fa"
   Process.exit pid, :kill
   ```
+- [x] improve management of receiver ownership. Zones.release_receiver is
+  awkward... Is there any way to add some kind of "kill switch" to the receiver
+  (without promoting the receiver to a process) so that the owning zone would
+  just receive a message meaning "let me go!" without having to go through
+  Zones. Perhaps an genevent attached to the receiver? or some-other (simple)
+  process that the zone can latch onto somehow.
 
 **Nice to have:**
 

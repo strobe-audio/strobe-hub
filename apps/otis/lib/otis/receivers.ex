@@ -39,6 +39,16 @@ defmodule Otis.Receivers do
     {:ok, receiver}
   end
 
+  def attach(receiver_id, zone_id)
+  when is_binary(receiver_id) and is_binary(zone_id) do
+    attach(@name, receiver_id, zone_id)
+  end
+
+  def attach(pid, receiver_id, zone_id)
+  when is_binary(receiver_id) and is_binary(zone_id) do
+    GenServer.call(pid, {:attach, receiver_id, zone_id})
+  end
+
   defp config do
     Application.get_env :otis, __MODULE__
   end
@@ -78,6 +88,20 @@ defmodule Otis.Receivers do
     {:reply, Map.fetch(receivers, id), state}
   end
 
+  def handle_call({:attach, receiver_id, zone_id}, _from, %S{receivers: receivers} = state) do
+    {:ok, receiver} = Map.fetch(receivers, receiver_id)
+    # In this case the event comes before the state change. Feels wrong but is
+    # much simpler than any other way of moving receivers that I can think of
+    Otis.State.Events.notify({:reattach_receiver, receiver_id, zone_id, receiver})
+    {:reply, :ok, state}
+  end
+
+  def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
+    {id, receiver} = state.receivers |> Receiver.matching_pid(pid)
+    state = relatch(receiver, id, state)
+    {:noreply, state}
+  end
+
   def connect(:ctrl, id, {pid, socket}, params, nil, state) do
     Receiver.new(id: id, ctrl: {pid, socket}, params: params) |> update_connect(id, state)
   end
@@ -102,12 +126,23 @@ defmodule Otis.Receivers do
     Receiver.update(receiver, ctrl: nil) |> update_disconnect(id, state)
   end
 
+  def relatch(receiver, id, state) do
+    receiver = Receiver.create_latch(receiver)
+    receiver
+    |> update_receiver(id, state)
+    |> after_relatch(receiver)
+  end
+
   def update_connect(receiver, id, state) do
     update_receiver(receiver, id, state) |> after_connect(receiver)
   end
 
   def update_disconnect(receiver, id, state) do
     update_receiver(receiver, id, state) |> after_disconnect(receiver)
+  end
+
+  def update_receiver(receiver, state) do
+    %{ state | receivers: Map.put(state.receivers, Receiver.id!(receiver), receiver)}
   end
 
   def update_receiver(receiver, id, state) do
@@ -122,6 +157,15 @@ defmodule Otis.Receivers do
     state
     |> disable_zombie_receiver(receiver, Receiver.zombie?(receiver))
     |> remove_dead_receiver(receiver, Receiver.dead?(receiver))
+  end
+
+  # An unlatch event is our way of saying "reconnect this receiver" after some
+  # configuration change (to move receiver between zones) so we just want to
+  # invoke the same receiver assignment mechanism as used when a receive
+  # connects
+  def after_relatch(state, receiver) do
+    state
+    |> start_valid_receiver(receiver, Receiver.alive?(receiver))
   end
 
   def start_valid_receiver(state, receiver, true) do

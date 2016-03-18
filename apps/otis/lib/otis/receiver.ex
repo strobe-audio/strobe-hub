@@ -6,10 +6,10 @@ defmodule Otis.Receiver do
   require Logger
   alias   __MODULE__, as: R
 
-  defstruct [:id, :data, :ctrl, :latency]
+  defstruct [:id, :data, :ctrl, :latency, :latch]
 
   def new(values) do
-    struct(%R{}, extract_params(values))
+    %R{} |> struct(extract_params(values)) |> create_latch()
   end
 
   def update(receiver, values) do
@@ -26,6 +26,27 @@ defmodule Otis.Receiver do
 
   def equal?(receiver1, receiver2) do
     receiver1.id == receiver2.id
+  end
+
+  @latch_exit_signal :exit
+
+  def create_latch(receiver) do
+    %R{ receiver | latch: start_latch_process() }
+  end
+
+  def release_latch(%R{latch: pid} = receiver) do
+    send(pid, @latch_exit_signal)
+    create_latch(receiver)
+  end
+
+  defp start_latch_process do
+    pid = spawn(fn ->
+      receive do
+        @latch_exit_signal -> nil
+      end
+    end)
+    Process.monitor(pid)
+    pid
   end
 
   @doc ~S"""
@@ -62,12 +83,14 @@ defmodule Otis.Receiver do
   end
 
   @doc ~S"""
-  Monitor the receiver by monitoring both of the connections.
+  Monitor the receiver by monitoring both of the connections and the latch
+  process.
   """
-  def monitor(%R{data: {data_pid, _}, ctrl: {ctrl_pid, _}}) do
+  def monitor(%R{data: {data_pid, _}, ctrl: {ctrl_pid, _}, latch: latch_pid}) do
     data_ref = Process.monitor(data_pid)
     ctrl_ref = Process.monitor(ctrl_pid)
-    {data_ref, ctrl_ref}
+    latch_ref = Process.monitor(latch_pid)
+    {data_ref, ctrl_ref, latch_ref}
   end
 
   @doc ~S"""
@@ -79,8 +102,11 @@ defmodule Otis.Receiver do
   end
 
   @doc false
-  def matches_pid?(%R{data: {dpid, _}, ctrl: {cpid, _}}, pid) do
-    (dpid == pid) || (cpid == pid)
+  def matches_pid?({id, receiver}, pid) when is_binary(id) do
+    matches_pid?(receiver, pid)
+  end
+  def matches_pid?(%R{data: {dpid, _}, ctrl: {cpid, _}, latch: lpid}, pid) do
+    (dpid == pid) || (cpid == pid) || (lpid == pid)
   end
 
   @doc ~S"""

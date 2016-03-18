@@ -39,10 +39,14 @@ defmodule Otis.State.Persistence.Receivers do
     end)
     {:ok, state}
   end
-  def handle_event({:receiver_added, zone_id, id}, state) do
+  def handle_event({:reattach_receiver, id, zone_id, receiver} = msg, state) do
     Otis.State.Repo.transaction(fn ->
       id |> receiver |> zone_change(id, zone_id)
     end)
+    # Now we've set up the receiver to join the given zone, release it from
+    # whatever zones/sockets it currently belongs to and allow Receivers to
+    # re-latch it and send it through the :receiver_connected mechanism
+    Otis.Receiver.release_latch(receiver)
     {:ok, state}
   end
   def handle_event(_evt, state) do

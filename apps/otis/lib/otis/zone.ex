@@ -79,13 +79,6 @@ defmodule Otis.Zone do
     GenServer.call(zone, {:add_receiver, receiver})
   end
 
-  def remove_receiver(%__MODULE__{pid: pid} = _zone, receiver) do
-    remove_receiver(pid, receiver)
-  end
-  def remove_receiver(zone, receiver) when is_pid(zone) do
-    GenServer.cast(zone, {:remove_receiver, receiver})
-  end
-
   def state(zone) do
     GenServer.call(zone, :get_state)
   end
@@ -214,12 +207,6 @@ defmodule Otis.Zone do
     {:noreply, state}
   end
 
-  def handle_cast({:remove_receiver, receiver}, %S{id: id} = state) do
-    Logger.info "Removing receiver from zone #{id} #{inspect receiver}"
-    state = remove_receiver_from_zone(receiver, state)
-    {:noreply, state}
-  end
-
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
     state = Receiver.matching_pid(state.receivers, pid) |> receiver_shutdown(state)
     {:noreply, state}
@@ -229,6 +216,7 @@ defmodule Otis.Zone do
     state
   end
   def receiver_shutdown(receiver, state) do
+    event!(state, :receiver_removed, Receiver.id!(receiver))
     %S{ state | receivers: MapSet.delete(state.receivers, receiver) }
   end
 
@@ -253,17 +241,7 @@ defmodule Otis.Zone do
     receiver_ready(receiver, state)
   end
 
-  defp remove_receiver_from_zone(receiver, state) do
-    receivers = MapSet.delete(state.receivers, receiver)
-    if MapSet.member?(state.receivers, receiver) do
-      Otis.Zone.Socket.remove_receiver(state.socket, receiver)
-      event!(state, :receiver_removed, Receiver.id!(receiver))
-    end
-    %S{ state | receivers: receivers }
-  end
-
   defp adopt_receiver(receiver, state) do
-    Otis.Zones.release_receiver(receiver, self)
     Receiver.monitor(receiver)
     Receiver.volume_multiplier(receiver, state.volume)
     # I have to add the receiver to the socket here because the quick-buffering
