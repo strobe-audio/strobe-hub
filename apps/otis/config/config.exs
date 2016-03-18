@@ -10,8 +10,16 @@ use Mix.Config
 
 # Sample configuration:
 #
+
+config :logger,
+  backends: [:console, {LoggerFileBackend, :debug_log}]
+
+config :logger, :debug_log,
+  path: "log/otis.debug.log",
+  level: :debug
+
 config :logger, :console,
-  level: :debug,
+  level: :info,
   format: "$date $time $metadata [$level]$levelpad $message\n",
   sync_threshold: 1_000_000,
   metadata: [:module, :line],

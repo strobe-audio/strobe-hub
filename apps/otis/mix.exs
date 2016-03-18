@@ -43,6 +43,7 @@ defmodule Otis.Mixfile do
       {:ecto, "~> 1.0"},
       {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
       {:faker, "~> 0.5", only: :test},
+      {:logger_file_backend, "~> 0.0.7"},
     ]
   end
 end
