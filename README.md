@@ -88,6 +88,65 @@ So much.
       2016-03-15 12:27:07.385 [info]  EVENT: {:old_source_removed, "f32db771-39b4-4992-954d-0bf1b616d2fa"}
       ```
 
+- [ ] Whole zone crashes when porcelain/goon crashes:
+
+```
+panic: write |1: broken pipe
+
+goroutine 3 [running]:
+runtime.panic(0xa4ba0, 0xc21001f570)
+/usr/local/Cellar/go/1.2.2/libexec/src/pkg/runtime/panic.c:266 +0xb6
+log.(*Logger).Panicf(0xc210020190, 0xde260, 0x3, 0x40fe38, 0x1, ...)
+/usr/local/Cellar/go/1.2.2/libexec/src/pkg/log/log.go:200 +0xbd
+main.fatal_if(0xc2840, 0xc2100365a0)
+/Users/alco/extra/goworkspace/src/goon/util.go:38 +0x17e
+main.inLoop2(0x257338, 0xc210036390, 0xc21000a280, 0x2572c0, 0xc210000000, ...)
+/Users/alco/extra/goworkspace/src/goon/io.go:100 +0x5ce
+created by main.wrapStdin2
+/Users/alco/extra/goworkspace/src/goon/io.go:25 +0x15a
+
+goroutine 1 [runnable]:
+main.proto_2_0(0x7fff5fbf0101, 0xe3fc0, 0x3, 0xde7a0, 0x1, ...)
+/Users/alco/extra/goworkspace/src/goon/proto_2_0.go:58 +0x3a3
+main.main()
+/Users/alco/extra/goworkspace/src/goon/main.go:51 +0x3b6
+
+2016-03-16 21:08:40.014  [error] Process #PID<0.1373.0> raised an exception
+** (ArgumentError) argument error
+  :erlang.port_command(#Port<0.28586>, [])
+
+2016-03-16 21:08:44.927  [error] GenServer #PID<0.755.0> terminating
+** (FunctionClauseError) no function clause matching in Otis.Zone.BufferedStream.handle_info/2
+    (otis) lib/otis/zone/buffered_stream.ex:86: Otis.Zone.BufferedStream.handle_info({:DOWN, #Reference<0.0.6.394>, :process, #PID<0.756.0>, {:timeout, {GenServer, :call, [#PID<0.754.0>, :frame, 5000]}}}, %Otis.Zone.BufferedStream{audio_stream: #PID<0.754.0>, buffering: false, fetcher: #PID<0.756.0>, packets: 2, queue: {[%Otis.Packet{data: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>, duration_ms: 451257, emitter: nil, offset_ms: 451100, packet_number: 0, packet_size: 17640, source_id: "f629e13a-6182-4356-a5ba-395a79bad9d9", source_index: 4511, timestamp: 0}], [%Otis.Packet{data: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>, duration_ms: 451257, emitter: nil, offset_ms: 451000, packet_number: 0, packet_size: 17640, source_id: "f629e13a-6182-4356-a5ba-395a79bad9d9", source_index: 4510, timestamp: 0}]}, size: 10, state: :playing, task: nil, waiting: {#PID<0.776.0>, #Reference<0.0.5505026.87698>}})
+    (stdlib) gen_server.erl:615: :gen_server.try_dispatch/4
+    (stdlib) gen_server.erl:681: :gen_server.handle_msg/5
+    (stdlib) proc_lib.erl:240: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.0.6.394>, :process, #PID<0.756.0>, {:timeout, {GenServer, :call, [#PID<0.754.0>, :frame, 5000]}}}
+State: %Otis.Zone.BufferedStream{audio_stream: #PID<0.754.0>, buffering: false, fetcher: #PID<0.756.0>, packets: 2, queue: {[%Otis.Packet{data: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>, duration_ms: 451257, emitter: nil, offset_ms: 451100, packet_number: 0, packet_size: 17640, source_id: "f629e13a-6182-4356-a5ba-395a79bad9d9", source_index: 4511, timestamp: 0}], [%Otis.Packet{data: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>, duration_ms: 451257, emitter: nil, offset_ms: 451000, packet_number: 0, packet_size: 17640, source_id: "f629e13a-6182-4356-a5ba-395a79bad9d9", source_index: 4510, timestamp: 0}]}, size: 10, state: :playing, task: nil, waiting: {#PID<0.776.0>, #Reference<0.0.5505026.87698>}}
+2016-03-16 21:08:44.929  [error] GenServer #PID<0.776.0> terminating
+** (stop) exited in: GenServer.call(#PID<0.755.0>, :frame, 5000)
+    ** (EXIT) time out
+    (elixir) lib/gen_server.ex:564: GenServer.call/3
+    (otis) lib/otis/zone/broadcaster.ex:369: Otis.Zone.Broadcaster.next_packet/4
+    (otis) lib/otis/zone/broadcaster.ex:218: Otis.Zone.Broadcaster.send_next_packet/1
+    (otis) lib/otis/zone/broadcaster.ex:197: Otis.Zone.Broadcaster.potentially_emit/2
+    (otis) lib/otis/zone/broadcaster.ex:89: Otis.Zone.Broadcaster.handle_cast/2
+    (stdlib) gen_server.erl:615: :gen_server.try_dispatch/4
+    (stdlib) gen_server.erl:681: :gen_server.handle_msg/5
+    (stdlib) proc_lib.erl:240: :proc_lib.init_p_do_apply/3
+Last message: {:"$gen_cast", {:emit, 25000}}
+
+    ** (EXIT) time out
+    (elixir) lib/gen_server.ex:564: GenServer.call/3
+    (otis) lib/otis/audio_stream.ex:84: Otis.AudioStream.audio_frame/1
+    (otis) lib/otis/audio_stream.ex:54: Otis.AudioStream.handle_call/3
+    (stdlib) gen_server.erl:629: :gen_server.try_handle_call/4
+    (stdlib) gen_server.erl:661: :gen_server.handle_msg/5
+    (stdlib) proc_lib.erl:240: :proc_lib.init_p_do_apply/3
+Last message: :frame
+State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>, packet: %Otis.Packet{data: nil, duration_ms: 451257, emitter: nil, offset_ms: 451200, packet_number: 0, packet_size: 17640, source_id: "f629e13a-6182-4356-a5ba-395a79bad9d9", source_index: 4512, timestamp: 0}, packet_size: 17640, source_list: #PID<0.751.0>, state: :playing, stream: #PID<0.1350.0>}
+```
+
 **Core:**
 
 - [ ] receiver connection keepalive/monitoring. ping-pong messages so that if a
