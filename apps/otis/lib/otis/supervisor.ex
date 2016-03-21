@@ -34,7 +34,8 @@ defmodule Otis.Supervisor do
       supervisor(Otis.Zones.Supervisor, []),
       supervisor(Otis.Controllers, []),
       worker(Otis.Zones, []),
-      worker(Otis.Startup, [Otis.State, Otis.Zones, Otis.Receivers], restart: :transient)
+      # This needs to be called by the app hosting the application
+      # worker(Otis.Startup, [Otis.State, Otis.Zones], restart: :transient)
     ]
     supervise(children, strategy: :one_for_one)
   end
