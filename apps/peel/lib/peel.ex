@@ -11,6 +11,7 @@ defmodule Peel do
       # Define workers and child supervisors to be supervised
       # worker(Peel.Worker, [arg1, arg2, arg3]),
       worker(Peel.Repo, []),
+      worker(Peel.Events, []),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
