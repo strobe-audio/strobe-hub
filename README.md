@@ -158,13 +158,9 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 - [ ] Wrap all zone pids in Zone struct
 
-- [ ] No way of getting the currently playing track... Should be a method on
-  the zone. In fact the current source list behaviour needs work. The current
-  song is popped off the source list when played, so it only exists in the db
-  and the zone process. But on re-start un-finished songs just pop back to the
-  top of the source-list. Gotta think of a consistent way to deal with this.
 
-- [ ] zones stop when all receievers removed
+- [ ] zones stop when all receievers removed (postponed as it makes it hard to
+	test multi-zone playback with only 2 receivers)
 
 - [ ] rename `Zone` to `Channel` or `Station` -- zones are just static
   pre-configured playlists. 'zone' is geographic but we want to think of the
@@ -208,6 +204,11 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
   just receive a message meaning "let me go!" without having to go through
   Zones. Perhaps an genevent attached to the receiver? or some-other (simple)
   process that the zone can latch onto somehow.
+- [x] No way of getting the currently playing track... Should be a method on
+  the zone. In fact the current source list behaviour needs work. The current
+  song is popped off the source list when played, so it only exists in the db
+  and the zone process. But on re-start un-finished songs just pop back to the
+  top of the source-list. Gotta think of a consistent way to deal with this.
 - [x] Move source list manipulations into the zone.
   - [x] append
   - [x] list
