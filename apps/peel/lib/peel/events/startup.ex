@@ -3,7 +3,6 @@ defmodule Peel.Events.Startup do
   require Logger
 
   def register do
-    IO.inspect [Peel.Events.Startup]
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 

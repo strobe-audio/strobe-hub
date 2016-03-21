@@ -11,7 +11,6 @@ defmodule Peel.Events do
   ]
 
   def init(:ok) do
-    IO.inspect [Peel.Events]
     Enum.each @handlers, fn(handler) ->
       handler.register
     end
