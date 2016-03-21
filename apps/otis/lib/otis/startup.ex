@@ -2,11 +2,12 @@ defmodule Otis.Startup do
   use     GenServer
   require Logger
 
-  def start_link(state, zones_supervisor, receivers_supervisor) do
-    GenServer.start_link(__MODULE__, [state, zones_supervisor, receivers_supervisor], [])
+  def start_link(state \\ Otis.State, zones_supervisor \\ Otis.Zones)
+  def start_link(state, zones_supervisor) do
+    GenServer.start_link(__MODULE__, [state, zones_supervisor], [])
   end
 
-  def init([state, zones_supervisor, _receivers_supervisor]) do
+  def init([state, zones_supervisor]) do
     :ok = state |> start_zones(zones_supervisor)
     :ok = state |> restore_source_lists(zones_supervisor)
     Otis.State.Events.add_handler(Otis.LoggerHandler, :events)
