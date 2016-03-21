@@ -19,7 +19,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:porcelain, :logger, :dnssd, :monotonic, :sqlite_ecto, :ecto, :peel, :ranch],
+    [applications: [:porcelain, :logger, :dnssd, :monotonic, :sqlite_ecto, :ecto, :ranch],
      mod: {Otis, []}]
   end
 
