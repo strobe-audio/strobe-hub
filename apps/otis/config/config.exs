@@ -11,8 +11,8 @@ use Mix.Config
 # Sample configuration:
 #
 
-config :logger,
-  backends: [:console, {LoggerFileBackend, :debug_log}]
+# config :logger,
+#   backends: [:console, {LoggerFileBackend, :debug_log}]
 
 config :logger, :debug_log,
   path: "log/otis.debug.log",
