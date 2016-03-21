@@ -93,6 +93,10 @@ defimpl Otis.Source, for: Peel.Track do
   def metadata(track) do
     track
   end
+
+  def duration(%Track{duration_ms: duration_ms}) do
+    {:ok, duration_ms}
+  end
 end
 
 defimpl Otis.Source.Origin, for: Peel.Track do
