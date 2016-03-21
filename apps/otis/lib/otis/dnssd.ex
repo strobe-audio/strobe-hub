@@ -41,7 +41,6 @@ defmodule Otis.DNSSD do
     ]
   end
 
-  defp config(mod \\ Otis.DNSSD)
   defp config(mod) do
     Application.get_env :otis, mod
   end

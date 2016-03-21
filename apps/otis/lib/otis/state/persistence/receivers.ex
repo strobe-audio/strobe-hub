@@ -39,7 +39,7 @@ defmodule Otis.State.Persistence.Receivers do
     end)
     {:ok, state}
   end
-  def handle_event({:reattach_receiver, id, zone_id, receiver} = msg, state) do
+  def handle_event({:reattach_receiver, id, zone_id, receiver}, state) do
     Otis.State.Repo.transaction(fn ->
       id |> receiver |> zone_change(id, zone_id)
     end)
@@ -87,7 +87,7 @@ defmodule Otis.State.Persistence.Receivers do
   defp zone_change(nil, id, zone_id) do
     Logger.warn "Zone change for unknown receiver #{ id } -> zone #{ zone_id }"
   end
-  defp zone_change(receiver, id, zone_id) do
+  defp zone_change(receiver, _id, zone_id) do
     Receiver.zone(receiver, zone_id)
   end
 

@@ -199,20 +199,21 @@ defmodule Otis.Zone.Broadcaster do
     state
   end
 
-  defp resend_packets(packets, state) do
-    # Perhaps what I need to do is figure out how much time I have and fit in
-    # as many packets as I can without compromising on the deliverability of
-    # those packets
-    resend_packets(packets, state.emitter, current_time(state) + 1_000, 500)
-  end
-  defp resend_packets([packet | packets], emitter, emit_time, emit_time_increment) do
-    Logger.info "Resending packet... #{ packet.source_id }/#{inspect packet.source_index}"
-    emit_packet!(packet, emitter, emit_time)
-    resend_packets(packets, emitter, emit_time + emit_time_increment, emit_time_increment)
-  end
-
-  defp resend_packets([], _emitter, _emit_time, _emit_time_increment) do
-  end
+  # XXX: uncomment when re-enabling fast-buffering of new receivers
+  # defp resend_packets(packets, state) do
+  #   # Perhaps what I need to do is figure out how much time I have and fit in
+  #   # as many packets as I can without compromising on the deliverability of
+  #   # those packets
+  #   resend_packets(packets, state.emitter, current_time(state) + 1_000, 500)
+  # end
+  # defp resend_packets([packet | packets], emitter, emit_time, emit_time_increment) do
+  #   Logger.info "Resending packet... #{ packet.source_id }/#{inspect packet.source_index}"
+  #   emit_packet!(packet, emitter, emit_time)
+  #   resend_packets(packets, emitter, emit_time + emit_time_increment, emit_time_increment)
+  # end
+  #
+  # defp resend_packets([], _emitter, _emit_time, _emit_time_increment) do
+  # end
 
   defp send_next_packet(state) do
     {packets, packet_number} = next_packet(1, state)
@@ -257,7 +258,7 @@ defmodule Otis.Zone.Broadcaster do
     } |> monitor_in_flight
   end
 
-  defp emit_packet!(%Packet{timestamp: timestamp, data: data} = packet, emitter, emit_time) do
+  defp emit_packet!(packet, emitter, emit_time) do
     {:emitter, emitter} = Otis.Broadcaster.Emitter.emit(emitter, emit_time, packet)
     Packet.emit(packet, emitter)
   end
@@ -318,11 +319,12 @@ defmodule Otis.Zone.Broadcaster do
     %S{ state | in_flight: [] }
   end
 
-  defp bufferable_packets(state) do
-    state
-    |> unplayed_packets(current_time(state) + state.latency)
-    |> Enum.reverse
-  end
+  # XXX: uncomment when re-enabling fast-buffering of new receivers
+  # defp bufferable_packets(state) do
+  #   state
+  #   |> unplayed_packets(current_time(state) + state.latency)
+  #   |> Enum.reverse
+  # end
 
   defp unplayed_packets(state) do
     time = current_time(state)
