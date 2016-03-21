@@ -25,7 +25,7 @@ defmodule Otis.DNSSD do
   end
 
   defp service_name do
-    config[:name]
+    "_peep-broadcaster._tcp"
   end
 
   defp service_port do
