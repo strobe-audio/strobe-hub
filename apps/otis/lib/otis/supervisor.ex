@@ -17,7 +17,6 @@ defmodule Otis.Supervisor do
       worker(Otis.DNSSD, []),
       worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
       worker(Otis.Source.File.Cache, []),
-      worker(Otis.State, []),
       worker(Otis.State.Repo, []),
       worker(Otis.State.Events, []),
       worker(Otis.State.Persistence, []),
