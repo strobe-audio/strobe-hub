@@ -24,11 +24,11 @@ defmodule TestUtils do
   end
 
   defp _md5(:stopped, _extract, md5) do
-    :crypto.hash_final(md5) |> Base.encode16 |> String.downcase
+    :crypto.hash_final(md5) |> Base.encode16(case: :lower)
   end
 
   defp _md5(:done, _extract, md5) do
-    :crypto.hash_final(md5) |> Base.encode16 |> String.downcase
+    :crypto.hash_final(md5) |> Base.encode16(case: :lower)
   end
 
   def acc_stream(stream) do
