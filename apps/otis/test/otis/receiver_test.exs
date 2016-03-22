@@ -188,4 +188,15 @@ defmodule Otis.ReceiverTest do
     {:ok, receiver} = Receivers.receiver(id)
     :ok = Otis.Zone.add_receiver(zone, receiver)
   end
+
+  test "we can query the connection status of a receiver" do
+    id = Otis.uuid
+    mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, ^id, _}
+    assert true == Receivers.connected?(id)
+    assert false == Receivers.connected?(Otis.uuid)
+    :ok = :gen_tcp.close(mock.data_socket)
+    assert_receive {:receiver_disconnected, ^id, _}
+    assert false == Receivers.connected?(id)
+  end
 end

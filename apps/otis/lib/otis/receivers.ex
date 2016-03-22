@@ -49,6 +49,13 @@ defmodule Otis.Receivers do
     GenServer.call(pid, {:attach, receiver_id, zone_id})
   end
 
+  def connected?(id) do
+    connected?(@name, id)
+  end
+  def connected?(pid, id) do
+    GenServer.call(pid, {:is_connected, id})
+  end
+
   defp config do
     Application.get_env :otis, __MODULE__
   end
@@ -94,6 +101,14 @@ defmodule Otis.Receivers do
     # much simpler than any other way of moving receivers that I can think of
     Otis.State.Events.notify({:reattach_receiver, receiver_id, zone_id, receiver})
     {:reply, :ok, state}
+  end
+
+  def handle_call({:is_connected, id}, _from, state) do
+    connected? = case Map.fetch(state.receivers, id) do
+      :error -> false
+      {:ok, receiver} -> Receiver.alive?(receiver)
+    end
+    {:reply, connected?, state}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
