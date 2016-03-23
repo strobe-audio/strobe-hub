@@ -18,6 +18,7 @@ type alias Zone =
   , name:     String
   , position: Int
   , volume:   Float
+  , playing:   Bool
   }
 
 type alias Receiver =
@@ -40,6 +41,14 @@ type alias ReceiverStatusEvent =
   , zoneId:     String
   , receiverId: String
   }
+
+
+type alias ZoneStatusEvent =
+  { event:      String
+  , zoneId:     String
+  , status:     String
+  }
+
 
 init : (Model, Effects Action)
 init =
@@ -98,6 +107,18 @@ updateReceiverOnlineStatus model (event, args) =
       model
 
 
+zonePlayPause : List Zone -> String -> String -> List Zone
+zonePlayPause zones zoneId status =
+  findUpdateZone zones zoneId (\z -> { z | playing = (status == "play") })
+
+updateZoneStatus : Model -> ( String, ZoneStatusEvent ) -> Model
+updateZoneStatus model (event, args) =
+  case event of
+    "zone_play_pause" ->
+      { model | zones = (zonePlayPause model.zones args.zoneId args.status) }
+    _ ->
+      model
+
 translateVolume : String -> Result String Float
 translateVolume input =
   case (String.toInt input) of
@@ -118,14 +139,27 @@ sendZoneVolumeChange zone volume =
     |> Effects.task
     |> Effects.map (always NoOp)
 
+sendZoneStatusChange : Zone -> Bool -> Effects Action
+sendZoneStatusChange zone playing =
+  Signal.send zonePlayPauseRequestsBox.address (zone.id, playing)
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
 
 type Action
   = InitialState Model
   | ReceiverStatus (String, ReceiverStatusEvent)
+  | ZoneStatus (String, ZoneStatusEvent)
   | UpdateReceiverVolume Receiver String
   | UpdateZoneVolume Zone String
+  | TogglePlayPause (Zone, Bool)
   | NoOp
 
+updateZone : Model -> Zone -> (Zone -> Zone) -> Model
+updateZone model zone update =
+  { model
+  | zones = findUpdateZone model.zones zone.id update
+  }
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -138,6 +172,13 @@ update action model =
       ( updateReceiverOnlineStatus model event
       , Effects.none
       )
+    ZoneStatus event ->
+      ( updateZoneStatus model event
+      , Effects.none
+      )
+    TogglePlayPause (zone, playing) ->
+      ( updateZone model zone (\z -> { z | playing = playing })
+      , sendZoneStatusChange zone playing )
     UpdateZoneVolume zone volumeInput ->
       case (translateVolume volumeInput) of
         Ok vol ->
@@ -184,14 +225,23 @@ volumeControl address volume message =
   ]
 
 
+zonePlayPauseButton : Signal.Address Action -> Zone -> Html
+zonePlayPauseButton address zone =
+  i [
+    classList [("icon", True), ("play", not zone.playing), ("pause", zone.playing)]
+  , onClick address (TogglePlayPause ( zone, not(zone.playing) ))
+  ] []
+
+
 zonePanel : Signal.Address Action -> Model -> Zone -> Html
 zonePanel address model zone =
   div [ class "zone five wide column" ] [
     div [ class "ui card" ] [
       div [ class "content" ] [
         div [ class "header" ] [
-          text zone.name,
-          volumeControl address zone.volume (UpdateZoneVolume zone)
+          (zonePlayPauseButton address zone)
+        , (text zone.name)
+        , (volumeControl address zone.volume (UpdateZoneVolume zone))
         ]
       ],
       div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers address model zone))
@@ -215,12 +265,18 @@ receiverStatusActions : Signal Action
 receiverStatusActions =
   Signal.map ReceiverStatus receiverStatus
 
+
+zoneStatusActions : Signal Action
+zoneStatusActions =
+  Signal.map ZoneStatus zoneStatus
+
+
 app =
   StartApp.start
     { init = init
     , update = update
     , view = view
-    , inputs = [incomingActions, receiverStatusActions]
+    , inputs = [incomingActions, receiverStatusActions, zoneStatusActions]
     }
 
 
@@ -236,10 +292,20 @@ port initialState : Signal Model
 
 port receiverStatus : Signal ( String, ReceiverStatusEvent )
 
+port zoneStatus : Signal ( String, ZoneStatusEvent )
+
 port volumeChanges : Signal ( String, String, Float )
 port volumeChanges =
   volumeChangeRequestsBox.signal
 
+port playPauseChanges : Signal ( String, Bool )
+port playPauseChanges =
+  zonePlayPauseRequestsBox.signal
+
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =
   Signal.mailbox ( "", "", 0.0 )
+
+zonePlayPauseRequestsBox : Signal.Mailbox ( String, Bool )
+zonePlayPauseRequestsBox =
+  Signal.mailbox ( "", False )

@@ -19,6 +19,11 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("play_pause", [id, playing], socket) do
+    Otis.Zones.play id, playing
+    {:noreply, socket}
+  end
+
   def handle_info(:controller_join, socket) do
     Otis.State.Events.notify({:controller_join, socket})
     {:noreply, socket}
