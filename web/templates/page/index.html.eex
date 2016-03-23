@@ -1,0 +1,3 @@
+<div id="elm-main"></div>
+
+<script src="<%= static_path(@conn, "/js/app.js") %>"></script>
