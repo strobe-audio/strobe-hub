@@ -11,7 +11,7 @@ defmodule Otis.Startup do
     :ok = state |> start_zones(zones_supervisor)
     :ok = state |> restore_source_lists(zones_supervisor)
     Otis.State.Events.add_handler(Otis.LoggerHandler, :events)
-    Otis.State.Events.notify(:otis_started)
+    Otis.State.Events.notify({:otis_started})
     :ignore
   end
 
