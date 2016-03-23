@@ -113,6 +113,13 @@ defmodule Otis.Zone do
     GenServer.call(zone, {:volume, volume})
   end
 
+  def playing?(%__MODULE__{pid: pid}) do
+    playing?(pid)
+  end
+  def playing?(zone) when is_pid(zone) do
+    GenServer.call(zone, :playing)
+  end
+
   @doc "Called by the broadcaster in order to keep our state in sync"
   def stream_finished(zone) do
     GenServer.cast(zone, :stream_finished)
@@ -149,6 +156,13 @@ defmodule Otis.Zone do
   end
   def duration(zone) do
     GenServer.call(zone, :duration)
+  end
+
+  def play(%__MODULE__{pid: pid}, playing) do
+    play(pid, playing)
+  end
+  def play(zone, playing) do
+    GenServer.call(zone, {:play, playing})
   end
 
   # Things we can do to zones:
@@ -228,6 +242,21 @@ defmodule Otis.Zone do
   def handle_call(:duration, _from, state) do
     duration = Otis.SourceList.duration(state.source_list)
     {:reply, duration, state}
+  end
+
+  def handle_call(:playing, _from, %S{state: status} = state) do
+    {:reply, status == :play, state}
+  end
+
+  def handle_call({:play, true}, _from, %S{state: :play} = state) do
+    {:reply, {:ok, state.state}, state}
+  end
+  def handle_call({:play, false}, _from, %S{state: :stop} = state) do
+    {:reply, {:ok, state.state}, state}
+  end
+  def handle_call({:play, _play}, _from, state) do
+    state = state |> toggle_state
+    {:reply, {:ok, state.state}, state}
   end
 
   def handle_cast(:stream_finished, state) do
@@ -318,6 +347,10 @@ defmodule Otis.Zone do
     set_state(state, :play)
   end
 
+  defp set_state(%S{state: status} = state, status) do
+    IO.inspect [:no_state_change, status]
+    state
+  end
   defp set_state(zone, state) do
     %S{ zone | state: state } |> change_state
   end
@@ -330,17 +363,19 @@ defmodule Otis.Zone do
   defp change_state(%S{state: :play, broadcaster: nil, ctrl: ctrl} = state) do
     {:ok, broadcaster} = start_broadcaster(state)
     ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(state), @buffer_size)
+    Otis.State.Events.notify({:zone_play_pause, state.id, :play})
     %S{ state | broadcaster: broadcaster, ctrl: ctrl }
   end
   defp change_state(%S{state: :play} = state) do
     state
   end
   defp change_state(%S{state: :stop, broadcaster: nil} = state) do
-    Logger.debug("Zone stopped")
     zone_is_stopped(state)
   end
   defp change_state(%S{state: :stop, broadcaster: broadcaster} = state) do
     ctrl = Otis.Broadcaster.Controller.stop(state.ctrl, broadcaster)
+    # TODO: change :stop state to :pause
+    Otis.State.Events.notify({:zone_play_pause, state.id, :pause})
     change_state(%S{ state | broadcaster: nil, ctrl: ctrl })
   end
   defp change_state(%S{state: :skip, broadcaster: nil} = state) do

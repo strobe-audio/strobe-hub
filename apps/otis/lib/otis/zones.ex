@@ -82,6 +82,26 @@ defmodule Otis.Zones do
     Otis.Zone.volume(find!(registry, id))
   end
 
+  def volume(id, volume) when is_binary(id) do
+    volume(@registry_name, id, volume)
+  end
+  def volume(registry, id, volume) do
+    Otis.Zone.volume(find!(registry, id), volume)
+  end
+
+  def playing?(id) when is_binary(id) do
+    playing?(@registry_name, id)
+  end
+  def playing?(registry, id) when is_binary(id) do
+    Otis.Zone.playing?(find!(registry, id))
+  end
+  def play(id, playing) when is_binary(id) do
+    play(@registry_name, id, playing)
+  end
+  def play(registry, id, playing) when is_binary(id) do
+    Otis.Zone.play(find!(registry, id), playing)
+  end
+
   defp add(action, registry, id, config) do
     {:ok, zone} = Otis.Zones.Supervisor.start_zone(id, config)
     add(action, registry, zone, id, config)
