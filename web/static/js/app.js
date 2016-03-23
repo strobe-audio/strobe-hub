@@ -46,7 +46,6 @@ channel.join()
 
 
 elmApp.ports.volumeChanges.subscribe(event => {
-	console.log('volume', event)
   channel.push("change_volume", event)
          .receive("error", payload => console.log(payload.message))
 })

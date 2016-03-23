@@ -1,7 +1,27 @@
 
-.zone input[type="range"],
-.receiver input[type="range"] {
-  width: 100%;
+.volume-control {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.volume-control input[type="range"] {
+  display: flex;
+  flex: 1;
+  display: inline-block;
+  margin: 0 5px;
+  position: relative;
+  top: 1px;
+}
+
+.volume-control i.volume {
+  /* display: flex; */
+  flex: 0;
+  /* justify-content: center; */
+}
+
+.receiver + .receiver {
+  margin-top: 1.0em;
 }
 .receiver--offline {
   color: #ddd;

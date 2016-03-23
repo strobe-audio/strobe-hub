@@ -105,7 +105,6 @@
 	// channel.push('list_libraries', {})
 
 	elmApp.ports.volumeChanges.subscribe(function (event) {
-		console.log('volume', event);
 		channel.push("change_volume", event).receive("error", function (payload) {
 			return console.log(payload.message);
 		});
@@ -12074,60 +12073,6 @@
 	   var NoOp = {ctor: "NoOp"};
 	   var UpdateZoneVolume = F2(function (a,b) {    return {ctor: "UpdateZoneVolume",_0: a,_1: b};});
 	   var UpdateReceiverVolume = F2(function (a,b) {    return {ctor: "UpdateReceiverVolume",_0: a,_1: b};});
-	   var receiverInZone = F2(function (address,receiver) {
-	      return A2($Html.div,
-	      _U.list([$Html$Attributes.classList(_U.list([{ctor: "_Tuple2",_0: "receiver",_1: true}
-	                                                  ,{ctor: "_Tuple2",_0: "receiver--online",_1: receiver.online}
-	                                                  ,{ctor: "_Tuple2",_0: "receiver--offline",_1: $Basics.not(receiver.online)}]))]),
-	      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(receiver.name)]))
-	              ,A2($Html.div,
-	              _U.list([]),
-	              _U.list([A2($Html.input,
-	              _U.list([$Html$Attributes.type$("range")
-	                      ,$Html$Attributes.min("0")
-	                      ,$Html$Attributes.max("1000")
-	                      ,$Html$Attributes.step("1")
-	                      ,$Html$Attributes.value($Basics.toString(receiver.volume * 1000))
-	                      ,A3($Html$Events.on,
-	                      "input",
-	                      $Html$Events.targetValue,
-	                      function (_p0) {
-	                         return A2($Signal.message,address,A2(UpdateReceiverVolume,receiver,_p0));
-	                      })]),
-	              _U.list([]))]))]));
-	   });
-	   var zone = F3(function (address,model,zone) {
-	      return A2($Html.div,
-	      _U.list([$Html$Attributes.$class("zone five wide column")]),
-	      _U.list([A2($Html.div,
-	      _U.list([$Html$Attributes.$class("ui card")]),
-	      _U.list([A2($Html.div,
-	              _U.list([$Html$Attributes.$class("content")]),
-	              _U.list([A2($Html.div,
-	              _U.list([$Html$Attributes.$class("header")]),
-	              _U.list([$Html.text(zone.name)
-	                      ,A2($Html.div,
-	                      _U.list([]),
-	                      _U.list([A2($Html.input,
-	                      _U.list([$Html$Attributes.type$("range")
-	                              ,$Html$Attributes.min("0")
-	                              ,$Html$Attributes.max("1000")
-	                              ,$Html$Attributes.step("1")
-	                              ,$Html$Attributes.value($Basics.toString(zone.volume * 1000))
-	                              ,A3($Html$Events.on,
-	                              "input",
-	                              $Html$Events.targetValue,
-	                              function (_p1) {
-	                                 return A2($Signal.message,address,A2(UpdateZoneVolume,zone,_p1));
-	                              })]),
-	                      _U.list([]))]))]))]))
-	              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),A2($List.map,receiverInZone(address),A3(zoneReceivers,address,model,zone)))]))]));
-	   });
-	   var view = F2(function (address,model) {
-	      return A2($Html.div,
-	      _U.list([$Html$Attributes.$class("ui container")]),
-	      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("zones ui grid")]),A2($List.map,A2(zone,address,model),model.zones))]));
-	   });
 	   var ReceiverStatus = function (a) {    return {ctor: "ReceiverStatus",_0: a};};
 	   var receiverStatusActions = A2($Signal.map,ReceiverStatus,receiverStatus);
 	   var InitialState = function (a) {    return {ctor: "InitialState",_0: a};};
@@ -12142,14 +12087,6 @@
 	      $Basics.always(NoOp),
 	      $Effects.task(A2($Signal.send,volumeChangeRequestsBox.address,{ctor: "_Tuple3",_0: "receiver",_1: receiver.id,_2: volume})));
 	   });
-	   var translateVolume = function (input) {
-	      var _p2 = $String.toInt(input);
-	      if (_p2.ctor === "Ok") {
-	            return $Result.Ok($Basics.toFloat(_p2._0) / 1000);
-	         } else {
-	            return $Result.Err(_p2._0);
-	         }
-	   };
 	   var findUpdateZone = F3(function (zones,zoneId,updateFunc) {
 	      return A2($List.map,function (z) {    return _U.eq(z.id,zoneId) ? updateFunc(z) : z;},zones);
 	   });
@@ -12162,45 +12099,19 @@
 	   var receiverOnline = F3(function (receivers,receiverId,online) {
 	      return A3(findUpdateReceiver,receivers,receiverId,function (r) {    return _U.update(r,{online: online});});
 	   });
-	   var updateReceiverOnlineStatus = F2(function (model,_p3) {
-	      var _p4 = _p3;
-	      var _p6 = _p4._1;
-	      var _p5 = _p4._0;
-	      switch (_p5)
-	      {case "receiver_added": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p6.receiverId,true)});
-	         case "receiver_removed": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p6.receiverId,false)});
+	   var updateReceiverOnlineStatus = F2(function (model,_p0) {
+	      var _p1 = _p0;
+	      var _p3 = _p1._1;
+	      var _p2 = _p1._0;
+	      switch (_p2)
+	      {case "receiver_added": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p3.receiverId,true)});
+	         case "receiver_removed": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p3.receiverId,false)});
 	         default: return model;}
 	   });
 	   var updateReceiverVolume = F3(function (model,receiver,volume) {
 	      return _U.update(model,{receivers: A3(findUpdateReceiver,model.receivers,receiver.id,function (r) {    return _U.update(r,{volume: volume});})});
 	   });
-	   var update = F2(function (action,model) {
-	      var _p7 = action;
-	      switch (_p7.ctor)
-	      {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-	         case "InitialState": return {ctor: "_Tuple2",_0: _p7._0,_1: $Effects.none};
-	         case "ReceiverStatus": return {ctor: "_Tuple2",_0: A2(updateReceiverOnlineStatus,model,_p7._0),_1: $Effects.none};
-	         case "UpdateZoneVolume": var _p10 = _p7._0;
-	           var _p8 = translateVolume(_p7._1);
-	           if (_p8.ctor === "Ok") {
-	                 var _p9 = _p8._0;
-	                 return {ctor: "_Tuple2",_0: A3(updateZoneVolume,model,_p10,_p9),_1: A2(sendZoneVolumeChange,_p10,_p9)};
-	              } else {
-	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-	              }
-	         default: var _p13 = _p7._0;
-	           var _p11 = translateVolume(_p7._1);
-	           if (_p11.ctor === "Ok") {
-	                 var _p12 = _p11._0;
-	                 return {ctor: "_Tuple2",_0: A3(updateReceiverVolume,model,_p13,_p12),_1: A2(sendReceiverVolumeChange,_p13,_p12)};
-	              } else {
-	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-	              }}
-	   });
 	   var init = function () {    var model = {zones: _U.list([]),receivers: _U.list([])};return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}();
-	   var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([incomingActions,receiverStatusActions])});
-	   var main = app.html;
-	   var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
 	   var ReceiverStatusEvent = F3(function (a,b,c) {    return {event: a,zoneId: b,receiverId: c};});
 	   var Int = {ctor: "Int"};
 	   var Float = {ctor: "Float"};
@@ -12208,7 +12119,111 @@
 	   var Model = F2(function (a,b) {    return {zones: a,receivers: b};});
 	   var Receiver = F5(function (a,b,c,d,e) {    return {id: a,name: b,online: c,volume: d,zoneId: e};});
 	   var Zone = F4(function (a,b,c,d) {    return {id: a,name: b,position: c,volume: d};});
+	   var volumeRangeMax = 1000;
+	   var translateVolume = function (input) {
+	      var _p4 = $String.toInt(input);
+	      if (_p4.ctor === "Ok") {
+	            return $Result.Ok($Basics.toFloat(_p4._0) / volumeRangeMax);
+	         } else {
+	            return $Result.Err(_p4._0);
+	         }
+	   };
+	   var update = F2(function (action,model) {
+	      var _p5 = action;
+	      switch (_p5.ctor)
+	      {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	         case "InitialState": return {ctor: "_Tuple2",_0: _p5._0,_1: $Effects.none};
+	         case "ReceiverStatus": return {ctor: "_Tuple2",_0: A2(updateReceiverOnlineStatus,model,_p5._0),_1: $Effects.none};
+	         case "UpdateZoneVolume": var _p8 = _p5._0;
+	           var _p6 = translateVolume(_p5._1);
+	           if (_p6.ctor === "Ok") {
+	                 var _p7 = _p6._0;
+	                 return {ctor: "_Tuple2",_0: A3(updateZoneVolume,model,_p8,_p7),_1: A2(sendZoneVolumeChange,_p8,_p7)};
+	              } else {
+	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	              }
+	         default: var _p11 = _p5._0;
+	           var _p9 = translateVolume(_p5._1);
+	           if (_p9.ctor === "Ok") {
+	                 var _p10 = _p9._0;
+	                 return {ctor: "_Tuple2",_0: A3(updateReceiverVolume,model,_p11,_p10),_1: A2(sendReceiverVolumeChange,_p11,_p10)};
+	              } else {
+	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	              }}
+	   });
+	   var receiverInZone = F2(function (address,receiver) {
+	      return A2($Html.div,
+	      _U.list([$Html$Attributes.classList(_U.list([{ctor: "_Tuple2",_0: "receiver",_1: true}
+	                                                  ,{ctor: "_Tuple2",_0: "receiver--online",_1: receiver.online}
+	                                                  ,{ctor: "_Tuple2",_0: "receiver--offline",_1: $Basics.not(receiver.online)}]))]),
+	      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(receiver.name)]))
+	              ,A2($Html.div,
+	              _U.list([$Html$Attributes.$class("volume-control")]),
+	              _U.list([A2($Html.i,
+	                      _U.list([$Html$Attributes.$class("volume off icon"),A2($Html$Events.onClick,address,A2(UpdateReceiverVolume,receiver,"0"))]),
+	                      _U.list([]))
+	                      ,A2($Html.input,
+	                      _U.list([$Html$Attributes.type$("range")
+	                              ,$Html$Attributes.min("0")
+	                              ,$Html$Attributes.max($Basics.toString(volumeRangeMax))
+	                              ,$Html$Attributes.step("1")
+	                              ,$Html$Attributes.value($Basics.toString(receiver.volume * volumeRangeMax))
+	                              ,A3($Html$Events.on,
+	                              "input",
+	                              $Html$Events.targetValue,
+	                              function (_p12) {
+	                                 return A2($Signal.message,address,A2(UpdateReceiverVolume,receiver,_p12));
+	                              })]),
+	                      _U.list([]))
+	                      ,A2($Html.i,
+	                      _U.list([$Html$Attributes.$class("volume up icon")
+	                              ,A2($Html$Events.onClick,address,A2(UpdateReceiverVolume,receiver,$Basics.toString(volumeRangeMax)))]),
+	                      _U.list([]))]))]));
+	   });
+	   var zone = F3(function (address,model,zone) {
+	      return A2($Html.div,
+	      _U.list([$Html$Attributes.$class("zone five wide column")]),
+	      _U.list([A2($Html.div,
+	      _U.list([$Html$Attributes.$class("ui card")]),
+	      _U.list([A2($Html.div,
+	              _U.list([$Html$Attributes.$class("content")]),
+	              _U.list([A2($Html.div,
+	              _U.list([$Html$Attributes.$class("header")]),
+	              _U.list([$Html.text(zone.name)
+	                      ,A2($Html.div,
+	                      _U.list([$Html$Attributes.$class("volume-control")]),
+	                      _U.list([A2($Html.i,
+	                              _U.list([$Html$Attributes.$class("volume off icon"),A2($Html$Events.onClick,address,A2(UpdateZoneVolume,zone,"0"))]),
+	                              _U.list([]))
+	                              ,A2($Html.input,
+	                              _U.list([$Html$Attributes.type$("range")
+	                                      ,$Html$Attributes.min("0")
+	                                      ,$Html$Attributes.max($Basics.toString(volumeRangeMax))
+	                                      ,$Html$Attributes.step("1")
+	                                      ,$Html$Attributes.value($Basics.toString(zone.volume * volumeRangeMax))
+	                                      ,A3($Html$Events.on,
+	                                      "input",
+	                                      $Html$Events.targetValue,
+	                                      function (_p13) {
+	                                         return A2($Signal.message,address,A2(UpdateZoneVolume,zone,_p13));
+	                                      })]),
+	                              _U.list([]))
+	                              ,A2($Html.i,
+	                              _U.list([$Html$Attributes.$class("volume up icon")
+	                                      ,A2($Html$Events.onClick,address,A2(UpdateZoneVolume,zone,$Basics.toString(volumeRangeMax)))]),
+	                              _U.list([]))]))]))]))
+	              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),A2($List.map,receiverInZone(address),A3(zoneReceivers,address,model,zone)))]))]));
+	   });
+	   var view = F2(function (address,model) {
+	      return A2($Html.div,
+	      _U.list([$Html$Attributes.$class("ui container")]),
+	      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("zones ui grid")]),A2($List.map,A2(zone,address,model),model.zones))]));
+	   });
+	   var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([incomingActions,receiverStatusActions])});
+	   var main = app.html;
+	   var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
 	   return _elm.Main.values = {_op: _op
+	                             ,volumeRangeMax: volumeRangeMax
 	                             ,Zone: Zone
 	                             ,Receiver: Receiver
 	                             ,Model: Model

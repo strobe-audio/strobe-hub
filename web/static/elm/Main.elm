@@ -9,6 +9,10 @@ import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Debug
 
+-- volume sliders go from 0 - this value so we have to convert to a 0-1 range
+-- before setting the volume
+volumeRangeMax = 1000
+
 type alias Zone =
   { id:       String
   , name:     String
@@ -97,7 +101,7 @@ updateReceiverOnlineStatus model (event, args) =
 translateVolume : String -> Result String Float
 translateVolume input =
   case (String.toInt input) of
-    Ok vol  -> Ok ((toFloat vol) / 1000)
+    Ok vol  -> Ok ((toFloat vol) / volumeRangeMax)
     Err msg -> Err msg
 
 
@@ -155,19 +159,22 @@ zoneReceivers address model zone =
   List.filter (\r -> r.zoneId == zone.id) model.receivers
 
 
+
 receiverInZone : Signal.Address Action -> Receiver -> Html
 receiverInZone address receiver =
   div [ classList [("receiver", True), ("receiver--online", receiver.online), ("receiver--offline", not receiver.online)] ] [
-    div [] [ text receiver.name ],
-    div [] [
-      input [
+    div [] [ text receiver.name ]
+  , div [ class "volume-control" ] [
+      i [ class "volume off icon", onClick address (UpdateReceiverVolume receiver "0") ] []
+    , input [
         type' "range"
       , Html.Attributes.min "0"
-      , Html.Attributes.max "1000"
+      , Html.Attributes.max (toString volumeRangeMax)
       , step "1"
-      , value (toString (receiver.volume * 1000))
+      , value (toString (receiver.volume * volumeRangeMax))
       , on "input" targetValue (Signal.message address << (UpdateReceiverVolume receiver))
       ] []
+    , i [ class "volume up icon", onClick address (UpdateReceiverVolume receiver (toString volumeRangeMax)) ] []
     ]
   ]
 
@@ -179,15 +186,17 @@ zone address model zone =
       div [ class "content" ] [
         div [ class "header" ] [
           text zone.name,
-          div [] [
-            input [
+          div [ class "volume-control" ] [
+            i [ class "volume off icon", onClick address (UpdateZoneVolume zone "0") ] []
+          , input [
               type' "range"
             , Html.Attributes.min "0"
-            , Html.Attributes.max "1000"
+            , Html.Attributes.max (toString volumeRangeMax)
             , step "1"
-            , value (toString (zone.volume * 1000))
+            , value (toString (zone.volume * volumeRangeMax))
             , on "input" targetValue (Signal.message address << (UpdateZoneVolume zone))
             ] []
+          , i [ class "volume up icon", onClick address (UpdateZoneVolume zone (toString volumeRangeMax)) ] []
           ]
         ]
       ],

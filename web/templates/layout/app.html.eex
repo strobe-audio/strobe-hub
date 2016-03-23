@@ -9,6 +9,7 @@
 
     <title>Elvis</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/vendor/semantic-ui/semantic.css") %>">
+    <link rel="stylesheet" href="<%= static_path(@conn, "/css/vendor/semantic-ui/icon.css") %>">
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
   </head>
 
