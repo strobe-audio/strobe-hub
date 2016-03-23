@@ -1,7 +1,7 @@
-
 module Main where
 
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
@@ -42,14 +42,30 @@ update action model =
     InitialState state ->
       (state, Effects.none)
 
-zone : Signal.Address Action -> Zone -> Html
-zone action zone =
-  div [] [ text zone.name ]
+zoneReceivers : Model -> Zone -> List Receiver
+zoneReceivers model zone =
+  List.filter (\r -> r.zoneId == zone.id) model.receivers
+
+receiverInZone : Receiver -> Html
+receiverInZone receiver =
+  div [ classList [("receiver", True), ("receiver--online", receiver.online)] ] [ text receiver.name ]
+
+zone : Model -> Signal.Address Action -> Zone -> Html
+zone model action zone =
+  div [ class "zone four wide column" ] [
+    div [ class "ui card" ] [
+      div [ class "content" ] [
+        div [ class "header" ] [ text zone.name ]
+      ],
+      div [ class "content" ] (List.map receiverInZone (zoneReceivers model zone))
+    ]
+  ]
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [] (List.map (zone address) model.zones)
-  -- Html.text "Hello"
+  div [ class "ui container" ] [
+    div [ class "zones ui grid" ] (List.map (zone model address) model.zones)
+  ]
 
 incomingActions : Signal Action
 incomingActions =
