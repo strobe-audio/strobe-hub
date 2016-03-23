@@ -61,6 +61,9 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	var initialState = { receivers: [], zones: [] };
+	var elmApp = _Main2.default.embed(_Main2.default.Main, document.getElementById('elm-main'), { initialState: initialState });
+
 	var socket = new _phoenix.Socket("/controller", { params: {} });
 
 	socket.connect();
@@ -69,10 +72,15 @@
 
 	channel.on('state', function (payload) {
 		console.log('got startup', payload);
+		elmApp.ports.initialState.send(payload);
 	});
 
 	channel.on('add_library', function (payload) {
 		console.log('got library', payload);
+	});
+
+	channel.on('event', function (payload) {
+		console.log('got event', payload);
 	});
 
 	channel.join().receive('ok', function (resp) {
@@ -82,8 +90,6 @@
 	});
 
 	// channel.push('list_libraries', {})
-
-	var elmApp = _Main2.default.embed(_Main2.default.Elvis, document.getElementById('elm-main'));
 
 /***/ },
 /* 2 */
@@ -5039,6 +5045,116 @@
 		};
 	};
 
+	Elm.Native.Time = {};
+
+	Elm.Native.Time.make = function(localRuntime)
+	{
+		localRuntime.Native = localRuntime.Native || {};
+		localRuntime.Native.Time = localRuntime.Native.Time || {};
+		if (localRuntime.Native.Time.values)
+		{
+			return localRuntime.Native.Time.values;
+		}
+
+		var NS = Elm.Native.Signal.make(localRuntime);
+		var Maybe = Elm.Maybe.make(localRuntime);
+
+
+		// FRAMES PER SECOND
+
+		function fpsWhen(desiredFPS, isOn)
+		{
+			var msPerFrame = 1000 / desiredFPS;
+			var ticker = NS.input('fps-' + desiredFPS, null);
+
+			function notifyTicker()
+			{
+				localRuntime.notify(ticker.id, null);
+			}
+
+			function firstArg(x, y)
+			{
+				return x;
+			}
+
+			// input fires either when isOn changes, or when ticker fires.
+			// Its value is a tuple with the current timestamp, and the state of isOn
+			var input = NS.timestamp(A3(NS.map2, F2(firstArg), NS.dropRepeats(isOn), ticker));
+
+			var initialState = {
+				isOn: false,
+				time: localRuntime.timer.programStart,
+				delta: 0
+			};
+
+			var timeoutId;
+
+			function update(input, state)
+			{
+				var currentTime = input._0;
+				var isOn = input._1;
+				var wasOn = state.isOn;
+				var previousTime = state.time;
+
+				if (isOn)
+				{
+					timeoutId = localRuntime.setTimeout(notifyTicker, msPerFrame);
+				}
+				else if (wasOn)
+				{
+					clearTimeout(timeoutId);
+				}
+
+				return {
+					isOn: isOn,
+					time: currentTime,
+					delta: (isOn && !wasOn) ? 0 : currentTime - previousTime
+				};
+			}
+
+			return A2(
+				NS.map,
+				function(state) { return state.delta; },
+				A3(NS.foldp, F2(update), update(input.value, initialState), input)
+			);
+		}
+
+
+		// EVERY
+
+		function every(t)
+		{
+			var ticker = NS.input('every-' + t, null);
+			function tellTime()
+			{
+				localRuntime.notify(ticker.id, null);
+			}
+			var clock = A2(NS.map, fst, NS.timestamp(ticker));
+			setInterval(tellTime, t);
+			return clock;
+		}
+
+
+		function fst(pair)
+		{
+			return pair._0;
+		}
+
+
+		function read(s)
+		{
+			var t = Date.parse(s);
+			return isNaN(t) ? Maybe.Nothing : Maybe.Just(t);
+		}
+
+		return localRuntime.Native.Time.values = {
+			fpsWhen: F2(fpsWhen),
+			every: every,
+			toDate: function(t) { return new Date(t); },
+			read: read
+		};
+	};
+
 	Elm.Native.Transform2D = {};
 	Elm.Native.Transform2D.make = function(localRuntime) {
 		localRuntime.Native = localRuntime.Native || {};
@@ -7814,6 +7930,52 @@
 	                               ,forwardTo: forwardTo
 	                               ,Mailbox: Mailbox};
 	};
+	Elm.Time = Elm.Time || {};
+	Elm.Time.make = function (_elm) {
+	   "use strict";
+	   _elm.Time = _elm.Time || {};
+	   if (_elm.Time.values) return _elm.Time.values;
+	   var _U = Elm.Native.Utils.make(_elm),
+	   $Basics = Elm.Basics.make(_elm),
+	   $Native$Signal = Elm.Native.Signal.make(_elm),
+	   $Native$Time = Elm.Native.Time.make(_elm),
+	   $Signal = Elm.Signal.make(_elm);
+	   var _op = {};
+	   var delay = $Native$Signal.delay;
+	   var since = F2(function (time,signal) {
+	      var stop = A2($Signal.map,$Basics.always(-1),A2(delay,time,signal));
+	      var start = A2($Signal.map,$Basics.always(1),signal);
+	      var delaydiff = A3($Signal.foldp,F2(function (x,y) {    return x + y;}),0,A2($Signal.merge,start,stop));
+	      return A2($Signal.map,F2(function (x,y) {    return !_U.eq(x,y);})(0),delaydiff);
+	   });
+	   var timestamp = $Native$Signal.timestamp;
+	   var every = $Native$Time.every;
+	   var fpsWhen = $Native$Time.fpsWhen;
+	   var fps = function (targetFrames) {    return A2(fpsWhen,targetFrames,$Signal.constant(true));};
+	   var inMilliseconds = function (t) {    return t;};
+	   var millisecond = 1;
+	   var second = 1000 * millisecond;
+	   var minute = 60 * second;
+	   var hour = 60 * minute;
+	   var inHours = function (t) {    return t / hour;};
+	   var inMinutes = function (t) {    return t / minute;};
+	   var inSeconds = function (t) {    return t / second;};
+	   return _elm.Time.values = {_op: _op
+	                             ,millisecond: millisecond
+	                             ,second: second
+	                             ,minute: minute
+	                             ,hour: hour
+	                             ,inMilliseconds: inMilliseconds
+	                             ,inSeconds: inSeconds
+	                             ,inMinutes: inMinutes
+	                             ,inHours: inHours
+	                             ,fps: fps
+	                             ,fpsWhen: fpsWhen
+	                             ,every: every
+	                             ,timestamp: timestamp
+	                             ,delay: delay
+	                             ,since: since};
+	};
 	Elm.Native.String = {};
 
 	Elm.Native.String.make = function(localRuntime) {
@@ -9425,6 +9587,203 @@
 	                                    ,andThen: andThen
 	                                    ,value: value
 	                                    ,customDecoder: customDecoder};
+	};
+	Elm.Native.Effects = {};
+	Elm.Native.Effects.make = function(localRuntime) {
+
+		localRuntime.Native = localRuntime.Native || {};
+		localRuntime.Native.Effects = localRuntime.Native.Effects || {};
+		if (localRuntime.Native.Effects.values)
+		{
+			return localRuntime.Native.Effects.values;
+		}
+
+		var Task = Elm.Native.Task.make(localRuntime);
+		var Utils = Elm.Native.Utils.make(localRuntime);
+		var Signal = Elm.Signal.make(localRuntime);
+		var List = Elm.Native.List.make(localRuntime);
+
+
+		// polyfill so things will work even if rAF is not available for some reason
+		var _requestAnimationFrame =
+			typeof requestAnimationFrame !== 'undefined'
+				? requestAnimationFrame
+				: function(cb) { setTimeout(cb, 1000 / 60); }
+				;
+
+
+		// batchedSending and sendCallback implement a small state machine in order
+		// to schedule only one send(time) call per animation frame.
+		//
+		// Invariants:
+		// 1. In the NO_REQUEST state, there is never a scheduled sendCallback.
+		// 2. In the PENDING_REQUEST and EXTRA_REQUEST states, there is always exactly
+		//    one scheduled sendCallback.
+		var NO_REQUEST = 0;
+		var PENDING_REQUEST = 1;
+		var EXTRA_REQUEST = 2;
+		var state = NO_REQUEST;
+		var messageArray = [];
+
+
+		function batchedSending(address, tickMessages)
+		{
+			// insert ticks into the messageArray
+			var foundAddress = false;
+
+			for (var i = messageArray.length; i--; )
+			{
+				if (messageArray[i].address === address)
+				{
+					foundAddress = true;
+					messageArray[i].tickMessages = A3(List.foldl, List.cons, messageArray[i].tickMessages, tickMessages);
+					break;
+				}
+			}
+
+			if (!foundAddress)
+			{
+				messageArray.push({ address: address, tickMessages: tickMessages });
+			}
+
+			// do the appropriate state transition
+			switch (state)
+			{
+				case NO_REQUEST:
+					_requestAnimationFrame(sendCallback);
+					state = PENDING_REQUEST;
+					break;
+				case PENDING_REQUEST:
+					state = PENDING_REQUEST;
+					break;
+				case EXTRA_REQUEST:
+					state = PENDING_REQUEST;
+					break;
+			}
+		}
+
+
+		function sendCallback(time)
+		{
+			switch (state)
+			{
+				case NO_REQUEST:
+					// This state should not be possible. How can there be no
+					// request, yet somehow we are actively fulfilling a
+					// request?
+					throw new Error(
+						'Unexpected send callback.\n' +
+						'Please report this to <https://github.com/evancz/elm-effects/issues>.'
+					);
+
+				case PENDING_REQUEST:
+					// At this point, we do not *know* that another frame is
+					// needed, but we make an extra request to rAF just in
+					// case. It's possible to drop a frame if rAF is called
+					// too late, so we just do it preemptively.
+					_requestAnimationFrame(sendCallback);
+					state = EXTRA_REQUEST;
+
+					// There's also stuff we definitely need to send.
+					send(time);
+					return;
+
+				case EXTRA_REQUEST:
+					// Turns out the extra request was not needed, so we will
+					// stop calling rAF. No reason to call it all the time if
+					// no one needs it.
+					state = NO_REQUEST;
+					return;
+			}
+		}
+
+
+		function send(time)
+		{
+			for (var i = messageArray.length; i--; )
+			{
+				var messages = A3(
+					List.foldl,
+					F2( function(toAction, list) { return List.Cons(toAction(time), list); } ),
+					List.Nil,
+					messageArray[i].tickMessages
+				);
+				Task.perform( A2(Signal.send, messageArray[i].address, messages) );
+			}
+			messageArray = [];
+		}
+
+
+		function requestTickSending(address, tickMessages)
+		{
+			return Task.asyncFunction(function(callback) {
+				batchedSending(address, tickMessages);
+				callback(Task.succeed(Utils.Tuple0));
+			});
+		}
+
+
+		return localRuntime.Native.Effects.values = {
+			requestTickSending: F2(requestTickSending)
+		};
+
+	};
+
+	Elm.Effects = Elm.Effects || {};
+	Elm.Effects.make = function (_elm) {
+	   "use strict";
+	   _elm.Effects = _elm.Effects || {};
+	   if (_elm.Effects.values) return _elm.Effects.values;
+	   var _U = Elm.Native.Utils.make(_elm),
+	   $Basics = Elm.Basics.make(_elm),
+	   $Debug = Elm.Debug.make(_elm),
+	   $List = Elm.List.make(_elm),
+	   $Maybe = Elm.Maybe.make(_elm),
+	   $Native$Effects = Elm.Native.Effects.make(_elm),
+	   $Result = Elm.Result.make(_elm),
+	   $Signal = Elm.Signal.make(_elm),
+	   $Task = Elm.Task.make(_elm),
+	   $Time = Elm.Time.make(_elm);
+	   var _op = {};
+	   var ignore = function (task) {    return A2($Task.map,$Basics.always({ctor: "_Tuple0"}),task);};
+	   var requestTickSending = $Native$Effects.requestTickSending;
+	   var toTaskHelp = F3(function (address,effect,_p0) {
+	      var _p1 = _p0;
+	      var _p5 = _p1._1;
+	      var _p4 = _p1;
+	      var _p3 = _p1._0;
+	      var _p2 = effect;
+	      switch (_p2.ctor)
+	      {case "Task": var reporter = A2($Task.andThen,_p2._0,function (answer) {    return A2($Signal.send,address,_U.list([answer]));});
+	           return {ctor: "_Tuple2",_0: A2($Task.andThen,_p3,$Basics.always(ignore($Task.spawn(reporter)))),_1: _p5};
+	         case "Tick": return {ctor: "_Tuple2",_0: _p3,_1: A2($List._op["::"],_p2._0,_p5)};
+	         case "None": return _p4;
+	         default: return A3($List.foldl,toTaskHelp(address),_p4,_p2._0);}
+	   });
+	   var toTask = F2(function (address,effect) {
+	      var _p6 = A3(toTaskHelp,address,effect,{ctor: "_Tuple2",_0: $Task.succeed({ctor: "_Tuple0"}),_1: _U.list([])});
+	      var combinedTask = _p6._0;
+	      var tickMessages = _p6._1;
+	      return $List.isEmpty(tickMessages) ? combinedTask : A2($Task.andThen,combinedTask,$Basics.always(A2(requestTickSending,address,tickMessages)));
+	   });
+	   var Never = function (a) {    return {ctor: "Never",_0: a};};
+	   var Batch = function (a) {    return {ctor: "Batch",_0: a};};
+	   var batch = Batch;
+	   var None = {ctor: "None"};
+	   var none = None;
+	   var Tick = function (a) {    return {ctor: "Tick",_0: a};};
+	   var tick = Tick;
+	   var Task = function (a) {    return {ctor: "Task",_0: a};};
+	   var task = Task;
+	   var map = F2(function (func,effect) {
+	      var _p7 = effect;
+	      switch (_p7.ctor)
+	      {case "Task": return Task(A2($Task.map,func,_p7._0));
+	         case "Tick": return Tick(function (_p8) {    return func(_p7._0(_p8));});
+	         case "None": return None;
+	         default: return Batch(A2($List.map,map(func),_p7._0));}
+	   });
+	   return _elm.Effects.values = {_op: _op,none: none,task: task,tick: tick,map: map,batch: batch,toTask: toTask};
 	};
 	(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
@@ -11292,22 +11651,116 @@
 	                             ,menuitem: menuitem
 	                             ,menu: menu};
 	};
-	Elm.Elvis = Elm.Elvis || {};
-	Elm.Elvis.make = function (_elm) {
+	Elm.StartApp = Elm.StartApp || {};
+	Elm.StartApp.make = function (_elm) {
 	   "use strict";
-	   _elm.Elvis = _elm.Elvis || {};
-	   if (_elm.Elvis.values) return _elm.Elvis.values;
+	   _elm.StartApp = _elm.StartApp || {};
+	   if (_elm.StartApp.values) return _elm.StartApp.values;
 	   var _U = Elm.Native.Utils.make(_elm),
 	   $Basics = Elm.Basics.make(_elm),
 	   $Debug = Elm.Debug.make(_elm),
+	   $Effects = Elm.Effects.make(_elm),
 	   $Html = Elm.Html.make(_elm),
 	   $List = Elm.List.make(_elm),
 	   $Maybe = Elm.Maybe.make(_elm),
 	   $Result = Elm.Result.make(_elm),
-	   $Signal = Elm.Signal.make(_elm);
+	   $Signal = Elm.Signal.make(_elm),
+	   $Task = Elm.Task.make(_elm);
 	   var _op = {};
-	   var main = $Html.text("Hello");
-	   return _elm.Elvis.values = {_op: _op,main: main};
+	   var start = function (config) {
+	      var updateStep = F2(function (action,_p0) {
+	         var _p1 = _p0;
+	         var _p2 = A2(config.update,action,_p1._0);
+	         var newModel = _p2._0;
+	         var additionalEffects = _p2._1;
+	         return {ctor: "_Tuple2",_0: newModel,_1: $Effects.batch(_U.list([_p1._1,additionalEffects]))};
+	      });
+	      var update = F2(function (actions,_p3) {    var _p4 = _p3;return A3($List.foldl,updateStep,{ctor: "_Tuple2",_0: _p4._0,_1: $Effects.none},actions);});
+	      var messages = $Signal.mailbox(_U.list([]));
+	      var singleton = function (action) {    return _U.list([action]);};
+	      var address = A2($Signal.forwardTo,messages.address,singleton);
+	      var inputs = $Signal.mergeMany(A2($List._op["::"],messages.signal,A2($List.map,$Signal.map(singleton),config.inputs)));
+	      var effectsAndModel = A3($Signal.foldp,update,config.init,inputs);
+	      var model = A2($Signal.map,$Basics.fst,effectsAndModel);
+	      return {html: A2($Signal.map,config.view(address),model)
+	             ,model: model
+	             ,tasks: A2($Signal.map,function (_p5) {    return A2($Effects.toTask,messages.address,$Basics.snd(_p5));},effectsAndModel)};
+	   };
+	   var App = F3(function (a,b,c) {    return {html: a,model: b,tasks: c};});
+	   var Config = F4(function (a,b,c,d) {    return {init: a,update: b,view: c,inputs: d};});
+	   return _elm.StartApp.values = {_op: _op,start: start,Config: Config,App: App};
+	};
+	Elm.Main = Elm.Main || {};
+	Elm.Main.make = function (_elm) {
+	   "use strict";
+	   _elm.Main = _elm.Main || {};
+	   if (_elm.Main.values) return _elm.Main.values;
+	   var _U = Elm.Native.Utils.make(_elm),
+	   $Basics = Elm.Basics.make(_elm),
+	   $Debug = Elm.Debug.make(_elm),
+	   $Effects = Elm.Effects.make(_elm),
+	   $Html = Elm.Html.make(_elm),
+	   $List = Elm.List.make(_elm),
+	   $Maybe = Elm.Maybe.make(_elm),
+	   $Result = Elm.Result.make(_elm),
+	   $Signal = Elm.Signal.make(_elm),
+	   $StartApp = Elm.StartApp.make(_elm);
+	   var _op = {};
+	   var initialState = Elm.Native.Port.make(_elm).inboundSignal("initialState",
+	   "Main.Model",
+	   function (v) {
+	      return typeof v === "object" && "zones" in v && "receivers" in v ? {_: {}
+	                                                                         ,zones: typeof v.zones === "object" && v.zones instanceof Array ? Elm.Native.List.make(_elm).fromArray(v.zones.map(function (v) {
+	                                                                            return typeof v === "object" && "id" in v && "name" in v && "position" in v && "volume" in v ? {_: {}
+	                                                                                                                                                                           ,id: typeof v.id === "string" || typeof v.id === "object" && v.id instanceof String ? v.id : _U.badPort("a string",
+	                                                                                                                                                                           v.id)
+	                                                                                                                                                                           ,name: typeof v.name === "string" || typeof v.name === "object" && v.name instanceof String ? v.name : _U.badPort("a string",
+	                                                                                                                                                                           v.name)
+	                                                                                                                                                                           ,position: typeof v.position === "number" && isFinite(v.position) && Math.floor(v.position) === v.position ? v.position : _U.badPort("an integer",
+	                                                                                                                                                                           v.position)
+	                                                                                                                                                                           ,volume: typeof v.volume === "number" ? v.volume : _U.badPort("a number",
+	                                                                                                                                                                           v.volume)} : _U.badPort("an object with fields `id`, `name`, `position`, `volume`",
+	                                                                            v);
+	                                                                         })) : _U.badPort("an array",v.zones)
+	                                                                         ,receivers: typeof v.receivers === "object" && v.receivers instanceof Array ? Elm.Native.List.make(_elm).fromArray(v.receivers.map(function (v) {
+	                                                                            return typeof v === "object" && "id" in v && "name" in v && "online" in v && "volume" in v && "zoneId" in v ? {_: {}
+	                                                                                                                                                                                          ,id: typeof v.id === "string" || typeof v.id === "object" && v.id instanceof String ? v.id : _U.badPort("a string",
+	                                                                                                                                                                                          v.id)
+	                                                                                                                                                                                          ,name: typeof v.name === "string" || typeof v.name === "object" && v.name instanceof String ? v.name : _U.badPort("a string",
+	                                                                                                                                                                                          v.name)
+	                                                                                                                                                                                          ,online: typeof v.online === "boolean" ? v.online : _U.badPort("a boolean (true or false)",
+	                                                                                                                                                                                          v.online)
+	                                                                                                                                                                                          ,volume: typeof v.volume === "number" ? v.volume : _U.badPort("a number",
+	                                                                                                                                                                                          v.volume)
+	                                                                                                                                                                                          ,zoneId: typeof v.zoneId === "string" || typeof v.zoneId === "object" && v.zoneId instanceof String ? v.zoneId : _U.badPort("a string",
+	                                                                                                                                                                                          v.zoneId)} : _U.badPort("an object with fields `id`, `name`, `online`, `volume`, `zoneId`",
+	                                                                            v);
+	                                                                         })) : _U.badPort("an array",
+	                                                                         v.receivers)} : _U.badPort("an object with fields `zones`, `receivers`",v);
+	   });
+	   var zone = F2(function (action,zone) {    return A2($Html.div,_U.list([]),_U.list([$Html.text(zone.name)]));});
+	   var view = F2(function (address,model) {    return A2($Html.div,_U.list([]),A2($List.map,zone(address),model.zones));});
+	   var update = F2(function (action,model) {    var _p0 = action;return {ctor: "_Tuple2",_0: _p0._0,_1: $Effects.none};});
+	   var init = function () {    var model = {zones: _U.list([]),receivers: _U.list([])};return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}();
+	   var InitialState = function (a) {    return {ctor: "InitialState",_0: a};};
+	   var incomingActions = A2($Signal.map,InitialState,initialState);
+	   var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([incomingActions])});
+	   var main = app.html;
+	   var Model = F2(function (a,b) {    return {zones: a,receivers: b};});
+	   var Receiver = F5(function (a,b,c,d,e) {    return {id: a,name: b,online: c,volume: d,zoneId: e};});
+	   var Zone = F4(function (a,b,c,d) {    return {id: a,name: b,position: c,volume: d};});
+	   return _elm.Main.values = {_op: _op
+	                             ,Zone: Zone
+	                             ,Receiver: Receiver
+	                             ,Model: Model
+	                             ,InitialState: InitialState
+	                             ,init: init
+	                             ,update: update
+	                             ,zone: zone
+	                             ,view: view
+	                             ,incomingActions: incomingActions
+	                             ,app: app
+	                             ,main: main};
 	};
 
 	module.exports = Elm;

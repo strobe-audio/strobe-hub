@@ -8,6 +8,7 @@ defmodule Elvis.Events do
 
   @handlers [
     Elvis.Events.Startup,
+    Elvis.Events.Broadcast,
   ]
 
   def init(:ok) do
