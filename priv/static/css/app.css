@@ -1,4 +1,5 @@
 
+.zone input[type="range"],
 .receiver input[type="range"] {
   width: 100%;
 }

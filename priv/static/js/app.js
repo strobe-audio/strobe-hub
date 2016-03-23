@@ -12072,6 +12072,7 @@
 	   });
 	   var zoneReceivers = F3(function (address,model,zone) {    return A2($List.filter,function (r) {    return _U.eq(r.zoneId,zone.id);},model.receivers);});
 	   var NoOp = {ctor: "NoOp"};
+	   var UpdateZoneVolume = F2(function (a,b) {    return {ctor: "UpdateZoneVolume",_0: a,_1: b};});
 	   var UpdateReceiverVolume = F2(function (a,b) {    return {ctor: "UpdateReceiverVolume",_0: a,_1: b};});
 	   var receiverInZone = F2(function (address,receiver) {
 	      return A2($Html.div,
@@ -12102,7 +12103,24 @@
 	      _U.list([$Html$Attributes.$class("ui card")]),
 	      _U.list([A2($Html.div,
 	              _U.list([$Html$Attributes.$class("content")]),
-	              _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("header")]),_U.list([$Html.text(zone.name)]))]))
+	              _U.list([A2($Html.div,
+	              _U.list([$Html$Attributes.$class("header")]),
+	              _U.list([$Html.text(zone.name)
+	                      ,A2($Html.div,
+	                      _U.list([]),
+	                      _U.list([A2($Html.input,
+	                      _U.list([$Html$Attributes.type$("range")
+	                              ,$Html$Attributes.min("0")
+	                              ,$Html$Attributes.max("1000")
+	                              ,$Html$Attributes.step("1")
+	                              ,$Html$Attributes.value($Basics.toString(zone.volume * 1000))
+	                              ,A3($Html$Events.on,
+	                              "input",
+	                              $Html$Events.targetValue,
+	                              function (_p1) {
+	                                 return A2($Signal.message,address,A2(UpdateZoneVolume,zone,_p1));
+	                              })]),
+	                      _U.list([]))]))]))]))
 	              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),A2($List.map,receiverInZone(address),A3(zoneReceivers,address,model,zone)))]))]));
 	   });
 	   var view = F2(function (address,model) {
@@ -12114,48 +12132,67 @@
 	   var receiverStatusActions = A2($Signal.map,ReceiverStatus,receiverStatus);
 	   var InitialState = function (a) {    return {ctor: "InitialState",_0: a};};
 	   var incomingActions = A2($Signal.map,InitialState,initialState);
+	   var sendZoneVolumeChange = F2(function (zone,volume) {
+	      return A2($Effects.map,
+	      $Basics.always(NoOp),
+	      $Effects.task(A2($Signal.send,volumeChangeRequestsBox.address,{ctor: "_Tuple3",_0: "zone",_1: zone.id,_2: volume})));
+	   });
 	   var sendReceiverVolumeChange = F2(function (receiver,volume) {
 	      return A2($Effects.map,
 	      $Basics.always(NoOp),
 	      $Effects.task(A2($Signal.send,volumeChangeRequestsBox.address,{ctor: "_Tuple3",_0: "receiver",_1: receiver.id,_2: volume})));
 	   });
-	   var translateReceiverVolume = function (input) {
-	      var _p1 = $String.toInt(input);
-	      if (_p1.ctor === "Ok") {
-	            return $Result.Ok($Basics.toFloat(_p1._0) / 1000);
+	   var translateVolume = function (input) {
+	      var _p2 = $String.toInt(input);
+	      if (_p2.ctor === "Ok") {
+	            return $Result.Ok($Basics.toFloat(_p2._0) / 1000);
 	         } else {
-	            return $Result.Err(_p1._0);
+	            return $Result.Err(_p2._0);
 	         }
 	   };
+	   var findUpdateZone = F3(function (zones,zoneId,updateFunc) {
+	      return A2($List.map,function (z) {    return _U.eq(z.id,zoneId) ? updateFunc(z) : z;},zones);
+	   });
+	   var updateZoneVolume = F3(function (model,zone,volume) {
+	      return _U.update(model,{zones: A3(findUpdateZone,model.zones,zone.id,function (z) {    return _U.update(z,{volume: volume});})});
+	   });
 	   var findUpdateReceiver = F3(function (receivers,receiverId,updateFunc) {
 	      return A2($List.map,function (r) {    return _U.eq(r.id,receiverId) ? updateFunc(r) : r;},receivers);
 	   });
 	   var receiverOnline = F3(function (receivers,receiverId,online) {
 	      return A3(findUpdateReceiver,receivers,receiverId,function (r) {    return _U.update(r,{online: online});});
 	   });
-	   var updateReceiverOnlineStatus = F2(function (model,_p2) {
-	      var _p3 = _p2;
-	      var _p5 = _p3._1;
-	      var _p4 = _p3._0;
-	      switch (_p4)
-	      {case "receiver_added": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p5.receiverId,true)});
-	         case "receiver_removed": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p5.receiverId,false)});
+	   var updateReceiverOnlineStatus = F2(function (model,_p3) {
+	      var _p4 = _p3;
+	      var _p6 = _p4._1;
+	      var _p5 = _p4._0;
+	      switch (_p5)
+	      {case "receiver_added": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p6.receiverId,true)});
+	         case "receiver_removed": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p6.receiverId,false)});
 	         default: return model;}
 	   });
 	   var updateReceiverVolume = F3(function (model,receiver,volume) {
 	      return _U.update(model,{receivers: A3(findUpdateReceiver,model.receivers,receiver.id,function (r) {    return _U.update(r,{volume: volume});})});
 	   });
 	   var update = F2(function (action,model) {
-	      var _p6 = action;
-	      switch (_p6.ctor)
+	      var _p7 = action;
+	      switch (_p7.ctor)
 	      {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-	         case "InitialState": return {ctor: "_Tuple2",_0: _p6._0,_1: $Effects.none};
-	         case "ReceiverStatus": return {ctor: "_Tuple2",_0: A2(updateReceiverOnlineStatus,model,_p6._0),_1: $Effects.none};
-	         default: var _p9 = _p6._0;
-	           var _p7 = translateReceiverVolume(_p6._1);
-	           if (_p7.ctor === "Ok") {
-	                 var _p8 = _p7._0;
-	                 return {ctor: "_Tuple2",_0: A3(updateReceiverVolume,model,_p9,_p8),_1: A2(sendReceiverVolumeChange,_p9,_p8)};
+	         case "InitialState": return {ctor: "_Tuple2",_0: _p7._0,_1: $Effects.none};
+	         case "ReceiverStatus": return {ctor: "_Tuple2",_0: A2(updateReceiverOnlineStatus,model,_p7._0),_1: $Effects.none};
+	         case "UpdateZoneVolume": var _p10 = _p7._0;
+	           var _p8 = translateVolume(_p7._1);
+	           if (_p8.ctor === "Ok") {
+	                 var _p9 = _p8._0;
+	                 return {ctor: "_Tuple2",_0: A3(updateZoneVolume,model,_p10,_p9),_1: A2(sendZoneVolumeChange,_p10,_p9)};
+	              } else {
+	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	              }
+	         default: var _p13 = _p7._0;
+	           var _p11 = translateVolume(_p7._1);
+	           if (_p11.ctor === "Ok") {
+	                 var _p12 = _p11._0;
+	                 return {ctor: "_Tuple2",_0: A3(updateReceiverVolume,model,_p13,_p12),_1: A2(sendReceiverVolumeChange,_p13,_p12)};
 	              } else {
 	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
 	              }}
@@ -12181,14 +12218,18 @@
 	                             ,ReceiverStatusEvent: ReceiverStatusEvent
 	                             ,init: init
 	                             ,findUpdateReceiver: findUpdateReceiver
+	                             ,findUpdateZone: findUpdateZone
 	                             ,receiverOnline: receiverOnline
 	                             ,updateReceiverVolume: updateReceiverVolume
+	                             ,updateZoneVolume: updateZoneVolume
 	                             ,updateReceiverOnlineStatus: updateReceiverOnlineStatus
-	                             ,translateReceiverVolume: translateReceiverVolume
+	                             ,translateVolume: translateVolume
 	                             ,sendReceiverVolumeChange: sendReceiverVolumeChange
+	                             ,sendZoneVolumeChange: sendZoneVolumeChange
 	                             ,InitialState: InitialState
 	                             ,ReceiverStatus: ReceiverStatus
 	                             ,UpdateReceiverVolume: UpdateReceiverVolume
+	                             ,UpdateZoneVolume: UpdateZoneVolume
 	                             ,NoOp: NoOp
 	                             ,update: update
 	                             ,zoneReceivers: zoneReceivers

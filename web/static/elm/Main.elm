@@ -44,6 +44,7 @@ init =
   in
     (model, Effects.none)
 
+
 findUpdateReceiver : List Receiver -> String -> (Receiver -> Receiver) -> List Receiver
 findUpdateReceiver receivers receiverId updateFunc =
   List.map (\r ->
@@ -52,6 +53,17 @@ findUpdateReceiver receivers receiverId updateFunc =
     else
       r
   ) receivers
+
+
+findUpdateZone : List Zone -> String -> (Zone -> Zone) -> List Zone
+findUpdateZone zones zoneId updateFunc =
+  List.map (\z ->
+    if z.id == zoneId then
+     (updateFunc z)
+    else
+      z
+  ) zones
+
 
 receiverOnline : List Receiver -> String -> Bool -> List Receiver
 receiverOnline receivers receiverId online =
@@ -62,6 +74,12 @@ updateReceiverVolume : Model -> Receiver -> Float -> Model
 updateReceiverVolume model receiver volume =
   { model
   | receivers = findUpdateReceiver model.receivers receiver.id (\r -> { r | volume = volume })
+  }
+
+updateZoneVolume : Model -> Zone -> Float -> Model
+updateZoneVolume model zone volume =
+  { model
+  | zones = findUpdateZone model.zones zone.id (\z -> { z | volume = volume })
   }
 
 
@@ -76,8 +94,8 @@ updateReceiverOnlineStatus model (event, args) =
       model
 
 
-translateReceiverVolume : String -> Result String Float
-translateReceiverVolume input =
+translateVolume : String -> Result String Float
+translateVolume input =
   case (String.toInt input) of
     Ok vol  -> Ok ((toFloat vol) / 1000)
     Err msg -> Err msg
@@ -90,10 +108,18 @@ sendReceiverVolumeChange receiver volume =
     |> Effects.map (always NoOp)
 
 
+sendZoneVolumeChange: Zone -> Float -> Effects Action
+sendZoneVolumeChange zone volume =
+  Signal.send volumeChangeRequestsBox.address ("zone", zone.id, volume)
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
+
 type Action
   = InitialState Model
   | ReceiverStatus (String, ReceiverStatusEvent)
   | UpdateReceiverVolume Receiver String
+  | UpdateZoneVolume Zone String
   | NoOp
 
 
@@ -108,8 +134,15 @@ update action model =
       ( updateReceiverOnlineStatus model event
       , Effects.none
       )
+    UpdateZoneVolume zone volumeInput ->
+      case (translateVolume volumeInput) of
+        Ok vol ->
+          ( updateZoneVolume model zone vol
+          , sendZoneVolumeChange zone vol )
+        Err msg ->
+          (model, Effects.none)
     UpdateReceiverVolume receiver volumeInput ->
-      case (translateReceiverVolume volumeInput) of
+      case (translateVolume volumeInput) of
         Ok vol ->
           ( updateReceiverVolume model receiver vol
           , sendReceiverVolumeChange receiver vol )
@@ -144,7 +177,19 @@ zone address model zone =
   div [ class "zone five wide column" ] [
     div [ class "ui card" ] [
       div [ class "content" ] [
-        div [ class "header" ] [ text zone.name ]
+        div [ class "header" ] [
+          text zone.name,
+          div [] [
+            input [
+              type' "range"
+            , Html.Attributes.min "0"
+            , Html.Attributes.max "1000"
+            , step "1"
+            , value (toString (zone.volume * 1000))
+            , on "input" targetValue (Signal.message address << (UpdateZoneVolume zone))
+            ] []
+          ]
+        ]
       ],
       div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers address model zone))
     ]

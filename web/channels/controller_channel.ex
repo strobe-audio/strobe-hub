@@ -15,6 +15,7 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
   def handle_in("change_volume", ["zone", id, volume], socket) do
+    Otis.Zones.volume id, volume
     {:noreply, socket}
   end
 
