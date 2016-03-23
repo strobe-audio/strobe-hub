@@ -3,7 +3,9 @@ import {Socket} from 'phoenix'
 import Elm from 'Main'
 
 let initialState = {receivers: [], zones: []}
-let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), {initialState})
+let receiverStatus = ["", {event: "", receiverId: "", zoneId: ""}]
+let portValues = {initialState, receiverStatus}
+let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
 
 let socket = new Socket("/controller", {params: {}})
 
@@ -22,6 +24,17 @@ channel.on('add_library', payload => {
 
 channel.on('event', payload => {
 	console.log('got event', payload);
+	elmApp.ports.events.send(payload)
+})
+
+channel.on('receiver_removed', payload => {
+	console.log('receiver_removed', payload)
+	elmApp.ports.receiverStatus.send(['receiver_removed', payload])
+})
+
+channel.on('receiver_added', payload => {
+	console.log('receiver_added', payload)
+	elmApp.ports.receiverStatus.send(['receiver_added', payload])
 })
 
 channel.join()

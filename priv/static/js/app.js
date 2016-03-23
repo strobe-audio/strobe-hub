@@ -62,7 +62,9 @@
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 	var initialState = { receivers: [], zones: [] };
-	var elmApp = _Main2.default.embed(_Main2.default.Main, document.getElementById('elm-main'), { initialState: initialState });
+	var receiverStatus = ["", { event: "", receiverId: "", zoneId: "" }];
+	var portValues = { initialState: initialState, receiverStatus: receiverStatus };
+	var elmApp = _Main2.default.embed(_Main2.default.Main, document.getElementById('elm-main'), portValues);
 
 	var socket = new _phoenix.Socket("/controller", { params: {} });
 
@@ -81,6 +83,17 @@
 
 	channel.on('event', function (payload) {
 		console.log('got event', payload);
+		elmApp.ports.events.send(payload);
+	});
+
+	channel.on('receiver_removed', function (payload) {
+		console.log('receiver_removed', payload);
+		elmApp.ports.receiverStatus.send(['receiver_removed', payload]);
+	});
+
+	channel.on('receiver_added', function (payload) {
+		console.log('receiver_added', payload);
+		elmApp.ports.receiverStatus.send(['receiver_added', payload]);
 	});
 
 	channel.join().receive('ok', function (resp) {
@@ -11932,6 +11945,21 @@
 	   $Signal = Elm.Signal.make(_elm),
 	   $StartApp = Elm.StartApp.make(_elm);
 	   var _op = {};
+	   var receiverStatus = Elm.Native.Port.make(_elm).inboundSignal("receiverStatus",
+	   "( String\n, Main.ReceiverStatusEvent\n)",
+	   function (v) {
+	      return typeof v === "object" && v instanceof Array ? {ctor: "_Tuple2"
+	                                                           ,_0: typeof v[0] === "string" || typeof v[0] === "object" && v[0] instanceof String ? v[0] : _U.badPort("a string",
+	                                                           v[0])
+	                                                           ,_1: typeof v[1] === "object" && "event" in v[1] && "zoneId" in v[1] && "receiverId" in v[1] ? {_: {}
+	                                                                                                                                                          ,event: typeof v[1].event === "string" || typeof v[1].event === "object" && v[1].event instanceof String ? v[1].event : _U.badPort("a string",
+	                                                                                                                                                          v[1].event)
+	                                                                                                                                                          ,zoneId: typeof v[1].zoneId === "string" || typeof v[1].zoneId === "object" && v[1].zoneId instanceof String ? v[1].zoneId : _U.badPort("a string",
+	                                                                                                                                                          v[1].zoneId)
+	                                                                                                                                                          ,receiverId: typeof v[1].receiverId === "string" || typeof v[1].receiverId === "object" && v[1].receiverId instanceof String ? v[1].receiverId : _U.badPort("a string",
+	                                                                                                                                                          v[1].receiverId)} : _U.badPort("an object with fields `event`, `zoneId`, `receiverId`",
+	                                                           v[1])} : _U.badPort("an array",v);
+	   });
 	   var initialState = Elm.Native.Port.make(_elm).inboundSignal("initialState",
 	   "Main.Model",
 	   function (v) {
@@ -11966,7 +11994,9 @@
 	   });
 	   var receiverInZone = function (receiver) {
 	      return A2($Html.div,
-	      _U.list([$Html$Attributes.classList(_U.list([{ctor: "_Tuple2",_0: "receiver",_1: true},{ctor: "_Tuple2",_0: "receiver--online",_1: receiver.online}]))]),
+	      _U.list([$Html$Attributes.classList(_U.list([{ctor: "_Tuple2",_0: "receiver",_1: true}
+	                                                  ,{ctor: "_Tuple2",_0: "receiver--online",_1: receiver.online}
+	                                                  ,{ctor: "_Tuple2",_0: "receiver--offline",_1: $Basics.not(receiver.online)}]))]),
 	      _U.list([$Html.text(receiver.name)]));
 	   };
 	   var zoneReceivers = F2(function (model,zone) {    return A2($List.filter,function (r) {    return _U.eq(r.zoneId,zone.id);},model.receivers);});
@@ -11985,12 +12015,35 @@
 	      _U.list([$Html$Attributes.$class("ui container")]),
 	      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("zones ui grid")]),A2($List.map,A2(zone,model,address),model.zones))]));
 	   });
-	   var update = F2(function (action,model) {    var _p0 = action;return {ctor: "_Tuple2",_0: _p0._0,_1: $Effects.none};});
+	   var receiverOnline = F3(function (receivers,receiverId,online) {
+	      return A2($List.map,function (r) {    return _U.eq(r.id,receiverId) ? _U.update(r,{online: online}) : r;},receivers);
+	   });
+	   var update = F2(function (action,model) {
+	      var _p0 = action;
+	      if (_p0.ctor === "InitialState") {
+	            return {ctor: "_Tuple2",_0: _p0._0,_1: $Effects.none};
+	         } else {
+	            var _p2 = _p0._0._1;
+	            var _p1 = _p0._0._0;
+	            switch (_p1)
+	            {case "receiver_added": var model = _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p2.receiverId,true)});
+	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	               case "receiver_removed": var model = _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p2.receiverId,false)});
+	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	               default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
+	         }
+	   });
 	   var init = function () {    var model = {zones: _U.list([]),receivers: _U.list([])};return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}();
+	   var ReceiverStatus = function (a) {    return {ctor: "ReceiverStatus",_0: a};};
+	   var receiverStatusActions = A2($Signal.map,ReceiverStatus,receiverStatus);
 	   var InitialState = function (a) {    return {ctor: "InitialState",_0: a};};
 	   var incomingActions = A2($Signal.map,InitialState,initialState);
-	   var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([incomingActions])});
+	   var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([incomingActions,receiverStatusActions])});
 	   var main = app.html;
+	   var ReceiverStatusEvent = F3(function (a,b,c) {    return {event: a,zoneId: b,receiverId: c};});
+	   var Int = {ctor: "Int"};
+	   var Float = {ctor: "Float"};
+	   var String = {ctor: "String"};
 	   var Model = F2(function (a,b) {    return {zones: a,receivers: b};});
 	   var Receiver = F5(function (a,b,c,d,e) {    return {id: a,name: b,online: c,volume: d,zoneId: e};});
 	   var Zone = F4(function (a,b,c,d) {    return {id: a,name: b,position: c,volume: d};});
@@ -11998,14 +12051,21 @@
 	                             ,Zone: Zone
 	                             ,Receiver: Receiver
 	                             ,Model: Model
+	                             ,String: String
+	                             ,Float: Float
+	                             ,Int: Int
+	                             ,ReceiverStatusEvent: ReceiverStatusEvent
 	                             ,InitialState: InitialState
+	                             ,ReceiverStatus: ReceiverStatus
 	                             ,init: init
+	                             ,receiverOnline: receiverOnline
 	                             ,update: update
 	                             ,zoneReceivers: zoneReceivers
 	                             ,receiverInZone: receiverInZone
 	                             ,zone: zone
 	                             ,view: view
 	                             ,incomingActions: incomingActions
+	                             ,receiverStatusActions: receiverStatusActions
 	                             ,app: app
 	                             ,main: main};
 	};

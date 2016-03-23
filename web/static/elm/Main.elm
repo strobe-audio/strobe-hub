@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
+import Debug
 
 type alias Zone =
   { id:       String
@@ -26,8 +27,17 @@ type alias Model =
   , receivers: List Receiver
   }
 
+type BroadcasterEventArg = String | Float | Int
+
+type alias ReceiverStatusEvent =
+  { event:      String
+  , zoneId:     String
+  , receiverId: String
+  }
+
 type Action
   = InitialState Model
+  | ReceiverStatus (String, ReceiverStatusEvent)
 
 init : (Model, Effects Action)
 init =
@@ -36,11 +46,34 @@ init =
   in
     (model, Effects.none)
 
+receiverOnline : List Receiver -> String -> Bool -> List Receiver
+receiverOnline receivers receiverId online =
+  List.map (\r ->
+    if r.id == receiverId then
+     { r | online = online }
+    else
+      r
+  ) receivers
+
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
     InitialState state ->
       (state, Effects.none)
+    ReceiverStatus (event, args) ->
+      case event of
+        "receiver_added" ->
+          let
+              model = { model | receivers = (receiverOnline model.receivers args.receiverId True)}
+          in
+            (model, Effects.none)
+        "receiver_removed" ->
+          let
+              model = { model | receivers = (receiverOnline model.receivers args.receiverId False)}
+          in
+            (model, Effects.none)
+        _ ->
+          (model, Effects.none)
 
 zoneReceivers : Model -> Zone -> List Receiver
 zoneReceivers model zone =
@@ -48,7 +81,7 @@ zoneReceivers model zone =
 
 receiverInZone : Receiver -> Html
 receiverInZone receiver =
-  div [ classList [("receiver", True), ("receiver--online", receiver.online)] ] [ text receiver.name ]
+  div [ classList [("receiver", True), ("receiver--online", receiver.online), ("receiver--offline", not receiver.online)] ] [ text receiver.name ]
 
 zone : Model -> Signal.Address Action -> Zone -> Html
 zone model action zone =
@@ -71,12 +104,16 @@ incomingActions : Signal Action
 incomingActions =
   Signal.map InitialState initialState
 
+receiverStatusActions : Signal Action
+receiverStatusActions =
+  Signal.map ReceiverStatus receiverStatus
+
 app =
   StartApp.start
     { init = init
     , update = update
     , view = view
-    , inputs = [incomingActions]
+    , inputs = [incomingActions, receiverStatusActions]
     }
 
 main : Signal Html
@@ -84,5 +121,6 @@ main =
   app.html
 
 port initialState : Signal Model
--- port tasks =
---   app.tasks
+
+port receiverStatus : Signal (String, ReceiverStatusEvent)
+
