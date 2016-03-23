@@ -149,6 +149,15 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 **Core:**
 
+- [ ] speed up volume changes (multiply in volume at last minute, not when
+  packet is delivered to the port driver)
+
+- [ ] mute receivers & zones (so you can temporarily turn the sound off without
+  losing carefully set volumes)
+
+- [ ] change volume for receiver that's not connected
+
+- [ ] get metadata from tracks using libav (https://libav.org/documentation/doxygen/master/metadata_8c-example.html) (license!)
 - [ ] receiver connection keepalive/monitoring. ping-pong messages so that if a
   connection gets cut-off the receiver(s) in question get removed. This could
   just happen periodically on the control connection -- no need to mess with
