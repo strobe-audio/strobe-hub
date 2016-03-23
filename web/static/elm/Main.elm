@@ -164,18 +164,23 @@ receiverInZone : Signal.Address Action -> Receiver -> Html
 receiverInZone address receiver =
   div [ classList [("receiver", True), ("receiver--online", receiver.online), ("receiver--offline", not receiver.online)] ] [
     div [] [ text receiver.name ]
-  , div [ class "volume-control" ] [
-      i [ class "volume off icon", onClick address (UpdateReceiverVolume receiver "0") ] []
-    , input [
-        type' "range"
-      , Html.Attributes.min "0"
-      , Html.Attributes.max (toString volumeRangeMax)
-      , step "1"
-      , value (toString (receiver.volume * volumeRangeMax))
-      , on "input" targetValue (Signal.message address << (UpdateReceiverVolume receiver))
-      ] []
-    , i [ class "volume up icon", onClick address (UpdateReceiverVolume receiver (toString volumeRangeMax)) ] []
-    ]
+  , volumeControl address receiver.volume (UpdateReceiverVolume receiver)
+  ]
+
+
+volumeControl : Signal.Address Action -> Float -> (String -> Action) -> Html
+volumeControl address volume message =
+  div [ class "volume-control" ] [
+    i [ class "volume off icon", onClick address (message "0") ] []
+  , input [
+      type' "range"
+    , Html.Attributes.min "0"
+    , Html.Attributes.max (toString volumeRangeMax)
+    , step "1"
+    , value (toString (volume * volumeRangeMax))
+    , on "input" targetValue (Signal.message address << message)
+    ] []
+  , i [ class "volume up icon", onClick address (message (toString volumeRangeMax)) ] []
   ]
 
 
@@ -186,18 +191,7 @@ zone address model zone =
       div [ class "content" ] [
         div [ class "header" ] [
           text zone.name,
-          div [ class "volume-control" ] [
-            i [ class "volume off icon", onClick address (UpdateZoneVolume zone "0") ] []
-          , input [
-              type' "range"
-            , Html.Attributes.min "0"
-            , Html.Attributes.max (toString volumeRangeMax)
-            , step "1"
-            , value (toString (zone.volume * volumeRangeMax))
-            , on "input" targetValue (Signal.message address << (UpdateZoneVolume zone))
-            ] []
-          , i [ class "volume up icon", onClick address (UpdateZoneVolume zone (toString volumeRangeMax)) ] []
-          ]
+          volumeControl address zone.volume (UpdateZoneVolume zone)
         ]
       ],
       div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers address model zone))
@@ -211,9 +205,11 @@ view address model =
     div [ class "zones ui grid" ] (List.map (zone address model) model.zones)
   ]
 
+
 incomingActions : Signal Action
 incomingActions =
   Signal.map InitialState initialState
+
 
 receiverStatusActions : Signal Action
 receiverStatusActions =
