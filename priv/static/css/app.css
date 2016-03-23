@@ -29,3 +29,11 @@
 .receiver--offline input[type="range"] {
   opacity: 0.5;
 }
+.playlist-entry--album {
+  color: #999;
+}
+
+.playlist-entry-progress--inner {
+  /* override semantic ui's strange default */
+  min-width: 0 !important;
+}

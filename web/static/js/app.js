@@ -3,12 +3,13 @@ import {Socket} from 'phoenix'
 import Elm from 'Main'
 
 // app initial state
-let initialState = {receivers: [], zones: []}
+let initialState = {receivers: [], zones: [], sources: []}
 
 // port initial state
 let receiverStatus = ["", {event: "", receiverId: "", zoneId: ""}]
 let zoneStatus = ["", {event: "", zoneId: "", status: ""}]
-let portValues = {initialState, receiverStatus, zoneStatus}
+let sourceProgress = {zoneId: "", sourceId: "", progress: 0, duration: 0}
+let portValues = {initialState, receiverStatus, zoneStatus, sourceProgress}
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
 
@@ -27,11 +28,6 @@ channel.on('add_library', payload => {
 	console.log('got library', payload);
 })
 
-channel.on('event', payload => {
-	console.log('got event', payload);
-	elmApp.ports.events.send(payload)
-})
-
 channel.on('receiver_removed', payload => {
 	console.log('receiver_removed', payload)
 	elmApp.ports.receiverStatus.send(['receiver_removed', payload])
@@ -45,6 +41,10 @@ channel.on('receiver_added', payload => {
 channel.on('zone_play_pause', payload => {
 	console.log('zone_play_pause', payload)
 	elmApp.ports.zoneStatus.send(['zone_play_pause', payload])
+})
+
+channel.on('source_progress', payload => {
+	elmApp.ports.sourceProgress.send(payload)
 })
 
 channel.join()

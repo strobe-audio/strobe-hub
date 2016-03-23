@@ -8,52 +8,18 @@ import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Debug
+import Types exposing (..)
+import Action exposing (..)
+import Source exposing (..)
 
 -- volume sliders go from 0 - this value so we have to convert to a 0-1 range
 -- before setting the volume
 volumeRangeMax = 1000
 
-type alias Zone =
-  { id:       String
-  , name:     String
-  , position: Int
-  , volume:   Float
-  , playing:   Bool
-  }
-
-type alias Receiver =
-  { id:       String
-  , name:     String
-  , online:   Bool
-  , volume:   Float
-  , zoneId:   String
-  }
-
-type alias Model =
-  { zones:     List Zone
-  , receivers: List Receiver
-  }
-
-type BroadcasterEventArg = String | Float | Int
-
-type alias ReceiverStatusEvent =
-  { event:      String
-  , zoneId:     String
-  , receiverId: String
-  }
-
-
-type alias ZoneStatusEvent =
-  { event:      String
-  , zoneId:     String
-  , status:     String
-  }
-
-
 init : (Model, Effects Action)
 init =
   let
-    model = { zones = [], receivers = [] }
+    model = { zones = [], receivers = [], sources = [] }
   in
     (model, Effects.none)
 
@@ -146,39 +112,53 @@ sendZoneStatusChange zone playing =
     |> Effects.map (always NoOp)
 
 
-type Action
-  = InitialState Model
-  | ReceiverStatus (String, ReceiverStatusEvent)
-  | ZoneStatus (String, ZoneStatusEvent)
-  | UpdateReceiverVolume Receiver String
-  | UpdateZoneVolume Zone String
-  | TogglePlayPause (Zone, Bool)
-  | NoOp
-
 updateZone : Model -> Zone -> (Zone -> Zone) -> Model
 updateZone model zone update =
   { model
   | zones = findUpdateZone model.zones zone.id update
   }
 
+
+updateSourcePlaybackPosition : Model -> SourceProgressEvent -> Model
+updateSourcePlaybackPosition model event =
+  { model
+  | sources = findUpdatePlaylistEntryProgress model.sources event
+  }
+
+findUpdatePlaylistEntryProgress : List PlaylistEntry -> SourceProgressEvent -> List PlaylistEntry
+findUpdatePlaylistEntryProgress entries event =
+  List.map (\e ->
+    if e.id == event.sourceId then
+     { e | playbackPosition = event.progress }
+    else
+      e
+  ) entries
+
+
+
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
     NoOp ->
       (model, Effects.none)
+
     InitialState state ->
       (state, Effects.none)
+
     ReceiverStatus event ->
       ( updateReceiverOnlineStatus model event
       , Effects.none
       )
+
     ZoneStatus event ->
       ( updateZoneStatus model event
       , Effects.none
       )
+
     TogglePlayPause (zone, playing) ->
       ( updateZone model zone (\z -> { z | playing = playing })
       , sendZoneStatusChange zone playing )
+
     UpdateZoneVolume zone volumeInput ->
       case (translateVolume volumeInput) of
         Ok vol ->
@@ -186,6 +166,7 @@ update action model =
           , sendZoneVolumeChange zone vol )
         Err msg ->
           (model, Effects.none)
+
     UpdateReceiverVolume receiver volumeInput ->
       case (translateVolume volumeInput) of
         Ok vol ->
@@ -194,12 +175,14 @@ update action model =
         Err msg ->
           (model, Effects.none)
 
+    SourceProgress event ->
+      ( updateSourcePlaybackPosition model event
+      , Effects.none)
 
-zoneReceivers : Signal.Address Action -> Model -> Zone -> List Receiver
-zoneReceivers address model zone =
+
+zoneReceivers : Model -> Zone -> List Receiver
+zoneReceivers model zone =
   List.filter (\r -> r.zoneId == zone.id) model.receivers
-
-
 
 receiverInZone : Signal.Address Action -> Receiver -> Html
 receiverInZone address receiver =
@@ -207,6 +190,8 @@ receiverInZone address receiver =
     div [] [ text receiver.name ]
   , volumeControl address receiver.volume (UpdateReceiverVolume receiver)
   ]
+
+
 
 
 volumeControl : Signal.Address Action -> Float -> (String -> Action) -> Html
@@ -235,18 +220,23 @@ zonePlayPauseButton address zone =
 
 zonePanel : Signal.Address Action -> Model -> Zone -> Html
 zonePanel address model zone =
-  div [ class "zone five wide column" ] [
-    div [ class "ui card" ] [
-      div [ class "content" ] [
-        div [ class "header" ] [
-          (zonePlayPauseButton address zone)
-        , (text zone.name)
-        , (volumeControl address zone.volume (UpdateZoneVolume zone))
+  let
+      playlist = (zonePlaylist model zone)
+  in
+    div [ class "zone five wide column" ] [
+      div [ class "ui card" ] [
+        div [ class "content" ] [
+          div [ class "header" ] [
+            (zonePlayPauseButton address zone)
+          , (text zone.name)
+          , (volumeControl address zone.volume (UpdateZoneVolume zone))
+          , (activePlaylistEntry address playlist.active)
+          ]
         ]
-      ],
-      div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers address model zone))
+      , div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers model zone))
+      , div [ class "content" ] (List.map (playlistEntry address)  playlist.entries)
+      ]
     ]
-  ]
 
 
 view : Signal.Address Action -> Model -> Html
@@ -271,12 +261,20 @@ zoneStatusActions =
   Signal.map ZoneStatus zoneStatus
 
 
+sourceProgressActions : Signal Action
+sourceProgressActions =
+  Signal.map SourceProgress sourceProgress
+
 app =
   StartApp.start
     { init = init
     , update = update
     , view = view
-    , inputs = [incomingActions, receiverStatusActions, zoneStatusActions]
+    , inputs = [ incomingActions
+               , receiverStatusActions
+               , zoneStatusActions
+               , sourceProgressActions
+               ]
     }
 
 
@@ -301,6 +299,8 @@ port volumeChanges =
 port playPauseChanges : Signal ( String, Bool )
 port playPauseChanges =
   zonePlayPauseRequestsBox.signal
+
+port sourceProgress : Signal SourceProgressEvent
 
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =
