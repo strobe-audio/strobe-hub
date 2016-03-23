@@ -184,8 +184,8 @@ volumeControl address volume message =
   ]
 
 
-zone : Signal.Address Action -> Model -> Zone -> Html
-zone address model zone =
+zonePanel : Signal.Address Action -> Model -> Zone -> Html
+zonePanel address model zone =
   div [ class "zone five wide column" ] [
     div [ class "ui card" ] [
       div [ class "content" ] [
@@ -202,7 +202,7 @@ zone address model zone =
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [ class "ui container" ] [
-    div [ class "zones ui grid" ] (List.map (zone address model) model.zones)
+    div [ class "zones ui grid" ] (List.map (zonePanel address model) model.zones)
   ]
 
 
@@ -222,6 +222,7 @@ app =
     , view = view
     , inputs = [incomingActions, receiverStatusActions]
     }
+
 
 main : Signal Html
 main =
