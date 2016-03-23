@@ -17,7 +17,7 @@ defmodule Elvis.Events.Startup do
     {:ok, state}
   end
 
-  def handle_event(evt, state) do
+  def handle_event(_event, state) do
     {:ok, state}
   end
 end
