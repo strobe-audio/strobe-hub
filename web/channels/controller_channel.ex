@@ -10,10 +10,14 @@ defmodule Elvis.ControllerChannel do
     {:ok, socket}
   end
 
-  # def handle_in("list_libraries", _params, socket) do
-  #   Otis.State.Events.notify({:list_libraries, socket})
-  #   {:noreply, socket}
-  # end
+  def handle_in("change_volume", ["receiver", id, volume], socket) do
+    Otis.Receivers.volume id, volume
+    {:noreply, socket}
+  end
+  def handle_in("change_volume", ["zone", id, volume], socket) do
+    {:noreply, socket}
+  end
+
   def handle_info(:controller_join, socket) do
     Otis.State.Events.notify({:controller_join, socket})
     {:noreply, socket}

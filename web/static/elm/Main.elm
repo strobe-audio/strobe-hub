@@ -1,7 +1,9 @@
 module Main where
 
+import String
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
@@ -35,10 +37,6 @@ type alias ReceiverStatusEvent =
   , receiverId: String
   }
 
-type Action
-  = InitialState Model
-  | ReceiverStatus (String, ReceiverStatusEvent)
-
 init : (Model, Effects Action)
 init =
   let
@@ -46,58 +44,117 @@ init =
   in
     (model, Effects.none)
 
-receiverOnline : List Receiver -> String -> Bool -> List Receiver
-receiverOnline receivers receiverId online =
+findUpdateReceiver : List Receiver -> String -> (Receiver -> Receiver) -> List Receiver
+findUpdateReceiver receivers receiverId updateFunc =
   List.map (\r ->
     if r.id == receiverId then
-     { r | online = online }
+     (updateFunc r)
     else
       r
   ) receivers
 
+receiverOnline : List Receiver -> String -> Bool -> List Receiver
+receiverOnline receivers receiverId online =
+  findUpdateReceiver receivers receiverId (\r -> { r | online = online })
+
+
+updateReceiverVolume : Model -> Receiver -> Float -> Model
+updateReceiverVolume model receiver volume =
+  { model
+  | receivers = findUpdateReceiver model.receivers receiver.id (\r -> { r | volume = volume })
+  }
+
+
+updateReceiverOnlineStatus : Model -> (String, ReceiverStatusEvent) -> Model
+updateReceiverOnlineStatus model (event, args) =
+  case event of
+    "receiver_added" ->
+      { model | receivers = (receiverOnline model.receivers args.receiverId True)}
+    "receiver_removed" ->
+      { model | receivers = (receiverOnline model.receivers args.receiverId False)}
+    _ ->
+      model
+
+
+translateReceiverVolume : String -> Result String Float
+translateReceiverVolume input =
+  case (String.toInt input) of
+    Ok vol  -> Ok ((toFloat vol) / 1000)
+    Err msg -> Err msg
+
+
+sendReceiverVolumeChange: Receiver -> Float -> Effects Action
+sendReceiverVolumeChange receiver volume =
+  Signal.send volumeChangeRequestsBox.address ("receiver", receiver.id, volume)
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
+
+type Action
+  = InitialState Model
+  | ReceiverStatus (String, ReceiverStatusEvent)
+  | UpdateReceiverVolume Receiver String
+  | NoOp
+
+
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
+    NoOp ->
+      (model, Effects.none)
     InitialState state ->
       (state, Effects.none)
-    ReceiverStatus (event, args) ->
-      case event of
-        "receiver_added" ->
-          let
-              model = { model | receivers = (receiverOnline model.receivers args.receiverId True)}
-          in
-            (model, Effects.none)
-        "receiver_removed" ->
-          let
-              model = { model | receivers = (receiverOnline model.receivers args.receiverId False)}
-          in
-            (model, Effects.none)
-        _ ->
+    ReceiverStatus event ->
+      ( updateReceiverOnlineStatus model event
+      , Effects.none
+      )
+    UpdateReceiverVolume receiver volumeInput ->
+      case (translateReceiverVolume volumeInput) of
+        Ok vol ->
+          ( updateReceiverVolume model receiver vol
+          , sendReceiverVolumeChange receiver vol )
+        Err msg ->
           (model, Effects.none)
 
-zoneReceivers : Model -> Zone -> List Receiver
-zoneReceivers model zone =
+
+zoneReceivers : Signal.Address Action -> Model -> Zone -> List Receiver
+zoneReceivers address model zone =
   List.filter (\r -> r.zoneId == zone.id) model.receivers
 
-receiverInZone : Receiver -> Html
-receiverInZone receiver =
-  div [ classList [("receiver", True), ("receiver--online", receiver.online), ("receiver--offline", not receiver.online)] ] [ text receiver.name ]
 
-zone : Model -> Signal.Address Action -> Zone -> Html
-zone model action zone =
-  div [ class "zone four wide column" ] [
+receiverInZone : Signal.Address Action -> Receiver -> Html
+receiverInZone address receiver =
+  div [ classList [("receiver", True), ("receiver--online", receiver.online), ("receiver--offline", not receiver.online)] ] [
+    div [] [ text receiver.name ],
+    div [] [
+      input [
+        type' "range"
+      , Html.Attributes.min "0"
+      , Html.Attributes.max "1000"
+      , step "1"
+      , value (toString (receiver.volume * 1000))
+      , on "input" targetValue (Signal.message address << (UpdateReceiverVolume receiver))
+      ] []
+    ]
+  ]
+
+
+zone : Signal.Address Action -> Model -> Zone -> Html
+zone address model zone =
+  div [ class "zone five wide column" ] [
     div [ class "ui card" ] [
       div [ class "content" ] [
         div [ class "header" ] [ text zone.name ]
       ],
-      div [ class "content" ] (List.map receiverInZone (zoneReceivers model zone))
+      div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers address model zone))
     ]
   ]
+
 
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [ class "ui container" ] [
-    div [ class "zones ui grid" ] (List.map (zone model address) model.zones)
+    div [ class "zones ui grid" ] (List.map (zone address model) model.zones)
   ]
 
 incomingActions : Signal Action
@@ -120,7 +177,18 @@ main : Signal Html
 main =
   app.html
 
+port tasks : Signal (Task Never ())
+port tasks =
+  app.tasks
+
 port initialState : Signal Model
 
-port receiverStatus : Signal (String, ReceiverStatusEvent)
+port receiverStatus : Signal ( String, ReceiverStatusEvent )
 
+port volumeChanges : Signal ( String, String, Float )
+port volumeChanges =
+  volumeChangeRequestsBox.signal
+
+volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
+volumeChangeRequestsBox =
+  Signal.mailbox ( "", "", 0.0 )

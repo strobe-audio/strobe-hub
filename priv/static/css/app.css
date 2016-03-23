@@ -1,4 +1,10 @@
 
+.receiver input[type="range"] {
+  width: 100%;
+}
 .receiver--offline {
   color: #ddd;
+}
+.receiver--offline input[type="range"] {
+  opacity: 0.5;
 }

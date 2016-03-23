@@ -104,6 +104,13 @@
 
 	// channel.push('list_libraries', {})
 
+	elmApp.ports.volumeChanges.subscribe(function (event) {
+		console.log('volume', event);
+		channel.push("change_volume", event).receive("error", function (payload) {
+			return console.log(payload.message);
+		});
+	});
+
 /***/ },
 /* 2 */
 /***/ function(module, exports) {
@@ -11889,6 +11896,72 @@
 	                                        ,property: property
 	                                        ,attribute: attribute};
 	};
+	Elm.Html = Elm.Html || {};
+	Elm.Html.Events = Elm.Html.Events || {};
+	Elm.Html.Events.make = function (_elm) {
+	   "use strict";
+	   _elm.Html = _elm.Html || {};
+	   _elm.Html.Events = _elm.Html.Events || {};
+	   if (_elm.Html.Events.values) return _elm.Html.Events.values;
+	   var _U = Elm.Native.Utils.make(_elm),
+	   $Basics = Elm.Basics.make(_elm),
+	   $Debug = Elm.Debug.make(_elm),
+	   $Html = Elm.Html.make(_elm),
+	   $Json$Decode = Elm.Json.Decode.make(_elm),
+	   $List = Elm.List.make(_elm),
+	   $Maybe = Elm.Maybe.make(_elm),
+	   $Result = Elm.Result.make(_elm),
+	   $Signal = Elm.Signal.make(_elm),
+	   $VirtualDom = Elm.VirtualDom.make(_elm);
+	   var _op = {};
+	   var keyCode = A2($Json$Decode._op[":="],"keyCode",$Json$Decode.$int);
+	   var targetChecked = A2($Json$Decode.at,_U.list(["target","checked"]),$Json$Decode.bool);
+	   var targetValue = A2($Json$Decode.at,_U.list(["target","value"]),$Json$Decode.string);
+	   var defaultOptions = $VirtualDom.defaultOptions;
+	   var Options = F2(function (a,b) {    return {stopPropagation: a,preventDefault: b};});
+	   var onWithOptions = $VirtualDom.onWithOptions;
+	   var on = $VirtualDom.on;
+	   var messageOn = F3(function (name,addr,msg) {    return A3(on,name,$Json$Decode.value,function (_p0) {    return A2($Signal.message,addr,msg);});});
+	   var onClick = messageOn("click");
+	   var onDoubleClick = messageOn("dblclick");
+	   var onMouseMove = messageOn("mousemove");
+	   var onMouseDown = messageOn("mousedown");
+	   var onMouseUp = messageOn("mouseup");
+	   var onMouseEnter = messageOn("mouseenter");
+	   var onMouseLeave = messageOn("mouseleave");
+	   var onMouseOver = messageOn("mouseover");
+	   var onMouseOut = messageOn("mouseout");
+	   var onBlur = messageOn("blur");
+	   var onFocus = messageOn("focus");
+	   var onSubmit = messageOn("submit");
+	   var onKey = F3(function (name,addr,handler) {    return A3(on,name,keyCode,function (code) {    return A2($Signal.message,addr,handler(code));});});
+	   var onKeyUp = onKey("keyup");
+	   var onKeyDown = onKey("keydown");
+	   var onKeyPress = onKey("keypress");
+	   return _elm.Html.Events.values = {_op: _op
+	                                    ,onBlur: onBlur
+	                                    ,onFocus: onFocus
+	                                    ,onSubmit: onSubmit
+	                                    ,onKeyUp: onKeyUp
+	                                    ,onKeyDown: onKeyDown
+	                                    ,onKeyPress: onKeyPress
+	                                    ,onClick: onClick
+	                                    ,onDoubleClick: onDoubleClick
+	                                    ,onMouseMove: onMouseMove
+	                                    ,onMouseDown: onMouseDown
+	                                    ,onMouseUp: onMouseUp
+	                                    ,onMouseEnter: onMouseEnter
+	                                    ,onMouseLeave: onMouseLeave
+	                                    ,onMouseOver: onMouseOver
+	                                    ,onMouseOut: onMouseOut
+	                                    ,on: on
+	                                    ,onWithOptions: onWithOptions
+	                                    ,defaultOptions: defaultOptions
+	                                    ,targetValue: targetValue
+	                                    ,targetChecked: targetChecked
+	                                    ,keyCode: keyCode
+	                                    ,Options: Options};
+	};
 	Elm.StartApp = Elm.StartApp || {};
 	Elm.StartApp.make = function (_elm) {
 	   "use strict";
@@ -11939,12 +12012,17 @@
 	   $Effects = Elm.Effects.make(_elm),
 	   $Html = Elm.Html.make(_elm),
 	   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+	   $Html$Events = Elm.Html.Events.make(_elm),
 	   $List = Elm.List.make(_elm),
 	   $Maybe = Elm.Maybe.make(_elm),
 	   $Result = Elm.Result.make(_elm),
 	   $Signal = Elm.Signal.make(_elm),
-	   $StartApp = Elm.StartApp.make(_elm);
+	   $StartApp = Elm.StartApp.make(_elm),
+	   $String = Elm.String.make(_elm),
+	   $Task = Elm.Task.make(_elm);
 	   var _op = {};
+	   var volumeChangeRequestsBox = $Signal.mailbox({ctor: "_Tuple3",_0: "",_1: "",_2: 0.0});
+	   var volumeChanges = Elm.Native.Port.make(_elm).outboundSignal("volumeChanges",function (v) {    return [v._0,v._1,v._2];},volumeChangeRequestsBox.signal);
 	   var receiverStatus = Elm.Native.Port.make(_elm).inboundSignal("receiverStatus",
 	   "( String\n, Main.ReceiverStatusEvent\n)",
 	   function (v) {
@@ -11992,54 +12070,100 @@
 	                                                                         })) : _U.badPort("an array",
 	                                                                         v.receivers)} : _U.badPort("an object with fields `zones`, `receivers`",v);
 	   });
-	   var receiverInZone = function (receiver) {
+	   var zoneReceivers = F3(function (address,model,zone) {    return A2($List.filter,function (r) {    return _U.eq(r.zoneId,zone.id);},model.receivers);});
+	   var NoOp = {ctor: "NoOp"};
+	   var UpdateReceiverVolume = F2(function (a,b) {    return {ctor: "UpdateReceiverVolume",_0: a,_1: b};});
+	   var receiverInZone = F2(function (address,receiver) {
 	      return A2($Html.div,
 	      _U.list([$Html$Attributes.classList(_U.list([{ctor: "_Tuple2",_0: "receiver",_1: true}
 	                                                  ,{ctor: "_Tuple2",_0: "receiver--online",_1: receiver.online}
 	                                                  ,{ctor: "_Tuple2",_0: "receiver--offline",_1: $Basics.not(receiver.online)}]))]),
-	      _U.list([$Html.text(receiver.name)]));
-	   };
-	   var zoneReceivers = F2(function (model,zone) {    return A2($List.filter,function (r) {    return _U.eq(r.zoneId,zone.id);},model.receivers);});
-	   var zone = F3(function (model,action,zone) {
+	      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(receiver.name)]))
+	              ,A2($Html.div,
+	              _U.list([]),
+	              _U.list([A2($Html.input,
+	              _U.list([$Html$Attributes.type$("range")
+	                      ,$Html$Attributes.min("0")
+	                      ,$Html$Attributes.max("1000")
+	                      ,$Html$Attributes.step("1")
+	                      ,$Html$Attributes.value($Basics.toString(receiver.volume * 1000))
+	                      ,A3($Html$Events.on,
+	                      "input",
+	                      $Html$Events.targetValue,
+	                      function (_p0) {
+	                         return A2($Signal.message,address,A2(UpdateReceiverVolume,receiver,_p0));
+	                      })]),
+	              _U.list([]))]))]));
+	   });
+	   var zone = F3(function (address,model,zone) {
 	      return A2($Html.div,
-	      _U.list([$Html$Attributes.$class("zone four wide column")]),
+	      _U.list([$Html$Attributes.$class("zone five wide column")]),
 	      _U.list([A2($Html.div,
 	      _U.list([$Html$Attributes.$class("ui card")]),
 	      _U.list([A2($Html.div,
 	              _U.list([$Html$Attributes.$class("content")]),
 	              _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("header")]),_U.list([$Html.text(zone.name)]))]))
-	              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),A2($List.map,receiverInZone,A2(zoneReceivers,model,zone)))]))]));
+	              ,A2($Html.div,_U.list([$Html$Attributes.$class("content")]),A2($List.map,receiverInZone(address),A3(zoneReceivers,address,model,zone)))]))]));
 	   });
 	   var view = F2(function (address,model) {
 	      return A2($Html.div,
 	      _U.list([$Html$Attributes.$class("ui container")]),
-	      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("zones ui grid")]),A2($List.map,A2(zone,model,address),model.zones))]));
+	      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("zones ui grid")]),A2($List.map,A2(zone,address,model),model.zones))]));
 	   });
-	   var receiverOnline = F3(function (receivers,receiverId,online) {
-	      return A2($List.map,function (r) {    return _U.eq(r.id,receiverId) ? _U.update(r,{online: online}) : r;},receivers);
-	   });
-	   var update = F2(function (action,model) {
-	      var _p0 = action;
-	      if (_p0.ctor === "InitialState") {
-	            return {ctor: "_Tuple2",_0: _p0._0,_1: $Effects.none};
-	         } else {
-	            var _p2 = _p0._0._1;
-	            var _p1 = _p0._0._0;
-	            switch (_p1)
-	            {case "receiver_added": var model = _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p2.receiverId,true)});
-	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-	               case "receiver_removed": var model = _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p2.receiverId,false)});
-	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-	               default: return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}
-	         }
-	   });
-	   var init = function () {    var model = {zones: _U.list([]),receivers: _U.list([])};return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}();
 	   var ReceiverStatus = function (a) {    return {ctor: "ReceiverStatus",_0: a};};
 	   var receiverStatusActions = A2($Signal.map,ReceiverStatus,receiverStatus);
 	   var InitialState = function (a) {    return {ctor: "InitialState",_0: a};};
 	   var incomingActions = A2($Signal.map,InitialState,initialState);
+	   var sendReceiverVolumeChange = F2(function (receiver,volume) {
+	      return A2($Effects.map,
+	      $Basics.always(NoOp),
+	      $Effects.task(A2($Signal.send,volumeChangeRequestsBox.address,{ctor: "_Tuple3",_0: "receiver",_1: receiver.id,_2: volume})));
+	   });
+	   var translateReceiverVolume = function (input) {
+	      var _p1 = $String.toInt(input);
+	      if (_p1.ctor === "Ok") {
+	            return $Result.Ok($Basics.toFloat(_p1._0) / 1000);
+	         } else {
+	            return $Result.Err(_p1._0);
+	         }
+	   };
+	   var findUpdateReceiver = F3(function (receivers,receiverId,updateFunc) {
+	      return A2($List.map,function (r) {    return _U.eq(r.id,receiverId) ? updateFunc(r) : r;},receivers);
+	   });
+	   var receiverOnline = F3(function (receivers,receiverId,online) {
+	      return A3(findUpdateReceiver,receivers,receiverId,function (r) {    return _U.update(r,{online: online});});
+	   });
+	   var updateReceiverOnlineStatus = F2(function (model,_p2) {
+	      var _p3 = _p2;
+	      var _p5 = _p3._1;
+	      var _p4 = _p3._0;
+	      switch (_p4)
+	      {case "receiver_added": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p5.receiverId,true)});
+	         case "receiver_removed": return _U.update(model,{receivers: A3(receiverOnline,model.receivers,_p5.receiverId,false)});
+	         default: return model;}
+	   });
+	   var updateReceiverVolume = F3(function (model,receiver,volume) {
+	      return _U.update(model,{receivers: A3(findUpdateReceiver,model.receivers,receiver.id,function (r) {    return _U.update(r,{volume: volume});})});
+	   });
+	   var update = F2(function (action,model) {
+	      var _p6 = action;
+	      switch (_p6.ctor)
+	      {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	         case "InitialState": return {ctor: "_Tuple2",_0: _p6._0,_1: $Effects.none};
+	         case "ReceiverStatus": return {ctor: "_Tuple2",_0: A2(updateReceiverOnlineStatus,model,_p6._0),_1: $Effects.none};
+	         default: var _p9 = _p6._0;
+	           var _p7 = translateReceiverVolume(_p6._1);
+	           if (_p7.ctor === "Ok") {
+	                 var _p8 = _p7._0;
+	                 return {ctor: "_Tuple2",_0: A3(updateReceiverVolume,model,_p9,_p8),_1: A2(sendReceiverVolumeChange,_p9,_p8)};
+	              } else {
+	                 return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+	              }}
+	   });
+	   var init = function () {    var model = {zones: _U.list([]),receivers: _U.list([])};return {ctor: "_Tuple2",_0: model,_1: $Effects.none};}();
 	   var app = $StartApp.start({init: init,update: update,view: view,inputs: _U.list([incomingActions,receiverStatusActions])});
 	   var main = app.html;
+	   var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
 	   var ReceiverStatusEvent = F3(function (a,b,c) {    return {event: a,zoneId: b,receiverId: c};});
 	   var Int = {ctor: "Int"};
 	   var Float = {ctor: "Float"};
@@ -12055,10 +12179,17 @@
 	                             ,Float: Float
 	                             ,Int: Int
 	                             ,ReceiverStatusEvent: ReceiverStatusEvent
+	                             ,init: init
+	                             ,findUpdateReceiver: findUpdateReceiver
+	                             ,receiverOnline: receiverOnline
+	                             ,updateReceiverVolume: updateReceiverVolume
+	                             ,updateReceiverOnlineStatus: updateReceiverOnlineStatus
+	                             ,translateReceiverVolume: translateReceiverVolume
+	                             ,sendReceiverVolumeChange: sendReceiverVolumeChange
 	                             ,InitialState: InitialState
 	                             ,ReceiverStatus: ReceiverStatus
-	                             ,init: init
-	                             ,receiverOnline: receiverOnline
+	                             ,UpdateReceiverVolume: UpdateReceiverVolume
+	                             ,NoOp: NoOp
 	                             ,update: update
 	                             ,zoneReceivers: zoneReceivers
 	                             ,receiverInZone: receiverInZone
@@ -12067,7 +12198,8 @@
 	                             ,incomingActions: incomingActions
 	                             ,receiverStatusActions: receiverStatusActions
 	                             ,app: app
-	                             ,main: main};
+	                             ,main: main
+	                             ,volumeChangeRequestsBox: volumeChangeRequestsBox};
 	};
 
 	module.exports = Elm;
