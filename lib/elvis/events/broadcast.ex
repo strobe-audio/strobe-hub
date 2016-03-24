@@ -2,8 +2,11 @@ defmodule Elvis.Events.Broadcast do
   use     GenEvent
   require Logger
 
+  # Send progress updates every @progress_interval times
+  @progress_interval 3 # * 100 ms intervals
+
   def register do
-    Otis.State.Events.add_mon_handler(__MODULE__, [])
+    Otis.State.Events.add_mon_handler(__MODULE__, %{ progress_count: 0 })
   end
 
   def handle_event({:zone_finished, zone_id}, state) do
@@ -19,9 +22,12 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:source_progress, zone_id, source_id, progress_ms, duration_ms}, state) do
+  def handle_event({:source_progress, zone_id, source_id, progress_ms, duration_ms}, %{progress_count: 0} = state) do
     broadcast!("source_progress", %{zoneId: zone_id, sourceId: source_id, progress: progress_ms, duration: duration_ms})
-    {:ok, state}
+    {:ok, %{state | progress_count: @progress_interval}}
+  end
+  def handle_event({:source_progress, zone_id, source_id, progress_ms, duration_ms}, %{progress_count: progress_count} = state) do
+    {:ok, %{ state | progress_count: progress_count - 1 }}
   end
   def handle_event({:zone_play_pause, zone_id, status}, state) do
     broadcast!("zone_play_pause", %{zoneId: zone_id, status: status})
