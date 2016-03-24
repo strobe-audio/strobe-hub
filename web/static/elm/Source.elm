@@ -22,6 +22,11 @@ entryAlbum entry =
   metadataWithFallback entry.source.metadata.album "Untitled Album"
 
 
+entryPerformer : PlaylistEntry -> String
+entryPerformer entry =
+  metadataWithFallback entry.source.metadata.performer ""
+
+
 zonePlaylist : Model -> Zone -> ZonePlaylist
 zonePlaylist model zone =
   let
@@ -41,7 +46,9 @@ playlistEntry address entry =
       text (entryTitle entry)
     ]
   , div [ class "playlist-entry--album" ] [
-      text (entryAlbum entry)
+      text (entryPerformer entry)
+    , text ", "
+    , text (entryAlbum entry)
     ]
   ]
 
