@@ -1,6 +1,5 @@
 module Source where
 
-import Action exposing (Action)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Types exposing (..)

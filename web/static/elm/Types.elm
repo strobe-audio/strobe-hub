@@ -1,5 +1,18 @@
 module Types where
 
+type Action
+  = InitialState Model
+  | ReceiverStatus (String, ReceiverStatusEvent)
+  | ZoneStatus (String, ZoneStatusEvent)
+  | UpdateReceiverVolume Receiver String
+  | UpdateZoneVolume Zone String
+  | TogglePlayPause (Zone, Bool)
+  | SourceProgress SourceProgressEvent
+  | SourceChange SourceChangeEvent
+  | VolumeChange VolumeChangeEvent
+  | NoOp
+
+
 type alias Zone =
   { id:       String
   , name:     String

@@ -9,7 +9,6 @@ import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Debug
 import Types exposing (..)
-import Action exposing (..)
 import Source exposing (..)
 
 -- volume sliders go from 0 - this value so we have to convert to a 0-1 range
