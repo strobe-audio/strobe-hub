@@ -2,8 +2,17 @@
 import {Socket} from 'phoenix'
 import Elm from 'Main'
 
+let uiState = {
+  zones: [],
+  receivers: [],
+}
 // app initial state
-let initialState = {receivers: [], zones: [], sources: []}
+let initialState = {
+  receivers: [],
+  zones: [],
+  sources: [],
+  ui: uiState,
+}
 
 // port initial state
 let receiverStatus = ["", {event: "", receiverId: "", zoneId: ""}]
@@ -52,7 +61,7 @@ let channel = socket.channel('controllers:browser', {})
 
 channel.on('state', payload => {
 	console.log('got startup', payload)
-	elmApp.ports.initialState.send(payload)
+	elmApp.ports.initialState.send(Object.assign({}, payload, {ui: uiState}))
 })
 
 channel.on('add_library', payload => {

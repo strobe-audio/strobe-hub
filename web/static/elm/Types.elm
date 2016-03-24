@@ -1,5 +1,7 @@
 module Types where
 
+import Dict exposing (Dict)
+
 type Action
   = InitialState Model
   | ReceiverStatus (String, ReceiverStatusEvent)
@@ -12,7 +14,41 @@ type Action
   | VolumeChange VolumeChangeEvent
   | PlayListAddition PlaylistEntry
   | PlaylistSkip PlaylistEntry
+  | ShowAddReceiver ( Zone, Bool )
   | NoOp
+
+
+-- would love to use these but it causes problems with ports
+type alias ZoneID = String
+type alias ReceiverID = String
+
+type alias ID = String
+
+type alias Model =
+  { zones:     List Zone
+  , receivers: List Receiver
+  , sources:   List PlaylistEntry
+  , ui: UIState
+  }
+
+
+type alias UIState =
+  { zones : List ZoneUIState
+  , receivers: List ReceiverUIState
+  }
+
+
+type alias ZoneUIState =
+  { id: String
+  , showAddReceivers : Bool
+  , showRename : Bool
+  }
+
+
+type alias ReceiverUIState =
+  { id: String
+  , showRename : Bool
+  }
 
 
 type alias Zone =
@@ -30,13 +66,6 @@ type alias Receiver =
   , online:   Bool
   , volume:   Float
   , zoneId:   String
-  }
-
-
-type alias Model =
-  { zones:     List Zone
-  , receivers: List Receiver
-  , sources:   List PlaylistEntry
   }
 
 

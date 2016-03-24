@@ -15,10 +15,36 @@ import Source exposing (..)
 -- before setting the volume
 volumeRangeMax = 1000
 
+initZoneUIState : Zone -> ZoneUIState
+initZoneUIState zone =
+  { id = zone.id
+  , showAddReceivers = False
+  , showRename = False
+  }
+
+
+initReceiverUIState : Receiver -> ReceiverUIState
+initReceiverUIState receiver =
+  { id = receiver.id
+  , showRename = False
+  }
+
+
+initUIState : List Zone -> List Receiver -> UIState
+initUIState zones receivers =
+  { zones = List.map initZoneUIState zones
+  , receivers = List.map initReceiverUIState receivers
+  }
+
 init : (Model, Effects Action)
 init =
   let
-    model = { zones = [], receivers = [], sources = [] }
+    model =
+      { zones = []
+      , receivers = []
+      , sources = []
+      , ui = initUIState [] []
+      }
   in
     (model, Effects.none)
 
@@ -154,6 +180,30 @@ addPlayListEntry model entry =
   { model
   | sources = model.sources ++ [entry] }
 
+showAddReceiver : Model -> Zone -> Bool -> Model
+showAddReceiver model zone show =
+  let
+      modelUI = model.ui
+      ui = { modelUI | zones = updateZoneUIState modelUI.zones zone (\ui -> { ui | showAddReceivers = show } ) }
+  in
+    { model | ui = ui }
+
+updateZoneUIState : List ZoneUIState -> Zone -> ( ZoneUIState -> ZoneUIState ) -> List ZoneUIState
+updateZoneUIState states zone update =
+  List.map (\ui ->
+    if ui.id == zone.id then
+       update ui
+    else
+      ui
+  ) states
+
+
+uiStateForZone : Model -> Zone -> Maybe ZoneUIState
+uiStateForZone model zone =
+  List.filter (\ui -> ui.id == zone.id) model.ui.zones
+  |> List.head
+
+
 update : Action -> Model -> (Model, Effects Action)
 update action model =
   case action of
@@ -161,7 +211,9 @@ update action model =
       (model, Effects.none)
 
     InitialState state ->
-      (state, Effects.none)
+      ({ state
+       | ui = initUIState state.zones state.receivers }
+      , Effects.none)
 
     ReceiverStatus event ->
       ( updateReceiverOnlineStatus model event
@@ -226,10 +278,21 @@ update action model =
       Debug.log ("Playlist skip " ++ toString(playlistEntry))
       (model, sendPlaylistSkipChange playlistEntry)
 
+    ShowAddReceiver (zone, state) ->
+      (showAddReceiver model zone state
+      , Effects.none)
 
-zoneReceivers : Model -> Zone -> List Receiver
-zoneReceivers model zone =
+
+
+receiversAttachedToZone : Model -> Zone -> List Receiver
+receiversAttachedToZone model zone =
   List.filter (\r -> r.zoneId == zone.id) model.receivers
+
+
+receiversNotAttachedToZone : Model -> Zone -> List Receiver
+receiversNotAttachedToZone model zone =
+  List.filter (\r -> r.zoneId /= zone.id) model.receivers
+
 
 receiverInZone : Signal.Address Action -> Receiver -> Html
 receiverInZone address receiver =
@@ -265,6 +328,48 @@ zonePlayPauseButton address zone =
   ] []
 
 
+attachReceiverList : Signal.Address Action -> Zone -> List Receiver -> Html
+attachReceiverList address zone receivers =
+  div [] [
+    div [] [ button [ class "tiny fluid ui button", onClick address (ShowAddReceiver ( zone, False )) ] [ text "Done" ] ]
+  , div [ class "ui list" ] (List.map (\r ->
+      div [ class "item" ] [
+        button [ class "tiny fluid ui labeled icon green button" ] [
+          i [ class "plus icon" ] []
+        , text r.name
+        ]
+      ]
+    ) receivers)
+  ]
+
+zoneReceiverList : Signal.Address Action -> Model -> Zone -> Html
+zoneReceiverList address model zone =
+  let
+      attached = (receiversAttachedToZone model zone)
+      detached = (receiversNotAttachedToZone model zone)
+      showAdd = case uiStateForZone model zone of
+        Just state ->
+          state.showAddReceivers
+        Nothing ->
+          False
+      addButton = case List.length detached of
+        0 ->
+          div [] []
+        _ ->
+          if showAdd then
+            attachReceiverList address zone detached
+          else
+            div [ class "content", onClick address (ShowAddReceiver ( zone, True )) ] [
+              button [ class "tiny fluid ui button" ] [ text "Add receivers" ]
+            ]
+  in
+     div [ class "content" ] [
+       addButton
+     , div [ class "content" ] (List.map (receiverInZone address) attached)
+     ]
+
+
+
 zonePanel : Signal.Address Action -> Model -> Zone -> Html
 zonePanel address model zone =
   let
@@ -280,7 +385,7 @@ zonePanel address model zone =
           , (activePlaylistEntry address playlist.active)
           ]
         ]
-      , div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers model zone))
+      , (zoneReceiverList address model zone)
       , div [ class "content" ] [
           div [ class "ui relaxed divided list" ] (List.map (playlistEntry address)  playlist.entries)
         ]
