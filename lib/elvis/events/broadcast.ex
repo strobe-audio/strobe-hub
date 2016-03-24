@@ -14,10 +14,10 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:source_changed, zone_id, nil, new_source_id}, state) do
+  def handle_event({:source_changed, _zone_id, nil, _new_source_id}, state) do
     {:ok, state}
   end
-  def handle_event({:source_changed, zone_id, old_source_id, new_source_id}, state) do
+  def handle_event({:source_changed, zone_id, old_source_id, _new_source_id}, state) do
     broadcast!("source_changed", %{zoneId: zone_id, removeSourceIds: [old_source_id]})
     {:ok, state}
   end
@@ -26,7 +26,7 @@ defmodule Elvis.Events.Broadcast do
     broadcast!("source_progress", %{zoneId: zone_id, sourceId: source_id, progress: progress_ms, duration: duration_ms})
     {:ok, %{state | progress_count: @progress_interval}}
   end
-  def handle_event({:source_progress, zone_id, source_id, progress_ms, duration_ms}, %{progress_count: progress_count} = state) do
+  def handle_event({:source_progress, _, _, _, _}, %{progress_count: progress_count} = state) do
     {:ok, %{ state | progress_count: progress_count - 1 }}
   end
   def handle_event({:zone_play_pause, zone_id, status}, state) do
@@ -40,12 +40,12 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:receiver_volume_change, id, volume} = event, state) do
+  def handle_event({:receiver_volume_change, id, volume}, state) do
     broadcast!("volume_change", %{ id: id, target: "receiver", volume: volume })
     {:ok, state}
   end
 
-  def handle_event({:zone_volume_change, id, volume} = event, state) do
+  def handle_event({:zone_volume_change, id, volume}, state) do
     broadcast!("volume_change", %{ id: id, target: "zone", volume: volume })
     {:ok, state}
   end
