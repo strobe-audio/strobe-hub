@@ -43,10 +43,10 @@ playlistEntry : Signal.Address Action -> PlaylistEntry -> Html
 playlistEntry address entry =
   div [ id entry.id, class "playlist-entry" ] [
     div [ class "playlist-entry--title" ] [
-      text (entryTitle entry)
+      strong [] [ text (entryTitle entry) ]
     ]
   , div [ class "playlist-entry--album" ] [
-      text (entryPerformer entry)
+      strong [] [ text (entryPerformer entry) ]
     , text ", "
     , text (entryAlbum entry)
     ]
