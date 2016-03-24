@@ -192,6 +192,23 @@ update action model =
       ( removeSources model event
       , Effects.none)
 
+    VolumeChange event ->
+      let
+          updatedModel = case event.target of
+            "receiver" ->
+              { model
+              | receivers = findUpdateReceiver model.receivers event.id (\r -> { r | volume = event.volume })
+              }
+            "zone" ->
+              { model
+              | zones = findUpdateZone model.zones event.id (\z -> { z | volume = event.volume })
+              }
+            _ ->
+              model
+      in
+        ( updatedModel
+        , Effects.none)
+
 
 zoneReceivers : Model -> Zone -> List Receiver
 zoneReceivers model zone =
@@ -282,6 +299,10 @@ sourceChangeActions : Signal Action
 sourceChangeActions =
   Signal.map SourceChange sourceChange
 
+volumeChangeActions : Signal Action
+volumeChangeActions =
+  Signal.map VolumeChange volumeChange
+
 app =
   StartApp.start
     { init = init
@@ -292,6 +313,7 @@ app =
                , zoneStatusActions
                , sourceProgressActions
                , sourceChangeActions
+               , volumeChangeActions
                ]
     }
 
@@ -310,8 +332,8 @@ port receiverStatus : Signal ( String, ReceiverStatusEvent )
 
 port zoneStatus : Signal ( String, ZoneStatusEvent )
 
-port volumeChanges : Signal ( String, String, Float )
-port volumeChanges =
+port volumeChangeRequests : Signal ( String, String, Float )
+port volumeChangeRequests =
   volumeChangeRequestsBox.signal
 
 port playPauseChanges : Signal ( String, Bool )
@@ -321,6 +343,7 @@ port playPauseChanges =
 port sourceProgress : Signal SourceProgressEvent
 
 port sourceChange : Signal SourceChangeEvent
+port volumeChange : Signal VolumeChangeEvent
 
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =

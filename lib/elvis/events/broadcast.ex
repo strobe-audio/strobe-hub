@@ -34,10 +34,16 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  # def handle_event({:receiver_volume_change, _, _} = event, state) do
-  #   broadcast!(event)
-  #   {:ok, state}
-  # end
+  def handle_event({:receiver_volume_change, id, volume} = event, state) do
+    broadcast!("volume_change", %{ id: id, target: "receiver", volume: volume })
+    {:ok, state}
+  end
+
+  def handle_event({:zone_volume_change, id, volume} = event, state) do
+    broadcast!("volume_change", %{ id: id, target: "zone", volume: volume })
+    {:ok, state}
+  end
+
   def handle_event(event, state) do
     IO.inspect [:broadcast?, event]
     {:ok, state}

@@ -10,13 +10,15 @@ let receiverStatus = ["", {event: "", receiverId: "", zoneId: ""}]
 let zoneStatus = ["", {event: "", zoneId: "", status: ""}]
 let sourceProgress = {zoneId: "", sourceId: "", progress: 0, duration: 0}
 let sourceChange = {zoneId: "", removeSourceIds: []}
+let volumeChange = {id: "", target: "", volume: 0.0}
 
 let portValues = {
 	initialState,
 	receiverStatus,
 	zoneStatus,
 	sourceProgress,
-	sourceChange
+	sourceChange,
+	volumeChange,
 }
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
@@ -59,6 +61,10 @@ channel.on('source_changed', payload => {
 	elmApp.ports.sourceChange.send(payload)
 })
 
+channel.on('volume_change', payload => {
+	elmApp.ports.volumeChange.send(payload)
+})
+
 channel.join()
 	.receive('ok', resp => { console.log('joined!', resp); })
 	.receive('error', resp => { console.error('unable to join', resp); })
@@ -67,7 +73,7 @@ channel.join()
 
 
 
-elmApp.ports.volumeChanges.subscribe(event => {
+elmApp.ports.volumeChangeRequests.subscribe(event => {
   channel.push("change_volume", event)
          .receive("error", payload => console.log(payload.message))
 })

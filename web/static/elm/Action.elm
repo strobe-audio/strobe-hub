@@ -11,6 +11,7 @@ type Action
   | TogglePlayPause (Zone, Bool)
   | SourceProgress SourceProgressEvent
   | SourceChange SourceChangeEvent
+  | VolumeChange VolumeChangeEvent
   | NoOp
 
 
