@@ -104,7 +104,11 @@ elmApp.ports.volumeChangeRequests.subscribe(event => {
 })
 
 elmApp.ports.playPauseChanges.subscribe(event => {
-	console.log('play pause change', event)
   channel.push("play_pause", event)
          .receive("error", payload => console.log(payload.message))
+})
+
+elmApp.ports.playlistSkipRequests.subscribe(event => {
+  channel.push("skip_track", event)
+    .receive("error", payload => console.log(payload.message))
 })

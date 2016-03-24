@@ -110,6 +110,12 @@ sendZoneStatusChange zone playing =
     |> Effects.task
     |> Effects.map (always NoOp)
 
+sendPlaylistSkipChange : PlaylistEntry -> Effects Action
+sendPlaylistSkipChange entry =
+  Signal.send playlistSkipRequestsBox.address ( entry.zoneId, entry.id )
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
 
 updateZone : Model -> Zone -> (Zone -> Zone) -> Model
 updateZone model zone update =
@@ -216,6 +222,10 @@ update action model =
       ( addPlayListEntry model playlistEntry
       , Effects.none)
 
+    PlaylistSkip playlistEntry ->
+      Debug.log ("Playlist skip " ++ toString(playlistEntry))
+      (model, sendPlaylistSkipChange playlistEntry)
+
 
 zoneReceivers : Model -> Zone -> List Receiver
 zoneReceivers model zone =
@@ -260,7 +270,7 @@ zonePanel address model zone =
   let
       playlist = (zonePlaylist model zone)
   in
-    div [ class "zone six wide column" ] [
+    div [ class "zone eight wide column" ] [
       div [ class "ui card" ] [
         div [ class "content" ] [
           div [ class "header" ] [
@@ -271,7 +281,9 @@ zonePanel address model zone =
           ]
         ]
       , div [ class "content" ] (List.map (receiverInZone address) (zoneReceivers model zone))
-      , div [ class "content" ] (List.map (playlistEntry address)  playlist.entries)
+      , div [ class "content" ] [
+          div [ class "ui relaxed divided list" ] (List.map (playlistEntry address)  playlist.entries)
+        ]
       ]
     ]
 
@@ -344,24 +356,39 @@ port receiverStatus : Signal ( String, ReceiverStatusEvent )
 
 port zoneStatus : Signal ( String, ZoneStatusEvent )
 
-port volumeChangeRequests : Signal ( String, String, Float )
-port volumeChangeRequests =
-  volumeChangeRequestsBox.signal
-
-port playPauseChanges : Signal ( String, Bool )
-port playPauseChanges =
-  zonePlayPauseRequestsBox.signal
-
 port sourceProgress : Signal SourceProgressEvent
 
 port sourceChange : Signal SourceChangeEvent
 port volumeChange : Signal VolumeChangeEvent
 port playlistAddition : Signal PlaylistEntry
 
+
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =
   Signal.mailbox ( "", "", 0.0 )
 
+
+port volumeChangeRequests : Signal ( String, String, Float )
+port volumeChangeRequests =
+  volumeChangeRequestsBox.signal
+
+
 zonePlayPauseRequestsBox : Signal.Mailbox ( String, Bool )
 zonePlayPauseRequestsBox =
   Signal.mailbox ( "", False )
+
+
+port playPauseChanges : Signal ( String, Bool )
+port playPauseChanges =
+  zonePlayPauseRequestsBox.signal
+
+
+playlistSkipRequestsBox : Signal.Mailbox ( String, String )
+playlistSkipRequestsBox =
+  Signal.mailbox ( "", "" )
+
+
+port playlistSkipRequests : Signal ( String, String )
+port playlistSkipRequests =
+  playlistSkipRequestsBox.signal
+

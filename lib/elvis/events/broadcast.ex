@@ -25,6 +25,11 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:sources_skipped, zone_id, source_ids}, state) do
+    broadcast!("source_changed", %{zoneId: zone_id, removeSourceIds: source_ids})
+    {:ok, state}
+  end
+
   def handle_event({:source_changed, _zone_id, nil, _new_source_id}, state) do
     {:ok, state}
   end

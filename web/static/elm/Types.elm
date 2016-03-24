@@ -11,6 +11,7 @@ type Action
   | SourceChange SourceChangeEvent
   | VolumeChange VolumeChangeEvent
   | PlayListAddition PlaylistEntry
+  | PlaylistSkip PlaylistEntry
   | NoOp
 
 

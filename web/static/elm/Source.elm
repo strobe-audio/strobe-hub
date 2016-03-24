@@ -2,6 +2,7 @@ module Source where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Types exposing (..)
 
 
@@ -41,7 +42,7 @@ zonePlaylist model zone =
 
 playlistEntry : Signal.Address Action -> PlaylistEntry -> Html
 playlistEntry address entry =
-  div [ id entry.id, class "playlist-entry" ] [
+  div [ id entry.id, class "playlist-entry item", onDoubleClick address (PlaylistSkip entry) ] [
     div [ class "playlist-entry--title" ] [
       strong [] [ text (entryTitle entry) ]
     ]
