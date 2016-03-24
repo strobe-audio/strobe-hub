@@ -26,15 +26,13 @@ type alias Model =
 
 
 type alias ReceiverStatusEvent =
-  { event:      String
-  , zoneId:     String
+  { zoneId:     String
   , receiverId: String
   }
 
 
 type alias ZoneStatusEvent =
-  { event:      String
-  , zoneId:     String
+  { zoneId:     String
   , status:     String
   }
 
@@ -43,6 +41,12 @@ type alias SourceProgressEvent =
   , sourceId: String
   , progress: Int
   , duration: Int
+  }
+
+
+type alias SourceChangeEvent =
+  { zoneId: String
+  , removeSourceIds: List String
   }
 
 

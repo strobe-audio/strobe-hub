@@ -9,7 +9,15 @@ let initialState = {receivers: [], zones: [], sources: []}
 let receiverStatus = ["", {event: "", receiverId: "", zoneId: ""}]
 let zoneStatus = ["", {event: "", zoneId: "", status: ""}]
 let sourceProgress = {zoneId: "", sourceId: "", progress: 0, duration: 0}
-let portValues = {initialState, receiverStatus, zoneStatus, sourceProgress}
+let sourceChange = {zoneId: "", removeSourceIds: []}
+
+let portValues = {
+	initialState,
+	receiverStatus,
+	zoneStatus,
+	sourceProgress,
+	sourceChange
+}
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
 
@@ -45,6 +53,10 @@ channel.on('zone_play_pause', payload => {
 
 channel.on('source_progress', payload => {
 	elmApp.ports.sourceProgress.send(payload)
+})
+
+channel.on('source_changed', payload => {
+	elmApp.ports.sourceChange.send(payload)
 })
 
 channel.join()

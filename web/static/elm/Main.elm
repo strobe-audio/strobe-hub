@@ -125,6 +125,7 @@ updateSourcePlaybackPosition model event =
   | sources = findUpdatePlaylistEntryProgress model.sources event
   }
 
+
 findUpdatePlaylistEntryProgress : List PlaylistEntry -> SourceProgressEvent -> List PlaylistEntry
 findUpdatePlaylistEntryProgress entries event =
   List.map (\e ->
@@ -134,6 +135,14 @@ findUpdatePlaylistEntryProgress entries event =
       e
   ) entries
 
+
+removeSources : Model -> SourceChangeEvent -> Model
+removeSources model event =
+  { model
+  | sources = List.filter (\s ->
+    not (List.member s.id event.removeSourceIds)
+  ) model.sources
+  }
 
 
 update : Action -> Model -> (Model, Effects Action)
@@ -177,6 +186,10 @@ update action model =
 
     SourceProgress event ->
       ( updateSourcePlaybackPosition model event
+      , Effects.none)
+
+    SourceChange event ->
+      ( removeSources model event
       , Effects.none)
 
 
@@ -223,7 +236,7 @@ zonePanel address model zone =
   let
       playlist = (zonePlaylist model zone)
   in
-    div [ class "zone five wide column" ] [
+    div [ class "zone six wide column" ] [
       div [ class "ui card" ] [
         div [ class "content" ] [
           div [ class "header" ] [
@@ -265,6 +278,10 @@ sourceProgressActions : Signal Action
 sourceProgressActions =
   Signal.map SourceProgress sourceProgress
 
+sourceChangeActions : Signal Action
+sourceChangeActions =
+  Signal.map SourceChange sourceChange
+
 app =
   StartApp.start
     { init = init
@@ -274,6 +291,7 @@ app =
                , receiverStatusActions
                , zoneStatusActions
                , sourceProgressActions
+               , sourceChangeActions
                ]
     }
 
@@ -301,6 +319,8 @@ port playPauseChanges =
   zonePlayPauseRequestsBox.signal
 
 port sourceProgress : Signal SourceProgressEvent
+
+port sourceChange : Signal SourceChangeEvent
 
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =

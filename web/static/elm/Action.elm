@@ -10,6 +10,7 @@ type Action
   | UpdateZoneVolume Zone String
   | TogglePlayPause (Zone, Bool)
   | SourceProgress SourceProgressEvent
+  | SourceChange SourceChangeEvent
   | NoOp
 
 

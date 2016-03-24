@@ -11,6 +11,14 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:source_changed, zone_id, nil, new_source_id}, state) do
+    {:ok, state}
+  end
+  def handle_event({:source_changed, zone_id, old_source_id, new_source_id}, state) do
+    broadcast!("source_changed", %{zoneId: zone_id, removeSourceIds: [old_source_id]})
+    {:ok, state}
+  end
+
   def handle_event({:source_progress, zone_id, source_id, progress_ms, duration_ms}, state) do
     broadcast!("source_progress", %{zoneId: zone_id, sourceId: source_id, progress: progress_ms, duration: duration_ms})
     {:ok, state}
@@ -35,8 +43,8 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  defp broadcast!(event, args) do
-    msg = Map.put(args, :event, event)
+  defp broadcast!(event, msg) do
+    # msg = Map.put(args, :event, event)
     Elvis.Endpoint.broadcast!("controllers:browser", event, msg)
   end
 end
