@@ -36,4 +36,6 @@
 .playlist-entry-progress--inner {
   /* override semantic ui's strange default */
   min-width: 0 !important;
+  transition: none;
+  -webkit-transition: none !important;
 }
