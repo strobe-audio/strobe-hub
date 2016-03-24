@@ -1,4 +1,9 @@
 defmodule Elvis.Events.Broadcast do
+  @moduledoc """
+  This event handler is responsible for broadcasting the required events to the
+  controllers in the necessary format.
+  """
+
   use     GenEvent
   require Logger
 
@@ -23,12 +28,18 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:source_progress, zone_id, source_id, progress_ms, duration_ms}, %{progress_count: 0} = state) do
-    broadcast!("source_progress", %{zoneId: zone_id, sourceId: source_id, progress: progress_ms, duration: duration_ms})
+    broadcast!("source_progress", %{
+      zoneId: zone_id,
+      sourceId: source_id,
+      progress: progress_ms,
+      duration: duration_ms
+    })
     {:ok, %{state | progress_count: @progress_interval}}
   end
-  def handle_event({:source_progress, _, _, _, _}, %{progress_count: progress_count} = state) do
-    {:ok, %{ state | progress_count: progress_count - 1 }}
+  def handle_event({:source_progress, _, _, _, _}, state) do
+    {:ok, %{ state | progress_count: state.progress_count - 1 }}
   end
+
   def handle_event({:zone_play_pause, zone_id, status}, state) do
     broadcast!("zone_play_pause", %{zoneId: zone_id, status: status})
     {:ok, state}
