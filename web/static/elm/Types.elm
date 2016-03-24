@@ -10,6 +10,7 @@ type Action
   | SourceProgress SourceProgressEvent
   | SourceChange SourceChangeEvent
   | VolumeChange VolumeChangeEvent
+  | PlayListAddition PlaylistEntry
   | NoOp
 
 
@@ -62,12 +63,12 @@ type alias SourceChangeEvent =
   , removeSourceIds: List String
   }
 
+
 type alias VolumeChangeEvent =
   { id : String
   , target : String
   , volume : Float
   }
-
 
 type alias SourceMetadata =
   { bit_rate:     Maybe Int

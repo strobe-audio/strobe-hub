@@ -11,6 +11,26 @@ let zoneStatus = ["", {event: "", zoneId: "", status: ""}]
 let sourceProgress = {zoneId: "", sourceId: "", progress: 0, duration: 0}
 let sourceChange = {zoneId: "", removeSourceIds: []}
 let volumeChange = {id: "", target: "", volume: 0.0}
+let metadata = { bit_rate: 0
+  , channels:     0
+  , duration_ms:  0
+  , extension:    ""
+  , filename:     ""
+  , mime_type:    ""
+  , sample_rate:  0
+  , stream_size:  0
+  , album:        ""
+  , composer:     ""
+  , date:         ""
+  , disk_number:  0
+  , disk_total:   0
+  , genre:        ""
+  , performer:    ""
+  , title:        ""
+  , track_number: 0
+  , track_total:  0
+  }
+let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", zoneId: "" , source: { id: "", metadata: metadata}}
 
 let portValues = {
 	initialState,
@@ -19,6 +39,7 @@ let portValues = {
 	sourceProgress,
 	sourceChange,
 	volumeChange,
+	playlistAddition,
 }
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
@@ -63,6 +84,10 @@ channel.on('source_changed', payload => {
 
 channel.on('volume_change', payload => {
 	elmApp.ports.volumeChange.send(payload)
+})
+
+channel.on('new_source_created', payload => {
+	elmApp.ports.playlistAddition.send(payload)
 })
 
 channel.join()

@@ -14,6 +14,12 @@ defmodule Elvis.Events.Broadcast do
     Otis.State.Events.add_mon_handler(__MODULE__, %{ progress_count: 0 })
   end
 
+  def handle_event({:new_source_created, rendition}, state) do
+    source = Otis.State.source(rendition)
+    broadcast!("new_source_created", source)
+    {:ok, state}
+  end
+
   def handle_event({:zone_finished, zone_id}, state) do
     broadcast!("zone_play_pause", %{zoneId: zone_id, status: :stop})
     {:ok, state}

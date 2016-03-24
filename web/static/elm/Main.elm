@@ -143,6 +143,10 @@ removeSources model event =
   ) model.sources
   }
 
+addPlayListEntry : Model -> PlaylistEntry -> Model
+addPlayListEntry model entry =
+  { model
+  | sources = model.sources ++ [entry] }
 
 update : Action -> Model -> (Model, Effects Action)
 update action model =
@@ -207,6 +211,10 @@ update action model =
       in
         ( updatedModel
         , Effects.none)
+
+    PlayListAddition playlistEntry ->
+      ( addPlayListEntry model playlistEntry
+      , Effects.none)
 
 
 zoneReceivers : Model -> Zone -> List Receiver
@@ -302,6 +310,10 @@ volumeChangeActions : Signal Action
 volumeChangeActions =
   Signal.map VolumeChange volumeChange
 
+playListAdditionActions : Signal Action
+playListAdditionActions =
+  Signal.map PlayListAddition playlistAddition
+
 app =
   StartApp.start
     { init = init
@@ -313,6 +325,7 @@ app =
                , sourceProgressActions
                , sourceChangeActions
                , volumeChangeActions
+               , playListAdditionActions
                ]
     }
 
@@ -343,6 +356,7 @@ port sourceProgress : Signal SourceProgressEvent
 
 port sourceChange : Signal SourceChangeEvent
 port volumeChange : Signal VolumeChangeEvent
+port playlistAddition : Signal PlaylistEntry
 
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =
