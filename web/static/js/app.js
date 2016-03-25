@@ -121,3 +121,8 @@ elmApp.ports.playlistSkipRequests.subscribe(event => {
   channel.push("skip_track", event)
     .receive("error", payload => console.log(payload.message))
 })
+
+elmApp.ports.attachReceiverRequests.subscribe(event => {
+  channel.push("attach_receiver", event)
+    .receive("error", payload => console.log(payload.message))
+})

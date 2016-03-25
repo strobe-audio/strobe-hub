@@ -15,6 +15,7 @@ type Action
   | PlayListAddition PlaylistEntry
   | PlaylistSkip PlaylistEntry
   | ShowAddReceiver ( Zone, Bool )
+  | AttachReceiver Zone Receiver
   | NoOp
 
 

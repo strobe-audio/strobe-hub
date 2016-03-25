@@ -29,6 +29,11 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("attach_receiver", [zone_id, receiver_id], socket) do
+    Otis.Receivers.attach receiver_id, zone_id
+    {:noreply, socket}
+  end
+
   def handle_info(:controller_join, socket) do
     Otis.State.Events.notify({:controller_join, socket})
     {:noreply, socket}

@@ -87,13 +87,21 @@ updateZoneVolume model zone volume =
   }
 
 
-updateReceiverOnlineStatus : Model -> (String, ReceiverStatusEvent) -> Model
-updateReceiverOnlineStatus model (event, args) =
+updateReceiverStatus : Model -> (String, ReceiverStatusEvent) -> Model
+updateReceiverStatus model (event, args) =
   case event of
     "receiver_added" ->
-      { model | receivers = (receiverOnline model.receivers args.receiverId True)}
+      { model | receivers =
+        findUpdateReceiver model.receivers args.receiverId (\receiver ->
+          { receiver | online = True, zoneId = args.zoneId }
+        )
+      }
     "receiver_removed" ->
-      { model | receivers = (receiverOnline model.receivers args.receiverId False)}
+      { model | receivers =
+        findUpdateReceiver model.receivers args.receiverId (\receiver ->
+          { receiver | online = False, zoneId = args.zoneId }
+        )
+      }
     _ ->
       model
 
@@ -139,6 +147,13 @@ sendZoneStatusChange zone playing =
 sendPlaylistSkipChange : PlaylistEntry -> Effects Action
 sendPlaylistSkipChange entry =
   Signal.send playlistSkipRequestsBox.address ( entry.zoneId, entry.id )
+    |> Effects.task
+    |> Effects.map (always NoOp)
+
+
+sendAttachReceiverChange : Zone -> Receiver -> Effects Action
+sendAttachReceiverChange zone receiver =
+  Signal.send attachReceiverRequestsBox.address (zone.id, receiver.id)
     |> Effects.task
     |> Effects.map (always NoOp)
 
@@ -216,7 +231,7 @@ update action model =
       , Effects.none)
 
     ReceiverStatus event ->
-      ( updateReceiverOnlineStatus model event
+      ( updateReceiverStatus model event
       , Effects.none
       )
 
@@ -282,6 +297,10 @@ update action model =
       (showAddReceiver model zone state
       , Effects.none)
 
+    AttachReceiver zone receiver ->
+      Debug.log ( "Attach  " ++ toString(receiver) )
+      (model, sendAttachReceiverChange zone receiver)
+
 
 
 receiversAttachedToZone : Model -> Zone -> List Receiver
@@ -334,7 +353,7 @@ attachReceiverList address zone receivers =
     div [] [ button [ class "tiny fluid ui button", onClick address (ShowAddReceiver ( zone, False )) ] [ text "Done" ] ]
   , div [ class "ui list" ] (List.map (\r ->
       div [ class "item" ] [
-        button [ class "tiny fluid ui labeled icon green button" ] [
+        button [ class "tiny fluid ui labeled icon green button", onClick address ( AttachReceiver zone r ) ] [
           i [ class "plus icon" ] []
         , text r.name
         ]
@@ -497,3 +516,12 @@ port playlistSkipRequests : Signal ( String, String )
 port playlistSkipRequests =
   playlistSkipRequestsBox.signal
 
+
+attachReceiverRequestsBox : Signal.Mailbox ( String, String )
+attachReceiverRequestsBox =
+  Signal.mailbox ( "", "" )
+
+
+port attachReceiverRequests : Signal ( String, String )
+port attachReceiverRequests =
+  attachReceiverRequestsBox.signal
