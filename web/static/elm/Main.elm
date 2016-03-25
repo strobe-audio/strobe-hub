@@ -290,7 +290,6 @@ update action model =
       , Effects.none)
 
     PlaylistSkip playlistEntry ->
-      Debug.log ("Playlist skip " ++ toString(playlistEntry))
       (model, sendPlaylistSkipChange playlistEntry)
 
     ShowAddReceiver (zone, state) ->
@@ -298,7 +297,6 @@ update action model =
       , Effects.none)
 
     AttachReceiver zone receiver ->
-      Debug.log ( "Attach  " ++ toString(receiver) )
       (model, sendAttachReceiverChange zone receiver)
 
 
