@@ -394,7 +394,7 @@ zonePanel address model zone =
   let
       playlist = (zonePlaylist model zone)
   in
-    div [ class "zone eight wide column" ] [
+    div [ id zone.id, class "zone eight wide column" ] [
       div [ class "ui card" ] [
         div [ class "content" ] [
           div [ class "header" ] [
