@@ -11,6 +11,7 @@ let initialState = {
   receivers: [],
   zones: [],
   sources: [],
+  libraries: [],
   ui: uiState,
 }
 
@@ -40,6 +41,9 @@ let metadata = { bit_rate: 0
   , track_total:  0
   }
 let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", zoneId: "" , source: { id: "", metadata: metadata}}
+let folder = { id: "", title: "", icon: "", action: "", children: []}
+let libraryRegistration = { name: "", id: "", levels: [], level: folder, action: "" }
+let libraryResponse = { libraryId: "", folder}
 
 let portValues = {
 	initialState,
@@ -49,6 +53,8 @@ let portValues = {
 	sourceChange,
 	volumeChange,
 	playlistAddition,
+	libraryRegistration,
+	libraryResponse,
 }
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
@@ -61,11 +67,12 @@ let channel = socket.channel('controllers:browser', {})
 
 channel.on('state', payload => {
 	console.log('got startup', payload)
-	elmApp.ports.initialState.send(Object.assign({}, payload, {ui: uiState}))
+	elmApp.ports.initialState.send(Object.assign({}, payload, {ui: uiState, libraries: []}))
 })
 
 channel.on('add_library', payload => {
 	console.log('got library', payload);
+	elmApp.ports.libraryRegistration.send(Object.assign({}, libraryRegistration, payload))
 })
 
 channel.on('receiver_removed', payload => {
@@ -99,6 +106,11 @@ channel.on('new_source_created', payload => {
 	elmApp.ports.playlistAddition.send(payload)
 })
 
+channel.on('library', payload => {
+	console.log('library response', payload)
+	elmApp.ports.libraryResponse.send(payload)
+})
+
 channel.join()
 	.receive('ok', resp => { console.log('joined!', resp); })
 	.receive('error', resp => { console.error('unable to join', resp); })
@@ -124,5 +136,11 @@ elmApp.ports.playlistSkipRequests.subscribe(event => {
 
 elmApp.ports.attachReceiverRequests.subscribe(event => {
   channel.push("attach_receiver", event)
+    .receive("error", payload => console.log(payload.message))
+})
+
+elmApp.ports.libraryRequests.subscribe(event => {
+	console.log('library action', event)
+  channel.push("library", event)
     .receive("error", payload => console.log(payload.message))
 })

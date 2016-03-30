@@ -7,9 +7,10 @@ import Html.Events exposing (..)
 import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
-import Debug
+import Debug exposing (log)
 import Types exposing (..)
 import Source exposing (..)
+import Library
 
 -- volume sliders go from 0 - this value so we have to convert to a 0-1 range
 -- before setting the volume
@@ -43,6 +44,7 @@ init =
       { zones = []
       , receivers = []
       , sources = []
+      , libraries = []
       , ui = initUIState [] []
       }
   in
@@ -300,6 +302,35 @@ update action model =
       (model, sendAttachReceiverChange zone receiver)
 
 
+    LibraryRegistration definition ->
+      ( { model | libraries = Library.init definition ::  model.libraries }
+      , Effects.none )
+
+
+    Library id libraryAction ->
+      let
+          updateLibrary library =
+            if library.id == id then
+               let
+                   (updatedLibrary, effect) = Library.update libraryAction library
+               in
+                  log ("match library " ++ toString(id) ++ " -> " ++ (toString updatedLibrary))
+                  ( updatedLibrary, Effects.map (Library id) effect )
+            else
+              ( library, Effects.none )
+
+          (libraries, libraryEffects) =
+            model.libraries
+              |> List.map updateLibrary
+              |> List.unzip
+      in
+          log ("LIBRARY " ++ id ++ " " ++ toString(libraryAction))
+          ({ model | libraries = libraries },
+           Effects.batch libraryEffects
+          )
+
+
+
 
 receiversAttachedToZone : Model -> Zone -> List Receiver
 receiversAttachedToZone model zone =
@@ -413,40 +444,17 @@ zonePanel address model zone =
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [ class "ui container" ] [
-    div [ class "zones ui grid" ] (List.map (zonePanel address model) model.zones)
+    div [ class "ui grid" ] [
+      div [ class "libraries six wide column" ] (
+        List.map (\l -> Library.root (Signal.forwardTo address (Library l.id)) l) model.libraries
+      )
+      , div [ class "zones ten wide column" ] [
+        div [ class "ui grid" ] (List.map (zonePanel address model) model.zones)
+      ]
+    ]
   ]
 
 
-incomingActions : Signal Action
-incomingActions =
-  Signal.map InitialState initialState
-
-
-receiverStatusActions : Signal Action
-receiverStatusActions =
-  Signal.map ReceiverStatus receiverStatus
-
-
-zoneStatusActions : Signal Action
-zoneStatusActions =
-  Signal.map ZoneStatus zoneStatus
-
-
-sourceProgressActions : Signal Action
-sourceProgressActions =
-  Signal.map SourceProgress sourceProgress
-
-sourceChangeActions : Signal Action
-sourceChangeActions =
-  Signal.map SourceChange sourceChange
-
-volumeChangeActions : Signal Action
-volumeChangeActions =
-  Signal.map VolumeChange volumeChange
-
-playListAdditionActions : Signal Action
-playListAdditionActions =
-  Signal.map PlayListAddition playlistAddition
 
 app =
   StartApp.start
@@ -460,6 +468,8 @@ app =
                , sourceChangeActions
                , volumeChangeActions
                , playListAdditionActions
+               , libraryRegistrationActions
+               , libraryResponseActions
                ]
     }
 
@@ -472,18 +482,74 @@ port tasks : Signal (Task Never ())
 port tasks =
   app.tasks
 
+
 port initialState : Signal Model
+
+incomingActions : Signal Action
+incomingActions =
+  Signal.map InitialState initialState
+
 
 port receiverStatus : Signal ( String, ReceiverStatusEvent )
 
+receiverStatusActions : Signal Action
+receiverStatusActions =
+  Signal.map ReceiverStatus receiverStatus
+
+
 port zoneStatus : Signal ( String, ZoneStatusEvent )
+
+zoneStatusActions : Signal Action
+zoneStatusActions =
+  Signal.map ZoneStatus zoneStatus
+
 
 port sourceProgress : Signal SourceProgressEvent
 
+sourceProgressActions : Signal Action
+sourceProgressActions =
+  Signal.map SourceProgress sourceProgress
+
+
 port sourceChange : Signal SourceChangeEvent
+
+sourceChangeActions : Signal Action
+sourceChangeActions =
+  Signal.map SourceChange sourceChange
+
+
 port volumeChange : Signal VolumeChangeEvent
+
+volumeChangeActions : Signal Action
+volumeChangeActions =
+  Signal.map VolumeChange volumeChange
+
+
 port playlistAddition : Signal PlaylistEntry
 
+playListAdditionActions : Signal Action
+playListAdditionActions =
+  Signal.map PlayListAddition playlistAddition
+
+
+port libraryRegistration : Signal Library.Definition
+
+libraryRegistrationActions : Signal Action
+libraryRegistrationActions =
+  Signal.map LibraryRegistration libraryRegistration
+
+
+port libraryResponse : Signal Library.FolderResponse
+
+libraryResponseActions : Signal Action
+libraryResponseActions =
+  let
+      translate response =
+        log ("Translate " ++ toString(response.folder))
+
+        Library response.libraryId (Library.Response response.folder)
+  in
+      Signal.map translate libraryResponse
 
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =
@@ -523,3 +589,12 @@ attachReceiverRequestsBox =
 port attachReceiverRequests : Signal ( String, String )
 port attachReceiverRequests =
   attachReceiverRequestsBox.signal
+
+
+port libraryRequests : Signal String
+port libraryRequests =
+  let
+      mailbox = Library.libraryRequestsBox
+  in
+      mailbox.signal
+

@@ -14,6 +14,12 @@ defmodule Elvis.Events.Broadcast do
     Otis.State.Events.add_mon_handler(__MODULE__, %{ progress_count: %{} })
   end
 
+
+  def handle_event({:library_response, id, response, socket}, state) do
+    Phoenix.Channel.push(socket, "library", %{ libraryId: id, folder: response })
+    {:ok, state}
+  end
+
   def handle_event({:new_source_created, rendition}, state) do
     source = Otis.State.source(rendition)
     broadcast!("new_source_created", source)

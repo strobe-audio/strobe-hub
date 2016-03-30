@@ -1,6 +1,7 @@
 module Types where
 
 import Dict exposing (Dict)
+import Library
 
 type Action
   = InitialState Model
@@ -16,6 +17,8 @@ type Action
   | PlaylistSkip PlaylistEntry
   | ShowAddReceiver ( Zone, Bool )
   | AttachReceiver Zone Receiver
+  | LibraryRegistration Library.Definition
+  | Library String Library.Action
   | NoOp
 
 
@@ -29,6 +32,7 @@ type alias Model =
   { zones:     List Zone
   , receivers: List Receiver
   , sources:   List PlaylistEntry
+  , libraries : List Library.Definition
   , ui: UIState
   }
 
