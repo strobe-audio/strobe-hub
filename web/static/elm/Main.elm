@@ -314,7 +314,7 @@ update action model =
                let
                    (updatedLibrary, effect) = Library.update libraryAction library
                in
-                  log ("match library " ++ toString(id) ++ " -> " ++ (toString updatedLibrary))
+                  -- log ("match library " ++ toString(id) ++ " -> " ++ (toString updatedLibrary))
                   ( updatedLibrary, Effects.map (Library id) effect )
             else
               ( library, Effects.none )
@@ -324,7 +324,7 @@ update action model =
               |> List.map updateLibrary
               |> List.unzip
       in
-          log ("LIBRARY " ++ id ++ " " ++ toString(libraryAction))
+          -- log ("LIBRARY " ++ id ++ " " ++ toString(libraryAction))
           ({ model | libraries = libraries },
            Effects.batch libraryEffects
           )
@@ -545,7 +545,7 @@ libraryResponseActions : Signal Action
 libraryResponseActions =
   let
       translate response =
-        log ("Translate " ++ toString(response.folder))
+        -- log ("Translate " ++ toString(response.folder))
 
         Library response.libraryId (Library.Response response.folder)
   in
