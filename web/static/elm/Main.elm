@@ -12,6 +12,7 @@ import Types exposing (..)
 import Source exposing (..)
 import Library
 
+
 -- volume sliders go from 0 - this value so we have to convert to a 0-1 range
 -- before setting the volume
 volumeRangeMax = 1000
@@ -44,7 +45,7 @@ init =
       { zones = []
       , receivers = []
       , sources = []
-      , libraries = []
+      , library = Library.init
       , ui = initUIState [] []
       }
   in
@@ -229,7 +230,7 @@ update action model =
 
     InitialState state ->
       ({ state
-       | ui = initUIState state.zones state.receivers }
+       | ui = initUIState state.zones state.receivers, library = Library.init }
       , Effects.none)
 
     ReceiverStatus event ->
@@ -302,31 +303,17 @@ update action model =
       (model, sendAttachReceiverChange zone receiver)
 
 
-    LibraryRegistration definition ->
-      ( { model | libraries = Library.init definition ::  model.libraries }
+    LibraryRegistration node ->
+      ( { model | library = Library.add model.library node }
       , Effects.none )
 
 
-    Library id libraryAction ->
+    Library libraryAction ->
       let
-          updateLibrary library =
-            if library.id == id then
-               let
-                   (updatedLibrary, effect) = Library.update libraryAction library
-               in
-                  -- log ("match library " ++ toString(id) ++ " -> " ++ (toString updatedLibrary))
-                  ( updatedLibrary, Effects.map (Library id) effect )
-            else
-              ( library, Effects.none )
-
-          (libraries, libraryEffects) =
-            model.libraries
-              |> List.map updateLibrary
-              |> List.unzip
+          (library, effect) = Library.update libraryAction model.library
       in
-          -- log ("LIBRARY " ++ id ++ " " ++ toString(libraryAction))
-          ({ model | libraries = libraries },
-           Effects.batch libraryEffects
+          ({ model | library = library },
+           (Effects.map Library effect)
           )
 
 
@@ -445,11 +432,10 @@ view : Signal.Address Action -> Model -> Html
 view address model =
   div [ class "ui container" ] [
     div [ class "ui grid" ] [
-      div [ class "libraries six wide column" ] (
-        List.map (\l -> Library.root (Signal.forwardTo address (Library l.id)) l) model.libraries
-      )
-      , div [ class "zones ten wide column" ] [
-        div [ class "ui grid" ] (List.map (zonePanel address model) model.zones)
+      div [ class "libraries six wide column" ] [ Library.root (Signal.forwardTo address Library) model.library ]
+      , div [ class "zones ten wide column" ]
+        [ div [ class "ui grid" ]
+          (List.map (zonePanel address model) model.zones)
       ]
     ]
   ]
@@ -532,7 +518,7 @@ playListAdditionActions =
   Signal.map PlayListAddition playlistAddition
 
 
-port libraryRegistration : Signal Library.Definition
+port libraryRegistration : Signal Library.Node
 
 libraryRegistrationActions : Signal Action
 libraryRegistrationActions =
@@ -541,15 +527,17 @@ libraryRegistrationActions =
 
 port libraryResponse : Signal Library.FolderResponse
 
+
 libraryResponseActions : Signal Action
 libraryResponseActions =
   let
       translate response =
         -- log ("Translate " ++ toString(response.folder))
 
-        Library response.libraryId (Library.Response response.folder)
+        Library (Library.Response response.folder)
   in
       Signal.map translate libraryResponse
+
 
 volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
 volumeChangeRequestsBox =
