@@ -4,4 +4,7 @@ defmodule Elvis.PageController do
   def index(conn, _params) do
     render conn, "index.html"
   end
+  def layout(conn, _params) do
+    render conn, "layout.html"
+  end
 end

@@ -19,5 +19,6 @@ _state
 node_modules
 elm-stuff
 
-priv/static/js
+priv/static/js/*
+priv/static/css/*
 

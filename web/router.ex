@@ -17,6 +17,7 @@ defmodule Elvis.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/", PageController, :index
+    get "/layout", PageController, :layout
   end
 
   # Other scopes may use custom stacks.

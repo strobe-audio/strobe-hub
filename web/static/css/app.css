@@ -1,4 +1,18 @@
 
+@import "modules/layout.css";
+@import "modules/breakpoints.css";
+
+body {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+
+/* legacy styles */
 .volume-control {
   display: flex;
   flex-direction: row;
@@ -39,3 +53,4 @@
   transition: none;
   -webkit-transition: none !important;
 }
+

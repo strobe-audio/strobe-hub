@@ -13,7 +13,11 @@ config :elvis, Elvis.Endpoint,
   cache_static_lookup: false,
   check_origin: false,
   watchers: [
-    node: ["node_modules/.bin/webpack", "--watch", "--progress", "--colors"],
+    node: [
+      "node_modules/.bin/webpack",
+      "--watch", "--progress", "--colors",
+      "--config", "config/webpack.config.js"
+   ],
   ]
 
 # Watch static and templates for browser reloading.

@@ -1,0 +1,6 @@
+:root {
+  --channel-column-width: 320px;
+  --channel-player-height: 100px;
+}
+
+@custom-media --mobile (max-width: 800px);
