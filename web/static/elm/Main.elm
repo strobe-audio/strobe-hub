@@ -324,8 +324,7 @@ receiversNotAttachedToZone model zone =
 receiverInZone : Signal.Address Action -> Receiver -> Html
 receiverInZone address receiver =
   div [ classList [("receiver", True), ("receiver--online", receiver.online), ("receiver--offline", not receiver.online)] ] [
-    div [] [ text receiver.name ]
-  -- , volumeControl address receiver.volume (UpdateReceiverVolume receiver)
+    volumeControl address receiver.volume receiver.name (UpdateReceiverVolume receiver)
   ]
 
 
@@ -344,7 +343,6 @@ volumeControl address volume label message =
         in
           Signal.message address m
 
-
       options = { stopPropagation = False, preventDefault = False }
       mousemove = onWithOptions
         "mousemove"
@@ -355,7 +353,7 @@ volumeControl address volume label message =
           (Json.Decode.at ["target", "offsetWidth"] Json.Decode.int )
         )
         (\(m, x, w) -> handler m x w)
-      mouseclick = onWithOptions
+      mousedown = onWithOptions
         "mousedown"
         options
         (Json.Decode.object2 (,)
@@ -363,10 +361,34 @@ volumeControl address volume label message =
           (Json.Decode.at ["target", "offsetWidth"] Json.Decode.int )
         )
         (\(x, w) -> handler 1 x w)
+      touchstart = onWithOptions
+        "touchstart"
+        { options | preventDefault = False }
+        (Json.Decode.object2 (,)
+          ("offsetX" := Json.Decode.int)
+          (Json.Decode.at ["target", "offsetWidth"] Json.Decode.int )
+        )
+        (\(x, w) -> handler 1 (Debug.log "start" x) w)
+      touchend = onWithOptions
+        "touchend"
+        { options | preventDefault = False }
+        (Json.Decode.object2 (,)
+          ("offsetX" := Json.Decode.int)
+          (Json.Decode.at ["target", "offsetWidth"] Json.Decode.int )
+        )
+        (\(x, w) -> handler 1 (Debug.log "end" x) w)
+      touchmove = onWithOptions
+        "touchmove"
+        { options | preventDefault = False }
+        (Json.Decode.object2 (,)
+          ("offsetX" := Json.Decode.int)
+          (Json.Decode.at ["target", "offsetWidth"] Json.Decode.int )
+        )
+        (\(x, w) ->  handler 1 (Debug.log "move" x) w)
   in
       div [ class "block-group volume-control" ]
           [ div [ class "block volume-mute-btn fa fa-volume-off", onClick address (message 0.0) ] []
-          , div [ class "block volume",  mousemove, mouseclick ]
+          , div [ class "block volume",  mousemove, touchmove, mousedown, touchstart, touchend]
               [ div [ class "volume-level", style [("width", (toString (volume * 100)) ++ "%")] ] []
               , div [ class "volume-label" ] [ text label ]
               ]
@@ -469,12 +491,106 @@ modeSelectorPanel address model =
       ]
 
 
+playingSong : Signal.Address Action -> Zone -> Maybe PlaylistEntry -> Html
+playingSong address zone maybeEntry =
+  case maybeEntry of
+    Nothing ->
+      div [] []
+    Just entry ->
+      div [ class "player" ]
+        [ div [ class "player-icon" ]
+          [ img [ src "/images/cover.jpg", alt "", onClick address ( TogglePlayPause (zone, not(zone.playing)) ) ] []
+          , div [ class "player-song" ]
+            [ div [ class "player-title" ]
+              [ text (entryTitle entry)
+              , div [ class "block player-duration duration" ] [ text (duration entry) ]
+              ]
+            , div [ class "block-group player-meta" ]
+              [ div [ class "block player-artist" ] [ text (entryPerformer entry) ]
+              , div [ class "block player-album" ] [ text (entryAlbum entry) ]
+              ]
+            ]
+          ]
+        ]
+
+
+duration : PlaylistEntry -> String
+duration entry =
+  case entry.source.metadata.duration_ms of
+    Nothing ->
+      ""
+    Just duration ->
+      let
+          totalSeconds = (duration // 1000)
+          hours = (totalSeconds // 3600) % 24
+          minutes = (totalSeconds // 60) % 60
+          seconds = totalSeconds % 60
+          values = List.map (String.padLeft 2 '0') (List.map toString [hours, minutes, seconds])
+
+      in
+          List.foldr (++) "" (List.intersperse ":" values)
+
+
+playbackProgress : Signal.Address Action -> Maybe PlaylistEntry -> Html
+playbackProgress address activeEntry =
+  case activeEntry of
+    Nothing ->
+      div [ ] [ ]
+    Just entry ->
+      case entry.source.metadata.duration_ms of
+        Nothing ->
+          div [ ] [ ]
+        Just duration ->
+          let
+              percent = 100.0 * (toFloat entry.playbackPosition) / (toFloat duration)
+              progressStyle = [ ("width", (toString percent) ++ "%") ]
+          in
+            div [ class "progress" ] [
+              div [ class "progress-complete", style progressStyle ] [ ]
+            ]
+
+
+
+activeZonePanel : Signal.Address Action -> Model -> List Html
+activeZonePanel address model =
+  case activeZone model of
+    Nothing ->
+      []
+    Just zone ->
+      let
+        playlist = (zonePlaylist model zone)
+      in
+        [ playingSong address zone playlist.active
+        , playbackProgress address playlist.active
+        ]
+
+zoneModePanel : Signal.Address Action -> Model -> List Html
+zoneModePanel address model =
+  case activeZone model of
+    Nothing ->
+      []
+    Just zone ->
+      let
+        playlist = (zonePlaylist model zone)
+      in
+        [ div [ class "divider" ] [ text "Receivers" ]
+        , zoneReceiverList address model zone
+        , div [ class "divider" ] [ text "Playlist" ]
+        ]
+
+
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [ class "elvis" ] [
-    div [ class "channels" ]
-      [ div [ class "mode-wrapper" ] [ (modeSelectorPanel address model) ]
+    div [ class "channels" ] [
+      div [ class "mode-wrapper" ] [
+        (modeSelectorPanel address model)
+        , div [ class "zone-view" ] (activeZonePanel address model)
+        , div [ class "mode-view" ]
+          -- this should be a view dependent on the current view mode (current zone, library, zone chooser)
+          (zoneModePanel address model)
       ]
+    ]
 
     -- div [ class "ui grid" ] [
     --   div [ class "libraries six wide column" ] [ Library.root (Signal.forwardTo address Library) model.library ]

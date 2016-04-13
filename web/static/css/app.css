@@ -49,13 +49,12 @@ body {
   /* justify-content: center; */
 }
 
-.receiver + .receiver {
-  margin-top: 1.0em;
+.receiver {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .receiver--offline {
-  color: #ddd;
-}
-.receiver--offline input[type="range"] {
   opacity: 0.5;
 }
 .playlist-entry--album {
