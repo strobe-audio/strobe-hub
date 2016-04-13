@@ -1,5 +1,5 @@
 .mode-selector {
-  height: 40px;
+  flex: 0 0 40px;
   line-height: 40px;
 }
 .mode-channel {

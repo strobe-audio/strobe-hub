@@ -3,51 +3,29 @@
 
 .elvis {
   display: flex;
-  flex: 1;
-  flex-direction: row;
 }
 
-.cannon {
-  width: $width;
-}
-
-.channels {
-  display: flex;
-  flex: 0 0 $channel-column-width;
-  background-color: rgba(0, 0, 0, 0.5);;
-}
-
-.channel {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-}
-
-.channel-player {
-  flex: 0 0 $channel-player-height;
-  background-color: rgba(255, 0, 0, 0.5);;
-}
-.channel-playlist {
-  flex: 1;
-  /* background-color: rgba(0, 0, 0, 0.5);; */
+@media (--desktop) {
+  .elvis {
+    flex-direction: row;
+  }
+  .channels {
+    width: $channel-column-width;
+    overflow: auto;
+    border-right: solid 1px red;
+  }
 }
 
 @media (--mobile) {
   .elvis {
     flex-direction: column;
   }
-  .channels {
-    flex: 0 0 $channel-player-height;
-  }
-  .channel-player {
-    flex: 1;
-  }
 }
 
 .divider {
   height: 17px;
-  line-height: 17px;
-  text-transform: lowercase;
+  line-height: 16px;
+  text-transform: uppercase;
   padding: 0 $padding;
   font-weight: 800;
   font-size: 1.0rem;

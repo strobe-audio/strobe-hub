@@ -1,7 +1,7 @@
 <div class="elvis">
   <div class="channels">
-    <div class="channel">
-      <div class="mode-selector block-group">
+    <div class="attachable">
+      <div class="mode-selector block-group"><!-- fixes to the top on scroll -->
         <div class="block mode-channel">
           <div class="block-group volume-control volume-control-receiver">
             <div class="block volume-mute-btn fa fa-volume-off"></div>
@@ -36,28 +36,30 @@
         <div class="progress">
           <div class="progress-complete" style="width: 63%;"></div>
         </div>
-        <div class="divider">Receivers</div>
-        <div class="volume-controls">
-          <div class="block-group volume-control volume-control-receiver">
-            <div class="block volume-mute-btn fa fa-volume-off"></div>
-            <div class="block volume">
-              <div class="volume-level" style="width: 50%;"></div>
-              <div class="volume-label">
-                Kitchen
-              </div>
+      </div>
+    </div>
+    <div class="channel">
+      <div class="divider">Receivers</div>
+      <div class="volume-controls">
+        <div class="block-group volume-control volume-control-receiver">
+          <div class="block volume-mute-btn fa fa-volume-off"></div>
+          <div class="block volume">
+            <div class="volume-level" style="width: 50%;"></div>
+            <div class="volume-label">
+              Kitchen
             </div>
-            <div class="block volume-full-btn fa fa-volume-up"></div>
           </div>
-          <div class="block-group volume-control volume-control-receiver">
-            <div class="block volume-mute-btn fa fa-volume-off"></div>
-            <div class="block volume">
-              <div class="volume-level" style="width: 100%;"></div>
-              <div class="volume-label">
-                Living room
-              </div>
+          <div class="block volume-full-btn fa fa-volume-up"></div>
+        </div>
+        <div class="block-group volume-control volume-control-receiver">
+          <div class="block volume-mute-btn fa fa-volume-off"></div>
+          <div class="block volume">
+            <div class="volume-level" style="width: 100%;"></div>
+            <div class="volume-label">
+              Living room
             </div>
-            <div class="block volume-full-btn fa fa-volume-up"></div>
           </div>
+          <div class="block volume-full-btn fa fa-volume-up"></div>
         </div>
       </div>
       <div class="divider">Playlist</div>
@@ -96,6 +98,7 @@
             </div>
           </div>
         </div>
+        <%= Enum.map 1..50, fn(_n) -> %>
         <div class="node">
           <div class="node-icon">
             <img src="/images/cover-3.jpg" alt="">
@@ -130,40 +133,7 @@
             </div>
           </div>
         </div>
-        <div class="node">
-          <div class="node-icon">
-            <img src="/images/cover-3.jpg" alt="">
-          </div>
-          <div class="node-info">
-            <div class="node-title">From the Morning</div>
-            <div class="node-metadata">
-              <div class="node-meta">Nick Drake</div>
-              <div class="node-meta">Pink Moon</div>
-              <div class="node-meta duration">2:15</div>
-            </div>
-            <div class="node-metadata">
-              <div class="node-meta">Acoustic</div>
-              <div class="node-meta">1975</div>
-            </div>
-          </div>
-        </div>
-        <div class="node">
-          <div class="node-icon">
-            <img src="/images/cover-2.jpg" alt="">
-          </div>
-          <div class="node-info">
-            <div class="node-title">From the Morning</div>
-            <div class="node-metadata">
-              <div class="node-meta">Nick Drake</div>
-              <div class="node-meta">Pink Moon</div>
-              <div class="node-meta duration">2:15</div>
-            </div>
-            <div class="node-metadata">
-              <div class="node-meta">Acoustic</div>
-              <div class="node-meta">1975</div>
-            </div>
-          </div>
-        </div>
+      <% end %>
       </div>
     </div>
   </div>

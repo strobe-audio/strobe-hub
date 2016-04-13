@@ -1,14 +1,14 @@
 @import "../variables.css";
 
 .player {
-  flex: 0;
+  /* flex: 0; */
   background-color: rgba(255, 0, 0, 0.5);;
   position: relative;
 }
 
 .player-icon {
+	flex: 0 0 100vw;
   width: 100%;
-  height: 0;
   padding-top: 100%;
   overflow: hidden;
   position: relative;
@@ -124,8 +124,12 @@ $volume-height: 40px;
   .player-title {
   }
   .player {
-    flex: 0;
+		flex: 0 0 100vw;
+    /* flex: 0; */
   }
+	.player-icon {
+		width: 100vw;
+	}
   .player-artist,
   .player-album {
     width: 100%;
