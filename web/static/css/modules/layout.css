@@ -1,17 +1,19 @@
 @import "breakpoints.css";
 @import "../variables.css";
 
-
 .elvis {
   display: flex;
   flex: 1;
   flex-direction: row;
-  outline: solid 1px orange;
+}
+
+.cannon {
+  width: $width;
 }
 
 .channels {
   display: flex;
-  flex: 0 0 var(--channel-column-width);
+  flex: 0 0 $channel-column-width;
   background-color: rgba(0, 0, 0, 0.5);;
 }
 
@@ -22,25 +24,31 @@
 }
 
 .channel-player {
-  flex: 0 0 100px;
+  flex: 0 0 $channel-player-height;
   background-color: rgba(255, 0, 0, 0.5);;
 }
 .channel-playlist {
   flex: 1;
-  background-color: rgba(0, 255, 0, 0.5);;
+  /* background-color: rgba(0, 0, 0, 0.5);; */
 }
+
 @media (--mobile) {
   .elvis {
     flex-direction: column;
   }
   .channels {
-    flex: 0 0 100px;
+    flex: 0 0 $channel-player-height;
   }
   .channel-player {
     flex: 1;
   }
-  .channel-playlist {
-    display: none;
-  }
 }
 
+.divider {
+  height: 17px;
+  line-height: 17px;
+  text-transform: lowercase;
+  padding: 0 $padding;
+  font-weight: 800;
+  font-size: 1.0rem;
+}

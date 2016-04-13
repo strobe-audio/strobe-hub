@@ -1,8 +1,170 @@
 <div class="elvis">
   <div class="channels">
     <div class="channel">
-      <div class="channel-player"></div>
-      <div class="channel-playlist"></div>
+      <div class="mode-selector block-group">
+        <div class="block mode-channel">
+          <div class="block-group volume-control volume-control-receiver">
+            <div class="block volume-mute-btn fa fa-volume-off"></div>
+            <div class="block volume">
+              <div class="volume-level" style="width: 50%;"></div>
+              <div class="volume-label">
+                <i class="fa fa-bullseye"></i>
+                Things behind the sun
+              </div>
+            </div>
+            <div class="block volume-full-btn fa fa-volume-up"></div>
+          </div>
+        </div>
+        <div class="block mode-library">
+          <i class="fa fa-music"></i>
+        </div>
+      </div>
+      <div class="player">
+        <div class="player-icon">
+          <img src="images/cover.jpg" alt="">
+          <div class="player-song">
+            <div class="player-title">
+              You Probably Couldnʼt See For The Lights But You Were Staring Straight At Me
+              <div class="block player-duration duration">2:32</div>
+            </div>
+            <div class="block-group player-meta">
+              <div class="block player-artist">Kiran Leonard</div>
+              <div class="block player-album">Brahms: Ein Deutsches Requiem, Op. 45</div>
+            </div>
+          </div>
+        </div>
+        <div class="progress">
+          <div class="progress-complete" style="width: 63%;"></div>
+        </div>
+        <div class="divider">Receivers</div>
+        <div class="volume-controls">
+          <div class="block-group volume-control volume-control-receiver">
+            <div class="block volume-mute-btn fa fa-volume-off"></div>
+            <div class="block volume">
+              <div class="volume-level" style="width: 50%;"></div>
+              <div class="volume-label">
+                Kitchen
+              </div>
+            </div>
+            <div class="block volume-full-btn fa fa-volume-up"></div>
+          </div>
+          <div class="block-group volume-control volume-control-receiver">
+            <div class="block volume-mute-btn fa fa-volume-off"></div>
+            <div class="block volume">
+              <div class="volume-level" style="width: 100%;"></div>
+              <div class="volume-label">
+                Living room
+              </div>
+            </div>
+            <div class="block volume-full-btn fa fa-volume-up"></div>
+          </div>
+        </div>
+      </div>
+      <div class="divider">Playlist</div>
+      <div class="channel-playlist folder">
+        <div class="node">
+          <div class="node-icon">
+            <img src="/images/cover-3.jpg" alt="">
+          </div>
+          <div class="node-info">
+            <div class="node-title">From the Morning</div>
+            <div class="node-metadata">
+              <div class="node-meta">Nick Drake</div>
+              <div class="node-meta">Pink Moon</div>
+              <div class="node-meta duration">2:15</div>
+            </div>
+            <div class="node-metadata">
+              <div class="node-meta">Acoustic</div>
+              <div class="node-meta">1975</div>
+            </div>
+          </div>
+        </div>
+        <div class="node">
+          <div class="node-icon">
+            <img src="/images/cover-2.jpg" alt="">
+          </div>
+          <div class="node-info">
+            <div class="node-title">From the Morning</div>
+            <div class="node-metadata">
+              <div class="node-meta">Nick Drake</div>
+              <div class="node-meta">Pink Moon</div>
+              <div class="node-meta duration">2:15</div>
+            </div>
+            <div class="node-metadata">
+              <div class="node-meta">Acoustic</div>
+              <div class="node-meta">1975</div>
+            </div>
+          </div>
+        </div>
+        <div class="node">
+          <div class="node-icon">
+            <img src="/images/cover-3.jpg" alt="">
+          </div>
+          <div class="node-info">
+            <div class="node-title">From the Morning</div>
+            <div class="node-metadata">
+              <div class="node-meta">Nick Drake</div>
+              <div class="node-meta">Pink Moon</div>
+              <div class="node-meta duration">2:15</div>
+            </div>
+            <div class="node-metadata">
+              <div class="node-meta">Acoustic</div>
+              <div class="node-meta">1975</div>
+            </div>
+          </div>
+        </div>
+        <div class="node">
+          <div class="node-icon">
+            <img src="/images/cover-2.jpg" alt="">
+          </div>
+          <div class="node-info">
+            <div class="node-title">From the Morning</div>
+            <div class="node-metadata">
+              <div class="node-meta">Nick Drake</div>
+              <div class="node-meta">Pink Moon</div>
+              <div class="node-meta duration">2:15</div>
+            </div>
+            <div class="node-metadata">
+              <div class="node-meta">Acoustic</div>
+              <div class="node-meta">1975</div>
+            </div>
+          </div>
+        </div>
+        <div class="node">
+          <div class="node-icon">
+            <img src="/images/cover-3.jpg" alt="">
+          </div>
+          <div class="node-info">
+            <div class="node-title">From the Morning</div>
+            <div class="node-metadata">
+              <div class="node-meta">Nick Drake</div>
+              <div class="node-meta">Pink Moon</div>
+              <div class="node-meta duration">2:15</div>
+            </div>
+            <div class="node-metadata">
+              <div class="node-meta">Acoustic</div>
+              <div class="node-meta">1975</div>
+            </div>
+          </div>
+        </div>
+        <div class="node">
+          <div class="node-icon">
+            <img src="/images/cover-2.jpg" alt="">
+          </div>
+          <div class="node-info">
+            <div class="node-title">From the Morning</div>
+            <div class="node-metadata">
+              <div class="node-meta">Nick Drake</div>
+              <div class="node-meta">Pink Moon</div>
+              <div class="node-meta duration">2:15</div>
+            </div>
+            <div class="node-metadata">
+              <div class="node-meta">Acoustic</div>
+              <div class="node-meta">1975</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

@@ -3,7 +3,6 @@
 
 var path = require('path');
 var precss       = require('precss');
-var autoprefixer = require('autoprefixer');
 var atImport = require("postcss-import")
 var cssnext = require('postcss-cssnext');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");

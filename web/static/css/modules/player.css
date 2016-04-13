@@ -1,0 +1,133 @@
+@import "../variables.css";
+
+.player {
+  flex: 0;
+  background-color: rgba(255, 0, 0, 0.5);;
+  position: relative;
+}
+
+.player-icon {
+  width: 100%;
+  height: 0;
+  padding-top: 100%;
+  overflow: hidden;
+  position: relative;
+  left: 0;
+  top: 0;
+  img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: block;
+    width: 100%;
+  }
+}
+.player-song {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+}
+.player-meta,
+.player-title {
+  /* margin-left: $channel-player-height; */
+  padding: 0 $padding;
+}
+
+.player-title {
+  @mixin h1;
+  color: #fff;
+  position: relative;
+}
+
+.player-meta {
+  /* @mixin block-group; */
+  /* margin-left: $channel-player-height; */
+  /* padding: 0 $padding; */
+}
+
+.player-artist,
+.player-album,
+.player-duration {
+  /* @mixin block; */
+}
+
+.player-artist,
+.player-album {
+  width: 100%;
+}
+
+.player-duration {
+  position: absolute;
+  bottom: 0;
+  right: $padding;
+  width: 8rem;
+  text-align: right;
+}
+
+$progress-height: 4px;
+.progress {
+  height: $progress-height;
+  background: rgba(0, 0, 0, 0.5);
+}
+.progress-complete {
+  height: $progress-height;
+  background: red;
+}
+
+.volume-controls{
+
+}
+.volume-control {
+  /* display: flex; */
+  height: 40px;
+  background: rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+$volume-height: 40px;
+
+.volume-mute-btn,
+.volume-full-btn {
+  height: $volume-height;
+  width: $volume-height;
+  text-align: center;
+  line-height: 40px;
+}
+
+
+.volume {
+  height: $volume-height;
+  line-height: $volume-height;
+  position: relative;
+  padding: 0 $padding;
+}
+.volume-level {
+  height: $volume-height;
+  background-color: rgba(255, 255, 255, 0.5);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  /* disable mouse events */
+}
+
+.volume-label {
+  position: relative;
+  z-index: 10;
+  height: $volume-height;
+  /* disable mouse events */
+}
+
+@media (--mobile) {
+  .player-title {
+  }
+  .player {
+    flex: 0;
+  }
+  .player-artist,
+  .player-album {
+    width: 100%;
+  }
+}

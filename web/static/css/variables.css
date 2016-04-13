@@ -1,6 +1,12 @@
-:root {
-  --channel-column-width: 320px;
-  --channel-player-height: 100px;
-}
+
+
+$channel-column-width: 380px;
+$channel-player-height: 120px;
+
+$mobile-max-width: calc($channel-column-width * 2);
+
+$padding: 6px;
 
 @custom-media --mobile (max-width: 800px);
+@custom-media --desktop (min-width: 801px);
+

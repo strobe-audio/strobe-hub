@@ -1,0 +1,38 @@
+/*! PocketGrid 1.1.0
+* Copyright 2013 Arnaud Leray
+* MIT License
+*/
+/* Border-box-sizing */
+
+@define-mixin block-group {
+  *zoom: 1;
+
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+
+  &,
+  &::after,
+  &::before {
+    box-sizing: border-box;
+  }
+  &::after,
+  &::before {
+    display: table;
+    content: "";
+    line-height: 0;
+  }
+  &::after {
+    clear: both;
+  }
+}
+@define-mixin block {
+  float: left;
+  width: 100%;
+  &,
+  &::after,
+  &::before {
+    box-sizing: border-box;
+  }
+}
+

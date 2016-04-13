@@ -1,0 +1,43 @@
+
+$node-dim: 60px;
+
+.node {
+  position: relative;
+  height: $node-dim;
+  margin-bottom: 1px;
+}
+
+.node-icon {
+  width: $node-dim;
+  position: absolute;
+  left: 0;
+  top: 0;
+  img {
+    width: 100%;
+  }
+}
+
+.node-info {
+  padding: 0 $padding;
+  margin-left: $node-dim;
+}
+
+.node-title {
+  /* padding-bottom: $padding; */
+}
+.node-metadata {
+  font-size: 0.8em;
+  line-height: 110%;
+}
+
+.node-meta {
+  display: inline-block;
+}
+
+.node-meta + .node-meta {
+  &::before {
+    content: "· ";
+    margin: 0 1px;
+  }
+}
+
