@@ -77,7 +77,10 @@ $progress-height: 4px;
 }
 
 .volume-controls{
-
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+	cursor: pointer;
 }
 .volume-control {
   /* display: flex; */
@@ -92,6 +95,7 @@ $volume-height: 40px;
 .volume-full-btn {
   height: $volume-height;
   width: $volume-height;
+  min-width: $volume-height;
   text-align: center;
   line-height: 40px;
 }
@@ -117,6 +121,7 @@ $volume-height: 40px;
   position: relative;
   z-index: 10;
   height: $volume-height;
+	cursor: pointer;
   /* disable mouse events */
 }
 
