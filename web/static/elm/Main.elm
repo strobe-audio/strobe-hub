@@ -8,6 +8,7 @@ import StartApp
 import Effects exposing (Effects, Never)
 import Task exposing (Task)
 import Debug exposing (log)
+import Json.Decode exposing ((:=))
 import Types exposing (..)
 import Source exposing (..)
 import Library
@@ -47,6 +48,7 @@ init =
       , sources = []
       , library = Library.init
       , ui = initUIState [] []
+      , activeZoneId = ""
       }
   in
     (model, Effects.none)
@@ -120,12 +122,6 @@ updateZoneStatus model (event, args) =
       { model | zones = (zonePlayPause model.zones args.zoneId args.status) }
     _ ->
       model
-
-translateVolume : String -> Result String Float
-translateVolume input =
-  case (String.toInt input) of
-    Ok vol  -> Ok ((toFloat vol) / volumeRangeMax)
-    Err msg -> Err msg
 
 
 sendReceiverVolumeChange: Receiver -> Float -> Effects Action
@@ -229,9 +225,13 @@ update action model =
       (model, Effects.none)
 
     InitialState state ->
-      ({ state
-       | ui = initUIState state.zones state.receivers, library = Library.init }
-      , Effects.none)
+      let
+        initialState = { state
+        | ui = initUIState state.zones state.receivers
+        , library = Library.init
+        }
+      in
+        (initialState, Effects.none)
 
     ReceiverStatus event ->
       ( updateReceiverStatus model event
@@ -247,21 +247,13 @@ update action model =
       ( updateZone model zone (\z -> { z | playing = playing })
       , sendZoneStatusChange zone playing )
 
-    UpdateZoneVolume zone volumeInput ->
-      case (translateVolume volumeInput) of
-        Ok vol ->
-          ( updateZoneVolume model zone vol
-          , sendZoneVolumeChange zone vol )
-        Err msg ->
-          (model, Effects.none)
+    UpdateZoneVolume zone volume ->
+      ( updateZoneVolume model zone volume
+      , sendZoneVolumeChange zone volume )
 
-    UpdateReceiverVolume receiver volumeInput ->
-      case (translateVolume volumeInput) of
-        Ok vol ->
-          ( updateReceiverVolume model receiver vol
-          , sendReceiverVolumeChange receiver vol )
-        Err msg ->
-          (model, Effects.none)
+    UpdateReceiverVolume receiver volume ->
+      ( updateReceiverVolume model receiver volume
+      , sendReceiverVolumeChange receiver volume )
 
     SourceProgress event ->
       ( updateSourcePlaybackPosition model event
@@ -333,26 +325,53 @@ receiverInZone : Signal.Address Action -> Receiver -> Html
 receiverInZone address receiver =
   div [ classList [("receiver", True), ("receiver--online", receiver.online), ("receiver--offline", not receiver.online)] ] [
     div [] [ text receiver.name ]
-  , volumeControl address receiver.volume (UpdateReceiverVolume receiver)
+  -- , volumeControl address receiver.volume (UpdateReceiverVolume receiver)
   ]
 
 
 
 
-volumeControl : Signal.Address Action -> Float -> (String -> Action) -> Html
-volumeControl address volume message =
-  div [ class "volume-control" ] [
-    i [ class "volume off icon", onClick address (message "0") ] []
-  , input [
-      type' "range"
-    , Html.Attributes.min "0"
-    , Html.Attributes.max (toString volumeRangeMax)
-    , step "1"
-    , value (toString (volume * volumeRangeMax))
-    , on "input" targetValue (Signal.message address << message)
-    ] []
-  , i [ class "volume up icon", onClick address (message (toString volumeRangeMax)) ] []
-  ]
+volumeControl : Signal.Address Action -> Float -> String -> (Float -> Action) -> Html
+volumeControl address volume label message =
+  let
+      handler buttons offset width =
+        let
+            m = case buttons of
+              1 ->
+                 message ( (toFloat offset) / (toFloat width) )
+              _ ->
+                NoOp
+        in
+          Signal.message address m
+
+
+      options = { stopPropagation = False, preventDefault = False }
+      mousemove = onWithOptions
+        "mousemove"
+        options
+        (Json.Decode.object3 (,,)
+          ("buttons" := Json.Decode.int)
+          ("offsetX" := Json.Decode.int)
+          (Json.Decode.at ["target", "offsetWidth"] Json.Decode.int )
+        )
+        (\(m, x, w) -> handler m x w)
+      mouseclick = onWithOptions
+        "mousedown"
+        options
+        (Json.Decode.object2 (,)
+          ("offsetX" := Json.Decode.int)
+          (Json.Decode.at ["target", "offsetWidth"] Json.Decode.int )
+        )
+        (\(x, w) -> handler 1 x w)
+  in
+      div [ class "block-group volume-control" ]
+          [ div [ class "block volume-mute-btn fa fa-volume-off", onClick address (message 0.0) ] []
+          , div [ class "block volume",  mousemove, mouseclick ]
+              [ div [ class "volume-level", style [("width", (toString (volume * 100)) ++ "%")] ] []
+              , div [ class "volume-label" ] [ text label ]
+              ]
+          , div [ class "block volume-full-btn fa fa-volume-up", onClick address (message 1.0) ] []
+          ]
 
 
 zonePlayPauseButton : Signal.Address Action -> Zone -> Html
@@ -416,7 +435,7 @@ zonePanel address model zone =
           div [ class "header" ] [
             (zonePlayPauseButton address zone)
           , (text zone.name)
-          , (volumeControl address zone.volume (UpdateZoneVolume zone))
+          -- , (volumeControl address zone.volume (UpdateZoneVolume zone))
           , (activePlaylistEntry address playlist.active)
           ]
         ]
@@ -427,17 +446,43 @@ zonePanel address model zone =
       ]
     ]
 
+activeZone : Model -> Maybe Zone
+activeZone model =
+  List.head ( List.filter ( \z -> z.id == model.activeZoneId ) model.zones )
+
+modeSelectorPanel : Signal.Address Action -> Model -> Html
+modeSelectorPanel address model =
+  case activeZone model of
+    Nothing ->
+      div [] []
+    Just zone ->
+      div [ class "block-group mode-selector" ] [
+        div [ class "block mode-channel-select" ] [
+          i [ class "fa fa-bullseye" ] []
+        ]
+      , div [ class "block mode-channel" ] [
+          (volumeControl address zone.volume zone.name (UpdateZoneVolume zone))
+        ]
+        , div [ class "block mode-library" ] [
+          i [ class "fa fa-music" ] []
+        ]
+      ]
+
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [ class "ui container" ] [
-    div [ class "ui grid" ] [
-      div [ class "libraries six wide column" ] [ Library.root (Signal.forwardTo address Library) model.library ]
-      , div [ class "zones ten wide column" ]
-        [ div [ class "ui grid" ]
-          (List.map (zonePanel address model) model.zones)
+  div [ class "elvis" ] [
+    div [ class "channels" ]
+      [ div [ class "mode-wrapper" ] [ (modeSelectorPanel address model) ]
       ]
-    ]
+
+    -- div [ class "ui grid" ] [
+    --   div [ class "libraries six wide column" ] [ Library.root (Signal.forwardTo address Library) model.library ]
+    --   , div [ class "zones ten wide column" ]
+    --     [ div [ class "ui grid" ]
+    --       (List.map (zonePanel address model) model.zones)
+    --   ]
+    -- ]
   ]
 
 
@@ -585,4 +630,3 @@ port libraryRequests =
       mailbox = Library.libraryRequestsBox
   in
       mailbox.signal
-

@@ -7,8 +7,8 @@ type Action
   = InitialState Model
   | ReceiverStatus (String, ReceiverStatusEvent)
   | ZoneStatus (String, ZoneStatusEvent)
-  | UpdateReceiverVolume Receiver String
-  | UpdateZoneVolume Zone String
+  | UpdateReceiverVolume Receiver Float
+  | UpdateZoneVolume Zone Float
   | TogglePlayPause (Zone, Bool)
   | SourceProgress SourceProgressEvent
   | SourceChange SourceChangeEvent
@@ -34,6 +34,7 @@ type alias Model =
   , sources : List PlaylistEntry
   , library : Library.Model
   , ui : UIState
+  , activeZoneId: String
   }
 
 

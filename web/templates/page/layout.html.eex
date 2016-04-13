@@ -1,7 +1,7 @@
 <div class="elvis">
   <div class="channels">
     <div class="mode-wrapper">
-      <div class="mode-selector block-group"><!-- fixes to the top on scroll -->
+      <div class="block-group mode-selector"><!-- fixes to the top on scroll -->
         <div class="block mode-channel-select">
           <i class="fa fa-bullseye"></i>
         </div>
@@ -140,6 +140,9 @@
         </div>
       </div>
     </div>
+  </div>
+  <div class="library">
+    Library!
   </div>
 </div>
 

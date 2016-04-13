@@ -6,6 +6,7 @@ let uiState = {
   zones: [],
   receivers: [],
 }
+
 // app initial state
 let initialState = {
   receivers: [],
@@ -13,6 +14,7 @@ let initialState = {
   sources: [],
   library: { levels: [] },
   ui: uiState,
+  activeZoneId: "",
 }
 
 // port initial state
