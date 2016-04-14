@@ -3,8 +3,13 @@
 
 .channels {
 }
+#elm-main {
+  display: flex;
+  flex: 1;
+}
 .elvis {
   display: flex;
+  flex: 1;
 }
 
 @media (--desktop) {
@@ -14,7 +19,12 @@
   .channels {
     width: $channel-column-width;
     overflow: auto;
-    border-right: solid 1px red;
+    border-right: solid 1px #ccc;
+  }
+  #library {
+    height: 100vh;
+    overflow: auto;
+    flex: 1;
   }
 }
 
