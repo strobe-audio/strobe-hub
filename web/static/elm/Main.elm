@@ -49,6 +49,7 @@ init =
       , library = Library.init
       , ui = initUIState [] []
       , activeZoneId = ""
+      , activeState = "channel"
       }
   in
     (model, Effects.none)
@@ -308,6 +309,8 @@ update action model =
            (Effects.map Library effect)
           )
 
+    SetMode mode ->
+      ( { model | activeState = mode }, Effects.none)
 
 
 
@@ -478,6 +481,19 @@ modeSelectorPanel address model =
     Nothing ->
       div [] []
     Just zone ->
+      let
+          button = case model.activeState of
+            "library" ->
+              div [ class "block mode-switch", onClick address (SetMode "channel") ] [
+                i [ class "fa fa-bullseye" ] []
+              ]
+            "channel" ->
+              div [ class "block mode-switch", onClick address (SetMode "library") ] [
+                i [ class "fa fa-music" ] []
+              ]
+            _ ->
+              div [] []
+      in
       div [ class "block-group mode-selector" ] [
         div [ class "block mode-channel-select" ] [
           i [ class "fa fa-bullseye" ] []
@@ -485,9 +501,7 @@ modeSelectorPanel address model =
       , div [ class "block mode-channel" ] [
           (volumeControl address zone.volume zone.name (UpdateZoneVolume zone))
         ]
-        , div [ class "block mode-library" ] [
-          i [ class "fa fa-music" ] []
-        ]
+        , button
       ]
 
 
@@ -505,9 +519,9 @@ playingSong address zone maybeEntry =
               [ text (entryTitle entry)
               , div [ class "block player-duration duration" ] [ text (duration entry) ]
               ]
-            , div [ class "block-group player-meta" ]
-              [ div [ class "block player-artist" ] [ text (entryPerformer entry) ]
-              , div [ class "block player-album" ] [ text (entryAlbum entry) ]
+            , div [ class "player-meta" ]
+              [ div [ class "player-artist" ] [ text (entryPerformer entry) ]
+              , div [ class "player-album" ] [ text (entryAlbum entry) ]
               ]
             ]
           ]
@@ -576,21 +590,28 @@ zoneModePanel address model =
         [ div [ class "divider" ] [ text "Receivers" ]
         , zoneReceiverList address model zone
         , div [ class "divider" ] [ text "Playlist" ]
+        , div [] (List.map (playlistEntry address)  playlist.entries)
         ]
 
 
+libraryModePanel : Signal.Address Action -> Model -> List Html
+libraryModePanel address model =
+  [ Library.root (Signal.forwardTo address Library) model.library ]
+
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [ class "elvis" ] [
+  div [ classList [("elvis", True), ("elvis-mode-channel", model.activeState == "channel"), ("elvis-mode-library", model.activeState == "library")] ] [
     div [ class "channels" ] [
       div [ class "mode-wrapper" ] [
         (modeSelectorPanel address model)
         , div [ class "zone-view" ] (activeZonePanel address model)
-        , div [ class "mode-view" ]
+        , div [ class "mode-view" ] [
           -- this should be a view dependent on the current view mode (current zone, library, zone chooser)
-          (zoneModePanel address model)
+          div [ id "channel" ] (zoneModePanel address model)
+        ]
       ]
     ]
+  , div [ id "library" ] ( libraryModePanel address model )
 
     -- div [ class "ui grid" ] [
     --   div [ class "libraries six wide column" ] [ Library.root (Signal.forwardTo address Library) model.library ]

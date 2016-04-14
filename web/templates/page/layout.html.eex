@@ -1,4 +1,4 @@
-<div class="elvis">
+<div class="elvis elvis-mode-library">
   <div class="channels">
     <div class="mode-wrapper">
       <div class="block-group mode-selector"><!-- fixes to the top on scroll -->
@@ -40,7 +40,7 @@
             <div class="progress-complete" style="width: 63%;"></div>
           </div>
         </div>
-        <div class="channel">
+        <div id="channel">
           <div class="divider">Receivers</div>
           <div class="volume-controls">
             <div class="block-group volume-control volume-control-receiver">
@@ -64,84 +64,86 @@
               <div class="block volume-full-btn fa fa-volume-up"></div>
             </div>
           </div>
-          <div class="divider">Playlist</div>
-          <div class="channel-playlist folder">
-            <div class="node">
-              <div class="node-icon">
-                <img src="/images/cover-3.jpg" alt="">
-              </div>
-              <div class="node-info">
-                <div class="node-title">From the Morning</div>
-                <div class="node-metadata">
-                  <div class="node-meta">Nick Drake</div>
-                  <div class="node-meta">Pink Moon</div>
-                  <div class="node-meta duration">2:15</div>
+          <div class="channel-playlist">
+            <div class="divider">Playlist</div>
+            <div class="folder">
+              <div class="node">
+                <div class="node-icon">
+                  <img src="/images/cover-3.jpg" alt="">
                 </div>
-                <div class="node-metadata">
-                  <div class="node-meta">Acoustic</div>
-                  <div class="node-meta">1975</div>
+                <div class="node-info">
+                  <div class="node-title">From the Morning</div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Nick Drake</div>
+                    <div class="node-meta">Pink Moon</div>
+                    <div class="node-meta duration">2:15</div>
+                  </div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Acoustic</div>
+                    <div class="node-meta">1975</div>
+                  </div>
                 </div>
               </div>
+              <div class="node">
+                <div class="node-icon">
+                  <img src="/images/cover-2.jpg" alt="">
+                </div>
+                <div class="node-info">
+                  <div class="node-title">From the Morning</div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Nick Drake</div>
+                    <div class="node-meta">Pink Moon</div>
+                    <div class="node-meta duration">2:15</div>
+                  </div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Acoustic</div>
+                    <div class="node-meta">1975</div>
+                  </div>
+                </div>
+              </div>
+              <%= Enum.map 1..2, fn(_n) -> %>
+              <div class="node">
+                <div class="node-icon">
+                  <img src="/images/cover-3.jpg" alt="" width="60" height="60">
+                </div>
+                <div class="node-info">
+                  <div class="node-title">From the Morning</div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Nick Drake</div>
+                    <div class="node-meta">Pink Moon</div>
+                    <div class="node-meta duration">2:15</div>
+                  </div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Acoustic</div>
+                    <div class="node-meta">1975</div>
+                  </div>
+                </div>
+              </div>
+              <div class="node">
+                <div class="node-icon">
+                  <img src="/images/cover-2.jpg" alt="" width="60" height="60">
+                </div>
+                <div class="node-info">
+                  <div class="node-title">From the Morning</div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Nick Drake</div>
+                    <div class="node-meta">Pink Moon</div>
+                    <div class="node-meta duration">2:15</div>
+                  </div>
+                  <div class="node-metadata">
+                    <div class="node-meta">Acoustic</div>
+                    <div class="node-meta">1975</div>
+                  </div>
+                </div>
+              </div>
+            <% end %>
             </div>
-            <div class="node">
-              <div class="node-icon">
-                <img src="/images/cover-2.jpg" alt="">
-              </div>
-              <div class="node-info">
-                <div class="node-title">From the Morning</div>
-                <div class="node-metadata">
-                  <div class="node-meta">Nick Drake</div>
-                  <div class="node-meta">Pink Moon</div>
-                  <div class="node-meta duration">2:15</div>
-                </div>
-                <div class="node-metadata">
-                  <div class="node-meta">Acoustic</div>
-                  <div class="node-meta">1975</div>
-                </div>
-              </div>
-            </div>
-            <%= Enum.map 1..50, fn(_n) -> %>
-            <div class="node">
-              <div class="node-icon">
-                <img src="/images/cover-3.jpg" alt="" width="60" height="60">
-              </div>
-              <div class="node-info">
-                <div class="node-title">From the Morning</div>
-                <div class="node-metadata">
-                  <div class="node-meta">Nick Drake</div>
-                  <div class="node-meta">Pink Moon</div>
-                  <div class="node-meta duration">2:15</div>
-                </div>
-                <div class="node-metadata">
-                  <div class="node-meta">Acoustic</div>
-                  <div class="node-meta">1975</div>
-                </div>
-              </div>
-            </div>
-            <div class="node">
-              <div class="node-icon">
-                <img src="/images/cover-2.jpg" alt="" width="60" height="60">
-              </div>
-              <div class="node-info">
-                <div class="node-title">From the Morning</div>
-                <div class="node-metadata">
-                  <div class="node-meta">Nick Drake</div>
-                  <div class="node-meta">Pink Moon</div>
-                  <div class="node-meta duration">2:15</div>
-                </div>
-                <div class="node-metadata">
-                  <div class="node-meta">Acoustic</div>
-                  <div class="node-meta">1975</div>
-                </div>
-              </div>
-            </div>
-          <% end %>
           </div>
         </div>
       </div>
     </div>
   </div>
-  <div class="library">
+  <div id="library">
     Library!
   </div>
 </div>

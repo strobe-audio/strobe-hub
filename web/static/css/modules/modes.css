@@ -18,22 +18,26 @@
   width: calc(100% - 80px);
 }
 .mode-channel-select,
-.mode-library {
+.mode-switch {
   width: 40px;
   text-align: center;
   line-height: 40px;
 }
+
+
 @media (--desktop) {
   .mode-selector {
     width: $channel-column-width;
   }
   .mode-channel {
-  width: calc(100% - 40px);
+    width: calc(100% - 40px);
   }
   .mode-library {
     display: none;
   }
 }
+
+
 @media (--mobile) {
   .mode-selector {
     right: 0;

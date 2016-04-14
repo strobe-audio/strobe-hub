@@ -1,5 +1,6 @@
 
 @define-mixin h1 {
-  font-size: 1.4rem;
+  font-size: 2.2rem;
+  line-height: 140%;
   font-weight: 200;
 }

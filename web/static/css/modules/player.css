@@ -28,34 +28,43 @@
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.7);
+	color: #fff;
+	padding: $padding;
 }
 .player-meta,
 .player-title {
   /* margin-left: $channel-player-height; */
-  padding: 0 $padding;
 }
 
 .player-title {
   @mixin h1;
   color: #fff;
   position: relative;
+  /* padding: $padding 0; */
 }
 
 .player-meta {
   /* @mixin block-group; */
   /* margin-left: $channel-player-height; */
   /* padding: 0 $padding; */
+	font-size: 1.6rem;
+	font-weight: 400;
 }
 
 .player-artist,
 .player-album,
 .player-duration {
   /* @mixin block; */
+	display: inline-block;
 }
 
 .player-artist,
 .player-album {
-  width: 100%;
+  font-size: 1.4rem;
+}
+.player-album:before {
+  content: "›";
+  margin: 0 $padding;
 }
 
 .player-duration {
@@ -64,6 +73,7 @@
   right: $padding;
   width: 8rem;
   text-align: right;
+	font-size: 0.5em;
 }
 
 $progress-height: 4px;
@@ -118,6 +128,9 @@ $volume-height: 40px;
 }
 
 .volume-label {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
   position: relative;
   z-index: 10;
   height: $volume-height;
@@ -137,6 +150,6 @@ $volume-height: 40px;
 	}
   .player-artist,
   .player-album {
-    width: 100%;
+    /* width: 100%; */
   }
 }

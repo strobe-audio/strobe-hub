@@ -22,6 +22,24 @@
   .elvis {
     flex-direction: column;
   }
+  .elvis-mode-library {
+    #channel {
+      /* the actual display value needs to be controlled by the mode switch */
+      display: none;
+    }
+    #library {
+      display: block;
+    }
+  }
+  .elvis-mode-channel {
+    #channel {
+      /* the actual display value needs to be controlled by the mode switch */
+      display: block;
+    }
+    #library {
+      display: none;
+    }
+  }
 }
 
 .divider {

@@ -19,6 +19,7 @@ type Action
   | AttachReceiver Zone Receiver
   | LibraryRegistration Library.Node
   | Library Library.Action
+  | SetMode String
   | NoOp
 
 
@@ -35,6 +36,7 @@ type alias Model =
   , library : Library.Model
   , ui : UIState
   , activeZoneId: String
+  , activeState: String
   }
 
 
