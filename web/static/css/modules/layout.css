@@ -1,18 +1,15 @@
 @import "breakpoints.css";
 @import "../variables.css";
 
-.channels {
-}
-#elm-main {
-  display: flex;
-  flex: 1;
-}
-.elvis {
-  display: flex;
-  flex: 1;
-}
-
 @media (--desktop) {
+  #elm-main {
+    display: flex;
+    flex: 1;
+  }
+  .elvis {
+    display: flex;
+    flex: 1;
+  }
   .elvis {
     flex-direction: row;
   }
@@ -29,9 +26,6 @@
 }
 
 @media (--mobile) {
-  .elvis {
-    flex-direction: column;
-  }
   .elvis-mode-library {
     #channel {
       /* the actual display value needs to be controlled by the mode switch */
