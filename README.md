@@ -54,6 +54,10 @@ So much.
 
 **BUGS**:
 
+- [ ] graphql for library requests? http://absinthe-graphql.org/
+
+- [ ] audio pops when switching receiver between zones
+
 - [ ] Fix janis crash when connecting over vpn:
       ```
       2016-03-07 21:56:33.778  [error] GenServer Otis.DNSSD terminating
