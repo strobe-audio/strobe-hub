@@ -95,12 +95,12 @@ $progress-height: 4px;
 }
 .volume-control {
   /* display: flex; */
-  height: 40px;
+  height: $button-size;
   background: rgba(0, 0, 0, 0.5);
   position: relative;
 }
 
-$volume-height: 40px;
+$volume-height: $button-size;
 
 .volume-mute-btn,
 .volume-full-btn {
@@ -108,7 +108,7 @@ $volume-height: 40px;
   width: $volume-height;
   min-width: $volume-height;
   text-align: center;
-  line-height: 40px;
+  line-height: $button-size;
 }
 
 

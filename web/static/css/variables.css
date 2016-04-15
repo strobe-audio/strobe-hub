@@ -7,7 +7,10 @@ $mobile-max-width: calc($channel-column-width * 2);
 
 $padding: 6px;
 
-$mode-selector-height: 40px;
+
+$button-size: 50px;
+
+$mode-selector-height: $button-size;
 
 @custom-media --mobile (max-width: 800px);
 @custom-media --desktop (min-width: 801px);

@@ -4,34 +4,34 @@
 }
 
 .channel-receivers--head {
-  height: 40px;
+  height: $button-size;
   .divider {
-    width: calc(100% - 40px);
-    height: 40px;
-    line-height: 40px;
+    width: calc(100% - $button-size);
+    height: $button-size;
+    line-height: $button-size;
   }
 }
 .channel-receivers--add {
-  width: 40px;
+  width: $button-size;
   text-align: center;
-  height: 40px;
-  line-height: 40px;
+  height: $button-size;
+  line-height: $button-size;
   background-color: rgba(0, 0, 0, 0.5);
 }
 .channel-receivers--add-receiver {
   cursor: pointer;
-  height: 40px;
-  line-height: 40px;
+  height: $button-size;
+  line-height: $button-size;
   background-color: #4caf50;
   color: #fff;
   position: relative;
-  padding-left: calc(40px + $padding);
+  padding-left: calc($button-size + $padding);
   &::before {
     @mixin fa;
     content: "\f067";
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
+    width: $button-size;
+    height: $button-size;
+    line-height: $button-size;
     display: block;
     position: absolute;
     left: 0;
