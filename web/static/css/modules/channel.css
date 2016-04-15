@@ -1,0 +1,42 @@
+
+.channel-receivers {
+  background-color: #ccc;
+}
+
+.channel-receivers--head {
+  height: 40px;
+  .divider {
+    width: calc(100% - 40px);
+    height: 40px;
+    line-height: 40px;
+  }
+}
+.channel-receivers--add {
+  width: 40px;
+  text-align: center;
+  height: 40px;
+  line-height: 40px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.channel-receivers--add-receiver {
+  cursor: pointer;
+  height: 40px;
+  line-height: 40px;
+  background-color: #4caf50;
+  color: #fff;
+  position: relative;
+  padding-left: calc(40px + $padding);
+  &::before {
+    @mixin fa;
+    content: "\f067";
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    text-align: center;
+    border-right: solid 1px rgba(0, 0, 0, 0.1);
+  }
+}

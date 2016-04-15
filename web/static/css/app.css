@@ -9,8 +9,11 @@
 @import "modules/breakpoints.css";
 /* @import "modules/headers.css"; */
 @import "modules/player.css";
+@import "modules/channel.css";
 @import "modules/modes.css";
 @import "modules/nodes.css";
+
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,300,200,700,600italic,400italic,300italic,200italic);
 
 html {
   font-size: 10px;
@@ -22,6 +25,7 @@ body {
   height: 100vh;
   margin: 0;
   padding: 0;
+  font-family: 'Source Sans Pro', 'Helvetica Neue', Arial, Helvetica, sans-serif;
   font-size: 1.4rem;
   /* font-size: 10px; */
   line-height: 125%;

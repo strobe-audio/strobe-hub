@@ -440,10 +440,9 @@ zonePlayPauseButton address zone =
 attachReceiverList : Signal.Address Action -> Zone -> List Receiver -> Html
 attachReceiverList address zone receivers =
   div [] [
-    div [] [ button [ class "tiny fluid ui button", onClick address (ShowAddReceiver ( zone, False )) ] [ text "Done" ] ]
-  , div [ class "ui list" ] (List.map (\r ->
+    div [ class "ui list" ] (List.map (\r ->
       div [ class "item" ] [
-        button [ class "tiny fluid ui labeled icon green button", onClick address ( AttachReceiver zone r ) ] [
+        div [ class "channel-receivers--add-receiver", onClick address ( AttachReceiver zone r ) ] [
           i [ class "plus icon" ] []
         , text r.name
         ]
@@ -463,18 +462,27 @@ zoneReceiverList address model zone =
           False
       addButton = case List.length detached of
         0 ->
-          div [] []
+          []
         _ ->
           if showAdd then
-            attachReceiverList address zone detached
-          else
-            div [ class "content", onClick address (ShowAddReceiver ( zone, True )) ] [
-              button [ class "tiny fluid ui button" ] [ text "Add receivers" ]
+            [ div [ class "block channel-receivers--add", onClick address (ShowAddReceiver ( zone, False )) ]
+              [ i [ class "fa fa-caret-up" ] [] ]
             ]
+          else
+            [ div [ class "block channel-receivers--add", onClick address (ShowAddReceiver ( zone, True )) ]
+              [ i [ class "fa fa-plus" ] [] ]
+            ]
+      receiverList = case showAdd of
+        False ->
+          div [] []
+        True ->
+          attachReceiverList address zone detached
+
   in
-     div [ class "content" ] [
-       addButton
-     , div [ class "content" ] (List.map (receiverInZone address) attached)
+     div [ class "channel-receivers" ] [
+       div [ class "block-group channel-receivers--head" ] ( (div [ class "block divider" ] [ text "Receivers" ]) :: addButton )
+     , receiverList
+     , div [ class "channel-receivers--list" ] (List.map (receiverInZone address) attached)
      ]
 
 
@@ -618,8 +626,7 @@ zoneModePanel address model =
         playlist = (zonePlaylist model zone)
         playlistdebug = (List.map (\e -> e.id) playlist.entries)
       in
-        [ div [ class "divider" ] [ text "Receivers" ]
-        , zoneReceiverList address model zone
+        [ zoneReceiverList address model zone
         , div [ class "divider" ] [ text "Playlist" ]
         , div [ class "block-group channel-playlist" ] (List.map (playlistEntry address)  playlist.entries)
         ]
