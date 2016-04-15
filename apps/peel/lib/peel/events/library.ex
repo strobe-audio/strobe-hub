@@ -12,8 +12,8 @@ defmodule Peel.Events.Library do
     {:ok, state}
   end
 
-  def handle_event({:library_request, "peel:" <> route, socket}, state) do
-    case route_library_request(route) do
+  def handle_event({:library_request, zone_id, "peel:" <> route, socket}, state) do
+    case route_library_request(zone_id, route) do
       nil ->
         nil
       response ->
@@ -28,14 +28,12 @@ defmodule Peel.Events.Library do
     {:ok, state}
   end
 
-  defp route_library_request(route) when is_binary(route) do
-    route_library_request(String.split(route, "/", trim: true), route)
+  defp route_library_request(zone_id, route) when is_binary(route) do
+    route_library_request(zone_id, String.split(route, "/", trim: true), route)
   end
 
-  defp route_library_request(["track", track_id], path) do
-    Logger.warn "FIX! Adding to default zone!"
-    zone_record = Otis.State.Zone.first
-    {:ok, zone} = Otis.Zones.find(zone_record.id)
+  defp route_library_request(zone_id, ["track", track_id], path) do
+    {:ok, zone} = Otis.Zones.find(zone_id)
     case Peel.Track.find(track_id) do
       nil ->
         nil
@@ -45,7 +43,7 @@ defmodule Peel.Events.Library do
     end
   end
 
-  defp route_library_request(["album", album_id], path) do
+  defp route_library_request(_zone_id, ["album", album_id], path) do
     case Peel.Album.find(album_id) do
       nil ->
         nil
@@ -67,7 +65,7 @@ defmodule Peel.Events.Library do
     end
   end
 
-  defp route_library_request(["album", album_id, "artist", artist_id], path) do
+  defp route_library_request(_zone_id, ["album", album_id, "artist", artist_id], path) do
     case Peel.Album.find(album_id) do
       nil ->
         nil
@@ -89,7 +87,7 @@ defmodule Peel.Events.Library do
     end
   end
 
-  defp route_library_request(["artist", artist_id], path) do
+  defp route_library_request(_zone_id, ["artist", artist_id], path) do
     case Peel.Artist.find(artist_id) do
       nil ->
         nil
@@ -111,7 +109,7 @@ defmodule Peel.Events.Library do
     end
   end
 
-  defp route_library_request(["albums"], path) do
+  defp route_library_request(_zone_id, ["albums"], path) do
     albums = Peel.Album.all |> Enum.map(fn(album) ->
       %{
         id: "peel:album/#{album.id}",
@@ -128,7 +126,7 @@ defmodule Peel.Events.Library do
     }
   end
 
-  defp route_library_request(["artists"], path) do
+  defp route_library_request(_zone_id, ["artists"], path) do
     artists = Peel.Artist.all |> Enum.map(fn(artist) ->
       %{
         id: "peel:artist/#{artist.id}",
@@ -145,7 +143,7 @@ defmodule Peel.Events.Library do
     }
   end
 
-  defp route_library_request(["root"], path) do
+  defp route_library_request(_zone_id, ["root"], path) do
     %{
       id: "peel:root",
       title: "Your Music",
@@ -158,7 +156,7 @@ defmodule Peel.Events.Library do
     }
   end
 
-  defp route_library_request(_route, path) do
+  defp route_library_request(_zone_id, _route, path) do
     Logger.warn "Invalid path #{path}"
     nil
   end
