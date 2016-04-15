@@ -131,7 +131,7 @@ defmodule Otis.SourceList do
     Otis.State.Events.notify({
       :new_source,
       state.id,
-      insert_offset_to_position(sources, index),
+      insert_offset_to_position(sources, index, state),
       entry
     })
     {:reply, {:ok, length(sources)}, %S{ state | sources: sources }}
@@ -180,7 +180,15 @@ defmodule Otis.SourceList do
   # Converts an insertion position (e.g. -1 for end into
   # an absolute position). Note that this is called *after* insertion
   # so we can use the actual list length in our calculations.
-  defp insert_offset_to_position(sources, index) do
+  defp insert_offset_to_position(sources, index, %{active: nil}) do
+    list_relative_offset(sources, index)
+  end
+
+  defp insert_offset_to_position(sources, index, _state) do
+    list_relative_offset(sources, index) + 1
+  end
+
+  defp list_relative_offset(sources, index) do
     if index < 0 do
       length(sources) + index
     else

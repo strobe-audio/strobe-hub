@@ -127,6 +127,18 @@ defmodule Otis.SourceListTest do
     assert_receive {:new_source, ^list_id, 3, {^source_id, 0, %{id: "f"}}}, 200
   end
 
+  test "calculates the inserted position correctly when list has active source", %{id: list_id} = context do
+    {:ok, sources} = Otis.SourceList.list(context.source_list)
+    source = TS.new("e")
+    {:ok, _id, _position, _source} = Otis.SourceList.next(context.source_list)
+    Otis.SourceList.insert_source(context.source_list, source, 0)
+    assert_receive {:new_source, ^list_id, 1, {_, 0, %{id: "e"}}}, 200
+
+    Otis.SourceList.insert_source(context.source_list, source, -1)
+    position = length(sources) + 1
+    assert_receive {:new_source, ^list_id, ^position, {_, 0, %{id: "e"}}}, 200
+  end
+
   # actually I don't think this is necessary -- the source change event emitted
   # by the broadcaster will do the required notification work -- the client can
   # skip to the source with the id given in that event.
