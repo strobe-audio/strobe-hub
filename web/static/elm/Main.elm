@@ -50,6 +50,7 @@ init =
       , ui = initUIState [] []
       , activeZoneId = ""
       , activeState = "channel"
+      , choosingZone = False
       }
   in
     (model, Effects.none)
@@ -327,7 +328,7 @@ update action model =
 
     Library libraryAction ->
       let
-          (library, effect) = Library.update libraryAction model.library
+          (library, effect) = Library.update libraryAction model.library model.activeZoneId
       in
           ({ model | library = library },
            (Effects.map Library effect)
@@ -336,7 +337,12 @@ update action model =
     SetMode mode ->
       ( { model | activeState = mode }, Effects.none)
 
+    ToggleZoneSelector ->
 
+      ( { model | choosingZone = not model.choosingZone }, Effects.none )
+
+    ChooseZone zone ->
+      ( { model | activeZoneId = zone.id, choosingZone = False }, Effects.none )
 
 receiversAttachedToZone : Model -> Zone -> List Receiver
 receiversAttachedToZone model zone =
@@ -519,7 +525,7 @@ modeSelectorPanel address model =
               div [] []
       in
       div [ class "block-group mode-selector" ] [
-        div [ class "block mode-channel-select" ] [
+        div [ class "block mode-channel-select", onClick address ToggleZoneSelector ] [
           i [ class "fa fa-bullseye" ] []
         ]
       , div [ class "block mode-channel" ] [
@@ -623,12 +629,28 @@ libraryModePanel : Signal.Address Action -> Model -> List Html
 libraryModePanel address model =
   [ Library.root (Signal.forwardTo address Library) model.library ]
 
+zoneSelectorPanel : Signal.Address Action -> Model -> Html
+zoneSelectorPanel address model =
+  case model.choosingZone of
+    False ->
+      div [] []
+    True ->
+      let
+          zoneChoice zone =
+            div [ class "channel-selector--channel", onClick address (ChooseZone zone) ] [
+              text zone.name
+            ]
+      in
+          div [ class "channel-selector" ] (List.map zoneChoice model.zones)
+
+
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [ classList [("elvis", True), ("elvis-mode-channel", model.activeState == "channel"), ("elvis-mode-library", model.activeState == "library")] ] [
     div [ class "channels" ] [
       div [ class "mode-wrapper" ] [
         (modeSelectorPanel address model)
+        , (zoneSelectorPanel address model)
         , div [ class "zone-view" ] (activeZonePanel address model)
         , div [ class "mode-view" ] [
           -- this should be a view dependent on the current view mode (current zone, library, zone chooser)
@@ -786,7 +808,7 @@ port attachReceiverRequests =
   attachReceiverRequestsBox.signal
 
 
-port libraryRequests : Signal String
+port libraryRequests : Signal (String, String)
 port libraryRequests =
   let
       mailbox = Library.libraryRequestsBox

@@ -30,6 +30,28 @@
   padding-right: calc($padding/2);
 }
 
+.channel-selector {
+  background: #333;
+}
+.channel-selector--channel {
+  &::before {
+    @mixin fa;
+    content: "\f140";
+    padding-right: calc($padding/2);
+  }
+  color: #fff;
+  height: 40px;
+  line-height: 40px;
+  padding: 0 $padding;
+  cursor: pointer;
+  &:hover {
+    color: red;
+  }
+  & + & {
+    border-top: solid 1px #444;
+  }
+}
+
 @media (--desktop) {
   .mode-selector {
     width: $channel-column-width;
@@ -38,6 +60,9 @@
     width: calc(100% - 40px);
   }
   .mode-library {
+    display: none;
+  }
+  .mode-switch {
     display: none;
   }
 }

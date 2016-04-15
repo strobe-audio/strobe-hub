@@ -20,6 +20,8 @@ type Action
   | LibraryRegistration Library.Node
   | Library Library.Action
   | SetMode String
+  | ToggleZoneSelector
+  | ChooseZone Zone
   | NoOp
 
 
@@ -37,6 +39,7 @@ type alias Model =
   , ui : UIState
   , activeZoneId: String
   , activeState: String
+  , choosingZone : Bool
   }
 
 

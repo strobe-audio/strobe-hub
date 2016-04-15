@@ -184,14 +184,14 @@ add model library =
       { model | levels = (List.reverse ( root :: others ))}
 
 
-update : Action -> Model -> (Model, Effects Action)
-update action model =
+update : Action -> Model -> String -> (Model, Effects Action)
+update action model zoneId =
   case action of
     NoOp ->
       ( model, Effects.none )
 
     ExecuteAction a ->
-      ( model, ( sendAction a ) )
+      ( model, ( sendAction zoneId a ) )
 
     Response folder ->
       ( (pushLevel model folder), Effects.none )
@@ -256,14 +256,14 @@ root address model =
   folder address model (currentLevel model)
 
 
-libraryRequestsBox : Signal.Mailbox String
+libraryRequestsBox : Signal.Mailbox (String, String)
 libraryRequestsBox =
-  Signal.mailbox ""
+  Signal.mailbox ("", "")
 
 
-sendAction : String -> Effects Action
-sendAction action =
-  Signal.send libraryRequestsBox.address action
+sendAction : String -> String -> Effects Action
+sendAction zoneId action =
+  Signal.send libraryRequestsBox.address (zoneId, action)
     |> Effects.task
     |> Effects.map (always NoOp)
 

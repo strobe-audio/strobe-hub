@@ -16,6 +16,7 @@ let initialState = {
   ui: uiState,
   activeZoneId: "",
   activeState: "",
+  choosingZone: false,
 }
 
 // port initial state
@@ -70,7 +71,7 @@ let channel = socket.channel('controllers:browser', {})
 
 channel.on('state', payload => {
   console.log('got startup', payload)
-  elmApp.ports.initialState.send(Object.assign({}, payload, {activeState: "channel", ui: uiState, library: { levels: [] } }))
+  elmApp.ports.initialState.send(Object.assign({}, payload, {activeState: "channel", choosingZone: false, ui: uiState, library: { levels: [] } }))
 })
 
 channel.on('add_library', payload => {

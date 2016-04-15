@@ -34,8 +34,8 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
-  def handle_in("library", action, socket) do
-    Otis.State.Events.notify({:library_request, action, socket})
+  def handle_in("library", [zone_id, action], socket) do
+    Otis.State.Events.notify({:library_request, zone_id, action, socket})
     {:noreply, socket}
   end
 
