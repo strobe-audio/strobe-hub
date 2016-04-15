@@ -532,15 +532,18 @@ modeSelectorPanel address model =
             _ ->
               div [] []
       in
-      div [ class "block-group mode-selector" ] [
-        div [ class "block mode-channel-select", onClick address ToggleZoneSelector ] [
-          i [ class "fa fa-bullseye" ] []
+        div [ class "mode-selector" ] [
+          div [ class "block-group" ] [
+            div [ class "block mode-channel-select", onClick address ToggleZoneSelector ] [
+              i [ class "fa fa-bullseye" ] []
+            ]
+          , div [ class "block mode-channel" ] [
+              (volumeControl address zone.volume zone.name (UpdateZoneVolume zone))
+            ]
+            , button
+          ]
+        , (zoneSelectorPanel address model)
         ]
-      , div [ class "block mode-channel" ] [
-          (volumeControl address zone.volume zone.name (UpdateZoneVolume zone))
-        ]
-        , button
-      ]
 
 
 playingSong : Signal.Address Action -> Zone -> Maybe PlaylistEntry -> Html
@@ -648,7 +651,7 @@ zoneSelectorPanel address model =
               text zone.name
             ]
       in
-          div [ class "channel-selector" ] (List.map zoneChoice model.zones)
+          div [ class "channel-selector" ] ( List.map zoneChoice (List.filter (\zone -> zone.id /= model.activeZoneId) model.zones) )
 
 
 view : Signal.Address Action -> Model -> Html
@@ -657,7 +660,6 @@ view address model =
     div [ class "channels" ] [
       div [ class "mode-wrapper" ] [
         (modeSelectorPanel address model)
-        , (zoneSelectorPanel address model)
         , div [ class "zone-view" ] (activeZonePanel address model)
         , div [ class "mode-view" ] [
           -- this should be a view dependent on the current view mode (current zone, library, zone chooser)

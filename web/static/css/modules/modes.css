@@ -32,17 +32,34 @@
 
 .channel-selector {
   background: #333;
+  /* position: fixed; */
+  /* top: 40px; */
 }
 .channel-selector--channel {
+  /* &::before { */
+  /*   @mixin fa; */
+  /*   content: "\f140"; */
+  /*   padding-right: calc($padding/2); */
+  /* } */
   &::before {
     @mixin fa;
     content: "\f140";
-    padding-right: calc($padding/2);
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    text-align: center;
+    border-right: solid 1px rgba(0, 0, 0, 0.2);
   }
+  position: relative;
+  padding-left: calc(40px + $padding);
   color: #fff;
   height: 40px;
   line-height: 40px;
-  padding: 0 $padding;
+  /* padding: 0 $padding; */
   cursor: pointer;
   &:hover {
     color: red;
