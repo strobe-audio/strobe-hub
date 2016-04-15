@@ -24,6 +24,11 @@
   line-height: 40px;
 }
 
+.mode-channel .volume-label:before {
+  @mixin fa;
+  content: "\f140";
+  padding-right: calc($padding/2);
+}
 
 @media (--desktop) {
   .mode-selector {

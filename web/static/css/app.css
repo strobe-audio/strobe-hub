@@ -2,6 +2,7 @@
 @import "variables.css";
 @import "mixins/headers.css";
 @import "mixins/pocketgrid.css";
+@import "mixins/fa.css";
 @import "modules/font-awesome.css";
 @import "modules/pocketgrid.css";
 @import "modules/layout.css";
