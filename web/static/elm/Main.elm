@@ -181,20 +181,27 @@ findUpdatePlaylistEntryProgress entries event =
       e
   ) entries
 
+sourcesInZone : List PlaylistEntry -> Zone -> List PlaylistEntry
+sourcesInZone s z =
+  List.filter (\e -> e.zoneId == z.id) s
+
+fixSourceOrdering : List PlaylistEntry -> List Zone -> List PlaylistEntry
+fixSourceOrdering sources zones =
+  let
+    zoneSources = List.map (\z ->
+      (sourcesInZone sources z) |> ( List.indexedMap (\p s -> { s | position = p }) )
+    ) zones
+  in
+    List.concat zoneSources
 
 removeSources : Model -> SourceChangeEvent -> Model
 removeSources model event =
   let
-      remove = (Debug.log "remove" event.removeSourceIds)
-      present = Debug.log "members" (List.map (\s -> (s.position, s.id)) model.sources)
+      _ = (Debug.log "remove" event.removeSourceIds)
+      _ = Debug.log "members" (List.map (\s -> (s.position, s.id)) model.sources)
       isMember = (\id -> ( List.member id event.removeSourceIds ))
-      sources = List.filter (\s -> (not (isMember s.id))) model.sources
-
-      sourcesInZone = (\z s -> List.filter (\e -> e.zoneId == z.id) s)
-      zoneSources = List.map (\z ->
-          (sourcesInZone z sources) |> ( List.indexedMap (\p s -> { s | position = p }) )
-        ) model.zones
-      allSources = List.concat zoneSources
+      sources = List.filter (\s -> not (isMember s.id)) model.sources
+      allSources = fixSourceOrdering sources model.zones
       _ = Debug.log "remainng" (List.map (\s -> (s.position, s.id)) allSources)
   in
       { model | sources = allSources }
@@ -202,12 +209,13 @@ removeSources model event =
 addPlayListEntry : Model -> PlaylistEntry -> Model
 addPlayListEntry model entry =
   let
-      _ = Debug.log "01 add" entry.id
-      present = Debug.log "02 members" (List.map (\s -> (s.position, s.id)) model.sources)
-      before = List.take entry.position model.sources
-      after = entry :: (List.drop entry.position model.sources)
-      sources = (List.append before after)
-      ids = Debug.log "03 new sources" (List.map (\s -> (s.position, s.id)) sources)
+      _ = Debug.log "01 add" (entry.position, entry.id)
+      _ = Debug.log "02 members" (List.map (\s -> (s.position, s.id)) model.sources)
+      (zoneSources, otherSources) = List.partition (\e -> e.zoneId == entry.zoneId ) model.sources
+      before = List.take entry.position zoneSources
+      after = entry :: (List.drop entry.position zoneSources)
+      sources = List.concat [before, after, otherSources]
+      _ = Debug.log "03 updated" (List.map (\s -> (s.position, s.id)) sources)
   in
     { model | sources = sources }
 
