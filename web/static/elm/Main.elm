@@ -184,16 +184,32 @@ findUpdatePlaylistEntryProgress entries event =
 
 removeSources : Model -> SourceChangeEvent -> Model
 removeSources model event =
-  { model
-  | sources = List.filter (\s ->
-    not (List.member s.id event.removeSourceIds)
-  ) model.sources
-  }
+  let
+      remove = (Debug.log "remove" event.removeSourceIds)
+      present = Debug.log "members" (List.map (\s -> (s.position, s.id)) model.sources)
+      isMember = (\id -> ( List.member id event.removeSourceIds ))
+      sources = List.filter (\s -> (not (isMember s.id))) model.sources
+
+      sourcesInZone = (\z s -> List.filter (\e -> e.zoneId == z.id) s)
+      zoneSources = List.map (\z ->
+          (sourcesInZone z sources) |> ( List.indexedMap (\p s -> { s | position = p }) )
+        ) model.zones
+      allSources = List.concat zoneSources
+      _ = Debug.log "remainng" (List.map (\s -> (s.position, s.id)) allSources)
+  in
+      { model | sources = allSources }
 
 addPlayListEntry : Model -> PlaylistEntry -> Model
 addPlayListEntry model entry =
-  { model
-  | sources = model.sources ++ [entry] }
+  let
+      _ = Debug.log "01 add" entry.id
+      present = Debug.log "02 members" (List.map (\s -> (s.position, s.id)) model.sources)
+      before = List.take entry.position model.sources
+      after = entry :: (List.drop entry.position model.sources)
+      sources = (List.append before after)
+      ids = Debug.log "03 new sources" (List.map (\s -> (s.position, s.id)) sources)
+  in
+    { model | sources = sources }
 
 showAddReceiver : Model -> Zone -> Bool -> Model
 showAddReceiver model zone show =
@@ -449,27 +465,27 @@ zoneReceiverList address model zone =
 
 
 
-zonePanel : Signal.Address Action -> Model -> Zone -> Html
-zonePanel address model zone =
-  let
-      playlist = (zonePlaylist model zone)
-  in
-    div [ id zone.id, class "zone eight wide column" ] [
-      div [ class "ui card" ] [
-        div [ class "content" ] [
-          div [ class "header" ] [
-            (zonePlayPauseButton address zone)
-          , (text zone.name)
-          -- , (volumeControl address zone.volume (UpdateZoneVolume zone))
-          , (activePlaylistEntry address playlist.active)
-          ]
-        ]
-      , (zoneReceiverList address model zone)
-      , div [ class "content" ] [
-          div [ class "ui relaxed divided list" ] (List.map (playlistEntry address)  playlist.entries)
-        ]
-      ]
-    ]
+-- zonePanel : Signal.Address Action -> Model -> Zone -> Html
+-- zonePanel address model zone =
+--   let
+--       playlist = (zonePlaylist model zone)
+--   in
+--     div [ id zone.id, class "zone eight wide column" ] [
+--       div [ class "ui card" ] [
+--         div [ class "content" ] [
+--           div [ class "header" ] [
+--             (zonePlayPauseButton address zone)
+--           , (text zone.name)
+--           -- , (volumeControl address zone.volume (UpdateZoneVolume zone))
+--           -- , (activePlaylistEntry address playlist.active)
+--           ]
+--         ]
+--       , (zoneReceiverList address model zone)
+--       , div [] [
+--           div [ class "block-group" ] (List.map (playlistEntry address)  playlist.entries)
+--         ]
+--       ]
+--     ]
 
 activeZone : Model -> Maybe Zone
 activeZone model =
@@ -511,7 +527,7 @@ playingSong address zone maybeEntry =
     Nothing ->
       div [] []
     Just entry ->
-      div [ class "player" ]
+      div [ id entry.id, class "player" ]
         [ div [ class "player-icon" ]
           [ img [ src "/images/cover.jpg", alt "", onClick address ( TogglePlayPause (zone, not(zone.playing)) ) ] []
           , div [ class "player-song" ]
@@ -586,11 +602,12 @@ zoneModePanel address model =
     Just zone ->
       let
         playlist = (zonePlaylist model zone)
+        playlistdebug = (List.map (\e -> e.id) playlist.entries)
       in
         [ div [ class "divider" ] [ text "Receivers" ]
         , zoneReceiverList address model zone
         , div [ class "divider" ] [ text "Playlist" ]
-        , div [] (List.map (playlistEntry address)  playlist.entries)
+        , div [ class "block-group channel-playlist" ] (List.map (playlistEntry address)  playlist.entries)
         ]
 
 

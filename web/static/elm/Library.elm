@@ -112,6 +112,9 @@ set of actions are always the same:
 library entirely responsible for the action action string
 
 
+
+in the playlist artist name & album name (& any other metadata) must have actions attached too. you should be able to click on the artist of a playlist entry & go to the library view for that artist..
+
 -}
 type alias Folder =
   { id : String
@@ -199,7 +202,7 @@ update action model =
 
 node : Signal.Address Action -> Model -> Folder -> Node -> Html
 node address library folder node =
-  div [ onClick address (ExecuteAction node.action) ] [ text node.title ]
+  div [ class "block", onClick address (ExecuteAction node.action) ] [ text node.title ]
 
 
 breadcrumb : Signal.Address Action -> Model -> Folder -> Html
@@ -226,13 +229,13 @@ folder address model folder =
       children = if List.isEmpty folder.children then
         div [] []
       else
-        div [ class "content" ] (List.map (node address model folder) folder.children )
+        div [ class "block-group library-contents" ] (List.map (node address model folder) folder.children )
 
   in
       -- Debug.log (" folder " ++ (toString folder))
-      div [ class "ui card" ] [
-        div [ class "content" ] [
-          div [ class "header" ] [
+      div [] [
+        div [ class "block-group library-folder" ] [
+          div [ class "library-breadcrumb" ] [
             (breadcrumb address model folder)
           ]
         ]
