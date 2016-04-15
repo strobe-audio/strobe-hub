@@ -34,5 +34,10 @@ defmodule Peel.Artist do
   def associate(artist, album) do
     %Album{album | artist: artist, artist_id: artist.id}
   end
+
+  def albums(artist) do
+    artist = artist |> Repo.preload(:albums)
+    artist.albums
+  end
 end
 

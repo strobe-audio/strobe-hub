@@ -102,6 +102,13 @@ defmodule Otis.Zones do
     Otis.Zone.play(find!(registry, id), playing)
   end
 
+  def skip(id, source_id) when is_binary(id) do
+    skip(@registry_name, id, source_id)
+  end
+  def skip(registry, id, source_id) do
+    Otis.Zone.skip(find!(registry, id), source_id)
+  end
+
   defp add(action, registry, id, config) do
     {:ok, zone} = Otis.Zones.Supervisor.start_zone(id, config)
     add(action, registry, zone, id, config)

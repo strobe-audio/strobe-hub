@@ -7,12 +7,12 @@ defmodule Peel.Events do
   end
 
   @handlers [
-    Peel.Events.Startup,
+    Peel.Events.Library,
   ]
 
   def init(:ok) do
     Enum.each @handlers, fn(handler) ->
-      handler.register
+      :ok = handler.register
     end
     {:ok, {}}
   end

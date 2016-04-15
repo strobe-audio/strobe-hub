@@ -3,6 +3,7 @@ defmodule Otis.Source.File do
   Represents an audio file on-disk
   """
 
+  @derive {Poison.Encoder, only: [:id, :metadata]}
   defstruct [:id, :path, :metadata]
 
   alias Otis.Source.Metadata

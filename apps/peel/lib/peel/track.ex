@@ -104,3 +104,44 @@ defimpl Otis.Source.Origin, for: Peel.Track do
     Peel.Track.find(track.id)
   end
 end
+
+# TODO: The encoded struct for a source is too fiddly
+defimpl Poison.Encoder, for: Peel.Track do
+  @metadata_required_fields [
+    :album,
+    :bit_rate,
+    :channels,
+    :composer,
+    :date,
+    :disk_number,
+    :disk_total,
+    :duration_ms,
+    :extension,
+    :filename,
+    :genre,
+    :mime_type,
+    :performer,
+    :sample_rate,
+    :stream_size,
+    :title,
+    :track_number,
+    :track_total,
+  ]
+  @blank_metadata Enum.map(@metadata_required_fields, fn(key) -> {key, nil} end) |> Enum.into(%{})
+
+  defp track_metadata(track) do
+    track
+    |> Map.take(@metadata_required_fields)
+    |> Map.put(:album, track.album_title)
+    |> Enum.into(@blank_metadata)
+  end
+
+  def encode(track, opts) do
+    metadata = track_metadata(track)
+
+    track
+    |> Map.take([:id])
+    |> Map.put(:metadata, metadata)
+    |> Poison.Encoder.encode(opts)
+  end
+end

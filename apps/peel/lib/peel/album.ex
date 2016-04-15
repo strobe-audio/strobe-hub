@@ -6,6 +6,8 @@ defmodule Peel.Album do
   alias  Peel.Track
   alias  Peel.Artist
 
+  @derive {Poison.Encoder, only: [:id, :title, :performer, :date, :genre, :disk_number, :disk_total, :track_total, :artist_id]}
+
   schema "albums" do
     # Musical info
     field :title, :string
@@ -59,5 +61,10 @@ defmodule Peel.Album do
 
   def associate(album, track) do
     %Track{ track | album: album, album_id: album.id }
+  end
+
+  def tracks(album) do
+    album = album |> Repo.preload(:tracks)
+    album.tracks
   end
 end

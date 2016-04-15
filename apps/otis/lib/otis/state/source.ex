@@ -46,15 +46,18 @@ defmodule Otis.State.Source do
     Enum.reverse(sources)
   end
   defp restore_source([record | records], sources) do
-    restore_source(records, [db_to_source(record) | sources])
+    restore_source(records, [list_entry(record) | sources])
   end
 
-  defp db_to_source(record) do
-    source = record.source_type
-              |> String.to_atom
-              |> struct(id: record.source_id)
-              |> Otis.Source.Origin.load!
-    {record.id, record.playback_position, source}
+  def list_entry(record) do
+    {record.id, record.playback_position, source(record)}
+  end
+
+  def source(record) do
+    record.source_type
+    |> String.to_atom
+    |> struct(id: record.source_id)
+    |> Otis.Source.Origin.load!
   end
 
   def find(id) do
