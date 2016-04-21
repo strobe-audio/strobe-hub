@@ -16,7 +16,7 @@ initialState =
     model =
       { channels = []
       , receivers = []
-      , choosingChannel = False
+      , showChannelSwitcher = False
       , activeChannelId = Nothing
       }
       -- , library = Library.init
@@ -80,7 +80,7 @@ update action model =
       (model, Effects.none)
 
     Root.ToggleChannelSelector ->
-      ({ model | choosingChannel = not(model.choosingChannel) }, Effects.none)
+      ({ model | showChannelSwitcher = not(model.showChannelSwitcher) }, Effects.none)
 
     Root.ChooseChannel channel ->
       ({ model | activeChannelId = Just channel.id }, Effects.none)

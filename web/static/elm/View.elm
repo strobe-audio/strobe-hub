@@ -83,7 +83,7 @@ channelSelectorPanel address model activeChannel =
           [ text channel.name ]
       unselectedChannels = List.filter (\channel -> channel.id /= activeChannel.id) model.channels
   in
-    case model.choosingChannel of
+    case model.showChannelSwitcher of
       False ->
         div [] []
       True ->

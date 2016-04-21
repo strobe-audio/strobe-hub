@@ -36,7 +36,7 @@ type Action
 type alias Model =
   { channels : List Channel.Model
   , receivers: List Receiver.Model
-  , choosingChannel : Bool
+  , showChannelSwitcher : Bool
   , activeChannelId: Maybe ID.Channel
   }
   -- { zones : List Zone
