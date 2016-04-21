@@ -24,7 +24,7 @@ root address model =
 activeChannelView : Signal.Address Action -> Model -> Channel.Model -> Html
 activeChannelView address model channel =
   let
-      channelAddress = Signal.forwardTo address (ModifyChannel channel)
+      channelAddress = Signal.forwardTo address (ModifyChannel channel.id)
   -- div [ classList [("elvis", True), ("elvis-mode-channel", model.activeState == "channel"), ("elvis-mode-library", model.activeState == "library")] ] [
   in
       div [ classList [("elvis", True), ("elvis-mode-channel", True), ("elvis-mode-library", False)] ] [

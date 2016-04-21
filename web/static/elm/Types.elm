@@ -8,7 +8,7 @@ import Rendition
 
 type Action
   = InitialState BroadcasterState
-  | ModifyChannel Channel.Model Channel.Action
+  | ModifyChannel Channel.ID Channel.Action
   -- | ReceiverStatus (String, ReceiverStatusEvent)
   -- | ZoneStatus (String, ZoneStatusEvent)
   -- | UpdateReceiverVolume Receiver Float

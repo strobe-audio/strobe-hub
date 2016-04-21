@@ -57,17 +57,16 @@ update action model =
         ( updatedModel, Effects.none )
 
 
-    -- FIXME: replace channel with id
-    ModifyChannel channel channelAction ->
+    ModifyChannel channelId channelAction ->
       let
-          updateChannel c =
-            if c.id == channel.id then
+          updateChannel channel =
+            if channel.id == channelId then
               let
-                  (updatedChannel, effect) = (Channel.State.update channelAction c)
+                  (updatedChannel, effect) = (Channel.State.update channelAction channel)
               in
-                  (updatedChannel, Effects.map (ModifyChannel channel) effect)
+                  (updatedChannel, Effects.map (ModifyChannel channelId) effect)
             else
-              ( c, Effects.none )
+              ( channel, Effects.none )
           (channels, effects) = (List.map updateChannel model.channels) |> List.unzip
       in
         ({ model | channels = channels }, (Effects.batch effects))
