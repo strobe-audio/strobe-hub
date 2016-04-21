@@ -15,7 +15,7 @@ initialState =
   let
     model =
       { channels = []
-      , allReceivers = []
+      , receivers = []
       , choosingZone = False
       , activeChannelId = Nothing
       }
@@ -54,7 +54,7 @@ update action model =
           updatedModel =
             { model
             | channels = channels
-            , allReceivers = receivers
+            , receivers = receivers
             , activeChannelId = activeChannelId
             }
       in

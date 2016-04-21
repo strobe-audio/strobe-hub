@@ -56,10 +56,10 @@ update action channel =
 
 attachedReceivers : Types.Model -> Channel.Model -> List Receiver.Model
 attachedReceivers model channel =
-  List.filter (\r -> r.zoneId == channel.id) model.allReceivers
+  List.filter (\r -> r.zoneId == channel.id) model.receivers
 
 
 detachedReceivers : Types.Model -> Channel.Model -> List Receiver.Model
 detachedReceivers model channel =
-  List.filter (\r -> r.zoneId /= channel.id) model.allReceivers
+  List.filter (\r -> r.zoneId /= channel.id) model.receivers
 
