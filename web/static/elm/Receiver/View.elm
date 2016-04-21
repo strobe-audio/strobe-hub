@@ -4,9 +4,10 @@ module Receiver.View where
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
-import Receiver.Types exposing (Receiver)
+import Receiver
 
-attached : Signal.Address Receiver.Types.Action -> Receiver -> Html
+
+attached : Signal.Address Receiver.Action -> Receiver.Model -> Html
 attached address receiver =
   div [
     classList [ ("receiver", True)

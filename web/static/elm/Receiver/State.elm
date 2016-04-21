@@ -1,9 +1,9 @@
 module Receiver.State (initialState) where
 
 import Types exposing (ReceiverState)
-import Receiver.Types exposing (Receiver)
+import Receiver
 
-initialState : ReceiverState -> Receiver
+initialState : ReceiverState -> Receiver.Model
 initialState state =
   { id = state.id
   , name = state.name

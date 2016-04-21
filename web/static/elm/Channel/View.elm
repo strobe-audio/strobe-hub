@@ -10,7 +10,7 @@ import Channel
 import Rendition.Types exposing (Rendition)
 import Rendition.View
 import Receiver.View
-import Receiver.Types exposing (Receiver)
+import Receiver
 
 
 root : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
@@ -73,7 +73,7 @@ receiverList address model channel =
 
 
 
-receiversNotAttachedToChannel : Model -> Channel.Model -> List Receiver
+receiversNotAttachedToChannel : Model -> Channel.Model -> List Receiver.Model
 receiversNotAttachedToChannel model channel =
   let
       receivers = List.map (\c -> c.receivers) model.channels |> List.concat
@@ -81,15 +81,15 @@ receiversNotAttachedToChannel model channel =
       List.filter (\r -> r.zoneId /= channel.id) receivers
 
 
-attachReceiverList : Signal.Address Receiver.Types.Action -> Channel.Model -> List Receiver -> Html
+attachReceiverList : Signal.Address Receiver.Action -> Channel.Model -> List Receiver.Model -> Html
 attachReceiverList address channel receivers =
     div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry address channel) receivers)
 
 
-attachReceiverEntry : Signal.Address Receiver.Types.Action -> Channel.Model -> Receiver -> Html
+attachReceiverEntry : Signal.Address Receiver.Action -> Channel.Model -> Receiver.Model -> Html
 attachReceiverEntry address channel receiver =
   let
-      receiverAddress =  Receiver.Types.Attach channel.id
+      receiverAddress =  Receiver.Attach channel.id
   in
       div [ class "channel-receivers--available-receiver" ]
         [ div

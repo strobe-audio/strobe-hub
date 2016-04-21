@@ -1,7 +1,7 @@
-module Receiver.Types where
+module Receiver where
 
 
-type alias Receiver =
+type alias Model =
   { id :       String
   , name :     String
   , online :   Bool
@@ -10,7 +10,9 @@ type alias Receiver =
   , editingName : Bool
   }
 
+
 type Action
   = NoOp
   | Volume Float
   | Attach String
+
