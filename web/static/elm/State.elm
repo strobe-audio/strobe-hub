@@ -4,16 +4,18 @@ import Effects exposing (Effects, Never)
 import Debug
 import List.Extra
 
-import Types exposing (..)
+import Types -- exposing (..)
 import Channel
 import Channel.State
+import Receiver.State
 
 
-initialState : Model
+initialState : Types.Model
 initialState =
   let
     model =
       { channels = []
+      , allReceivers = []
       , choosingZone = False
       , activeChannelId = Nothing
       }
@@ -24,12 +26,12 @@ initialState =
   in
     model
 
-broadcasterState : BroadcasterState -> List Channel.Model
+broadcasterState : Types.BroadcasterState -> List Channel.Model
 broadcasterState state =
   List.map (Channel.State.initialState (Debug.log "state" state)) state.channels
 
 
-activeChannel : Model -> Maybe Channel.Model
+activeChannel : Types.Model -> Maybe Channel.Model
 activeChannel model =
   case model.activeChannelId of
     Nothing ->
@@ -38,43 +40,45 @@ activeChannel model =
       List.Extra.find (\c -> c.id == id) model.channels
 
 
-update : Action -> Model -> (Model, Effects Action)
+update : Types.Action -> Types.Model -> (Types.Model, Effects Types.Action)
 update action model =
   case action of
-    NoOp ->
+    Types.NoOp ->
       (model, Effects.none)
 
-    InitialState state ->
+    Types.InitialState state ->
       let
-          channels = (broadcasterState state)
+          channels = List.map (Channel.State.initialState state) state.channels
+          receivers = List.map Receiver.State.initialState state.receivers
           activeChannelId = Maybe.map (\channel -> channel.id) (List.head channels)
           updatedModel =
             { model
             | channels = channels
+            , allReceivers = receivers
             , activeChannelId = activeChannelId
             }
       in
         ( updatedModel, Effects.none )
 
 
-    ModifyChannel channelId channelAction ->
+    Types.ModifyChannel channelId channelAction ->
       let
           updateChannel channel =
             if channel.id == channelId then
               let
                   (updatedChannel, effect) = (Channel.State.update channelAction channel)
               in
-                  (updatedChannel, Effects.map (ModifyChannel channelId) effect)
+                  (updatedChannel, Effects.map (Types.ModifyChannel channelId) effect)
             else
               ( channel, Effects.none )
           (channels, effects) = (List.map updateChannel model.channels) |> List.unzip
       in
         ({ model | channels = channels }, (Effects.batch effects))
 
-    SetMode mode ->
+    Types.SetMode mode ->
       (model, Effects.none)
 
-    ChooseChannel activeChannel ->
+    Types.ChooseChannel activeChannel ->
       (model, Effects.none)
 
 

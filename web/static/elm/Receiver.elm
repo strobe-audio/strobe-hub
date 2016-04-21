@@ -1,12 +1,13 @@
 module Receiver where
 
+import ID
 
 type alias Model =
-  { id :       String
-  , name :     String
-  , online :   Bool
-  , volume :   Float
-  , zoneId :   String
+  { id : ID.Receiver
+  , name : String
+  , online : Bool
+  , volume : Float
+  , zoneId : ID.Channel
   , editingName : Bool
   }
 

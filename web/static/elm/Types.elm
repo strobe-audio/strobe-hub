@@ -4,11 +4,13 @@ import Dict exposing (Dict)
 import Library
 
 import Channel
+import Receiver
 import Rendition
+import ID
 
 type Action
   = InitialState BroadcasterState
-  | ModifyChannel Channel.ID Channel.Action
+  | ModifyChannel ID.Channel Channel.Action
   -- | ReceiverStatus (String, ReceiverStatusEvent)
   -- | ZoneStatus (String, ZoneStatusEvent)
   -- | UpdateReceiverVolume Receiver Float
@@ -31,15 +33,12 @@ type Action
 
 
 -- would love to use these but it causes problems with ports
-type alias ZoneID = String
-type alias ReceiverID = String
-
-type alias ID = String
 
 type alias Model =
   { channels : List Channel.Model
+  , allReceivers: List Receiver.Model
   , choosingZone : Bool
-  , activeChannelId: Maybe String
+  , activeChannelId: Maybe ID.Channel
   }
   -- { zones : List Zone
   -- , receivers : List Receiver

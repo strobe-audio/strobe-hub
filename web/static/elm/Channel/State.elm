@@ -1,4 +1,4 @@
-module Channel.State (initialState, update) where
+module Channel.State (initialState, update, attachedReceivers, detachedReceivers) where
 
 
 import Effects exposing (Effects, Never)
@@ -6,6 +6,7 @@ import Debug
 
 import Types exposing (ChannelState, ReceiverState, BroadcasterState)
 import Channel
+import Receiver
 import Receiver.State
 
 
@@ -17,7 +18,6 @@ forChannel channelId list =
 initialState : BroadcasterState -> ChannelState -> Channel.Model
 initialState broadcasterState channelState =
     let
-        receivers = forChannel channelState.id broadcasterState.receivers
         renditions = forChannel channelState.id broadcasterState.sources
     in
         { id = channelState.id
@@ -25,7 +25,6 @@ initialState broadcasterState channelState =
         , position = channelState.position
         , volume = channelState.volume
         , playing = channelState.playing
-        , receivers = List.map Receiver.State.initialState receivers
         , playlist = renditions
         , showAddReceiver = False
         }
@@ -54,4 +53,13 @@ update action channel =
 
 
 
+
+attachedReceivers : Types.Model -> Channel.Model -> List Receiver.Model
+attachedReceivers model channel =
+  List.filter (\r -> r.zoneId == channel.id) model.allReceivers
+
+
+detachedReceivers : Types.Model -> Channel.Model -> List Receiver.Model
+detachedReceivers model channel =
+  List.filter (\r -> r.zoneId /= channel.id) model.allReceivers
 

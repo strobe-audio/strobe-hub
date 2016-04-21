@@ -4,6 +4,7 @@ module View (root) where
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Debug
 
 import Types exposing (..)
 import State
@@ -13,7 +14,7 @@ import Channel
 root : Signal.Address Action -> Model -> Html
 root address model =
   let
-      activeChannel = State.activeChannel model
+      activeChannel = Debug.log "showing channel" (State.activeChannel model)
   in
     case activeChannel of
       Nothing ->

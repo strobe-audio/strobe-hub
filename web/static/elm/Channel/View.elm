@@ -6,11 +6,15 @@ import Html.Events exposing (..)
 import Debug
 
 import Types exposing (..)
+
 import Channel
+import Channel.State
+
 import Rendition
 import Rendition.View
-import Receiver.View
+
 import Receiver
+import Receiver.View
 
 
 root : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
@@ -41,8 +45,8 @@ playingSong address channel maybeRendition =
 receiverList : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
 receiverList address model channel =
   let
-      attached = Debug.log "receivers" channel.receivers
-      detached = Debug.log "detached" (receiversNotAttachedToChannel model channel)
+      attached = Debug.log "receivers" (Channel.State.attachedReceivers model channel)
+      detached = Debug.log "detached" (Channel.State.detachedReceivers model channel)
       showAdd = Debug.log "show add" channel.showAddReceiver
       addButton = case List.length detached of
         0 ->
@@ -70,15 +74,6 @@ receiverList address model channel =
      , receiverList
      , div [ class "channel-receivers--list" ] (List.map (Receiver.View.attached receiverAddress) attached)
      ]
-
-
-
-receiversNotAttachedToChannel : Model -> Channel.Model -> List Receiver.Model
-receiversNotAttachedToChannel model channel =
-  let
-      receivers = List.map (\c -> c.receivers) model.channels |> List.concat
-  in
-      List.filter (\r -> r.zoneId /= channel.id) receivers
 
 
 attachReceiverList : Signal.Address Receiver.Action -> Channel.Model -> List Receiver.Model -> Html
