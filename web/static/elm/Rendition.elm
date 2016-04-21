@@ -1,4 +1,4 @@
-module Rendition.Types where
+module Rendition where
 
 type alias SourceMetadata =
   { bit_rate:     Maybe Int
@@ -28,7 +28,7 @@ type alias Source =
   }
 
 
-type alias Rendition =
+type alias Model =
   { id: String
   , position: Int
   , playbackPosition: Int
@@ -40,4 +40,5 @@ type alias Rendition =
 type Action
  = NoOp
  | Skip
+
 

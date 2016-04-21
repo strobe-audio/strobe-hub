@@ -7,7 +7,7 @@ import Debug
 
 import Types exposing (..)
 import Channel
-import Rendition.Types exposing (Rendition)
+import Rendition
 import Rendition.View
 import Receiver.View
 import Receiver
@@ -26,7 +26,7 @@ root address model channel =
       ]
 
 
-playingSong : Signal.Address () -> Channel.Model -> Maybe Rendition -> Html
+playingSong : Signal.Address () -> Channel.Model -> Maybe Rendition.Model -> Html
 playingSong address channel maybeRendition =
   case maybeRendition of
     Nothing ->

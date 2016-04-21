@@ -6,12 +6,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
 
-import Rendition.Types exposing (Rendition)
+import Rendition
 import Source.View
 
 
 
-playing : Signal.Address () -> Rendition -> Html
+playing : Signal.Address () -> Rendition.Model -> Html
 playing playPauseAddress rendition =
   div [ id rendition.id, class "player" ]
     [ div [ class "player-icon" ]
@@ -30,7 +30,7 @@ playing playPauseAddress rendition =
     ]
 
 
-progress : Signal.Address () -> Rendition -> Html
+progress : Signal.Address () -> Rendition.Model -> Html
 progress address rendition =
   case rendition.source.metadata.duration_ms of
     Nothing ->
@@ -45,12 +45,12 @@ progress address rendition =
         ]
 
 
-playlist : Signal.Address Rendition.Types.Action -> Rendition -> Html
+playlist : Signal.Address Rendition.Action -> Rendition.Model -> Html
 playlist address rendition =
   div
     [ key rendition.id
     , class "block playlist-entry"
-    , onDoubleClick address (Rendition.Types.Skip)
+    , onDoubleClick address (Rendition.Skip)
     ]
     [ div [ class "playlist-entry--title" ]
       [ strong [] [ text (renditionTitle rendition) ] ]
@@ -62,16 +62,16 @@ playlist address rendition =
       ]
   ]
 
-renditionTitle : Rendition -> String
+renditionTitle : Rendition.Model -> String
 renditionTitle rendition =
   Maybe.withDefault "Untitled" rendition.source.metadata.title
 
 
-renditionAlbum : Rendition -> String
+renditionAlbum : Rendition.Model -> String
 renditionAlbum rendition =
   Maybe.withDefault "Untitled Album" rendition.source.metadata.album
 
 
-renditionPerformer : Rendition -> String
+renditionPerformer : Rendition.Model -> String
 renditionPerformer rendition =
   Maybe.withDefault "" rendition.source.metadata.performer

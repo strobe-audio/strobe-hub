@@ -2,7 +2,7 @@ module Channel where
 
 -- import Types exposing (Action)
 import Receiver
-import Rendition.Types exposing (Rendition)
+import Rendition
 
 
 type alias Model =
@@ -12,7 +12,7 @@ type alias Model =
   , volume:   Float
   , playing:   Bool
   , receivers : List Receiver.Model
-  , playlist : List Rendition
+  , playlist : List Rendition.Model
   , showAddReceiver : Bool
   }
 
@@ -21,7 +21,7 @@ type Action
   = Volume Float
   | PlayPause
   | ModifyReceiver Receiver.Action
-  | ModifyRendition String Rendition.Types.Action
+  | ModifyRendition String Rendition.Action
   | ShowAddReceiver Bool
   | NoOp
 

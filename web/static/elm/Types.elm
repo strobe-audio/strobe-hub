@@ -4,7 +4,7 @@ import Dict exposing (Dict)
 import Library
 
 import Channel
-import Rendition.Types exposing (Rendition)
+import Rendition
 
 type Action
   = InitialState BroadcasterState
@@ -62,7 +62,7 @@ type alias ChannelState =
 type alias BroadcasterState =
   { channels : List ChannelState
   , receivers : List ReceiverState
-  , sources : List Rendition
+  , sources : List Rendition.Model
   }
 
 -- type alias UIState =
