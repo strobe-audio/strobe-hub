@@ -5,7 +5,7 @@ import Effects exposing (Effects, Never)
 import Debug
 
 import Types exposing (ChannelState, ReceiverState, BroadcasterState)
-import Channel.Types exposing (..)
+import Channel
 import Receiver.State
 
 
@@ -14,7 +14,7 @@ forChannel channelId list =
   List.filter (\r -> r.zoneId == channelId) list
 
 
-initialState : BroadcasterState -> ChannelState -> Channel
+initialState : BroadcasterState -> ChannelState -> Channel.Model
 initialState broadcasterState channelState =
     let
         receivers = forChannel channelState.id broadcasterState.receivers
@@ -31,25 +31,25 @@ initialState broadcasterState channelState =
         }
 
 
-update : ChannelAction -> Channel -> ( Channel, Effects ChannelAction )
+update : Channel.Action -> Channel.Model -> ( Channel.Model, Effects Channel.Action )
 update action channel =
   case action of
-    NoOp ->
+    Channel.NoOp ->
       ( channel, Effects.none )
 
-    ShowAddReceiver show ->
+    Channel.ShowAddReceiver show ->
       ( { channel | showAddReceiver = show }, Effects.none )
 
-    Volume volume ->
+    Channel.Volume volume ->
       ( channel, Effects.none )
 
-    PlayPause ->
+    Channel.PlayPause ->
       ( channel, Effects.none )
 
-    Receiver receiverAction ->
+    Channel.ModifyReceiver receiverAction ->
       ( channel, Effects.none )
 
-    ModifyRendition renditionId renditionAction ->
+    Channel.ModifyRendition renditionId renditionAction ->
       ( channel, Effects.none )
 
 

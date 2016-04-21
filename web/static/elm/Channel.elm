@@ -1,11 +1,11 @@
-module Channel.Types where
+module Channel where
 
 -- import Types exposing (Action)
 import Receiver.Types exposing (Receiver)
 import Rendition.Types exposing (Rendition)
 
 
-type alias Channel =
+type alias Model =
   { id:       String
   , name:     String
   , position: Int
@@ -17,17 +17,11 @@ type alias Channel =
   }
 
 
-type ChannelAction
+type Action
   = Volume Float
   | PlayPause
-  | Receiver Receiver.Types.Action
+  | ModifyReceiver Receiver.Types.Action
   | ModifyRendition String Rendition.Types.Action
   | ShowAddReceiver Bool
   | NoOp
-
-type alias Context =
-  { channelSelect : Signal.Address ()
-  , modeSelect : String -> Signal.Address ()
-  , actions : Signal.Address ChannelAction
-  }
 

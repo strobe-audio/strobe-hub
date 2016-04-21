@@ -6,18 +6,18 @@ import Html.Events exposing (..)
 import Debug
 
 import Types exposing (..)
-import Channel.Types exposing (..)
+import Channel
 import Rendition.Types exposing (Rendition)
 import Rendition.View
 import Receiver.View
 import Receiver.Types exposing (Receiver)
 
 
-root : Signal.Address ChannelAction -> Model -> Channel -> Html
+root : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
 root address model channel =
   let
       rendition = List.head channel.playlist
-      playPauseAddress = Signal.forwardTo address (always PlayPause)
+      playPauseAddress = Signal.forwardTo address (always Channel.PlayPause)
   in
     div []
       [ (playingSong playPauseAddress channel rendition)
@@ -26,7 +26,7 @@ root address model channel =
       ]
 
 
-playingSong : Signal.Address () -> Channel -> Maybe Rendition -> Html
+playingSong : Signal.Address () -> Channel.Model -> Maybe Rendition -> Html
 playingSong address channel maybeRendition =
   case maybeRendition of
     Nothing ->
@@ -38,7 +38,7 @@ playingSong address channel maybeRendition =
       ]
 
 
-receiverList : Signal.Address ChannelAction -> Model -> Channel -> Html
+receiverList : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
 receiverList address model channel =
   let
       attached = Debug.log "receivers" channel.receivers
@@ -49,15 +49,15 @@ receiverList address model channel =
           []
         _ ->
           if showAdd then
-            [ div [ class "block channel-receivers--add", onClick address (ShowAddReceiver False) ]
+            [ div [ class "block channel-receivers--add", onClick address (Channel.ShowAddReceiver False) ]
               [ i [ class "fa fa-caret-up" ] [] ]
             ]
           else
-            [ div [ class "block channel-receivers--add", onClick address (ShowAddReceiver True) ]
+            [ div [ class "block channel-receivers--add", onClick address (Channel.ShowAddReceiver True) ]
               [ i [ class "fa fa-plus" ] [] ]
             ]
       -- FIXME: the receiver address needs an id and so is per-receiver
-      receiverAddress = Signal.forwardTo address Channel.Types.Receiver
+      receiverAddress = Signal.forwardTo address Channel.ModifyReceiver
       receiverList = case showAdd of
         False ->
           div [] []
@@ -73,7 +73,7 @@ receiverList address model channel =
 
 
 
-receiversNotAttachedToChannel : Model -> Channel -> List Receiver
+receiversNotAttachedToChannel : Model -> Channel.Model -> List Receiver
 receiversNotAttachedToChannel model channel =
   let
       receivers = List.map (\c -> c.receivers) model.channels |> List.concat
@@ -81,12 +81,12 @@ receiversNotAttachedToChannel model channel =
       List.filter (\r -> r.zoneId /= channel.id) receivers
 
 
-attachReceiverList : Signal.Address Receiver.Types.Action -> Channel -> List Receiver -> Html
+attachReceiverList : Signal.Address Receiver.Types.Action -> Channel.Model -> List Receiver -> Html
 attachReceiverList address channel receivers =
     div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry address channel) receivers)
 
 
-attachReceiverEntry : Signal.Address Receiver.Types.Action -> Channel -> Receiver -> Html
+attachReceiverEntry : Signal.Address Receiver.Types.Action -> Channel.Model -> Receiver -> Html
 attachReceiverEntry address channel receiver =
   let
       receiverAddress =  Receiver.Types.Attach channel.id
@@ -102,12 +102,12 @@ attachReceiverEntry address channel receiver =
         ]
 
 
-playlist : Signal.Address ChannelAction -> Model -> Channel -> Html
+playlist : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
 playlist address model channel =
   let
       entry rendition =
         let
-            renditionAddress = Signal.forwardTo address (ModifyRendition rendition.id)
+            renditionAddress = Signal.forwardTo address (Channel.ModifyRendition rendition.id)
         in
             Rendition.View.playlist renditionAddress rendition
   in

@@ -5,7 +5,7 @@ import Debug
 import List.Extra
 
 import Types exposing (..)
-import Channel.Types exposing (Channel)
+import Channel
 import Channel.State
 
 
@@ -24,12 +24,12 @@ initialState =
   in
     model
 
-broadcasterState : BroadcasterState -> List Channel
+broadcasterState : BroadcasterState -> List Channel.Model
 broadcasterState state =
   List.map (Channel.State.initialState (Debug.log "state" state)) state.channels
 
 
-activeChannel : Model -> Maybe Channel
+activeChannel : Model -> Maybe Channel.Model
 activeChannel model =
   case model.activeChannelId of
     Nothing ->

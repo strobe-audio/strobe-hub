@@ -3,12 +3,12 @@ module Types where
 import Dict exposing (Dict)
 import Library
 
-import Channel.Types -- exposing (Channel)
+import Channel
 import Rendition.Types exposing (Rendition)
 
 type Action
   = InitialState BroadcasterState
-  | ModifyChannel Channel.Types.Channel Channel.Types.ChannelAction
+  | ModifyChannel Channel.Model Channel.Action
   -- | ReceiverStatus (String, ReceiverStatusEvent)
   -- | ZoneStatus (String, ZoneStatusEvent)
   -- | UpdateReceiverVolume Receiver Float
@@ -26,7 +26,7 @@ type Action
   | SetMode String
   -- | ToggleZoneSelector
 
-  | ChooseChannel Channel.Types.Channel
+  | ChooseChannel Channel.Model
   | NoOp
 
 
@@ -37,7 +37,7 @@ type alias ReceiverID = String
 type alias ID = String
 
 type alias Model =
-  { channels : List Channel.Types.Channel
+  { channels : List Channel.Model
   , choosingZone : Bool
   , activeChannelId: Maybe String
   }

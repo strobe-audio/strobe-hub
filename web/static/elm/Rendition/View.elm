@@ -7,7 +7,6 @@ import Html.Events exposing (..)
 
 
 import Rendition.Types exposing (Rendition)
-import Channel.Types exposing (ChannelAction)
 import Source.View
 
 

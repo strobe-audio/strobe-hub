@@ -8,7 +8,7 @@ import Html.Events exposing (..)
 import Types exposing (..)
 import State
 import Channel.View
-import Channel.Types exposing (Channel)
+import Channel
 
 root : Signal.Address Action -> Model -> Html
 root address model =
@@ -21,7 +21,7 @@ root address model =
       Just channel ->
         activeChannelView address model channel
 
-activeChannelView : Signal.Address Action -> Model -> Channel -> Html
+activeChannelView : Signal.Address Action -> Model -> Channel.Model -> Html
 activeChannelView address model channel =
   let
       channelAddress = Signal.forwardTo address (ModifyChannel channel)
@@ -41,7 +41,7 @@ activeChannelView address model channel =
       ]
 
 
-modeSelectorPanel : Signal.Address Action -> Model -> Channel -> Html
+modeSelectorPanel : Signal.Address Action -> Model -> Channel.Model -> Html
 modeSelectorPanel address model channel =
   let
       activeState = "channel"
