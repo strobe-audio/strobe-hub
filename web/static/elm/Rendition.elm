@@ -40,5 +40,12 @@ type alias Model =
 type Action
  = NoOp
  | Skip
+ | Progress ProgressEvent
 
 
+type alias ProgressEvent =
+  { zoneId : String
+  , sourceId : String
+  , progress : Int
+  , duration : Int
+  }

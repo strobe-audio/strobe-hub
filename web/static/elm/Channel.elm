@@ -22,5 +22,6 @@ type Action
   | ModifyReceiver Receiver.Action
   | ModifyRendition String Rendition.Action
   | ShowAddReceiver Bool
+  | RenditionProgress Rendition.ProgressEvent
   | NoOp
 

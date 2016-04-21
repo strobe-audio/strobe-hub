@@ -5,12 +5,12 @@ import Effects exposing (Effects, Never)
 import Debug
 
 import Root exposing (ChannelState, ReceiverState, BroadcasterState)
-
 import Channel
 import Channel.Effects
-
 import Receiver
 import Receiver.State
+import Rendition
+import Rendition.State
 
 
 forChannel : String -> List { a | zoneId : String } -> List { a | zoneId : String }
@@ -62,7 +62,28 @@ update action channel =
       ( channel, Effects.none )
 
     Channel.ModifyRendition renditionId renditionAction ->
-      ( channel, Effects.none )
+      let
+          updateRendition rendition =
+            if rendition.id == renditionId then
+              let
+                  (updatedRendition, effect) = Rendition.State.update renditionAction rendition
+              in
+                  (updatedRendition, Effects.map (Channel.ModifyRendition rendition.id) effect)
+            else
+              ( rendition, Effects.none )
+
+          (renditions, effects) =
+            (List.map updateRendition channel.playlist)
+            |> List.unzip
+
+      in
+          ({ channel | playlist = renditions }, Effects.batch effects )
+
+    Channel.RenditionProgress event ->
+      update
+        (Channel.ModifyRendition event.sourceId (Rendition.Progress event))
+        channel
+
 
 
 

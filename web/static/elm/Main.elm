@@ -9,6 +9,8 @@ import StartApp
 import Root
 import State
 import View
+import Rendition
+import Channel
 import Channel.Signals
 import Volume.Signals
 
@@ -21,7 +23,7 @@ app =
     , inputs = [ broadcasterStateActions
                -- , receiverStatusActions
                -- , zoneStatusActions
-               -- , sourceProgressActions
+               , sourceProgressActions
                -- , sourceChangeActions
                -- , volumeChangeActions
                -- , playListAdditionActions
@@ -61,11 +63,15 @@ port zoneStatus : Signal ( String, Root.ZoneStatusEvent )
 --   Signal.map ZoneStatus zoneStatus
 
 
-port sourceProgress : Signal Root.SourceProgressEvent
+port sourceProgress : Signal Rendition.ProgressEvent
 
--- sourceProgressActions : Signal Root.Action
--- sourceProgressActions =
---   Signal.map SourceProgress sourceProgress
+sourceProgressActions : Signal Root.Action
+sourceProgressActions =
+  let
+      forward event =
+        (Root.ModifyChannel event.zoneId) (Channel.RenditionProgress event)
+  in
+      Signal.map forward sourceProgress
 
 
 port sourceChange : Signal Root.SourceChangeEvent

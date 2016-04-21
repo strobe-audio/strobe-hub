@@ -85,4 +85,8 @@ update action model =
     Root.ChooseChannel channel ->
       ({ model | activeChannelId = Just channel.id }, Effects.none)
 
+    Root.SourceProgress event ->
+      ( model, Effects.none )
+
+
 
