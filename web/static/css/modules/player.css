@@ -113,6 +113,7 @@ $volume-height: $button-size;
 
 
 .volume {
+  width: calc(100% - ( 2 * $button-size ));
   height: $volume-height;
   line-height: $volume-height;
   position: relative;
@@ -136,6 +137,9 @@ $volume-height: $button-size;
   z-index: 10;
   height: $volume-height;
 	cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   /* disable mouse events */
 }
 

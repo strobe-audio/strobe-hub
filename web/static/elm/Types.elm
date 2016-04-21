@@ -3,25 +3,30 @@ module Types where
 import Dict exposing (Dict)
 import Library
 
+import Channel.Types -- exposing (Channel)
+import Rendition.Types exposing (Rendition)
+
 type Action
-  = InitialState Model
-  | ReceiverStatus (String, ReceiverStatusEvent)
-  | ZoneStatus (String, ZoneStatusEvent)
-  | UpdateReceiverVolume Receiver Float
-  | UpdateZoneVolume Zone Float
-  | TogglePlayPause (Zone, Bool)
-  | SourceProgress SourceProgressEvent
-  | SourceChange SourceChangeEvent
-  | VolumeChange VolumeChangeEvent
-  | PlayListAddition PlaylistEntry
-  | PlaylistSkip PlaylistEntry
-  | ShowAddReceiver ( Zone, Bool )
-  | AttachReceiver Zone Receiver
-  | LibraryRegistration Library.Node
-  | Library Library.Action
+  = InitialState BroadcasterState
+  | ModifyChannel Channel.Types.Channel Channel.Types.ChannelAction
+  -- | ReceiverStatus (String, ReceiverStatusEvent)
+  -- | ZoneStatus (String, ZoneStatusEvent)
+  -- | UpdateReceiverVolume Receiver Float
+  -- | UpdateZoneVolume Zone Float
+  -- | TogglePlayPause (Zone, Bool)
+  -- | SourceProgress SourceProgressEvent
+  -- | SourceChange SourceChangeEvent
+  -- | VolumeChange VolumeChangeEvent
+  -- | PlayListAddition PlaylistEntry
+  -- | PlaylistSkip PlaylistEntry
+  -- | ShowAddReceiver ( Zone, Bool )
+  -- | AttachReceiver Zone Receiver
+  -- | LibraryRegistration Library.Node
+  -- | Library Library.Action
   | SetMode String
-  | ToggleZoneSelector
-  | ChooseZone Zone
+  -- | ToggleZoneSelector
+
+  | ChooseChannel Channel.Types.Channel
   | NoOp
 
 
@@ -32,37 +37,21 @@ type alias ReceiverID = String
 type alias ID = String
 
 type alias Model =
-  { zones : List Zone
-  , receivers : List Receiver
-  , sources : List PlaylistEntry
-  , library : Library.Model
-  , ui : UIState
-  , activeZoneId: String
-  , activeState: String
+  { channels : List Channel.Types.Channel
   , choosingZone : Bool
+  , activeChannelId: Maybe String
   }
+  -- { zones : List Zone
+  -- , receivers : List Receiver
+  -- , sources : List PlaylistEntry
+  -- , library : Library.Model
+  -- , ui : UIState
+  -- , activeZoneId: String
+  -- , activeState: String
+  -- , choosingZone : Bool
+  -- }
 
-
-type alias UIState =
-  { zones : List ZoneUIState
-  , receivers: List ReceiverUIState
-  }
-
-
-type alias ZoneUIState =
-  { id: String
-  , showAddReceivers : Bool
-  , showRename : Bool
-  }
-
-
-type alias ReceiverUIState =
-  { id: String
-  , showRename : Bool
-  }
-
-
-type alias Zone =
+type alias ChannelState =
   { id:       String
   , name:     String
   , position: Int
@@ -70,8 +59,33 @@ type alias Zone =
   , playing:   Bool
   }
 
+type alias BroadcasterState =
+  { channels : List ChannelState
+  , receivers : List ReceiverState
+  , sources : List Rendition
+  }
 
-type alias Receiver =
+-- type alias UIState =
+--   { zones : List ZoneUIState
+--   , receivers: List ReceiverUIState
+--   }
+
+
+-- type alias ZoneUIState =
+--   { id: String
+--   , showAddReceivers : Bool
+--   , showRename : Bool
+--   }
+--
+--
+-- type alias ReceiverUIState =
+--   { id: String
+--   , showRename : Bool
+--   }
+
+
+
+type alias ReceiverState =
   { id:       String
   , name:     String
   , online:   Bool
