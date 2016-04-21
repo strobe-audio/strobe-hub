@@ -6,12 +6,12 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Debug
 
-import Types exposing (..)
+import Root
 import State
 import Channel.View
 import Channel
 
-root : Signal.Address Action -> Model -> Html
+root : Signal.Address Root.Action -> Root.Model -> Html
 root address model =
   let
       activeChannel = Debug.log "showing channel" (State.activeChannel model)
@@ -22,10 +22,10 @@ root address model =
       Just channel ->
         activeChannelView address model channel
 
-activeChannelView : Signal.Address Action -> Model -> Channel.Model -> Html
+activeChannelView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
 activeChannelView address model channel =
   let
-      channelAddress = Signal.forwardTo address (ModifyChannel channel.id)
+      channelAddress = Signal.forwardTo address (Root.ModifyChannel channel.id)
   -- div [ classList [("elvis", True), ("elvis-mode-channel", model.activeState == "channel"), ("elvis-mode-library", model.activeState == "library")] ] [
   in
       div [ classList [("elvis", True), ("elvis-mode-channel", True), ("elvis-mode-library", False)] ] [
@@ -42,18 +42,18 @@ activeChannelView address model channel =
       ]
 
 
-modeSelectorPanel : Signal.Address Action -> Model -> Channel.Model -> Html
+modeSelectorPanel : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
 modeSelectorPanel address model channel =
   let
       activeState = "channel"
       -- button = case model.activeState of
       button = case activeState of
         "library" ->
-          div [ class "block mode-switch", onClick address (SetMode "channel") ] [
+          div [ class "block mode-switch", onClick address (Root.SetMode "channel") ] [
             i [ class "fa fa-bullseye" ] []
           ]
         "channel" ->
-          div [ class "block mode-switch", onClick address (SetMode "library") ] [
+          div [ class "block mode-switch", onClick address (Root.SetMode "library") ] [
             i [ class "fa fa-music" ] []
           ]
         _ ->
@@ -61,7 +61,7 @@ modeSelectorPanel address model channel =
   in
     div [ class "mode-selector" ] [
       div [ class "block-group" ] [
-        div [ class "block mode-channel-select", onClick address (ChooseChannel channel) ] [
+        div [ class "block mode-channel-select", onClick address (Root.ChooseChannel channel) ] [
           i [ class "fa fa-bullseye" ] []
         ]
       , div [ class "block mode-channel" ] [

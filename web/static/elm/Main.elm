@@ -6,11 +6,11 @@ import Html exposing (Html)
 import Task exposing (Task)
 import StartApp
 
+import Root
 import State
-import Types exposing (..)
 import View
 
-app : StartApp.App Model
+app : StartApp.App Root.Model
 app =
   StartApp.start
     { init = (State.initialState, Effects.none)
@@ -38,58 +38,58 @@ port tasks =
   app.tasks
 
 
-port broadcasterState : Signal BroadcasterState
+port broadcasterState : Signal Root.BroadcasterState
 
-broadcasterStateActions : Signal Action
+broadcasterStateActions : Signal Root.Action
 broadcasterStateActions =
-  Signal.map InitialState broadcasterState
+  Signal.map Root.InitialState broadcasterState
 
 
-port receiverStatus : Signal ( String, ReceiverStatusEvent )
+port receiverStatus : Signal ( String, Root.ReceiverStatusEvent )
 
--- receiverStatusActions : Signal Action
+-- receiverStatusActions : Signal Root.Action
 -- receiverStatusActions =
 --   Signal.map ReceiverStatus receiverStatus
 
 
-port zoneStatus : Signal ( String, ZoneStatusEvent )
+port zoneStatus : Signal ( String, Root.ZoneStatusEvent )
 
--- zoneStatusActions : Signal Action
+-- zoneStatusActions : Signal Root.Action
 -- zoneStatusActions =
 --   Signal.map ZoneStatus zoneStatus
 
 
-port sourceProgress : Signal SourceProgressEvent
+port sourceProgress : Signal Root.SourceProgressEvent
 
--- sourceProgressActions : Signal Action
+-- sourceProgressActions : Signal Root.Action
 -- sourceProgressActions =
 --   Signal.map SourceProgress sourceProgress
 
 
-port sourceChange : Signal SourceChangeEvent
+port sourceChange : Signal Root.SourceChangeEvent
 
--- sourceChangeActions : Signal Action
+-- sourceChangeActions : Signal Root.Action
 -- sourceChangeActions =
 --   Signal.map SourceChange sourceChange
 
 
-port volumeChange : Signal VolumeChangeEvent
+port volumeChange : Signal Root.VolumeChangeEvent
 
--- volumeChangeActions : Signal Action
+-- volumeChangeActions : Signal Root.Action
 -- volumeChangeActions =
 --   Signal.map VolumeChange volumeChange
 
 
-port playlistAddition : Signal PlaylistEntry
+port playlistAddition : Signal Root.PlaylistEntry
 
--- playListAdditionActions : Signal Action
+-- playListAdditionActions : Signal Root.Action
 -- playListAdditionActions =
 --   Signal.map PlayListAddition playlistAddition
 
 
 -- port libraryRegistration : Signal Library.Node
 --
--- libraryRegistrationActions : Signal Action
+-- libraryRegistrationActions : Signal Root.Action
 -- libraryRegistrationActions =
 --   Signal.map LibraryRegistration libraryRegistration
 
@@ -97,7 +97,7 @@ port playlistAddition : Signal PlaylistEntry
 -- port libraryResponse : Signal Library.FolderResponse
 --
 --
--- libraryResponseActions : Signal Action
+-- libraryResponseActions : Signal Root.Action
 -- libraryResponseActions =
 --   let
 --       translate response =

@@ -1,6 +1,6 @@
 module Receiver.State (initialState) where
 
-import Types exposing (ReceiverState)
+import Root exposing (ReceiverState)
 import Receiver
 
 initialState : ReceiverState -> Receiver.Model

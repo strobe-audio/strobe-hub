@@ -4,7 +4,7 @@ module Channel.State (initialState, update, attachedReceivers, detachedReceivers
 import Effects exposing (Effects, Never)
 import Debug
 
-import Types exposing (ChannelState, ReceiverState, BroadcasterState)
+import Root exposing (ChannelState, ReceiverState, BroadcasterState)
 import Channel
 import Receiver
 import Receiver.State
@@ -54,12 +54,12 @@ update action channel =
 
 
 
-attachedReceivers : Types.Model -> Channel.Model -> List Receiver.Model
+attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 attachedReceivers model channel =
   List.filter (\r -> r.zoneId == channel.id) model.receivers
 
 
-detachedReceivers : Types.Model -> Channel.Model -> List Receiver.Model
+detachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 detachedReceivers model channel =
   List.filter (\r -> r.zoneId /= channel.id) model.receivers
 

@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Debug
 
-import Types exposing (..)
+import Root
 
 import Channel
 import Channel.State
@@ -17,7 +17,7 @@ import Receiver
 import Receiver.View
 
 
-root : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
+root : Signal.Address Channel.Action -> Root.Model -> Channel.Model -> Html
 root address model channel =
   let
       rendition = List.head channel.playlist
@@ -42,7 +42,7 @@ playingSong address channel maybeRendition =
       ]
 
 
-receiverList : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
+receiverList : Signal.Address Channel.Action -> Root.Model -> Channel.Model -> Html
 receiverList address model channel =
   let
       attached = Debug.log "receivers" (Channel.State.attachedReceivers model channel)
@@ -97,7 +97,7 @@ attachReceiverEntry address channel receiver =
         ]
 
 
-playlist : Signal.Address Channel.Action -> Model -> Channel.Model -> Html
+playlist : Signal.Address Channel.Action -> Root.Model -> Channel.Model -> Html
 playlist address model channel =
   let
       entry rendition =

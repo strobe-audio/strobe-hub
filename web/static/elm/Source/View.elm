@@ -1,9 +1,9 @@
 module Source.View where
 
 import String
-import Types exposing (..)
+import Root
 
-duration : Source -> String
+duration : Root.Source -> String
 duration source =
   case source.metadata.duration_ms of
     Nothing ->

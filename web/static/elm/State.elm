@@ -4,13 +4,13 @@ import Effects exposing (Effects, Never)
 import Debug
 import List.Extra
 
-import Types -- exposing (..)
+import Root
 import Channel
 import Channel.State
 import Receiver.State
 
 
-initialState : Types.Model
+initialState : Root.Model
 initialState =
   let
     model =
@@ -26,12 +26,12 @@ initialState =
   in
     model
 
-broadcasterState : Types.BroadcasterState -> List Channel.Model
+broadcasterState : Root.BroadcasterState -> List Channel.Model
 broadcasterState state =
   List.map (Channel.State.initialState (Debug.log "state" state)) state.channels
 
 
-activeChannel : Types.Model -> Maybe Channel.Model
+activeChannel : Root.Model -> Maybe Channel.Model
 activeChannel model =
   case model.activeChannelId of
     Nothing ->
@@ -40,13 +40,13 @@ activeChannel model =
       List.Extra.find (\c -> c.id == id) model.channels
 
 
-update : Types.Action -> Types.Model -> (Types.Model, Effects Types.Action)
+update : Root.Action -> Root.Model -> (Root.Model, Effects Root.Action)
 update action model =
   case action of
-    Types.NoOp ->
+    Root.NoOp ->
       (model, Effects.none)
 
-    Types.InitialState state ->
+    Root.InitialState state ->
       let
           channels = List.map (Channel.State.initialState state) state.channels
           receivers = List.map Receiver.State.initialState state.receivers
@@ -61,24 +61,24 @@ update action model =
         ( updatedModel, Effects.none )
 
 
-    Types.ModifyChannel channelId channelAction ->
+    Root.ModifyChannel channelId channelAction ->
       let
           updateChannel channel =
             if channel.id == channelId then
               let
                   (updatedChannel, effect) = (Channel.State.update channelAction channel)
               in
-                  (updatedChannel, Effects.map (Types.ModifyChannel channelId) effect)
+                  (updatedChannel, Effects.map (Root.ModifyChannel channelId) effect)
             else
               ( channel, Effects.none )
           (channels, effects) = (List.map updateChannel model.channels) |> List.unzip
       in
         ({ model | channels = channels }, (Effects.batch effects))
 
-    Types.SetMode mode ->
+    Root.SetMode mode ->
       (model, Effects.none)
 
-    Types.ChooseChannel activeChannel ->
+    Root.ChooseChannel activeChannel ->
       (model, Effects.none)
 
 

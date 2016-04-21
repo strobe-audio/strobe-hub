@@ -1,6 +1,5 @@
 module Channel where
 
--- import Types exposing (Action)
 import Receiver
 import Rendition
 import ID

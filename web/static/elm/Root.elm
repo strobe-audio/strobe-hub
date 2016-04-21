@@ -1,4 +1,4 @@
-module Types where
+module Root where
 
 import Dict exposing (Dict)
 import Library
