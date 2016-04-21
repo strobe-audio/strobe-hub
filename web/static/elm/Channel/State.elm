@@ -33,7 +33,7 @@ initialState broadcasterState channelState =
         }
 
 
-update : Channel.Action -> Channel.Model -> ( Channel.Model, Effects Root.Action )
+update : Channel.Action -> Channel.Model -> ( Channel.Model, Effects Channel.Action )
 update action channel =
   case action of
     Channel.NoOp ->

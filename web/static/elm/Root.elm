@@ -26,8 +26,7 @@ type Action
   -- | LibraryRegistration Library.Node
   -- | Library Library.Action
   | SetMode String
-  -- | ToggleZoneSelector
-
+  | ToggleChannelSelector
   | ChooseChannel Channel.Model
   | NoOp
 
@@ -37,7 +36,7 @@ type Action
 type alias Model =
   { channels : List Channel.Model
   , receivers: List Receiver.Model
-  , choosingZone : Bool
+  , choosingChannel : Bool
   , activeChannelId: Maybe ID.Channel
   }
   -- { zones : List Zone
@@ -47,7 +46,6 @@ type alias Model =
   -- , ui : UIState
   -- , activeZoneId: String
   -- , activeState: String
-  -- , choosingZone : Bool
   -- }
 
 type alias ChannelState =

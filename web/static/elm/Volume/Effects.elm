@@ -9,23 +9,22 @@ import Channel
 import Volume.Signals
 
 
-channelVolumeChange: Channel.Model -> Effects Root.Action
+channelVolumeChange: Channel.Model -> Effects ()
 channelVolumeChange channel =
   volumeChange "channel" channel
 
 
-receiverVolumeChange: Channel.Model -> Effects Root.Action
+receiverVolumeChange: Channel.Model -> Effects ()
 receiverVolumeChange channel =
   volumeChange "receiver" channel
 
 
-volumeChange: String -> { a | id : String, volume : Float } -> Effects Root.Action
+volumeChange: String -> { a | id : String, volume : Float } -> Effects ()
 volumeChange kind model =
   let
       mailbox = Volume.Signals.volumeChange
   in
       Signal.send mailbox.address (kind, model.id, model.volume)
         |> Effects.task
-        |> Effects.map (always Root.NoOp)
 
 

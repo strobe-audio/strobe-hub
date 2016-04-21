@@ -62,15 +62,32 @@ modeSelectorPanel address model channel =
         _ ->
           div [] []
   in
-    div [ class "mode-selector" ] [
-      div [ class "block-group" ] [
-        div [ class "block mode-channel-select", onClick address (Root.ChooseChannel channel) ] [
-          i [ class "fa fa-bullseye" ] []
-        ]
-      , div [ class "block mode-channel" ] [
-          (Volume.View.control volumeAddress channel.volume channel.name)
-        ]
+    div [ class "mode-selector" ]
+      [ div [ class "block-group" ]
+        [ div
+          [ class "block mode-channel-select", onClick address (Root.ToggleChannelSelector) ]
+          [ i [ class "fa fa-bullseye" ] [] ]
+        , div [ class "block mode-channel" ]
+          [ (Volume.View.control volumeAddress channel.volume channel.name) ]
         , button
+        ]
+      , (channelSelectorPanel address model channel)
       ]
-    -- , (zoneSelectorPanel address model)
-    ]
+
+
+channelSelectorPanel : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
+channelSelectorPanel address model activeChannel =
+  let
+      channelChoice channel =
+        div [ class "channel-selector--channel", onClick address (Root.ChooseChannel channel) ]
+          [ text channel.name ]
+      unselectedChannels = List.filter (\channel -> channel.id /= activeChannel.id) model.channels
+  in
+    case model.choosingChannel of
+      False ->
+        div [] []
+      True ->
+        div [ class "channel-selector" ]
+          ( List.map channelChoice  unselectedChannels)
+
+

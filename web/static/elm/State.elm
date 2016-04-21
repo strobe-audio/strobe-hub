@@ -16,7 +16,7 @@ initialState =
     model =
       { channels = []
       , receivers = []
-      , choosingZone = False
+      , choosingChannel = False
       , activeChannelId = Nothing
       }
       -- , library = Library.init
@@ -71,6 +71,7 @@ update action model =
                   (updatedChannel, Effects.map (Root.ModifyChannel channelId) effect)
             else
               ( channel, Effects.none )
+
           (channels, effects) = (List.map updateChannel model.channels) |> List.unzip
       in
         ({ model | channels = channels }, (Effects.batch effects))
@@ -78,7 +79,10 @@ update action model =
     Root.SetMode mode ->
       (model, Effects.none)
 
-    Root.ChooseChannel activeChannel ->
-      (model, Effects.none)
+    Root.ToggleChannelSelector ->
+      ({ model | choosingChannel = not(model.choosingChannel) }, Effects.none)
+
+    Root.ChooseChannel channel ->
+      ({ model | activeChannelId = Just channel.id }, Effects.none)
 
 
