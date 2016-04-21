@@ -83,7 +83,14 @@ update action model =
       ({ model | showChannelSwitcher = not(model.showChannelSwitcher) }, Effects.none)
 
     Root.ChooseChannel channel ->
-      ({ model | activeChannelId = Just channel.id }, Effects.none)
+      let
+          updatedModel =
+            { model
+            | showChannelSwitcher = False
+            , activeChannelId = Just channel.id
+            }
+      in
+          (updatedModel, Effects.none)
 
     Root.SourceProgress event ->
       ( model, Effects.none )
