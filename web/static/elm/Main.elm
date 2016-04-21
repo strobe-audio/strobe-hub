@@ -9,6 +9,8 @@ import StartApp
 import Root
 import State
 import View
+import Channel.Signals
+import Volume.Signals
 
 app : StartApp.App Root.Model
 app =
@@ -108,24 +110,21 @@ port playlistAddition : Signal Root.PlaylistEntry
 --       Signal.map translate libraryResponse
 
 
-volumeChangeRequestsBox : Signal.Mailbox ( String, String, Float )
-volumeChangeRequestsBox =
-  Signal.mailbox ( "", "", 0.0 )
-
 
 port volumeChangeRequests : Signal ( String, String, Float )
 port volumeChangeRequests =
-  volumeChangeRequestsBox.signal
-
-
-zonePlayPauseRequestsBox : Signal.Mailbox ( String, Bool )
-zonePlayPauseRequestsBox =
-  Signal.mailbox ( "", False )
+  let
+      mailbox = Volume.Signals.volumeChange
+  in
+      mailbox.signal
 
 
 port playPauseChanges : Signal ( String, Bool )
 port playPauseChanges =
-  zonePlayPauseRequestsBox.signal
+  let
+      mailbox = Channel.Signals.playPause
+  in
+      mailbox.signal
 
 
 playlistSkipRequestsBox : Signal.Mailbox ( String, String )

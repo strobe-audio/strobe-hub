@@ -8,13 +8,14 @@ import Debug
 
 import Root
 import State
-import Channel.View
 import Channel
+import Channel.View
+import Volume.View
 
 root : Signal.Address Root.Action -> Root.Model -> Html
 root address model =
   let
-      activeChannel = Debug.log "showing channel" (State.activeChannel model)
+      activeChannel = (State.activeChannel model)
   in
     case activeChannel of
       Nothing ->
@@ -46,6 +47,8 @@ modeSelectorPanel : Signal.Address Root.Action -> Root.Model -> Channel.Model ->
 modeSelectorPanel address model channel =
   let
       activeState = "channel"
+      channelAddress = Signal.forwardTo address (Root.ModifyChannel channel.id)
+      volumeAddress = Signal.forwardTo channelAddress Channel.Volume
       -- button = case model.activeState of
       button = case activeState of
         "library" ->
@@ -65,7 +68,7 @@ modeSelectorPanel address model channel =
           i [ class "fa fa-bullseye" ] []
         ]
       , div [ class "block mode-channel" ] [
-          -- (Volume.volumeControl channelAddress zone.volume zone.name)
+          (Volume.View.control volumeAddress channel.volume channel.name)
         ]
         , button
       ]

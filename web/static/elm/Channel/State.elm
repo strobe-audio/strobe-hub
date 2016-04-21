@@ -5,7 +5,10 @@ import Effects exposing (Effects, Never)
 import Debug
 
 import Root exposing (ChannelState, ReceiverState, BroadcasterState)
+
 import Channel
+import Channel.Effects
+
 import Receiver
 import Receiver.State
 
@@ -30,7 +33,7 @@ initialState broadcasterState channelState =
         }
 
 
-update : Channel.Action -> Channel.Model -> ( Channel.Model, Effects Channel.Action )
+update : Channel.Action -> Channel.Model -> ( Channel.Model, Effects Root.Action )
 update action channel =
   case action of
     Channel.NoOp ->
@@ -39,11 +42,21 @@ update action channel =
     Channel.ShowAddReceiver show ->
       ( { channel | showAddReceiver = show }, Effects.none )
 
-    Channel.Volume volume ->
-      ( channel, Effects.none )
+    Channel.Volume maybeVolume ->
+      case maybeVolume of
+        Just volume ->
+          let
+              updatedChannel = { channel | volume = volume }
+          in
+              (updatedChannel, Channel.Effects.volume updatedChannel)
+        Nothing ->
+          ( channel, Effects.none )
 
     Channel.PlayPause ->
-      ( channel, Effects.none )
+      let
+          updatedChannel = channelPlayPause channel
+      in
+          (updatedChannel, Channel.Effects.playPause updatedChannel)
 
     Channel.ModifyReceiver receiverAction ->
       ( channel, Effects.none )
@@ -63,3 +76,7 @@ detachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 detachedReceivers model channel =
   List.filter (\r -> r.zoneId /= channel.id) model.receivers
 
+
+channelPlayPause : Channel.Model -> Channel.Model
+channelPlayPause channel =
+  { channel | playing = (not channel.playing) }

@@ -45,9 +45,9 @@ playingSong address channel maybeRendition =
 receiverList : Signal.Address Channel.Action -> Root.Model -> Channel.Model -> Html
 receiverList address model channel =
   let
-      attached = Debug.log "receivers" (Channel.State.attachedReceivers model channel)
-      detached = Debug.log "detached" (Channel.State.detachedReceivers model channel)
-      showAdd = Debug.log "show add" channel.showAddReceiver
+      attached = (Channel.State.attachedReceivers model channel)
+      detached = (Channel.State.detachedReceivers model channel)
+      showAdd = channel.showAddReceiver
       addButton = case List.length detached of
         0 ->
           []
