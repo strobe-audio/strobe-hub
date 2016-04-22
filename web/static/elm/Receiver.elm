@@ -16,4 +16,6 @@ type Action
   = NoOp
   | Volume (Maybe Float)
   | Attach ID.Channel
+  | Online ID.Channel
+  | Offline
 

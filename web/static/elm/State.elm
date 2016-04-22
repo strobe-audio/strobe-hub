@@ -63,6 +63,15 @@ update action model =
         ( updatedModel, Effects.none )
 
 
+    Root.ReceiverStatus (eventType, event) ->
+      case eventType of
+        "receiver_added" ->
+          update ((Root.ModifyReceiver event.receiverId) (Receiver.Online event.zoneId)) model
+        "receiver_removed" ->
+          update ((Root.ModifyReceiver event.receiverId) Receiver.Offline) model
+        _ ->
+          (model, Effects.none)
+
     Root.ModifyChannel channelId channelAction ->
       let
           updateChannel channel =

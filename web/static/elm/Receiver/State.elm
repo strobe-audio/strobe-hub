@@ -36,6 +36,12 @@ update action model =
       in
           ( model, Effects.none )
 
+    Receiver.Online channelId ->
+      ( { model | online = True, zoneId = channelId }, Effects.none )
+
+    Receiver.Offline ->
+      ( { model | online = False }, Effects.none )
+
     _ ->
       ( model, Effects.none )
 

@@ -12,7 +12,7 @@ type Action
   = InitialState BroadcasterState
   | ModifyChannel ID.Channel Channel.Action
   | ModifyReceiver ID.Receiver Receiver.Action
-  -- | ReceiverStatus (String, ReceiverStatusEvent)
+  | ReceiverStatus (String, ReceiverStatusEvent)
   -- | ZoneStatus (String, ZoneStatusEvent)
   -- | UpdateReceiverVolume Receiver Float
   -- | UpdateZoneVolume Zone Float

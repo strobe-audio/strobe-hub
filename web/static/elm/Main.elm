@@ -21,7 +21,7 @@ app =
     , update = State.update
     , view = View.root
     , inputs = [ broadcasterStateActions
-               -- , receiverStatusActions
+               , receiverStatusActions
                -- , zoneStatusActions
                , sourceProgressActions
                -- , sourceChangeActions
@@ -51,9 +51,9 @@ broadcasterStateActions =
 
 port receiverStatus : Signal ( String, Root.ReceiverStatusEvent )
 
--- receiverStatusActions : Signal Root.Action
--- receiverStatusActions =
---   Signal.map ReceiverStatus receiverStatus
+receiverStatusActions : Signal Root.Action
+receiverStatusActions =
+  Signal.map Root.ReceiverStatus receiverStatus
 
 
 port zoneStatus : Signal ( String, Root.ZoneStatusEvent )
