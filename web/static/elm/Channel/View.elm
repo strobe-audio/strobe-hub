@@ -17,16 +17,16 @@ import Receiver
 import Receiver.View
 
 
-root : Signal.Address Channel.Action -> Root.Model -> Channel.Model -> Html
-root address model channel =
+root : Root.ChannelContext -> Channel.Model -> Html
+root context channel =
   let
       rendition = List.head channel.playlist
-      playPauseAddress = Signal.forwardTo address (always Channel.PlayPause)
+      playPauseAddress = Signal.forwardTo context.channelAddress (always Channel.PlayPause)
   in
     div []
       [ (playingSong playPauseAddress channel rendition)
-      , (receiverList address model channel)
-      , (playlist address model channel)
+      , (receiverList context channel)
+      , (playlist context channel)
       ]
 
 
@@ -42,54 +42,54 @@ playingSong address channel maybeRendition =
       ]
 
 
-receiverList : Signal.Address Channel.Action -> Root.Model -> Channel.Model -> Html
-receiverList address model channel =
+receiverList : Root.ChannelContext -> Channel.Model -> Html
+receiverList context channel =
   let
-      attached = (Channel.State.attachedReceivers model channel)
-      detached = (Channel.State.detachedReceivers model channel)
-      showAdd = channel.showAddReceiver
-      addButton = case List.length detached of
+      addButton = case List.length context.detached of
         0 ->
           []
         _ ->
-          if showAdd then
-            [ div [ class "block channel-receivers--add", onClick address (Channel.ShowAddReceiver False) ]
+          if channel.showAddReceiver then
+            [ div [ class "block channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver False) ]
               [ i [ class "fa fa-caret-up" ] [] ]
             ]
           else
-            [ div [ class "block channel-receivers--add", onClick address (Channel.ShowAddReceiver True) ]
+            [ div [ class "block channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver True) ]
               [ i [ class "fa fa-plus" ] [] ]
             ]
-      -- FIXME: the receiver address needs an id and so is per-receiver
-      receiverAddress = Signal.forwardTo address Channel.ModifyReceiver
-      receiverList = case showAdd of
+
+      attachList = case channel.showAddReceiver of
         False ->
           div [] []
         True ->
-          attachReceiverList receiverAddress channel detached
+          (attachReceiverList context channel context.detached)
+
+      attachedReceiver receiver =
+        (Receiver.View.attached (context.receiverAddress receiver) receiver)
+
 
   in
      div [ class "channel-receivers" ] [
        div [ class "block-group channel-receivers--head" ] ( (div [ class "block divider" ] [ text "Receivers" ]) :: addButton )
-     , receiverList
-     , div [ class "channel-receivers--list" ] (List.map (Receiver.View.attached receiverAddress) attached)
+     , attachList
+     , div [ class "channel-receivers--list" ] (List.map attachedReceiver context.attached)
      ]
 
 
-attachReceiverList : Signal.Address Receiver.Action -> Channel.Model -> List Receiver.Model -> Html
-attachReceiverList address channel receivers =
-    div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry address channel) receivers)
+attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
+attachReceiverList context channel receivers =
+    div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) receivers)
 
 
-attachReceiverEntry : Signal.Address Receiver.Action -> Channel.Model -> Receiver.Model -> Html
-attachReceiverEntry address channel receiver =
+attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
+attachReceiverEntry context channel receiver =
   let
-      receiverAddress =  Receiver.Attach channel.id
+      address = (context.receiverAddress receiver)
   in
       div [ class "channel-receivers--available-receiver" ]
         [ div
           [ class "channel-receivers--add-receiver"
-          , onClick address receiverAddress
+          , onClick address (Receiver.Attach channel.id)
           ]
           [ text receiver.name ]
         , div [ class "channel-receivers--edit-receiver" ]
@@ -97,34 +97,19 @@ attachReceiverEntry address channel receiver =
         ]
 
 
-playlist : Signal.Address Channel.Action -> Root.Model -> Channel.Model -> Html
-playlist address model channel =
+playlist : Root.ChannelContext -> Channel.Model -> Html
+playlist context channel =
   let
       entry rendition =
         let
-            renditionAddress = Signal.forwardTo address (Channel.ModifyRendition rendition.id)
+            renditionAddress = Signal.forwardTo context.channelAddress (Channel.ModifyRendition rendition.id)
         in
             Rendition.View.playlist renditionAddress rendition
   in
-  div [ class "channel-playlist" ]
-      [ div [ class "divider" ] [ text "Playlist" ]
-      , div [ class "block-group channel-playlist" ]
-          (List.map entry channel.playlist)
-      ]
+      div [ class "channel-playlist" ]
+        [ div [ class "divider" ] [ text "Playlist" ]
+        , div [ class "block-group channel-playlist" ]
+            (List.map entry channel.playlist)
+        ]
 
 
--- zoneModePanel : Signal.Address Action -> Model -> List Html
--- zoneModePanel address model =
---   case activeZone model of
---     Nothing ->
---       []
---     Just zone ->
---       let
---         playlist = (zonePlaylist model zone)
---         playlistdebug = (List.map (\e -> e.id) playlist.entries)
---       in
---         [ zoneReceiverList address model zone
---         , div [ class "divider" ] [ text "Playlist" ]
---         , div [ class "block-group channel-playlist" ] (List.map (playlistEntry address)  playlist.entries)
---         ]
---

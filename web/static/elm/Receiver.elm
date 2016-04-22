@@ -14,6 +14,6 @@ type alias Model =
 
 type Action
   = NoOp
-  | Volume Float
-  | Attach String
+  | Volume (Maybe Float)
+  | Attach ID.Channel
 

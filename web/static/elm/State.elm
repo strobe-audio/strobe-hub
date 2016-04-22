@@ -1,4 +1,4 @@
-module State (initialState, update, activeChannel) where
+module State (initialState, update, activeChannel, attachedReceivers, detachedReceivers) where
 
 import Effects exposing (Effects, Never)
 import Debug
@@ -7,6 +7,7 @@ import List.Extra
 import Root
 import Channel
 import Channel.State
+import Receiver
 import Receiver.State
 
 
@@ -25,6 +26,7 @@ initialState =
       -- }
   in
     model
+
 
 broadcasterState : Root.BroadcasterState -> List Channel.Model
 broadcasterState state =
@@ -76,6 +78,22 @@ update action model =
       in
         ({ model | channels = channels }, (Effects.batch effects))
 
+    Root.ModifyReceiver receiverId receiverAction ->
+      let
+          updateReceiver receiver =
+            if receiver.id == receiverId then
+              let
+                  (updatedReceiver, effect) = (Receiver.State.update receiverAction receiver)
+              in
+                  (updatedReceiver, Effects.map (Root.ModifyReceiver receiver.id) effect)
+            else
+              ( receiver, Effects.none )
+
+          (receivers, effects) = (List.map updateReceiver model.receivers) |> List.unzip
+      in
+        ({ model | receivers = receivers }, (Effects.batch effects))
+
+
     Root.SetMode mode ->
       (model, Effects.none)
 
@@ -96,4 +114,15 @@ update action model =
       ( model, Effects.none )
 
 
+
+
+
+attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
+attachedReceivers model channel =
+  List.filter (\r -> r.zoneId == channel.id) model.receivers
+
+
+detachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
+detachedReceivers model channel =
+  List.filter (\r -> r.zoneId /= channel.id) model.receivers
 

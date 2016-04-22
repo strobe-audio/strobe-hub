@@ -19,7 +19,6 @@ type alias Model =
 type Action
   = Volume (Maybe Float)
   | PlayPause
-  | ModifyReceiver Receiver.Action
   | ModifyRendition String Rendition.Action
   | ShowAddReceiver Bool
   | RenditionProgress Rendition.ProgressEvent

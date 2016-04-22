@@ -1,4 +1,4 @@
-module Channel.State (initialState, update, attachedReceivers, detachedReceivers) where
+module Channel.State (initialState, update) where
 
 
 import Effects exposing (Effects, Never)
@@ -58,9 +58,6 @@ update action channel =
       in
           (updatedChannel, Channel.Effects.playPause updatedChannel)
 
-    Channel.ModifyReceiver receiverAction ->
-      ( channel, Effects.none )
-
     Channel.ModifyRendition renditionId renditionAction ->
       let
           updateRendition rendition =
@@ -84,18 +81,6 @@ update action channel =
         (Channel.ModifyRendition event.sourceId (Rendition.Progress event))
         channel
 
-
-
-
-
-attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
-attachedReceivers model channel =
-  List.filter (\r -> r.zoneId == channel.id) model.receivers
-
-
-detachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
-detachedReceivers model channel =
-  List.filter (\r -> r.zoneId /= channel.id) model.receivers
 
 
 channelPlayPause : Channel.Model -> Channel.Model

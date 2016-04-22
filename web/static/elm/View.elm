@@ -26,6 +26,14 @@ root address model =
 activeChannelView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
 activeChannelView address model channel =
   let
+      context =
+        { receiverAddress = (\receiver -> (Signal.forwardTo address (Root.ModifyReceiver receiver.id)))
+        , channelAddress = (Signal.forwardTo address (Root.ModifyChannel channel.id))
+        , attached = (State.attachedReceivers model channel)
+        , detached = (State.detachedReceivers model channel)
+        }
+
+
       channelAddress = Signal.forwardTo address (Root.ModifyChannel channel.id)
   -- div [ classList [("elvis", True), ("elvis-mode-channel", model.activeState == "channel"), ("elvis-mode-library", model.activeState == "library")] ] [
   in
@@ -33,7 +41,7 @@ activeChannelView address model channel =
         div [ class "channels" ] [
           div [ class "mode-wrapper" ] [
             (modeSelectorPanel address model channel)
-            , div [ class "zone-view" ] [ Channel.View.root channelAddress model channel ]
+            , div [ class "zone-view" ] [ Channel.View.root context channel ]
             , div [ class "mode-view" ] [
               -- this should be a view dependent on the current view mode (current zone, library, zone chooser)
               -- div [ id "channel" ] (zoneModePanel address model)

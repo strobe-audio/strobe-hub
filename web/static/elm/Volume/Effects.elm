@@ -6,6 +6,7 @@ import Effects exposing (Effects, Never)
 
 import Root
 import Channel
+import Receiver
 import Volume.Signals
 
 
@@ -14,9 +15,9 @@ channelVolumeChange channel =
   volumeChange "channel" channel
 
 
-receiverVolumeChange: Channel.Model -> Effects ()
-receiverVolumeChange channel =
-  volumeChange "receiver" channel
+receiverVolumeChange: Receiver.Model -> Effects ()
+receiverVolumeChange receiver =
+  volumeChange "receiver" receiver
 
 
 volumeChange: String -> { a | id : String, volume : Float } -> Effects ()

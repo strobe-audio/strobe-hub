@@ -11,6 +11,7 @@ import ID
 type Action
   = InitialState BroadcasterState
   | ModifyChannel ID.Channel Channel.Action
+  | ModifyReceiver ID.Receiver Receiver.Action
   -- | ReceiverStatus (String, ReceiverStatusEvent)
   -- | ZoneStatus (String, ZoneStatusEvent)
   -- | UpdateReceiverVolume Receiver Float
@@ -163,3 +164,10 @@ type alias ZonePlaylist =
   , entries: List PlaylistEntry
   }
 
+
+type alias ChannelContext =
+  { receiverAddress: (Receiver.Model -> Signal.Address Receiver.Action)
+  , channelAddress: Signal.Address Channel.Action
+  , attached: List Receiver.Model
+  , detached: List Receiver.Model
+  }
