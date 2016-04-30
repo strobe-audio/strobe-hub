@@ -5,6 +5,8 @@
   -moz-user-select: none;
   -webkit-user-select: none;
   -ms-user-select: none;
+	display: flex;
+	flex-direction: column;
 	height: $mode-selector-height;
   line-height: $button-size;
   position: fixed;
@@ -14,12 +16,19 @@
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
 }
+.mode-current-channel {
+	display: flex;
+	flex: 0 0 $button-size;
+}
 .mode-channel {
-  width: calc(100% - (2 * $button-size));
+  /* width: calc(100% - (2 * $button-size)); */
+	/* flex: 0 0 (2 * $button-size); */
+	flex: 1;
 }
 .mode-channel-select,
 .mode-switch {
-  width: $button-size;
+	flex: 0 0 $button-size;
+  /* width: $button-size; */
   text-align: center;
   line-height: $button-size;
 }
@@ -31,6 +40,7 @@
 }
 
 .channel-selector {
+	flex: 0 0 $button-size;
   background: #333;
   /* position: fixed; */
   /* top: $button-size; */
@@ -73,7 +83,7 @@
     width: $channel-column-width;
   }
   .mode-channel {
-    width: calc(100% - $button-size);
+    /* width: calc(100% - $button-size); */
   }
   .mode-library {
     display: none;

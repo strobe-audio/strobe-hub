@@ -68,12 +68,12 @@ control address volume label  =
         )
         (\(x, w) ->  handler 1 (Debug.log "move" x) w)
   in
-      div [ class "block-group volume-control" ]
-          [ div [ class "block volume-mute-btn fa fa-volume-off", onClick address (Just 0.0) ] []
-          , div [ class "block volume",  mousemove, touchmove, mousedown, touchstart, touchend]
+      div [ class "volume-control" ]
+          [ div [ class "volume-mute-btn fa fa-volume-off", onClick address (Just 0.0) ] []
+          , div [ class "volume",  mousemove, touchmove, mousedown, touchstart, touchend]
               [ div [ class "volume-level", style [("width", (toString (volume * 100)) ++ "%")] ] []
               , div [ class "volume-label" ] [ text label ]
               ]
-          , div [ class "block volume-full-btn fa fa-volume-up", onClick address (Just 1.0) ] []
+          , div [ class "volume-full-btn fa fa-volume-up", onClick address (Just 1.0) ] []
           ]
 

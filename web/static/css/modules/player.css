@@ -94,7 +94,7 @@ $progress-height: 4px;
 	cursor: pointer;
 }
 .volume-control {
-  /* display: flex; */
+  display: flex;
   height: $button-size;
   background: rgba(0, 0, 0, 0.5);
   position: relative;
@@ -104,16 +104,18 @@ $volume-height: $button-size;
 
 .volume-mute-btn,
 .volume-full-btn {
-  height: $volume-height;
-  width: $volume-height;
-  min-width: $volume-height;
+	flex: 0 0 $volume-height;
+  /* height: $volume-height; */
+  /* width: $volume-height; */
+  /* min-width: $volume-height; */
   text-align: center;
   line-height: $button-size;
 }
 
 
 .volume {
-  width: calc(100% - ( 2 * $button-size ));
+  /* width: calc(100% - ( 2 * $button-size )); */
+	flex: 1;
   height: $volume-height;
   line-height: $volume-height;
   position: relative;

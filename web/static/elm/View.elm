@@ -60,22 +60,22 @@ modeSelectorPanel address model channel =
       -- button = case model.activeState of
       button = case activeState of
         "library" ->
-          div [ class "block mode-switch", onClick address (Root.SetMode "channel") ] [
+          div [ class "mode-switch", onClick address (Root.SetMode "channel") ] [
             i [ class "fa fa-bullseye" ] []
           ]
         "channel" ->
-          div [ class "block mode-switch", onClick address (Root.SetMode "library") ] [
+          div [ class "mode-switch", onClick address (Root.SetMode "library") ] [
             i [ class "fa fa-music" ] []
           ]
         _ ->
           div [] []
   in
     div [ class "mode-selector" ]
-      [ div [ class "block-group" ]
+      [ div [ class "mode-current-channel" ]
         [ div
-          [ class "block mode-channel-select", onClick address (Root.ToggleChannelSelector) ]
+          [ class "mode-channel-select", onClick address (Root.ToggleChannelSelector) ]
           [ i [ class "fa fa-bullseye" ] [] ]
-        , div [ class "block mode-channel" ]
+        , div [ class "mode-channel" ]
           [ (Volume.View.control volumeAddress channel.volume channel.name) ]
         , button
         ]

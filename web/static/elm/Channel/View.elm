@@ -50,11 +50,11 @@ receiverList context channel =
           []
         _ ->
           if channel.showAddReceiver then
-            [ div [ class "block channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver False) ]
+            [ div [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver False) ]
               [ i [ class "fa fa-caret-up" ] [] ]
             ]
           else
-            [ div [ class "block channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver True) ]
+            [ div [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver True) ]
               [ i [ class "fa fa-plus" ] [] ]
             ]
 
@@ -70,7 +70,7 @@ receiverList context channel =
 
   in
      div [ class "channel-receivers" ] [
-       div [ class "block-group channel-receivers--head" ] ( (div [ class "block divider" ] [ text "Receivers" ]) :: addButton )
+       div [ class "channel-receivers--head" ] ( (div [ class "block divider" ] [ text "Receivers" ]) :: addButton )
      , attachList
      , div [ class "channel-receivers--list" ] (List.map attachedReceiver context.attached)
      ]

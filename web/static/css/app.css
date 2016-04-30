@@ -17,11 +17,9 @@
 
 html {
   font-size: 10px;
+  height: 100vh;
 }
 body {
-  display: flex;
-  flex: 1;
-  flex-direction: row;
   height: 100vh;
   margin: 0;
   padding: 0;
@@ -29,6 +27,14 @@ body {
   font-size: 1.4rem;
   /* font-size: 10px; */
   line-height: 125%;
+}
+
+@media (--desktop) {
+  body {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+  }
 }
 
 

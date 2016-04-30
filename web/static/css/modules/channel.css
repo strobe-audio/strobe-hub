@@ -5,6 +5,7 @@
 
 .channel-receivers--head {
   height: $button-size;
+  display: flex;
   .divider {
     width: calc(100% - $button-size);
     height: $button-size;
@@ -12,7 +13,7 @@
   }
 }
 .channel-receivers--add {
-  width: $button-size;
+  flex: 0 0 $button-size;
   text-align: center;
   height: $button-size;
   line-height: $button-size;
