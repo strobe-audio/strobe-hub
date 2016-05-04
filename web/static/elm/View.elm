@@ -64,7 +64,7 @@ activeChannelView address model channel =
           [ div
               [ class "mode-wrapper" ]
               [ (modeSelectorPanel address model channel)
-              , div [ class "zone-view" ] [ Channel.View.root context channel playlistVisible ]
+              , div [ class "channel-view" ] [ Channel.View.root context channel playlistVisible ]
               ]
           ]
       , div [ id "library" ] [ library ]

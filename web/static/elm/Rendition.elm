@@ -36,7 +36,7 @@ type alias Model =
   , position : Int
   , playbackPosition : Int
   , sourceId : String
-  , zoneId : String
+  , channelId : String
   , source : Source
   }
 
@@ -48,7 +48,7 @@ type Action
 
 
 type alias ProgressEvent =
-  { zoneId : String
+  { channelId : String
   , sourceId : String
   , progress : Int
   , duration : Int
@@ -56,6 +56,6 @@ type alias ProgressEvent =
 
 
 type alias ChangeEvent =
-  { zoneId : String
+  { channelId : String
   , removeSourceIds : List String
   }

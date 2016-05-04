@@ -11,9 +11,9 @@ import Rendition
 import Rendition.State
 
 
-forChannel : String -> List { a | zoneId : String } -> List { a | zoneId : String }
+forChannel : String -> List { a | channelId : String } -> List { a | channelId : String }
 forChannel channelId list =
-  List.filter (\r -> r.zoneId == channelId) list
+  List.filter (\r -> r.channelId == channelId) list
 
 
 initialState : BroadcasterState -> ChannelState -> Channel.Model

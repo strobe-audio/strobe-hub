@@ -26,46 +26,46 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:zone_finished, zone_id}, state) do
-    broadcast!("zone_play_pause", %{zoneId: zone_id, status: :stop})
+  def handle_event({:channel_finished, channel_id}, state) do
+    broadcast!("channel_play_pause", %{channelId: channel_id, status: :stop})
     {:ok, state}
   end
 
-  def handle_event({:sources_skipped, zone_id, source_ids}, state) do
-    broadcast!("source_changed", %{zoneId: zone_id, removeSourceIds: source_ids})
+  def handle_event({:sources_skipped, channel_id, source_ids}, state) do
+    broadcast!("source_changed", %{channelId: channel_id, removeSourceIds: source_ids})
     {:ok, state}
   end
 
-  def handle_event({:source_changed, _zone_id, nil, _new_source_id}, state) do
+  def handle_event({:source_changed, _channel_id, nil, _new_source_id}, state) do
     {:ok, state}
   end
-  def handle_event({:source_changed, zone_id, old_source_id, _new_source_id}, state) do
-    broadcast!("source_changed", %{zoneId: zone_id, removeSourceIds: [old_source_id]})
+  def handle_event({:source_changed, channel_id, old_source_id, _new_source_id}, state) do
+    broadcast!("source_changed", %{channelId: channel_id, removeSourceIds: [old_source_id]})
     {:ok, state}
   end
 
-  def handle_event({:source_progress, zone_id, source_id, progress_ms, duration_ms}, state) do
-    count = case Map.get(state.progress_count, zone_id, 0) do
+  def handle_event({:source_progress, channel_id, source_id, progress_ms, duration_ms}, state) do
+    count = case Map.get(state.progress_count, channel_id, 0) do
       0 ->
         broadcast!("source_progress", %{
-          zoneId: zone_id, sourceId: source_id,
+          channelId: channel_id, sourceId: source_id,
           progress: progress_ms, duration: duration_ms
         })
         @progress_interval
       n ->
         n - 1
     end
-    {:ok, %{state | progress_count: Map.put(state.progress_count, zone_id, count)}}
+    {:ok, %{state | progress_count: Map.put(state.progress_count, channel_id, count)}}
   end
 
-  def handle_event({:zone_play_pause, zone_id, status}, state) do
-    broadcast!("zone_play_pause", %{zoneId: zone_id, status: status})
+  def handle_event({:channel_play_pause, channel_id, status}, state) do
+    broadcast!("channel_play_pause", %{channelId: channel_id, status: status})
     {:ok, state}
   end
 
-  def handle_event({event, zone_id, receiver_id}, state)
+  def handle_event({event, channel_id, receiver_id}, state)
   when event in [:receiver_added, :receiver_removed] do
-    broadcast!(to_string(event), %{zoneId: zone_id, receiverId: receiver_id})
+    broadcast!(to_string(event), %{channelId: channel_id, receiverId: receiver_id})
     {:ok, state}
   end
 
@@ -74,8 +74,8 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:zone_volume_change, id, volume}, state) do
-    broadcast!("volume_change", %{ id: id, target: "zone", volume: volume })
+  def handle_event({:channel_volume_change, id, volume}, state) do
+    broadcast!("volume_change", %{ id: id, target: "channel", volume: volume })
     {:ok, state}
   end
 

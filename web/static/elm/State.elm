@@ -76,7 +76,7 @@ update action model =
     Root.ReceiverStatus ( eventType, event ) ->
       case eventType of
         "receiver_added" ->
-          update ((Root.ModifyReceiver event.receiverId) (Receiver.Online event.zoneId)) model
+          update ((Root.ModifyReceiver event.receiverId) (Receiver.Online event.channelId)) model
 
         "receiver_removed" ->
           update ((Root.ModifyReceiver event.receiverId) Receiver.Offline) model
@@ -139,7 +139,7 @@ update action model =
         "receiver" ->
           update (Root.ModifyReceiver event.id (Receiver.VolumeChanged event.volume)) model
 
-        "zone" ->
+        "channel" ->
           update (Root.ModifyChannel event.id (Channel.VolumeChanged event.volume)) model
 
         _ ->
@@ -169,17 +169,17 @@ update action model =
         )
 
     Root.NewRendition rendition ->
-      update (Root.ModifyChannel rendition.zoneId (Channel.AddRendition rendition)) model
+      update (Root.ModifyChannel rendition.channelId (Channel.AddRendition rendition)) model
 
 
 attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 attachedReceivers model channel =
-  List.filter (\r -> r.zoneId == channel.id) model.receivers
+  List.filter (\r -> r.channelId == channel.id) model.receivers
 
 
 detachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 detachedReceivers model channel =
-  List.filter (\r -> r.zoneId /= channel.id) model.receivers
+  List.filter (\r -> r.channelId /= channel.id) model.receivers
 
 
 libraryVisible : Root.Model -> Bool

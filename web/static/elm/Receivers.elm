@@ -21,10 +21,10 @@ viewAttached address receiver =
 
 
 -- viewDetached : Signal.Address Action  -> Receiver -> Html
--- viewDetached address zone receivers =
+-- viewDetached address channel receivers =
 --   div [ class "channel-receivers--available" ] (List.map (\r ->
 --     div [ class "channel-receivers--available-receiver" ] [
---       div [ class "channel-receivers--add-receiver", onClick address ( AttachReceiver zone r ) ] [
+--       div [ class "channel-receivers--add-receiver", onClick address ( AttachReceiver channel r ) ] [
 --         text r.name
 --       ]
 --     , div [ class "channel-receivers--edit-receiver" ] [

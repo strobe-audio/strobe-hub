@@ -12,7 +12,7 @@ initialState state =
   , name = state.name
   , online = state.online
   , volume = state.volume
-  , zoneId = state.zoneId
+  , channelId = state.channelId
   , editingName = False
   }
 
@@ -40,7 +40,7 @@ update action model =
       ( model, (Receiver.Effects.attach channelId model.id) )
 
     Receiver.Online channelId ->
-      ( { model | online = True, zoneId = channelId }, Effects.none )
+      ( { model | online = True, channelId = channelId }, Effects.none )
 
     Receiver.Offline ->
       ( { model | online = False }, Effects.none )

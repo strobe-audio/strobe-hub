@@ -27,7 +27,7 @@ app =
     , inputs =
         [ broadcasterStateActions
         , receiverStatusActions
-          -- , zoneStatusActions
+          -- , channelStatusActions
         , sourceProgressActions
         , sourceChangeActions
         , volumeChangeActions
@@ -73,13 +73,13 @@ receiverStatusActions =
   Signal.map Root.ReceiverStatus receiverStatus
 
 
-port zoneStatus : Signal ( String, Root.ZoneStatusEvent )
+port channelStatus : Signal ( String, Root.ChannelStatusEvent )
 
 
 
--- zoneStatusActions : Signal Root.Action
--- zoneStatusActions =
---   Signal.map ZoneStatus zoneStatus
+-- channelStatusActions : Signal Root.Action
+-- channelStatusActions =
+--   Signal.map ChannelStatus channelStatus
 
 
 port sourceProgress : Signal Rendition.ProgressEvent
@@ -87,7 +87,7 @@ sourceProgressActions : Signal Root.Action
 sourceProgressActions =
   let
     forward event =
-      (Root.ModifyChannel event.zoneId) (Channel.RenditionProgress event)
+      (Root.ModifyChannel event.channelId) (Channel.RenditionProgress event)
   in
     Signal.map forward sourceProgress
 
@@ -97,7 +97,7 @@ sourceChangeActions : Signal Root.Action
 sourceChangeActions =
   let
     forward event =
-      (Root.ModifyChannel event.zoneId) (Channel.RenditionChange event)
+      (Root.ModifyChannel event.channelId) (Channel.RenditionChange event)
   in
     Signal.map forward sourceChange
 

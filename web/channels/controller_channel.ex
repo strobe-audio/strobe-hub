@@ -15,27 +15,27 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
   def handle_in("change_volume", ["channel", id, volume], socket) do
-    Otis.Zones.volume id, volume
+    Otis.Channels.volume id, volume
     {:noreply, socket}
   end
 
   def handle_in("play_pause", [id, playing], socket) do
-    Otis.Zones.play id, playing
+    Otis.Channels.play id, playing
     {:noreply, socket}
   end
 
-  def handle_in("skip_track", [zone_id, source_id], socket) do
-    Otis.Zones.skip zone_id, source_id
+  def handle_in("skip_track", [channel_id, source_id], socket) do
+    Otis.Channels.skip channel_id, source_id
     {:noreply, socket}
   end
 
-  def handle_in("attach_receiver", [zone_id, receiver_id], socket) do
-    Otis.Receivers.attach receiver_id, zone_id
+  def handle_in("attach_receiver", [channel_id, receiver_id], socket) do
+    Otis.Receivers.attach receiver_id, channel_id
     {:noreply, socket}
   end
 
-  def handle_in("library", [zone_id, action], socket) do
-    Otis.State.Events.notify({:library_request, zone_id, action, socket})
+  def handle_in("library", [channel_id, action], socket) do
+    Otis.State.Events.notify({:library_request, channel_id, action, socket})
     {:noreply, socket}
   end
 

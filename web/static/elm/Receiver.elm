@@ -8,7 +8,7 @@ type alias Model =
   , name : String
   , online : Bool
   , volume : Float
-  , zoneId : ID.Channel
+  , channelId : ID.Channel
   , editingName : Bool
   }
 

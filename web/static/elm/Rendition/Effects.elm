@@ -11,6 +11,6 @@ skip rendition =
     mailbox =
       Rendition.Signals.skip
   in
-    Signal.send mailbox.address ( rendition.zoneId, rendition.id )
+    Signal.send mailbox.address ( rendition.channelId, rendition.id )
       |> Effects.task
       |> Effects.map (always Rendition.NoOp)

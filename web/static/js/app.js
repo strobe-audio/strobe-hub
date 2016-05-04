@@ -3,7 +3,7 @@ import {Socket} from 'phoenix'
 import Elm from 'Main'
 
 let uiState = {
-  zones: [],
+  channels: [],
   receivers: [],
 }
 
@@ -15,10 +15,10 @@ let broadcasterState = {
 }
 
 // port initial state
-let receiverStatus = ["", {event: "", receiverId: "", zoneId: ""}]
-let zoneStatus = ["", {event: "", zoneId: "", status: ""}]
-let sourceProgress = {zoneId: "", sourceId: "", progress: 0, duration: 0}
-let sourceChange = {zoneId: "", removeSourceIds: []}
+let receiverStatus = ["", {event: "", receiverId: "", channelId: ""}]
+let channelStatus = ["", {event: "", channelId: "", status: ""}]
+let sourceProgress = {channelId: "", sourceId: "", progress: 0, duration: 0}
+let sourceChange = {channelId: "", removeSourceIds: []}
 let volumeChange = {id: "", target: "", volume: 0.0}
 let metadata = { bit_rate: 0
   , channels:     0
@@ -39,7 +39,7 @@ let metadata = { bit_rate: 0
   , track_number: 0
   , track_total:  0
 }
-let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", zoneId: "" , source: { id: "", metadata: metadata}}
+let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", channelId: "" , source: { id: "", metadata: metadata}}
 let folder = { id: "", title: "", icon: "", action: "", children: []}
 let libraryRegistration = { id: "", title: "", icon: "", action: "" }
 let libraryResponse = { libraryId: "", folder}
@@ -48,7 +48,7 @@ let windowWidth = window.innerWidth
 let portValues = {
   broadcasterState,
   receiverStatus,
-  zoneStatus,
+  channelStatus,
   sourceProgress,
   sourceChange,
   volumeChange,
@@ -86,9 +86,9 @@ channel.on('receiver_added', payload => {
   elmApp.ports.receiverStatus.send(['receiver_added', payload])
 })
 
-channel.on('zone_play_pause', payload => {
-  console.log('zone_play_pause', payload)
-  elmApp.ports.zoneStatus.send(['zone_play_pause', payload])
+channel.on('channel_play_pause', payload => {
+  console.log('channel_play_pause', payload)
+  elmApp.ports.channelStatus.send(['channel_play_pause', payload])
 })
 
 channel.on('source_progress', payload => {

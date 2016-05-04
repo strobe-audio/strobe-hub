@@ -13,15 +13,15 @@ type Action
   | ModifyChannel ID.Channel Channel.Action
   | ModifyReceiver ID.Receiver Receiver.Action
   | ReceiverStatus ( String, ReceiverStatusEvent )
-    -- | ZoneStatus (String, ZoneStatusEvent)
+    -- | ChannelStatus (String, ChannelStatusEvent)
     -- | UpdateReceiverVolume Receiver Float
-    -- | UpdateZoneVolume Zone Float
-    -- | TogglePlayPause (Zone, Bool)
+    -- | UpdateChannelVolume Channel Float
+    -- | TogglePlayPause (Channel, Bool)
   | VolumeChange VolumeChangeEvent
   | NewRendition Rendition.Model
     -- | PlaylistSkip PlaylistEntry
-    -- | ShowAddReceiver ( Zone, Bool )
-    -- | AttachReceiver Zone Receiver
+    -- | ShowAddReceiver ( Channel, Bool )
+    -- | AttachReceiver Channel Receiver
   | LibraryRegistration Library.Node
   | Library Library.Action
   | SetListMode ChannelListMode
@@ -52,12 +52,12 @@ type ChannelListMode
 
 
 
--- { zones : List Zone
+-- { channels : List Channel
 -- , receivers : List Receiver
 -- , sources : List PlaylistEntry
 -- , library : Library.Model
 -- , ui : UIState
--- , activeZoneId: String
+-- , activeChannelId: String
 -- , activeState: String
 -- }
 
@@ -80,10 +80,10 @@ type alias BroadcasterState =
 
 
 -- type alias UIState =
---   { zones : List ZoneUIState
+--   { channels : List ChannelUIState
 --   , receivers: List ReceiverUIState
 --   }
--- type alias ZoneUIState =
+-- type alias ChannelUIState =
 --   { id: String
 --   , showAddReceivers : Bool
 --   , showRename : Bool
@@ -101,18 +101,18 @@ type alias ReceiverState =
   , name : String
   , online : Bool
   , volume : Float
-  , zoneId : String
+  , channelId : String
   }
 
 
 type alias ReceiverStatusEvent =
-  { zoneId : String
+  { channelId : String
   , receiverId : String
   }
 
 
-type alias ZoneStatusEvent =
-  { zoneId : String
+type alias ChannelStatusEvent =
+  { channelId : String
   , status : String
   }
 
@@ -157,12 +157,12 @@ type alias PlaylistEntry =
   , position : Int
   , playbackPosition : Int
   , sourceId : String
-  , zoneId : String
+  , channelId : String
   , source : Source
   }
 
 
-type alias ZonePlaylist =
+type alias ChannelPlaylist =
   { active : Maybe PlaylistEntry
   , entries : List PlaylistEntry
   }
