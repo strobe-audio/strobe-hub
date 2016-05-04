@@ -109,11 +109,14 @@ playlist context channel =
           Signal.forwardTo context.channelAddress (Channel.ModifyRendition rendition.id)
       in
         Rendition.View.playlist renditionAddress rendition
+
+    playlist =
+      Maybe.withDefault [] (List.tail channel.playlist)
   in
     div
       [ class "channel-playlist" ]
       [ div [ class "divider" ] [ text "Playlist" ]
       , div
           [ class "block-group channel-playlist" ]
-          (List.map entry channel.playlist)
+          (List.map entry playlist)
       ]
