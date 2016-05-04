@@ -9,11 +9,13 @@ import Root
 import State
 import View
 import Rendition
+import Rendition.Signals
+import Library
+import Library.Signals
 import Channel
 import Channel.Signals
 import Volume.Signals
 import Receiver.Signals
-import Rendition.Signals
 
 
 app : StartApp.App Root.Model
@@ -30,9 +32,10 @@ app =
         , sourceChangeActions
         , volumeChangeActions
           -- , playListAdditionActions
-          -- , libraryRegistrationActions
-          -- , libraryResponseActions
+        , libraryRegistrationActions
+        , libraryResponseActions
         , viewportWidth
+        , windowStartupActions
         ]
     }
 
@@ -45,6 +48,12 @@ main =
 viewportWidth : Signal Root.Action
 viewportWidth =
   Signal.map Root.Viewport Window.width
+
+
+port windowWidth : Signal Int
+windowStartupActions : Signal Root.Action
+windowStartupActions =
+  Signal.map Root.Viewport windowWidth
 
 
 port tasks : Signal (Task Never ())
@@ -106,23 +115,12 @@ port playlistAddition : Signal Root.PlaylistEntry
 -- playListAdditionActions : Signal Root.Action
 -- playListAdditionActions =
 --   Signal.map PlayListAddition playlistAddition
--- port libraryRegistration : Signal Library.Node
---
--- libraryRegistrationActions : Signal Root.Action
--- libraryRegistrationActions =
---   Signal.map LibraryRegistration libraryRegistration
--- port libraryResponse : Signal Library.FolderResponse
---
---
--- libraryResponseActions : Signal Root.Action
--- libraryResponseActions =
---   let
---       translate response =
---         -- log ("Translate " ++ toString(response.folder))
---
---         Library (Library.Response response.folder)
---   in
---       Signal.map translate libraryResponse
+
+
+port libraryRegistration : Signal Library.Node
+libraryRegistrationActions : Signal Root.Action
+libraryRegistrationActions =
+  Signal.map Root.LibraryRegistration libraryRegistration
 
 
 port volumeChangeRequests : Signal ( String, String, Float )
@@ -161,10 +159,21 @@ port attachReceiverRequests =
     mailbox.signal
 
 
+port libraryRequests : Signal ( String, String )
+port libraryRequests =
+  let
+    mailbox =
+      Library.Signals.requests
+  in
+    mailbox.signal
 
--- port libraryRequests : Signal (String, String)
--- port libraryRequests =
---   let
---       mailbox = Library.libraryRequestsBox
---   in
---       mailbox.signal
+
+port libraryResponse : Signal Library.FolderResponse
+libraryResponseActions : Signal Root.Action
+libraryResponseActions =
+  let
+    translate response =
+      -- log ("Translate " ++ toString(response.folder))
+      Root.Library (Library.Response response.folder)
+  in
+    Signal.map translate libraryResponse

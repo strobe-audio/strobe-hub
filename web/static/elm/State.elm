@@ -8,6 +8,8 @@ import Channel
 import Channel.State
 import Receiver
 import Receiver.State
+import Library.State
+import Window
 
 
 initialState : Root.Model
@@ -20,9 +22,9 @@ initialState =
       , activeChannelId = Nothing
       , listMode = Root.PlaylistMode
       , mustShowLibrary = False
+      , library = Library.State.initialState
       }
 
-    -- , library = Library.init
     -- , ui = initUIState [] []
     -- , activeState = "channel"
     -- }
@@ -149,6 +151,23 @@ update action model =
           width > 800
       in
         ( { model | mustShowLibrary = mustShowLibrary }, Effects.none )
+
+    Root.LibraryRegistration node ->
+      ( { model | library = Library.State.add model.library node }
+      , Effects.none
+      )
+
+    Root.Library libraryAction ->
+      let
+        _ =
+          Debug.log "library" libraryAction
+
+        ( library, effect ) =
+          Library.State.update libraryAction model.library model.activeChannelId
+      in
+        ( { model | library = library }
+        , (Effects.map Root.Library effect)
+        )
 
 
 attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model

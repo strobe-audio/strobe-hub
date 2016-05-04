@@ -9,6 +9,7 @@ import State
 import Channel
 import Channel.View
 import Volume.View
+import Library.View
 
 
 root : Signal.Address Root.Action -> Root.Model -> Html
@@ -39,7 +40,7 @@ activeChannelView address model channel =
       Signal.forwardTo address (Root.ModifyChannel channel.id)
 
     libraryView =
-      div [] [ text "Library here..." ]
+      Library.View.root (Signal.forwardTo address Root.Library) model.library
 
     libraryVisible =
       State.libraryVisible model
@@ -56,6 +57,7 @@ activeChannelView address model channel =
           div [] []
   in
     div
+      -- TODO: could simplify this
       [ class "elvis" ]
       [ div
           [ class "channels" ]
@@ -65,7 +67,7 @@ activeChannelView address model channel =
               , div [ class "zone-view" ] [ Channel.View.root context channel playlistVisible ]
               ]
           ]
-      , library
+      , div [ id "library" ] [ library ]
       ]
 
 

@@ -14,7 +14,8 @@
     flex-direction: row;
   }
   .channels {
-    width: $channel-column-width;
+    /* width: $channel-column-width; */
+    flex: 0 0 $channel-column-width;
     overflow: auto;
     border-right: solid 1px #ccc;
   }

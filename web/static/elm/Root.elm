@@ -22,8 +22,8 @@ type Action
     -- | PlaylistSkip PlaylistEntry
     -- | ShowAddReceiver ( Zone, Bool )
     -- | AttachReceiver Zone Receiver
-    -- | LibraryRegistration Library.Node
-    -- | Library Library.Action
+  | LibraryRegistration Library.Node
+  | Library Library.Action
   | SetListMode ChannelListMode
   | ToggleChannelSelector
   | ChooseChannel Channel.Model
@@ -42,6 +42,7 @@ type alias Model =
   , activeChannelId : Maybe ID.Channel
   , listMode : ChannelListMode
   , mustShowLibrary : Bool
+  , library : Library.Model
   }
 
 

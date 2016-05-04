@@ -43,6 +43,7 @@ let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "",
 let folder = { id: "", title: "", icon: "", action: "", children: []}
 let libraryRegistration = { id: "", title: "", icon: "", action: "" }
 let libraryResponse = { libraryId: "", folder}
+let windowWidth = window.innerWidth
 
 let portValues = {
   broadcasterState,
@@ -52,8 +53,9 @@ let portValues = {
   sourceChange,
   volumeChange,
   playlistAddition,
-  // libraryRegistration,
-  // libraryResponse,
+  libraryRegistration,
+  libraryResponse,
+  windowWidth,
 }
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
@@ -71,7 +73,7 @@ channel.on('state', payload => {
 
 channel.on('add_library', payload => {
   console.log('got library', payload);
-  // elmApp.ports.libraryRegistration.send(payload)
+  elmApp.ports.libraryRegistration.send(payload)
 })
 
 channel.on('receiver_removed', payload => {
@@ -107,7 +109,7 @@ channel.on('new_source_created', payload => {
 
 channel.on('library', payload => {
   console.log('library response', payload)
-  // elmApp.ports.libraryResponse.send(payload)
+  elmApp.ports.libraryResponse.send(payload)
 })
 
 channel.join()
@@ -138,8 +140,11 @@ elmApp.ports.attachReceiverRequests.subscribe(event => {
   .receive("error", payload => console.log(payload.message))
 })
 
-// elmApp.ports.libraryRequests.subscribe(event => {
-//   console.log('library action', event)
-//   channel.push("library", event)
-//   .receive("error", payload => console.log(payload.message))
-// })
+elmApp.ports.libraryRequests.subscribe(event => {
+  console.log('library action', event)
+  channel.push("library", event)
+  .receive("error", payload => console.log(payload.message))
+})
+
+// the window size signal doesn't always get sent on startup
+elmApp.ports.windowWidth.send(window.innerWidth)
