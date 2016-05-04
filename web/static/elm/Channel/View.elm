@@ -83,18 +83,7 @@ attachReceiverList context channel receivers =
 
 attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
 attachReceiverEntry context channel receiver =
-  let
-      address = (context.receiverAddress receiver)
-  in
-      div [ class "channel-receivers--available-receiver" ]
-        [ div
-          [ class "channel-receivers--add-receiver"
-          , onClick address (Receiver.Attach channel.id)
-          ]
-          [ text receiver.name ]
-        , div [ class "channel-receivers--edit-receiver" ]
-            [ i [ class "fa fa-pencil" ] [] ]
-        ]
+  Receiver.View.attach (context.receiverAddress receiver) channel receiver
 
 
 playlist : Root.ChannelContext -> Channel.Model -> Html
