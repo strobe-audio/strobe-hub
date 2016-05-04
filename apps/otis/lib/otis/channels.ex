@@ -1,7 +1,7 @@
-defmodule Otis.Zones do
+defmodule Otis.Channels do
   use GenServer
 
-  @registry_name Otis.Zones
+  @registry_name Otis.Channels
 
   def start_link( name \\ @registry_name ) do
     GenServer.start_link(__MODULE__, [], name: name)
@@ -12,12 +12,12 @@ defmodule Otis.Zones do
   end
 
   def create(registry, id, name) do
-    add(:create, registry, id, %Otis.State.Zone{name: name})
+    add(:create, registry, id, %Otis.State.Channel{name: name})
   end
 
-  @doc "Start an existing zone"
-  def start(%Otis.State.Zone{} = zone) do
-    start(@registry_name, zone.id, zone)
+  @doc "Start an existing channel"
+  def start(%Otis.State.Channel{} = channel) do
+    start(@registry_name, channel.id, channel)
   end
   def start(id, config) do
     start(@registry_name, id, config)
@@ -32,8 +32,8 @@ defmodule Otis.Zones do
   end
 
   def destroy!(registry, id) do
-    {:ok, zone} = find(registry, id)
-    response = Otis.Zones.Supervisor.stop_zone(zone)
+    {:ok, channel} = find(registry, id)
+    response = Otis.Channels.Supervisor.stop_channel(channel)
     remove(registry, id)
     response
   end
@@ -43,8 +43,8 @@ defmodule Otis.Zones do
   end
 
   def list!(registry) do
-    {:ok, zones} = list(registry)
-    zones
+    {:ok, channels} = list(registry)
+    channels
   end
 
   def list do
@@ -71,50 +71,50 @@ defmodule Otis.Zones do
     GenServer.call(pid, {:find, id})
   end
 
-  def volume(%Otis.Zone{} = zone) do
-    Otis.Zone.volume(zone)
+  def volume(%Otis.Channel{} = channel) do
+    Otis.Channel.volume(channel)
   end
   def volume(id) do
     volume(@registry_name, id)
   end
   def volume(registry, id)
   when is_binary(id) do
-    Otis.Zone.volume(find!(registry, id))
+    Otis.Channel.volume(find!(registry, id))
   end
 
   def volume(id, volume) when is_binary(id) do
     volume(@registry_name, id, volume)
   end
   def volume(registry, id, volume) do
-    Otis.Zone.volume(find!(registry, id), volume)
+    Otis.Channel.volume(find!(registry, id), volume)
   end
 
   def playing?(id) when is_binary(id) do
     playing?(@registry_name, id)
   end
   def playing?(registry, id) when is_binary(id) do
-    Otis.Zone.playing?(find!(registry, id))
+    Otis.Channel.playing?(find!(registry, id))
   end
   def play(id, playing) when is_binary(id) do
     play(@registry_name, id, playing)
   end
   def play(registry, id, playing) when is_binary(id) do
-    Otis.Zone.play(find!(registry, id), playing)
+    Otis.Channel.play(find!(registry, id), playing)
   end
 
   def skip(id, source_id) when is_binary(id) do
     skip(@registry_name, id, source_id)
   end
   def skip(registry, id, source_id) do
-    Otis.Zone.skip(find!(registry, id), source_id)
+    Otis.Channel.skip(find!(registry, id), source_id)
   end
 
   defp add(action, registry, id, config) do
-    {:ok, zone} = Otis.Zones.Supervisor.start_zone(id, config)
-    add(action, registry, zone, id, config)
+    {:ok, channel} = Otis.Channels.Supervisor.start_channel(id, config)
+    add(action, registry, channel, id, config)
   end
-  defp add(action, registry, zone, id, config) do
-    GenServer.call(registry, {action, zone, id, config})
+  defp add(action, registry, channel, id, config) do
+    GenServer.call(registry, {action, channel, id, config})
   end
 
   defp remove(pid, id) do
@@ -127,29 +127,29 @@ defmodule Otis.Zones do
     {:ok, %{}}
   end
 
-  def handle_call(:list, _from, zone_list) do
-    {:reply, {:ok, Map.values(zone_list)}, zone_list}
+  def handle_call(:list, _from, channel_list) do
+    {:reply, {:ok, Map.values(channel_list)}, channel_list}
   end
 
-  def handle_call({:find, id}, _from, zone_list) do
-    {:reply, Map.fetch(zone_list, id), zone_list}
+  def handle_call({:find, id}, _from, channel_list) do
+    {:reply, Map.fetch(channel_list, id), channel_list}
   end
 
-  def handle_call({:create, zone, id, config}, _from, zone_list) do
-    Otis.State.Events.notify({:zone_added, id, config})
-    insert(zone_list, id, zone)
+  def handle_call({:create, channel, id, config}, _from, channel_list) do
+    Otis.State.Events.notify({:channel_added, id, config})
+    insert(channel_list, id, channel)
   end
 
-  def handle_call({:start, zone, id, _config}, _from, zone_list) do
-    insert(zone_list, id, zone)
+  def handle_call({:start, channel, id, _config}, _from, channel_list) do
+    insert(channel_list, id, channel)
   end
 
-  def handle_cast({:remove, id}, zone_list) do
-    Otis.State.Events.notify({:zone_removed, id})
-    {:noreply, Map.delete(zone_list, id)}
+  def handle_cast({:remove, id}, channel_list) do
+    Otis.State.Events.notify({:channel_removed, id})
+    {:noreply, Map.delete(channel_list, id)}
   end
 
-  defp insert(zone_list, id, zone) do
-    {:reply, {:ok, zone}, Map.put(zone_list, id, zone)}
+  defp insert(channel_list, id, channel) do
+    {:reply, {:ok, channel}, Map.put(channel_list, id, channel)}
   end
 end

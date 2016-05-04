@@ -29,7 +29,7 @@ defmodule Otis.Broadcaster do
 
   def init(:ok) do
     children = [
-      worker(Otis.Zone.Broadcaster, [], [restart: :transient])
+      worker(Otis.Channel.Broadcaster, [], [restart: :transient])
     ]
     supervise(children, strategy: :simple_one_for_one)
   end

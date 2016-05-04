@@ -139,7 +139,7 @@ defmodule Otis.Receiver do
   end
 
   @doc ~S"""
-  Volume multiplier is the way through which the zones control all of
+  Volume multiplier is the way through which the channels control all of
   their receivers' volumes.
 
   Setting the volume multiplier sends volume control messages to change the
@@ -165,24 +165,24 @@ defmodule Otis.Receiver do
   end
 
   # TODO: what else do we need to do here? actions remaining
-  # - tell the zone we belong to it, so the zone:
+  # - tell the channel we belong to it, so the channel:
   #   - adds the receiver to its list (for volume changes)
   #   - adds the receiver to its socket (for audio changes)
-  # - emit some zone change event (for persistence)
+  # - emit some channel change event (for persistence)
   #
   @doc ~S"""
-  Change the zone for an already running & configured receiver
+  Change the channel for an already running & configured receiver
   """
-  def join_zone(receiver, zone) do
-    Otis.Zone.add_receiver(zone, receiver)
+  def join_channel(receiver, channel) do
+    Otis.Channel.add_receiver(channel, receiver)
   end
 
   @doc ~S"""
-  Configure the receiver from the db and join it to the zone
+  Configure the receiver from the db and join it to the channel
   """
-  def configure_and_join_zone(receiver, state, zone) do
-    set_volume(receiver, state.volume, Otis.Zone.volume!(zone))
-    join_zone(receiver, zone)
+  def configure_and_join_channel(receiver, state, channel) do
+    set_volume(receiver, state.volume, Otis.Channel.volume!(channel))
+    join_channel(receiver, channel)
   end
 
   def configure(receiver, %Otis.State.Receiver{volume: volume} = _config) do

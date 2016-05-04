@@ -6,28 +6,28 @@ defmodule Otis.Persistence.ReceiversTest do
   setup do
     MessagingHandler.attach
     id = Otis.uuid
-    {:ok, zone} = Otis.Zones.create(id, "Fishy")
-    zone = %Otis.Zone{pid: zone, id: id}
-    assert_receive {:zone_added, ^id, _}
-    zone_volume = 0.56
-    Otis.Zone.volume zone, zone_volume
-    {:ok, zone: zone, zone_volume: zone_volume}
+    {:ok, channel} = Otis.Channels.create(id, "Fishy")
+    channel = %Otis.Channel{pid: channel, id: id}
+    assert_receive {:channel_added, ^id, _}
+    channel_volume = 0.56
+    Otis.Channel.volume channel, channel_volume
+    {:ok, channel: channel, channel_volume: channel_volume}
   end
 
   test "receivers get their volume set from the db", context do
     id = Otis.uuid
-    zone = Otis.State.Zone.find(context.zone.id)
-    _record = Otis.State.Receiver.create!(zone, id: id, name: "Receiver", volume: 0.34)
+    channel = Otis.State.Channel.find(context.channel.id)
+    _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => (0.34 * context.zone_volume) }
+    assert msg == %{ "volume" => (0.34 * context.channel_volume) }
   end
 
   test "receiver volume changes get persisted to the db", context do
     id = Otis.uuid
-    zone = Otis.State.Zone.find(context.zone.id)
-    _record = Otis.State.Receiver.create!(zone, id: id, name: "Receiver", volume: 0.34)
+    channel = Otis.State.Channel.find(context.channel.id)
+    _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     Otis.State.Events.sync_notify {:receiver_volume_change, id, 0.98}
@@ -36,42 +36,42 @@ defmodule Otis.Persistence.ReceiversTest do
     assert record.volume == 0.98
   end
 
-  test "receivers get attached to the assigned zone", context do
+  test "receivers get attached to the assigned channel", context do
     id = Otis.uuid
-    zone = Otis.State.Zone.find(context.zone.id)
-    _record = Otis.State.Receiver.create!(zone, id: id, name: "Receiver", volume: 0.34)
+    channel = Otis.State.Channel.find(context.channel.id)
+    _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
-    {:ok, receivers} = Otis.Zone.receivers context.zone
+    {:ok, receivers} = Otis.Channel.receivers context.channel
     assert receivers == [receiver]
   end
 
-  test "receiver zone changes get persisted", context do
+  test "receiver channel changes get persisted", context do
     id = Otis.uuid
-    zone = Otis.State.Zone.find(context.zone.id)
-    _record = Otis.State.Receiver.create!(zone, id: id, name: "Receiver", volume: 0.34)
+    channel = Otis.State.Channel.find(context.channel.id)
+    _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
-    {:ok, receivers} = Otis.Zone.receivers context.zone
+    {:ok, receivers} = Otis.Channel.receivers context.channel
     assert receivers == [receiver]
 
-    zone1_id = context.zone.id
-    zone2_id = Otis.uuid
-    {:ok, zone2} = Otis.Zones.create(zone2_id, "Froggy")
-    zone2 = %Otis.Zone{pid: zone2, id: id}
-    assert_receive {:zone_added, ^zone2_id, _}
+    channel1_id = context.channel.id
+    channel2_id = Otis.uuid
+    {:ok, channel2} = Otis.Channels.create(channel2_id, "Froggy")
+    channel2 = %Otis.Channel{pid: channel2, id: id}
+    assert_receive {:channel_added, ^channel2_id, _}
 
-    Otis.Receivers.attach id, zone2_id
-    assert_receive {:receiver_removed, ^zone1_id, ^id}
-    assert_receive {:receiver_added, ^zone2_id, ^id}
+    Otis.Receivers.attach id, channel2_id
+    assert_receive {:receiver_removed, ^channel1_id, ^id}
+    assert_receive {:receiver_added, ^channel2_id, ^id}
     record = Otis.State.Receiver.find id
-    assert record.zone_id == zone2_id
+    assert record.channel_id == channel2_id
     {:ok, receiver} = Receivers.receiver(id)
-    {:ok, receivers} = Otis.Zone.receivers context.zone
+    {:ok, receivers} = Otis.Channel.receivers context.channel
     assert receivers == []
-    {:ok, receivers} = Otis.Zone.receivers zone2
+    {:ok, receivers} = Otis.Channel.receivers channel2
     assert receivers == [receiver]
   end
 end

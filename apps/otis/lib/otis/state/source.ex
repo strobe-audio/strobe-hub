@@ -13,7 +13,7 @@ defmodule Otis.State.Source do
     field :source_id,         :string
     field :playback_position, :integer
 
-    belongs_to :zone, Otis.State.Zone, type: Ecto.UUID
+    belongs_to :channel, Otis.State.Channel, type: Ecto.UUID
   end
 
   def delete_all do
@@ -25,21 +25,21 @@ defmodule Otis.State.Source do
   end
 
   def all do
-    Source |> order_by([:zone_id, :position]) |> Repo.all
+    Source |> order_by([:channel_id, :position]) |> Repo.all
   end
 
-  def for_zone(%Otis.Zone{id: id}) do
-    for_zone(id)
+  def for_channel(%Otis.Channel{id: id}) do
+    for_channel(id)
   end
-  def for_zone(zone_id) do
-    Source |> where(zone_id: ^zone_id) |> order_by(:position) |> Repo.all
+  def for_channel(channel_id) do
+    Source |> where(channel_id: ^channel_id) |> order_by(:position) |> Repo.all
   end
 
-  def restore(%Otis.Zone{id: id}) do
+  def restore(%Otis.Channel{id: id}) do
     restore(id)
   end
-  def restore(zone_id) when is_binary(zone_id) do
-    zone_id |> for_zone |> restore_source([])
+  def restore(channel_id) when is_binary(channel_id) do
+    channel_id |> for_channel |> restore_source([])
   end
 
   defp restore_source([], sources) do
@@ -68,14 +68,14 @@ defmodule Otis.State.Source do
     source |> Repo.insert!
   end
 
-  def played!(source, zone_id) do
+  def played!(source, channel_id) do
     source |> delete!
-    renumber(zone_id)
+    renumber(channel_id)
   end
 
-  def renumber(zone_id) do
-    zone_id
-    |> for_zone
+  def renumber(channel_id) do
+    channel_id
+    |> for_channel
     |> Enum.with_index
     |> Enum.map(fn({s, p}) -> Ecto.Changeset.change(s, position: p) end)
     |> Enum.each(&Repo.update!/1)

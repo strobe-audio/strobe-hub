@@ -1,6 +1,6 @@
-defmodule Otis.Zone.Controller do
+defmodule Otis.Channel.Controller do
   @moduledoc """
-  Sits between a zone and a broadcaster and is responsible for providing the
+  Sits between a channel and a broadcaster and is responsible for providing the
   broadcaster with a clock implementation and periodically polling it to
   trigger the emission of packets at the required intervals.
 
@@ -19,7 +19,7 @@ defmodule Otis.Zone.Controller do
       :broadcaster,
       :next_tick_us,
       :timer,
-      clock: Otis.Zone.Clock.new,
+      clock: Otis.Channel.Clock.new,
     ]
   end
 
@@ -120,7 +120,7 @@ defmodule Otis.Zone.Controller do
   defp now, do: Monotonic.microseconds
 end
 
-defimpl Otis.Broadcaster.Controller, for: Otis.Zone.Controller do
+defimpl Otis.Broadcaster.Controller, for: Otis.Channel.Controller do
   def start(controller, broadcaster, latency, buffer_size) do
     GenServer.cast(controller.pid, {:start, broadcaster, latency, buffer_size})
     controller

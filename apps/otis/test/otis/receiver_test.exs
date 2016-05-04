@@ -177,16 +177,16 @@ defmodule Otis.ReceiverTest do
     assert cmd == "STOP"
   end
 
-  test "changing zone removes receiver from initial zone", _context do
-    zone_id = Otis.uuid
-    zone_record = Otis.State.Zone.create!(zone_id, "Something")
-    {:ok, zone} = Otis.Zones.create(zone_id, zone_record.name)
+  test "changing channel removes receiver from initial channel", _context do
+    channel_id = Otis.uuid
+    channel_record = Otis.State.Channel.create!(channel_id, "Something")
+    {:ok, channel} = Otis.Channels.create(channel_id, channel_record.name)
 
     id = Otis.uuid
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
-    :ok = Otis.Zone.add_receiver(zone, receiver)
+    :ok = Otis.Channel.add_receiver(channel, receiver)
   end
 
   test "we can query the connection status of a receiver" do

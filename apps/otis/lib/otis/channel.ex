@@ -1,10 +1,10 @@
-defmodule Otis.Zone do
+defmodule Otis.Channel do
   use     GenServer
   require Logger
   alias   Otis.Receiver, as: Receiver
 
   defmodule S do
-    @moduledoc "The state struct for Zone processes"
+    @moduledoc "The state struct for Channel processes"
     defstruct [
       id:                nil,
       source_list:       nil,
@@ -33,14 +33,14 @@ defmodule Otis.Zone do
   end
 
   def start_link(id, config, source_list) do
-    GenServer.start_link(__MODULE__, {id, config, source_list}, name: String.to_atom("zone-#{id}"))
+    GenServer.start_link(__MODULE__, {id, config, source_list}, name: String.to_atom("channel-#{id}"))
   end
 
   def init({id, config, source_list}) do
     Logger.info "#{__MODULE__} starting... #{ id }"
-    {:ok, socket} = Otis.Zone.Socket.start_link(id)
+    {:ok, socket} = Otis.Channel.Socket.start_link(id)
     {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, Otis.stream_bytes_per_step)
-    {:ok, stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
+    {:ok, stream} = Otis.Channel.BufferedStream.seconds(audio_stream, 1)
     {:ok, %S{
         id: id,
         source_list: source_list,
@@ -54,118 +54,118 @@ defmodule Otis.Zone do
   def id(%__MODULE__{id: id}) do
     {:ok, id}
   end
-  def id(zone) do
-    GenServer.call(zone, :id)
+  def id(channel) do
+    GenServer.call(channel, :id)
   end
 
-  def receivers(%__MODULE__{pid: pid} = _zone) do
+  def receivers(%__MODULE__{pid: pid} = _channel) do
     receivers(pid)
   end
-  def receivers(zone) do
-    GenServer.call(zone, :receivers)
+  def receivers(channel) do
+    GenServer.call(channel, :receivers)
   end
 
-  def socket(%__MODULE__{pid: pid} = _zone) do
+  def socket(%__MODULE__{pid: pid} = _channel) do
     socket(pid)
   end
-  def socket(zone) do
-    GenServer.call(zone, :socket)
+  def socket(channel) do
+    GenServer.call(channel, :socket)
   end
 
-  def add_receiver(%__MODULE__{pid: pid} = _zone, receiver) do
+  def add_receiver(%__MODULE__{pid: pid} = _channel, receiver) do
     add_receiver(pid, receiver)
   end
-  def add_receiver(zone, receiver) when is_pid(zone) do
-    GenServer.call(zone, {:add_receiver, receiver})
+  def add_receiver(channel, receiver) when is_pid(channel) do
+    GenServer.call(channel, {:add_receiver, receiver})
   end
 
-  def state(zone) do
-    GenServer.call(zone, :get_state)
+  def state(channel) do
+    GenServer.call(channel, :get_state)
   end
 
-  def play_pause(zone) do
-    GenServer.call(zone, :play_pause)
+  def play_pause(channel) do
+    GenServer.call(channel, :play_pause)
   end
 
-  def source_list(zone) do
-    GenServer.call(zone, :get_source_list)
+  def source_list(channel) do
+    GenServer.call(channel, :get_source_list)
   end
 
-  def audio_stream(zone) do
-    GenServer.call(zone, :get_audio_stream)
+  def audio_stream(channel) do
+    GenServer.call(channel, :get_audio_stream)
   end
 
-  def volume!(zone) do
-    {:ok, volume} = volume(zone)
+  def volume!(channel) do
+    {:ok, volume} = volume(channel)
     volume
   end
 
   def volume(%__MODULE__{pid: pid}) do
     volume(pid)
   end
-  def volume(zone) when is_pid(zone) do
-    GenServer.call(zone, :volume)
+  def volume(channel) when is_pid(channel) do
+    GenServer.call(channel, :volume)
   end
   def volume(%__MODULE__{pid: pid}, volume) do
     volume(pid, volume)
   end
-  def volume(zone, volume) when is_pid(zone) do
-    GenServer.call(zone, {:volume, volume})
+  def volume(channel, volume) when is_pid(channel) do
+    GenServer.call(channel, {:volume, volume})
   end
 
   def playing?(%__MODULE__{pid: pid}) do
     playing?(pid)
   end
-  def playing?(zone) when is_pid(zone) do
-    GenServer.call(zone, :playing)
+  def playing?(channel) when is_pid(channel) do
+    GenServer.call(channel, :playing)
   end
 
   @doc "Called by the broadcaster in order to keep our state in sync"
-  def stream_finished(zone) do
-    GenServer.cast(zone, :stream_finished)
+  def stream_finished(channel) do
+    GenServer.cast(channel, :stream_finished)
   end
 
   @doc "Skip to the source with the given id"
   def skip(%__MODULE__{pid: pid}, source_id) do
     skip(pid, source_id)
   end
-  def skip(zone, source_id) do
-    GenServer.cast(zone, {:skip, source_id})
+  def skip(channel, source_id) do
+    GenServer.cast(channel, {:skip, source_id})
   end
 
-  def receiver_buffered(zone, receiver) do
-    GenServer.cast(zone, {:receiver_buffered, receiver})
+  def receiver_buffered(channel, receiver) do
+    GenServer.cast(channel, {:receiver_buffered, receiver})
   end
 
   def append(%__MODULE__{pid: pid}, sources) do
     append(pid, sources)
   end
-  def append(zone, sources) do
-    GenServer.call(zone, {:append_sources, sources})
+  def append(channel, sources) do
+    GenServer.call(channel, {:append_sources, sources})
   end
 
   def sources(%__MODULE__{pid: pid}) do
     sources(pid)
   end
-  def sources(zone) do
-    GenServer.call(zone, :sources)
+  def sources(channel) do
+    GenServer.call(channel, :sources)
   end
 
   def duration(%__MODULE__{pid: pid}) do
     duration(pid)
   end
-  def duration(zone) do
-    GenServer.call(zone, :duration)
+  def duration(channel) do
+    GenServer.call(channel, :duration)
   end
 
   def play(%__MODULE__{pid: pid}, playing) do
     play(pid, playing)
   end
-  def play(zone, playing) do
-    GenServer.call(zone, {:play, playing})
+  def play(channel, playing) do
+    GenServer.call(channel, {:play, playing})
   end
 
-  # Things we can do to zones:
+  # Things we can do to channels:
   # - list receivers
   # - add receiver
   # - remove receiver
@@ -197,8 +197,8 @@ defmodule Otis.Zone do
   end
 
   def handle_call({:add_receiver, receiver}, _from, %S{id: id} = state) do
-    Logger.info "Adding receiver to zone #{id} #{inspect receiver}"
-    state = add_receiver_to_zone(receiver, state)
+    Logger.info "Adding receiver to channel #{id} #{inspect receiver}"
+    state = add_receiver_to_channel(receiver, state)
     {:reply, :ok, state}
   end
 
@@ -225,7 +225,7 @@ defmodule Otis.Zone do
   def handle_call({:volume, volume}, _from, state) do
     volume = Otis.sanitize_volume(volume)
     Enum.each(state.receivers, &Receiver.volume_multiplier(&1, volume))
-    Otis.State.Events.notify({:zone_volume_change, state.id, volume})
+    Otis.State.Events.notify({:channel_volume_change, state.id, volume})
     {:reply, {:ok, volume}, %S{state | volume: volume}}
   end
 
@@ -298,13 +298,13 @@ defmodule Otis.Zone do
     state
   end
 
-  defp add_receiver_to_zone(receiver, %S{state: :play, broadcaster: broadcaster} = state) do
+  defp add_receiver_to_channel(receiver, %S{state: :play, broadcaster: broadcaster} = state) do
     adopt_receiver(receiver, state)
-    Otis.Zone.Broadcaster.buffer_receiver(broadcaster, self, receiver)
+    Otis.Channel.Broadcaster.buffer_receiver(broadcaster, self, receiver)
     state
   end
 
-  defp add_receiver_to_zone(receiver, %S{state: :stop} = state) do
+  defp add_receiver_to_channel(receiver, %S{state: :stop} = state) do
     adopt_receiver(receiver, state)
     receiver_ready(receiver, state)
   end
@@ -314,7 +314,7 @@ defmodule Otis.Zone do
     Receiver.volume_multiplier(receiver, state.volume)
     # I have to add the receiver to the socket here because the quick-buffering
     # system needs to send the packets to the receiver immediately.
-    Otis.Zone.Socket.add_receiver(state.socket, receiver)
+    Otis.Channel.Socket.add_receiver(state.socket, receiver)
   end
 
   # Called by the broadcaster when it has finished sending in-flight packets.
@@ -351,31 +351,31 @@ defmodule Otis.Zone do
     IO.inspect [:no_state_change, status]
     state
   end
-  defp set_state(zone, state) do
-    %S{ zone | state: state } |> change_state
+  defp set_state(channel, state) do
+    %S{ channel | state: state } |> change_state
   end
 
   defp change_state(%S{state: :play, ctrl: nil} = state) do
-    # TODO: share a ctrl between all zones
-    ctrl = Otis.Zone.Controller.new(Otis.stream_interval_us)
+    # TODO: share a ctrl between all channels
+    ctrl = Otis.Channel.Controller.new(Otis.stream_interval_us)
     %S{ state | ctrl: ctrl } |> change_state
   end
   defp change_state(%S{state: :play, broadcaster: nil, ctrl: ctrl} = state) do
     {:ok, broadcaster} = start_broadcaster(state)
     ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(state), @buffer_size)
-    Otis.State.Events.notify({:zone_play_pause, state.id, :play})
+    Otis.State.Events.notify({:channel_play_pause, state.id, :play})
     %S{ state | broadcaster: broadcaster, ctrl: ctrl }
   end
   defp change_state(%S{state: :play} = state) do
     state
   end
   defp change_state(%S{state: :stop, broadcaster: nil} = state) do
-    zone_is_stopped(state)
+    channel_is_stopped(state)
   end
   defp change_state(%S{state: :stop, broadcaster: broadcaster} = state) do
     ctrl = Otis.Broadcaster.Controller.stop(state.ctrl, broadcaster)
     # TODO: change :stop state to :pause
-    Otis.State.Events.notify({:zone_play_pause, state.id, :pause})
+    Otis.State.Events.notify({:channel_play_pause, state.id, :pause})
     change_state(%S{ state | broadcaster: nil, ctrl: ctrl })
   end
   defp change_state(%S{state: :skip, broadcaster: nil} = state) do
@@ -394,14 +394,14 @@ defmodule Otis.Zone do
     receivers |> MapSet.to_list |> receiver_latency(state)
   end
   def receiver_latency([], state) do
-    Logger.warn "No receivers attached to zone #{ state.id }"
+    Logger.warn "No receivers attached to channel #{ state.id }"
     0
   end
   def receiver_latency(receivers, _state) do
     receivers |> Enum.map(&Receiver.latency!/1) |> Enum.max
   end
 
-  defp zone_is_stopped(state) do
+  defp channel_is_stopped(state) do
     Otis.Stream.reset(state.audio_stream)
     %S{ state | broadcaster: nil}
   end
@@ -409,9 +409,9 @@ defmodule Otis.Zone do
   defp start_broadcaster(%S{id: id, audio_stream: audio_stream, socket: socket}) do
     opts = %{
       id: id,
-      zone: self,
+      channel: self,
       audio_stream: audio_stream,
-      emitter: Otis.Zone.Emitter.new(socket),
+      emitter: Otis.Channel.Emitter.new(socket),
       stream_interval: Otis.stream_interval_us
     }
     Otis.Broadcaster.start_broadcaster(opts)

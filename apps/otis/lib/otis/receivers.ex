@@ -39,14 +39,14 @@ defmodule Otis.Receivers do
     {:ok, receiver}
   end
 
-  def attach(receiver_id, zone_id)
-  when is_binary(receiver_id) and is_binary(zone_id) do
-    attach(@name, receiver_id, zone_id)
+  def attach(receiver_id, channel_id)
+  when is_binary(receiver_id) and is_binary(channel_id) do
+    attach(@name, receiver_id, channel_id)
   end
 
-  def attach(pid, receiver_id, zone_id)
-  when is_binary(receiver_id) and is_binary(zone_id) do
-    GenServer.call(pid, {:attach, receiver_id, zone_id})
+  def attach(pid, receiver_id, channel_id)
+  when is_binary(receiver_id) and is_binary(channel_id) do
+    GenServer.call(pid, {:attach, receiver_id, channel_id})
   end
 
   def connected?(id) do
@@ -95,11 +95,11 @@ defmodule Otis.Receivers do
     {:reply, Map.fetch(receivers, id), state}
   end
 
-  def handle_call({:attach, receiver_id, zone_id}, _from, %S{receivers: receivers} = state) do
+  def handle_call({:attach, receiver_id, channel_id}, _from, %S{receivers: receivers} = state) do
     {:ok, receiver} = Map.fetch(receivers, receiver_id)
     # In this case the event comes before the state change. Feels wrong but is
     # much simpler than any other way of moving receivers that I can think of
-    Otis.State.Events.notify({:reattach_receiver, receiver_id, zone_id, receiver})
+    Otis.State.Events.notify({:reattach_receiver, receiver_id, channel_id, receiver})
     {:reply, :ok, state}
   end
 
@@ -175,7 +175,7 @@ defmodule Otis.Receivers do
   end
 
   # An unlatch event is our way of saying "reconnect this receiver" after some
-  # configuration change (to move receiver between zones) so we just want to
+  # configuration change (to move receiver between channels) so we just want to
   # invoke the same receiver assignment mechanism as used when a receive
   # connects
   def after_relatch(state, receiver) do

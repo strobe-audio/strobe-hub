@@ -75,7 +75,7 @@ defmodule Otis.Receivers.ControlConnection do
 
   defp notify_volume(%S{settings: settings} = state, values) do
     # Don't send an event when changing the multiplier as the multiplier is a
-    # zone-level property and events for it are emitted there.
+    # channel-level property and events for it are emitted there.
     if Keyword.has_key?(values, :volume) do
       Otis.State.Events.notify({:receiver_volume_change, state.id, settings.volume})
     end

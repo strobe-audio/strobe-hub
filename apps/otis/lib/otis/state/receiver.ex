@@ -7,17 +7,17 @@ defmodule Otis.State.Receiver do
   alias Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}
-  @derive {Poison.Encoder, only: [:id, :name, :volume, :zone_id]}
+  @derive {Poison.Encoder, only: [:id, :name, :volume, :channel_id]}
 
   schema "receivers" do
     field :name, :string
     field :volume, :float, default: 1.0
 
-    belongs_to :zone, Otis.State.Zone, type: Ecto.UUID
+    belongs_to :channel, Otis.State.Channel, type: Ecto.UUID
   end
 
   def all do
-    Receiver |> order_by(:zone_id) |> Repo.all
+    Receiver |> order_by(:channel_id) |> Repo.all
   end
 
   def find(id, opts \\ []) do
@@ -34,10 +34,10 @@ defmodule Otis.State.Receiver do
     |> limit(1)
   end
 
-  def create!(zone, attrs \\ []) do
-    Otis.State.Zone.build_receiver(zone, attrs)
+  def create!(channel, attrs \\ []) do
+    Otis.State.Channel.build_receiver(channel, attrs)
     |> Repo.insert!
-    |> Repo.preload(:zone)
+    |> Repo.preload(:channel)
   end
 
   def delete_all do
@@ -48,7 +48,7 @@ defmodule Otis.State.Receiver do
     Changeset.change(receiver, volume: volume) |> Repo.update!
   end
 
-  def zone(receiver, zone_id) do
-    Changeset.change(receiver, zone_id: zone_id) |> Repo.update!
+  def channel(receiver, channel_id) do
+    Changeset.change(receiver, channel_id: channel_id) |> Repo.update!
   end
 end

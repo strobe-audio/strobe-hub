@@ -1,7 +1,7 @@
 
-defmodule Otis.Zone.Broadcaster do
+defmodule Otis.Channel.Broadcaster do
   @moduledoc """
-  This takes a zone and audio source and translates it into a set of
+  This takes a channel and audio source and translates it into a set of
   timestamped packets. It then queues this to send to the clients.
   """
 
@@ -17,7 +17,7 @@ defmodule Otis.Zone.Broadcaster do
     @moduledoc "State for the broadcaster genserver"
     defstruct [
       id: nil,
-      zone: nil,
+      channel: nil,
       audio_stream: nil,
       emitter: nil,
       clock: nil,
@@ -38,10 +38,10 @@ defmodule Otis.Zone.Broadcaster do
   #   the time of transmission separated from the playback timestamp
   # - I want to save a list of 'in flight' packets that can be flood-sent to new
   #   receivers when they join
-  # - The broadcaster gets a receiver latency from the zone when it starts, it
+  # - The broadcaster gets a receiver latency from the channel when it starts, it
   #   should use that to calculate the broadcast latency (time between start &
   #   first packet play)
-  # - Broadcaster is responsible for pulling the packets from the stream, not the zone
+  # - Broadcaster is responsible for pulling the packets from the stream, not the channel
   # - Buffer is trimmed to only packets in the future (or future - broadcast latency)
   # - Broadcaster should record the time when it starts & base all timestamp info
   #   on that.
@@ -58,8 +58,8 @@ defmodule Otis.Zone.Broadcaster do
     GenServer.start_link(__MODULE__, opts, [])
   end
 
-  def buffer_receiver(broadcaster, zone, receiver) do
-    GenServer.cast(broadcaster, {:buffer_receiver, zone, receiver})
+  def buffer_receiver(broadcaster, channel, receiver) do
+    GenServer.cast(broadcaster, {:buffer_receiver, channel, receiver})
   end
 
 
@@ -100,7 +100,7 @@ defmodule Otis.Zone.Broadcaster do
   # behavioural artifacts which are much worse than just having to wait a couple
   # of seconds for the music to start.
   # I will re-visit this at some point.
-  def handle_cast({:buffer_receiver, zone, receiver}, state) do
+  def handle_cast({:buffer_receiver, channel, receiver}, state) do
     # packets = state |> bufferable_packets
     # # We want to re-send the suitable unplayed packets without affecting the
     # # playback of existing receivers, so do it in a separate process. The
@@ -108,10 +108,10 @@ defmodule Otis.Zone.Broadcaster do
     # # to do it in parallel.
     # spawn(fn ->
     #   resend_packets(packets, state)
-    #   # Once we're done, tell the zone to finish off...
-    #   Otis.Zone.receiver_buffered(zone, receiver)
+    #   # Once we're done, tell the channel to finish off...
+    #   Otis.Channel.receiver_buffered(channel, receiver)
     # end)
-    Otis.Zone.receiver_buffered(zone, receiver)
+    Otis.Channel.receiver_buffered(channel, receiver)
     {:noreply, state}
   end
 
@@ -158,7 +158,7 @@ defmodule Otis.Zone.Broadcaster do
   # send
   defp stop!(state) do
     Logger.info "Stopping broadcaster..."
-    Otis.State.Events.notify({:zone_stop, state.id})
+    Otis.State.Events.notify({:channel_stop, state.id})
     kill(state)
     rebuffer_in_flight(state)
   end
@@ -173,16 +173,16 @@ defmodule Otis.Zone.Broadcaster do
     {:noreply, state}
   end
 
-  # The audio stream has finished, so tell the zone we're done so it can shut
+  # The audio stream has finished, so tell the channel we're done so it can shut
   # us down properly
   defp finish(%S{in_flight: [], state: :stopped} = state) do
     state
   end
-  defp finish(%S{in_flight: [], zone: zone, state: :play} = state) do
+  defp finish(%S{in_flight: [], channel: channel, state: :play} = state) do
     Logger.debug "Stream finished"
     source_changed(nil, state.source_id, state)
-    Otis.State.Events.notify({:zone_finished, state.id})
-    Otis.Zone.stream_finished(zone)
+    Otis.State.Events.notify({:channel_finished, state.id})
+    Otis.Channel.stream_finished(channel)
     %S{ state | state: :stopped }
   end
   defp finish(state) do
@@ -343,7 +343,7 @@ defmodule Otis.Zone.Broadcaster do
   end
 
   defp do_stop_inflight_packets([packet | packets]) do
-    Otis.Zone.Emitter.discard!(packet.emitter, packet.timestamp)
+    Otis.Channel.Emitter.discard!(packet.emitter, packet.timestamp)
     do_stop_inflight_packets(packets)
   end
 

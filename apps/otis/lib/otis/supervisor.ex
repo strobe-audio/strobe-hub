@@ -8,7 +8,7 @@ defmodule Otis.Supervisor do
   def init([packet_interval: packet_interval, packet_size: packet_size]) do
     emitter_pool_options = [
       name: {:local, Otis.EmitterPool},
-      worker_module: Otis.Zone.Emitter,
+      worker_module: Otis.Channel.Emitter,
       size: 16,
       max_overflow: 2
     ]
@@ -30,11 +30,11 @@ defmodule Otis.Supervisor do
 
       supervisor(Otis.SourceStreamSupervisor, []),
       supervisor(Otis.Broadcaster, []),
-      supervisor(Otis.Zones.Supervisor, []),
+      supervisor(Otis.Channels.Supervisor, []),
       supervisor(Otis.Controllers, []),
-      worker(Otis.Zones, []),
+      worker(Otis.Channels, []),
       # This needs to be called by the app hosting the application
-      # worker(Otis.Startup, [Otis.State, Otis.Zones], restart: :transient)
+      # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)
     ]
     supervise(children, strategy: :one_for_one)
   end

@@ -4,11 +4,11 @@ defmodule Otis.State.Repo.Migrations.CreateSourceLists do
   def change do
     create table(:sources, primary_key: false) do
       add :id,          :uuid, primary_key: true
-      add :zone_id,     :uuid
+      add :channel_id,     :uuid
       add :position,    :integer
       add :source_type, :string
       add :source_id,   :string
     end
-    create index(:sources, [:zone_id])
+    create index(:sources, [:channel_id])
   end
 end

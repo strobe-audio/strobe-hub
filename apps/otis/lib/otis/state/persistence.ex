@@ -7,7 +7,7 @@ defmodule Otis.State.Persistence do
   end
 
   @handlers [
-    Otis.State.Persistence.Zones,
+    Otis.State.Persistence.Channels,
     Otis.State.Persistence.Receivers,
     Otis.State.Persistence.Sources,
   ]

@@ -1,6 +1,6 @@
-defmodule Otis.Zone.BufferedStream do
+defmodule Otis.Channel.BufferedStream do
   @moduledoc """
-  Sits between a zone broadcaster and the audio stream and buffers the audio
+  Sits between a channel broadcaster and the audio stream and buffers the audio
   packets to protect against temporary slow-downs caused by delayed file opening
   and transcoder startup.
   """
@@ -41,7 +41,7 @@ defmodule Otis.Zone.BufferedStream do
   end
 
   def start_fetcher(audio_stream) do
-    pid = spawn(Otis.Zone.BufferedStream.Fetcher, :init, [audio_stream])
+    pid = spawn(Otis.Channel.BufferedStream.Fetcher, :init, [audio_stream])
     Process.monitor(pid)
     pid
   end
@@ -195,7 +195,7 @@ defmodule Otis.Zone.BufferedStream do
     %S{ stream | state: state}
   end
 
-  # TODO: replace per-buffer fetcher process with a pool shared across zones
+  # TODO: replace per-buffer fetcher process with a pool shared across channels
   # that way they have their own supervisor & we don't have to manage them in
   # this module.
   defmodule Fetcher do

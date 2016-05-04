@@ -53,27 +53,27 @@ defmodule Otis.Persistence.SourceTest do
   setup_all do
     on_exit fn ->
       Otis.State.Source.delete_all
-      Otis.State.Zone.delete_all
+      Otis.State.Channel.delete_all
     end
-    {:ok, zone_id: Otis.uuid }
+    {:ok, channel_id: Otis.uuid }
   end
 
   setup context do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach
 
-    zone_record = Otis.State.Zone.create!(context.zone_id, "Test Zone")
-    {:ok, zone} = Otis.Zones.start(zone_record)
-    {:ok, source_list} = Otis.Zone.source_list(zone)
+    channel_record = Otis.State.Channel.create!(context.channel_id, "Test Channel")
+    {:ok, channel} = Otis.Channels.start(channel_record)
+    {:ok, source_list} = Otis.Channel.source_list(channel)
 
     on_exit fn ->
-      Otis.Zones.destroy!(context.zone_id)
+      Otis.Channels.destroy!(context.channel_id)
     end
 
     {:ok,
-      zone: %Otis.Zone{pid: zone, id: zone_record.id},
+      channel: %Otis.Channel{pid: channel, id: channel_record.id},
       source_list: source_list,
-      zone_record: zone_record,
+      channel_record: channel_record,
     }
   end
 
@@ -84,7 +84,7 @@ defmodule Otis.Persistence.SourceTest do
     assert_receive {:new_source_created, _}
     [record] = Otis.State.Source.all
     assert record.id == source_id
-    assert record.zone_id == context.zone.id
+    assert record.channel_id == context.channel.id
     assert record.source_type == to_string(TestSource)
     assert record.source_id == source.id
   end
@@ -99,35 +99,35 @@ defmodule Otis.Persistence.SourceTest do
     [record1, record2] = Otis.State.Source.all
     assert record1.id == source_id1
     assert record1.source_id == source1.id
-    assert record1.zone_id == context.zone.id
+    assert record1.channel_id == context.channel.id
     assert record1.source_type == to_string(TestSource)
     assert record1.position == 0
 
     assert record2.id == source_id2
     assert record2.source_id == source2.id
-    assert record2.zone_id == context.zone.id
+    assert record2.channel_id == context.channel.id
     assert record2.source_type == to_string(TestSource)
     assert record2.position == 1
   end
 
-  test "you can lookup sources for a zone", context do
+  test "you can lookup sources for a channel", context do
     Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     assert_receive {:new_source_created, _}
     assert_receive {:new_source_created, _}
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, 0, source1} = entry1
     {source_id2, 0, source2} = entry2
-    [record1, record2] = Source.for_zone(context.zone)
+    [record1, record2] = Source.for_channel(context.channel)
 
     assert record1.id == source_id1
     assert record1.source_id == source1.id
-    assert record1.zone_id == context.zone.id
+    assert record1.channel_id == context.channel.id
     assert record1.source_type == to_string(TestSource)
     assert record1.position == 0
 
     assert record2.id == source_id2
     assert record2.source_id == source2.id
-    assert record2.zone_id == context.zone.id
+    assert record2.channel_id == context.channel.id
     assert record2.source_type == to_string(TestSource)
     assert record2.position == 1
   end
@@ -137,12 +137,12 @@ defmodule Otis.Persistence.SourceTest do
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, 0, _source1} = entry1
     {source_id2, 0, source2} = entry2
-    Otis.State.Events.notify({:source_changed, context.zone.id, source_id1, source_id2})
+    Otis.State.Events.notify({:source_changed, context.channel.id, source_id1, source_id2})
     assert_receive {:old_source_removed, ^source_id1}
     [record2] = Otis.State.Source.all
     assert record2.id == source_id2
     assert record2.source_id == source2.id
-    assert record2.zone_id == context.zone.id
+    assert record2.channel_id == context.channel.id
     assert record2.source_type == to_string(TestSource)
   end
 
@@ -151,9 +151,9 @@ defmodule Otis.Persistence.SourceTest do
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, 0, _source1} = entry1
     {source_id2, 0, _source2} = entry2
-    Otis.State.Events.notify({:source_changed, context.zone.id, source_id1, source_id2})
+    Otis.State.Events.notify({:source_changed, context.channel.id, source_id1, source_id2})
     assert_receive {:old_source_removed, ^source_id1}
-    Otis.State.Events.notify({:source_changed, context.zone.id, source_id2, nil})
+    Otis.State.Events.notify({:source_changed, context.channel.id, source_id2, nil})
     assert_receive {:old_source_removed, ^source_id2}
     [] = Otis.State.Source.all
   end
@@ -166,7 +166,7 @@ defmodule Otis.Persistence.SourceTest do
     ids = [id1, id2, id3, id4]
     positions = ids |> Enum.map(fn(id) -> Otis.State.Source.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1, 2, 3] == positions
-    Otis.State.Events.notify({:source_changed, context.zone.id, id1, id2})
+    Otis.State.Events.notify({:source_changed, context.channel.id, id1, id2})
     assert_receive {:old_source_removed, ^id1}
     ids = [id2, id3, id4]
     positions = ids |> Enum.map(fn(id) -> Otis.State.Source.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
@@ -183,8 +183,8 @@ defmodule Otis.Persistence.SourceTest do
     skipped_ids = Enum.take_while(ids, fn(id) -> id != skip_to end)
     kept_ids = Enum.drop_while(ids, fn(id) -> id != skip_to end)
     {:ok, 2} = Otis.SourceList.skip(context.source_list, skip_to)
-    zone_id = context.zone.id
-    assert_receive {:sources_skipped, ^zone_id, ^skipped_ids}
+    channel_id = context.channel.id
+    assert_receive {:sources_skipped, ^channel_id, ^skipped_ids}
     assert [nil, nil, nil] = skipped_ids |> Enum.map(&Otis.State.Source.find/1)
     positions = kept_ids |> Enum.map(fn(id) -> Otis.State.Source.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1] == positions
@@ -200,19 +200,19 @@ defmodule Otis.Persistence.SourceTest do
     skip_to = Enum.at(ids, -2)
     skipped_ids = Enum.take_while(ids, fn(id) -> id != skip_to end)
     {:ok, 2} = Otis.SourceList.skip(context.source_list, skip_to)
-    zone_id = context.zone.id
-    assert_receive {:sources_skipped, ^zone_id, ^skipped_ids}
+    channel_id = context.channel.id
+    assert_receive {:sources_skipped, ^channel_id, ^skipped_ids}
   end
 
   test "restores source lists from db", context do
     sources = Enum.map [TestSource.new, TestSource.new], &Otis.SourceList.source_with_id/1
     sources |> Enum.with_index |> Enum.each(fn({source, position}) ->
-      Otis.State.Events.notify {:new_source, context.zone.id, position, source}
+      Otis.State.Events.notify {:new_source, context.channel.id, position, source}
     end)
     assert_receive {:new_source_created, _}
     assert_receive {:new_source_created, _}
     {:ok, []} = Otis.SourceList.list(context.source_list)
-    Otis.Startup.restore_source_lists(Otis.State, Otis.Zones)
+    Otis.Startup.restore_source_lists(Otis.State, Otis.Channels)
     # Otis.SourceList.append(context.source_list, [TestSource.new, TestSource.new])
     [{id1, 0, source1}, {id2, 0, source2}] = sources
     {:ok, [{ed1, 0, entry1}, {ed2, 0, entry2}]} = Otis.SourceList.list(context.source_list)
@@ -229,7 +229,7 @@ defmodule Otis.Persistence.SourceTest do
     {:ok, entries} = Otis.SourceList.list(context.source_list)
     assert [0, 0] == Enum.map entries, fn({_id, position, _source}) -> position end
     [{id1, _, _}, _] = entries
-    Otis.State.Events.sync_notify({:source_progress, context.zone.id, id1, 1000, 2000})
+    Otis.State.Events.sync_notify({:source_progress, context.channel.id, id1, 1000, 2000})
     source = Otis.State.Source.find(id1)
     assert source.playback_position == 1000
   end

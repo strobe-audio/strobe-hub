@@ -1,31 +1,31 @@
 defmodule Otis.State do
   require Logger
 
-  defmodule ZoneStatus do
+  defmodule ChannelStatus do
     @derive {Poison.Encoder, only: [:id, :name, :volume, :position, :playing]}
 
     defstruct [:id, :name, :volume, :position, :playing]
   end
 
   defmodule ReceiverStatus do
-    defstruct [:id, :name, :volume, :online, :zone_id, :online]
+    defstruct [:id, :name, :volume, :online, :channel_id, :online]
   end
 
   defmodule SourceStatus do
-    defstruct [:id, :position, :source, :playback_position, :source_id, :zone_id]
+    defstruct [:id, :position, :source, :playback_position, :source_id, :channel_id]
   end
 
   @doc "Returns the current state from the db"
   def current do
-    zones = [ active_zone | _ ] = zones()
-    %{ channels: zones, receivers: receivers(), sources: sources() }
+    channels = [ active_channel | _ ] = channels()
+    %{ channels: channels, receivers: receivers(), sources: sources() }
   end
 
-  defp zones do
+  defp channels do
     # TODO:
     # - playlist
     # - current song
-    Enum.map Otis.State.Zone.all, &status/1
+    Enum.map Otis.State.Channel.all, &status/1
   end
 
   def receivers do
@@ -37,9 +37,9 @@ defmodule Otis.State do
     Enum.map Otis.State.Source.all, &source/1
   end
 
-  def status(%Otis.State.Zone{} = zone) do
-    status = zone |> Map.from_struct |> Map.merge(zone_status(zone))
-    struct(ZoneStatus, status)
+  def status(%Otis.State.Channel{} = channel) do
+    status = channel |> Map.from_struct |> Map.merge(channel_status(channel))
+    struct(ChannelStatus, status)
   end
 
   def status(%Otis.State.Receiver{} = receiver) do
@@ -56,8 +56,8 @@ defmodule Otis.State do
     %{online: Otis.Receivers.connected?(receiver.id)}
   end
 
-  def zone_status(zone) do
-    %{playing: Otis.Zones.playing?(zone.id)}
+  def channel_status(channel) do
+    %{playing: Otis.Channels.playing?(channel.id)}
   end
 
   # TODO: I need a separate nonclameture for the entry in a source list as
@@ -72,7 +72,7 @@ defimpl Poison.Encoder, for: Otis.State.ReceiverStatus do
   def encode(status, opts) do
     status
     |> Map.take([:id, :name, :volume, :online, :online])
-    |> Map.put(:zoneId, status.zone_id)
+    |> Map.put(:channelId, status.channel_id)
     |> Poison.Encoder.encode(opts)
   end
 end
@@ -83,7 +83,7 @@ defimpl Poison.Encoder, for: Otis.State.SourceStatus do
     |> Map.take([:id, :position, :source])
     |> Map.put(:playbackPosition, status.playback_position)
     |> Map.put(:sourceId, status.source_id)
-    |> Map.put(:zoneId, status.zone_id)
+    |> Map.put(:channelId, status.channel_id)
     |> Poison.Encoder.encode(opts)
   end
 end

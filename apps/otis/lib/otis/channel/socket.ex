@@ -1,4 +1,4 @@
-defmodule Otis.Zone.Socket do
+defmodule Otis.Channel.Socket do
   use     GenServer
   require Logger
   alias   Otis.Receiver

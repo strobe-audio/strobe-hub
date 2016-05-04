@@ -9,7 +9,7 @@ defmodule Otis.Controllers do
 
   def init(:ok) do
     children = [
-      worker(Otis.Zone.Controller, [], [restart: :transient, shutdown: :brutal_kill])
+      worker(Otis.Channel.Controller, [], [restart: :transient, shutdown: :brutal_kill])
     ]
     supervise(children, strategy: :simple_one_for_one)
   end

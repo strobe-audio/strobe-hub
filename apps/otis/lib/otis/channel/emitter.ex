@@ -1,5 +1,5 @@
 
-defmodule Otis.Zone.Emitter do
+defmodule Otis.Channel.Emitter do
   @moduledoc """
   Emits a given audio packet ({timestamp, data}) at the given time
   """
@@ -109,7 +109,7 @@ defmodule Otis.Zone.Emitter do
   defp emit_frame({_loop, {_time, packet, socket}, {_pi, _ps, pool} = _config} = state) do
     # now = monotonic_microseconds
     # Logger.debug "At #{_time - now}: emit #{timestamp - now} on socket #{inspect socket}"
-    Otis.Zone.Socket.send(socket, packet.timestamp, packet.data)
+    Otis.Channel.Socket.send(socket, packet.timestamp, packet.data)
     :poolboy.checkin(pool, self)
     start_waiting(state)
   end
@@ -144,14 +144,14 @@ defmodule Otis.Zone.Emitter do
   end
 end
 
-defimpl Otis.Broadcaster.Emitter, for: Otis.Zone.Emitter do
+defimpl Otis.Broadcaster.Emitter, for: Otis.Channel.Emitter do
   def emit(emitter, emit_time, packet) do
     pid = :poolboy.checkout(emitter.pool)
-    Otis.Zone.Emitter.emit(pid, emit_time, packet, emitter.socket)
+    Otis.Channel.Emitter.emit(pid, emit_time, packet, emitter.socket)
     {:emitter, pid}
   end
 
   def stop(emitter) do
-    Otis.Zone.Socket.stop(emitter.socket)
+    Otis.Channel.Socket.stop(emitter.socket)
   end
 end

@@ -55,7 +55,7 @@ defmodule Otis.BufferedStreamTest do
   test "buffered stream returns :stopped immediately if the stream is empty" do
     source_id = Otis.uuid
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, [])
-    {:ok, buffered_stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
+    {:ok, buffered_stream} = Otis.Channel.BufferedStream.seconds(audio_stream, 1)
     :stopped = Otis.AudioStream.frame(buffered_stream)
   end
 
@@ -68,7 +68,7 @@ defmodule Otis.BufferedStreamTest do
       "04"
     ])
 
-    {:ok, buffered_stream} = Otis.Zone.BufferedStream.seconds(audio_stream, 1)
+    {:ok, buffered_stream} = Otis.Channel.BufferedStream.seconds(audio_stream, 1)
     assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "01" }} == Otis.AudioStream.frame(buffered_stream)
     assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "02" }} == Otis.AudioStream.frame(buffered_stream)
     assert {:ok, %Packet{ TestUtils.packet(source_id) | data: "03" }} == Otis.AudioStream.frame(buffered_stream)
@@ -82,7 +82,7 @@ defmodule Otis.BufferedStreamTest do
     data = (1..100) |> Enum.map(&Integer.to_string(&1, 10))
     packets = data |> Enum.map(&%Packet{ TestUtils.packet(source_id) | data: &1 })
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, data)
-    {:ok, buffered_stream} = Otis.Zone.BufferedStream.start_link(audio_stream, buffer_size)
+    {:ok, buffered_stream} = Otis.Channel.BufferedStream.start_link(audio_stream, buffer_size)
     :ok = Otis.AudioStream.buffer(buffered_stream)
     {:ok, sent} = GenServer.call(audio_stream, :sent)
     assert sent == packets |> Enum.take(buffer_size)
@@ -101,7 +101,7 @@ defmodule Otis.BufferedStreamTest do
       Packet.attach TestUtils.packet(source_id), data
     end)
     {:ok, audio_stream} = Test.ArrayAudioStream.start_link(source_id, data)
-    {:ok, buffered_stream} = Otis.Zone.BufferedStream.start_link(audio_stream, buffer_size)
+    {:ok, buffered_stream} = Otis.Channel.BufferedStream.start_link(audio_stream, buffer_size)
 
     :ok = Otis.AudioStream.buffer(buffered_stream)
     {:ok, sent} = GenServer.call(audio_stream, :sent)
