@@ -1,5 +1,7 @@
 module Rendition (..) where
 
+import ID
+
 
 type alias SourceMetadata =
   { bit_rate : Maybe Int
@@ -30,7 +32,7 @@ type alias Source =
 
 
 type alias Model =
-  { id : String
+  { id : ID.Rendition
   , position : Int
   , playbackPosition : Int
   , sourceId : String
@@ -41,7 +43,7 @@ type alias Model =
 
 type Action
   = NoOp
-  | Skip
+  | SkipTo
   | Progress ProgressEvent
 
 

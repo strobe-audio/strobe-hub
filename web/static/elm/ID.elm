@@ -7,3 +7,7 @@ type alias Channel =
 
 type alias Receiver =
   String
+
+
+type alias Rendition =
+  String

@@ -12,6 +12,7 @@ import Channel
 import Channel.Signals
 import Volume.Signals
 import Receiver.Signals
+import Rendition.Signals
 
 
 app : StartApp.App Root.Model
@@ -135,14 +136,13 @@ port playPauseChanges =
     mailbox.signal
 
 
-playlistSkipRequestsBox : Signal.Mailbox ( String, String )
-playlistSkipRequestsBox =
-  Signal.mailbox ( "", "" )
-
-
 port playlistSkipRequests : Signal ( String, String )
 port playlistSkipRequests =
-  playlistSkipRequestsBox.signal
+  let
+    mailbox =
+      Rendition.Signals.skip
+  in
+    mailbox.signal
 
 
 port attachReceiverRequests : Signal ( String, String )

@@ -56,7 +56,7 @@ playlist address rendition =
   div
     [ key rendition.id
     , class "block playlist-entry"
-    , onDoubleClick address (Rendition.Skip)
+    , onDoubleClick address Rendition.SkipTo
     ]
     [ div
         [ class "playlist-entry--title" ]
