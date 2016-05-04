@@ -17,8 +17,6 @@ type Action
   -- | UpdateReceiverVolume Receiver Float
   -- | UpdateZoneVolume Zone Float
   -- | TogglePlayPause (Zone, Bool)
-  | SourceProgress SourceProgressEvent
-  -- | SourceChange SourceChangeEvent
   -- | VolumeChange VolumeChangeEvent
   -- | PlayListAddition PlaylistEntry
   -- | PlaylistSkip PlaylistEntry
@@ -101,19 +99,6 @@ type alias ReceiverStatusEvent =
 type alias ZoneStatusEvent =
   { zoneId:     String
   , status:     String
-  }
-
-type alias SourceProgressEvent =
-  { zoneId : String
-  , sourceId : String
-  , progress : Int
-  , duration : Int
-  }
-
-
-type alias SourceChangeEvent =
-  { zoneId: String
-  , removeSourceIds: List String
   }
 
 

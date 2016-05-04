@@ -49,3 +49,10 @@ type alias ProgressEvent =
   , progress : Int
   , duration : Int
   }
+
+
+type alias ChangeEvent =
+  { zoneId: String
+  , removeSourceIds: List String
+  }
+

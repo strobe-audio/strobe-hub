@@ -81,6 +81,13 @@ update action channel =
         (Channel.ModifyRendition event.sourceId (Rendition.Progress event))
         channel
 
+    Channel.RenditionChange event ->
+      let
+        isMember = (\r -> (List.member r.id event.removeSourceIds))
+        playlist = List.filter (isMember >> not) channel.playlist
+        updatedChannel = { channel | playlist = playlist }
+      in
+        ( updatedChannel, Effects.none )
 
 
 channelPlayPause : Channel.Model -> Channel.Model

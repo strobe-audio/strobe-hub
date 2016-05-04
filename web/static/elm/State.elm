@@ -119,8 +119,6 @@ update action model =
       in
           (updatedModel, Effects.none)
 
-    Root.SourceProgress event ->
-      ( model, Effects.none )
 
 
 

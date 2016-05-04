@@ -25,7 +25,7 @@ app =
                , receiverStatusActions
                -- , zoneStatusActions
                , sourceProgressActions
-               -- , sourceChangeActions
+               , sourceChangeActions
                -- , volumeChangeActions
                -- , playListAdditionActions
                -- , libraryRegistrationActions
@@ -75,11 +75,15 @@ sourceProgressActions =
       Signal.map forward sourceProgress
 
 
-port sourceChange : Signal Root.SourceChangeEvent
+port sourceChange : Signal Rendition.ChangeEvent
 
--- sourceChangeActions : Signal Root.Action
--- sourceChangeActions =
---   Signal.map SourceChange sourceChange
+sourceChangeActions : Signal Root.Action
+sourceChangeActions =
+  let
+      forward event =
+        (Root.ModifyChannel event.zoneId) (Channel.RenditionChange event)
+  in
+      Signal.map forward sourceChange
 
 
 port volumeChange : Signal Root.VolumeChangeEvent
