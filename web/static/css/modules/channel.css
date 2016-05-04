@@ -30,6 +30,9 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  &:hover {
+    background-color: #00c853;
+  }
   &::before {
     @mixin fa;
     content: "\f067";
@@ -60,4 +63,7 @@
   text-align: center;
   background-color: #2e7d32;
   color: #fff;
+  &:hover {
+    background-color: #00c853;
+  }
 }
