@@ -100,6 +100,19 @@ update action channel =
       in
         ( updatedChannel, Effects.none )
 
+    Channel.AddRendition rendition ->
+      let
+        before =
+          List.take rendition.position channel.playlist
+
+        after =
+          rendition :: (List.drop rendition.position channel.playlist)
+
+        playlist =
+          List.concat [ before, after ]
+      in
+        ( { channel | playlist = playlist }, Effects.none )
+
 
 channelPlayPause : Channel.Model -> Channel.Model
 channelPlayPause channel =

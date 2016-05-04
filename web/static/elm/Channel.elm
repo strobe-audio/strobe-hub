@@ -24,4 +24,5 @@ type Action
   | ShowAddReceiver Bool
   | RenditionProgress Rendition.ProgressEvent
   | RenditionChange Rendition.ChangeEvent
+  | AddRendition Rendition.Model
   | NoOp

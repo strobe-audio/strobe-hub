@@ -18,7 +18,7 @@ type Action
     -- | UpdateZoneVolume Zone Float
     -- | TogglePlayPause (Zone, Bool)
   | VolumeChange VolumeChangeEvent
-    -- | PlayListAddition PlaylistEntry
+  | NewRendition Rendition.Model
     -- | PlaylistSkip PlaylistEntry
     -- | ShowAddReceiver ( Zone, Bool )
     -- | AttachReceiver Zone Receiver

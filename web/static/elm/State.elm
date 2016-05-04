@@ -159,15 +159,17 @@ update action model =
 
     Root.Library libraryAction ->
       let
-        _ =
-          Debug.log "library" libraryAction
-
+        -- _ =
+        --   Debug.log "library" libraryAction
         ( library, effect ) =
           Library.State.update libraryAction model.library model.activeChannelId
       in
         ( { model | library = library }
         , (Effects.map Root.Library effect)
         )
+
+    Root.NewRendition rendition ->
+      update (Root.ModifyChannel rendition.zoneId (Channel.AddRendition rendition)) model
 
 
 attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model

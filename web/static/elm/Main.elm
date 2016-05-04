@@ -31,7 +31,7 @@ app =
         , sourceProgressActions
         , sourceChangeActions
         , volumeChangeActions
-          -- , playListAdditionActions
+        , playListAdditionActions
         , libraryRegistrationActions
         , libraryResponseActions
         , viewportWidth
@@ -109,12 +109,9 @@ volumeChangeActions =
 
 
 port playlistAddition : Signal Root.PlaylistEntry
-
-
-
--- playListAdditionActions : Signal Root.Action
--- playListAdditionActions =
---   Signal.map PlayListAddition playlistAddition
+playListAdditionActions : Signal Root.Action
+playListAdditionActions =
+  Signal.map Root.NewRendition playlistAddition
 
 
 port libraryRegistration : Signal Library.Node
