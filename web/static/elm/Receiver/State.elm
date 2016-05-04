@@ -32,6 +32,10 @@ update action model =
         Nothing ->
           ( model, Effects.none )
 
+    -- The volume has been changed by someone else
+    Receiver.VolumeChanged volume ->
+      ( { model | volume = volume }, Effects.none )
+
     Receiver.Attach channelId ->
       ( model, (Receiver.Effects.attach channelId model.id) )
 

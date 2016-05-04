@@ -17,7 +17,7 @@ type Action
     -- | UpdateReceiverVolume Receiver Float
     -- | UpdateZoneVolume Zone Float
     -- | TogglePlayPause (Zone, Bool)
-    -- | VolumeChange VolumeChangeEvent
+  | VolumeChange VolumeChangeEvent
     -- | PlayListAddition PlaylistEntry
     -- | PlaylistSkip PlaylistEntry
     -- | ShowAddReceiver ( Zone, Bool )

@@ -130,6 +130,17 @@ update action model =
       in
         ( updatedModel, Effects.none )
 
+    Root.VolumeChange event ->
+      case event.target of
+        "receiver" ->
+          update (Root.ModifyReceiver event.id (Receiver.VolumeChanged event.volume)) model
+
+        "zone" ->
+          update (Root.ModifyChannel event.id (Channel.VolumeChanged event.volume)) model
+
+        _ ->
+          ( model, Effects.none )
+
 
 attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 attachedReceivers model channel =

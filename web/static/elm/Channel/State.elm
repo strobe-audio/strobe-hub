@@ -53,6 +53,10 @@ update action channel =
         Nothing ->
           ( channel, Effects.none )
 
+    -- The volume has been changed by someone else
+    Channel.VolumeChanged volume ->
+      ( { channel | volume = volume }, Effects.none )
+
     Channel.PlayPause ->
       let
         updatedChannel =

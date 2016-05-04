@@ -16,6 +16,7 @@ type alias Model =
 type Action
   = NoOp
   | Volume (Maybe Float)
+  | VolumeChanged Float
   | Attach ID.Channel
   | Online ID.Channel
   | Offline

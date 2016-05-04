@@ -26,7 +26,7 @@ app =
           -- , zoneStatusActions
         , sourceProgressActions
         , sourceChangeActions
-          -- , volumeChangeActions
+        , volumeChangeActions
           -- , playListAdditionActions
           -- , libraryRegistrationActions
           -- , libraryResponseActions
@@ -86,12 +86,9 @@ sourceChangeActions =
 
 
 port volumeChange : Signal Root.VolumeChangeEvent
-
-
-
--- volumeChangeActions : Signal Root.Action
--- volumeChangeActions =
---   Signal.map VolumeChange volumeChange
+volumeChangeActions : Signal Root.Action
+volumeChangeActions =
+  Signal.map Root.VolumeChange volumeChange
 
 
 port playlistAddition : Signal Root.PlaylistEntry
