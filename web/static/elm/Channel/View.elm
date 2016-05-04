@@ -13,20 +13,31 @@ import Receiver
 import Receiver.View
 
 
-root : Root.ChannelContext -> Channel.Model -> Html
-root context channel =
+root : Root.ChannelContext -> Channel.Model -> Bool -> Html
+root context channel playlistVisible =
   let
     rendition =
       List.head channel.playlist
 
     playPauseAddress =
       Signal.forwardTo context.channelAddress (always Channel.PlayPause)
+
+    renditions =
+      case playlistVisible of
+        True ->
+          div
+            []
+            [ (receiverList context channel)
+            , (playlist context channel)
+            ]
+
+        False ->
+          div [] []
   in
     div
       []
       [ (playingSong playPauseAddress channel rendition)
-      , (receiverList context channel)
-      , (playlist context channel)
+      , renditions
       ]
 
 

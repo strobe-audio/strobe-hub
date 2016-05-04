@@ -1,4 +1,4 @@
-module State (initialState, update, activeChannel, attachedReceivers, detachedReceivers) where
+module State (initialState, update, activeChannel, attachedReceivers, detachedReceivers, libraryVisible, playlistVisible) where
 
 import Effects exposing (Effects, Never)
 import Debug
@@ -18,6 +18,8 @@ initialState =
       , receivers = []
       , showChannelSwitcher = False
       , activeChannelId = Nothing
+      , listMode = Root.PlaylistMode
+      , mustShowLibrary = False
       }
 
     -- , library = Library.init
@@ -114,8 +116,8 @@ update action model =
       in
         ( { model | receivers = receivers }, (Effects.batch effects) )
 
-    Root.SetMode mode ->
-      ( model, Effects.none )
+    Root.SetListMode mode ->
+      ( { model | listMode = mode }, Effects.none )
 
     Root.ToggleChannelSelector ->
       ( { model | showChannelSwitcher = not (model.showChannelSwitcher) }, Effects.none )
@@ -141,6 +143,13 @@ update action model =
         _ ->
           ( model, Effects.none )
 
+    Root.Viewport width ->
+      let
+        mustShowLibrary =
+          width > 800
+      in
+        ( { model | mustShowLibrary = mustShowLibrary }, Effects.none )
+
 
 attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 attachedReceivers model channel =
@@ -150,3 +159,33 @@ attachedReceivers model channel =
 detachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
 detachedReceivers model channel =
   List.filter (\r -> r.zoneId /= channel.id) model.receivers
+
+
+libraryVisible : Root.Model -> Bool
+libraryVisible model =
+  case model.mustShowLibrary of
+    True ->
+      True
+
+    False ->
+      case model.listMode of
+        Root.LibraryMode ->
+          True
+
+        Root.PlaylistMode ->
+          False
+
+
+playlistVisible : Root.Model -> Bool
+playlistVisible model =
+  case model.mustShowLibrary of
+    True ->
+      True
+
+    False ->
+      case model.listMode of
+        Root.LibraryMode ->
+          False
+
+        Root.PlaylistMode ->
+          True

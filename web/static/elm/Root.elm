@@ -24,9 +24,10 @@ type Action
     -- | AttachReceiver Zone Receiver
     -- | LibraryRegistration Library.Node
     -- | Library Library.Action
-  | SetMode String
+  | SetListMode ChannelListMode
   | ToggleChannelSelector
   | ChooseChannel Channel.Model
+  | Viewport Int
   | NoOp
 
 
@@ -39,7 +40,14 @@ type alias Model =
   , receivers : List Receiver.Model
   , showChannelSwitcher : Bool
   , activeChannelId : Maybe ID.Channel
+  , listMode : ChannelListMode
+  , mustShowLibrary : Bool
   }
+
+
+type ChannelListMode
+  = LibraryMode
+  | PlaylistMode
 
 
 

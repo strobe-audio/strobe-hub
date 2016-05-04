@@ -3,6 +3,7 @@ module Main (main) where
 import Effects exposing (Effects, Never)
 import Html exposing (Html)
 import Task exposing (Task)
+import Window
 import StartApp
 import Root
 import State
@@ -31,6 +32,7 @@ app =
           -- , playListAdditionActions
           -- , libraryRegistrationActions
           -- , libraryResponseActions
+        , viewportWidth
         ]
     }
 
@@ -38,6 +40,11 @@ app =
 main : Signal Html
 main =
   app.html
+
+
+viewportWidth : Signal Root.Action
+viewportWidth =
+  Signal.map Root.Viewport Window.width
 
 
 port tasks : Signal (Task Never ())
