@@ -13,6 +13,7 @@ import Rendition
 import Channel
 import Channel.Signals
 import Volume.Signals
+import Receiver.Signals
 
 app : StartApp.App Root.Model
 app =
@@ -143,14 +144,12 @@ port playlistSkipRequests =
   playlistSkipRequestsBox.signal
 
 
-attachReceiverRequestsBox : Signal.Mailbox ( String, String )
-attachReceiverRequestsBox =
-  Signal.mailbox ( "", "" )
-
-
 port attachReceiverRequests : Signal ( String, String )
 port attachReceiverRequests =
-  attachReceiverRequestsBox.signal
+  let
+      mailbox = Receiver.Signals.attach
+  in
+      mailbox.signal
 
 
 -- port libraryRequests : Signal (String, String)

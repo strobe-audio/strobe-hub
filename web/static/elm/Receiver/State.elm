@@ -31,10 +31,7 @@ update action model =
           ( model, Effects.none )
 
     Receiver.Attach channelId ->
-      let
-          _ = Debug.log "attach to channel" channelId
-      in
-          ( model, Effects.none )
+      ( model, (Receiver.Effects.attach channelId model.id) )
 
     Receiver.Online channelId ->
       ( { model | online = True, zoneId = channelId }, Effects.none )
