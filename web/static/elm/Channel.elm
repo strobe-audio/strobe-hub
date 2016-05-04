@@ -1,8 +1,9 @@
-module Channel where
+module Channel (..) where
 
 import Receiver
 import Rendition
 import ID
+
 
 type alias Model =
   { id : ID.Channel
@@ -15,7 +16,6 @@ type alias Model =
   }
 
 
-
 type Action
   = Volume (Maybe Float)
   | PlayPause
@@ -24,4 +24,3 @@ type Action
   | RenditionProgress Rendition.ProgressEvent
   | RenditionChange Rendition.ChangeEvent
   | NoOp
-

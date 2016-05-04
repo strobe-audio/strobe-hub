@@ -1,4 +1,5 @@
-module Volume.Signals where
+module Volume.Signals (..) where
+
 
 volumeChange : Signal.Mailbox ( String, String, Float )
 volumeChange =

@@ -1,9 +1,7 @@
 module Rendition.State (update) where
 
-
 import Effects exposing (Effects, Never)
 import Debug
-
 import Rendition
 
 
@@ -18,5 +16,3 @@ update action rendition =
 
     Rendition.Progress event ->
       ( { rendition | playbackPosition = event.progress }, Effects.none )
-
-

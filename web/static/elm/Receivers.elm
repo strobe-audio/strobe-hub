@@ -9,12 +9,15 @@ import Volume
 
 viewAttached : Signal.Address Action -> Receiver -> Html
 viewAttached address receiver =
-  div [ classList
-    [ ("receiver", True)
-    , ("receiver--online", receiver.online)
-    , ("receiver--offline", not receiver.online) ]
+  div
+    [ classList
+        [ ( "receiver", True )
+        , ( "receiver--online", receiver.online )
+        , ( "receiver--offline", not receiver.online )
+        ]
     ]
     [ Volume.volumeControl address receiver.volume receiver.name (UpdateReceiverVolume receiver) ]
+
 
 
 -- viewDetached : Signal.Address Action  -> Receiver -> Html

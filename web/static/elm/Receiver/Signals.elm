@@ -1,7 +1,6 @@
-module Receiver.Signals where
+module Receiver.Signals (..) where
 
 
 attach : Signal.Mailbox ( String, String )
 attach =
   Signal.mailbox ( "", "" )
-

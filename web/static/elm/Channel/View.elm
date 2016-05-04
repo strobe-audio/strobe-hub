@@ -1,18 +1,14 @@
-module Channel.View where
+module Channel.View (..) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Debug
-
 import Root
-
 import Channel
 import Channel.State
-
 import Rendition
 import Rendition.View
-
 import Receiver
 import Receiver.View
 
@@ -20,10 +16,14 @@ import Receiver.View
 root : Root.ChannelContext -> Channel.Model -> Html
 root context channel =
   let
-      rendition = List.head channel.playlist
-      playPauseAddress = Signal.forwardTo context.channelAddress (always Channel.PlayPause)
+    rendition =
+      List.head channel.playlist
+
+    playPauseAddress =
+      Signal.forwardTo context.channelAddress (always Channel.PlayPause)
   in
-    div []
+    div
+      []
       [ (playingSong playPauseAddress channel rendition)
       , (receiverList context channel)
       , (playlist context channel)
@@ -35,55 +35,64 @@ playingSong address channel maybeRendition =
   case maybeRendition of
     Nothing ->
       div [] [ text "No song..." ]
+
     Just rendition ->
-      div [] [
-        (Rendition.View.playing address rendition)
-      , (Rendition.View.progress address rendition)
-      ]
+      div
+        []
+        [ (Rendition.View.playing address rendition)
+        , (Rendition.View.progress address rendition)
+        ]
 
 
 receiverList : Root.ChannelContext -> Channel.Model -> Html
 receiverList context channel =
   let
-      addButton = case List.length context.detached of
+    addButton =
+      case List.length context.detached of
         0 ->
           []
+
         _ ->
           if channel.showAddReceiver then
-            [ div [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver False) ]
-              [ i [ class "fa fa-caret-up" ] [] ]
+            [ div
+                [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver False) ]
+                [ i [ class "fa fa-caret-up" ] [] ]
             ]
           else
-            [ div [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver True) ]
-              [ i [ class "fa fa-plus" ] [] ]
+            [ div
+                [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver True) ]
+                [ i [ class "fa fa-plus" ] [] ]
             ]
 
-      attachList = case channel.showAddReceiver of
+    attachList =
+      case channel.showAddReceiver of
         False ->
           div [] []
+
         True ->
           (attachReceiverList context channel context.detached)
 
-      attachedReceiver receiver =
-        (Receiver.View.attached (context.receiverAddress receiver) receiver)
+    attachedReceiver receiver =
+      (Receiver.View.attached (context.receiverAddress receiver) receiver)
 
-      attachedReceivers = Receiver.sort context.attached
-
-
+    attachedReceivers =
+      Receiver.sort context.attached
   in
-     div [ class "channel-receivers" ] [
-       div [ class "channel-receivers--head" ] ( (div [ class "block divider" ] [ text "Receivers" ]) :: addButton )
-     , attachList
-     , div [ class "channel-receivers--list" ] (List.map attachedReceiver attachedReceivers)
-     ]
+    div
+      [ class "channel-receivers" ]
+      [ div [ class "channel-receivers--head" ] ((div [ class "block divider" ] [ text "Receivers" ]) :: addButton)
+      , attachList
+      , div [ class "channel-receivers--list" ] (List.map attachedReceiver attachedReceivers)
+      ]
 
 
 attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
 attachReceiverList context channel receivers =
   let
-      sortedReceivers = (Receiver.sort receivers)
+    sortedReceivers =
+      (Receiver.sort receivers)
   in
-      div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) sortedReceivers)
+    div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) sortedReceivers)
 
 
 attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
@@ -94,16 +103,17 @@ attachReceiverEntry context channel receiver =
 playlist : Root.ChannelContext -> Channel.Model -> Html
 playlist context channel =
   let
-      entry rendition =
-        let
-            renditionAddress = Signal.forwardTo context.channelAddress (Channel.ModifyRendition rendition.id)
-        in
-            Rendition.View.playlist renditionAddress rendition
+    entry rendition =
+      let
+        renditionAddress =
+          Signal.forwardTo context.channelAddress (Channel.ModifyRendition rendition.id)
+      in
+        Rendition.View.playlist renditionAddress rendition
   in
-      div [ class "channel-playlist" ]
-        [ div [ class "divider" ] [ text "Playlist" ]
-        , div [ class "block-group channel-playlist" ]
-            (List.map entry channel.playlist)
-        ]
-
-
+    div
+      [ class "channel-playlist" ]
+      [ div [ class "divider" ] [ text "Playlist" ]
+      , div
+          [ class "block-group channel-playlist" ]
+          (List.map entry channel.playlist)
+      ]

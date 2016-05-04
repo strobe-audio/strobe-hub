@@ -1,10 +1,10 @@
 module Receiver.State (initialState, update) where
 
 import Effects exposing (Effects, Never)
-
 import Root exposing (ReceiverState)
 import Receiver
 import Receiver.Effects
+
 
 initialState : ReceiverState -> Receiver.Model
 initialState state =
@@ -24,9 +24,11 @@ update action model =
       case maybeVolume of
         Just volume ->
           let
-              updated = { model | volume = volume }
+            updated =
+              { model | volume = volume }
           in
-              ( updated, Receiver.Effects.volume updated )
+            ( updated, Receiver.Effects.volume updated )
+
         Nothing ->
           ( model, Effects.none )
 
@@ -41,5 +43,3 @@ update action model =
 
     _ ->
       ( model, Effects.none )
-
-

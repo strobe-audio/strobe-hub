@@ -1,6 +1,9 @@
-module ID where
+module ID (..) where
 
 
-type alias Channel = String
-type alias Receiver = String
+type alias Channel =
+  String
 
+
+type alias Receiver =
+  String

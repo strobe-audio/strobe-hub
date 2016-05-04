@@ -1,7 +1,6 @@
-module Channel.Signals where
+module Channel.Signals (..) where
 
 
 playPause : Signal.Mailbox ( String, Bool )
 playPause =
   Signal.mailbox ( "", False )
-

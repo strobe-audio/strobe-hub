@@ -1,6 +1,7 @@
-module Receiver where
+module Receiver (..) where
 
 import ID
+
 
 type alias Model =
   { id : ID.Receiver
@@ -18,6 +19,7 @@ type Action
   | Attach ID.Channel
   | Online ID.Channel
   | Offline
+
 
 sort : List Model -> List Model
 sort receivers =

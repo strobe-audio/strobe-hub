@@ -1,5 +1,4 @@
-module Library where
-
+module Library (..) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -15,6 +14,7 @@ type Action
   | ExecuteAction String
   | Response Folder
   | PopLevel Int
+
 
 
 {-
@@ -116,6 +116,8 @@ library entirely responsible for the action action string
 in the playlist artist name & album name (& any other metadata) must have actions attached too. you should be able to click on the artist of a playlist entry & go to the library view for that artist..
 
 -}
+
+
 type alias Folder =
   { id : String
   , title : String
@@ -136,10 +138,12 @@ type alias Model =
   { levels : List Folder
   }
 
+
 type alias FolderResponse =
   { libraryId : String
   , folder : Folder
   }
+
 
 
 -- rootLevel : Model -> Folder
@@ -151,6 +155,7 @@ type alias FolderResponse =
 --   , children = []
 --   }
 
+
 pushLevel : Model -> Folder -> Model
 pushLevel model folder =
   -- Debug.log ("pushLevel |" ++ (toString folder) ++ "| |" ++ (toString model.level) ++ "| ")
@@ -159,39 +164,46 @@ pushLevel model folder =
 
 init : Model
 init =
-    let
-        root = { id = "libraries", title = "Libraries", icon = "", children = [] }
-    in
-      { levels = [ root ]  }
+  let
+    root =
+      { id = "libraries", title = "Libraries", icon = "", children = [] }
+  in
+    { levels = [ root ] }
 
 
 add : Model -> Node -> Model
 add model library =
   let
-      levels = (List.reverse model.levels)
-      root = case (List.head levels) of
+    levels =
+      (List.reverse model.levels)
+
+    root =
+      case (List.head levels) of
         Just level ->
-          { level | children = ( library :: level.children ) }
+          { level | children = (library :: level.children) }
+
         Nothing ->
           Debug.crash "Model has no root level!"
-      others = case List.tail levels of
+
+    others =
+      case List.tail levels of
         Just l ->
           l
+
         Nothing ->
           []
-
   in
-      { model | levels = (List.reverse ( root :: others ))}
+    { model | levels = (List.reverse (root :: others)) }
 
 
-update : Action -> Model -> String -> (Model, Effects Action)
+update : Action -> Model -> String -> ( Model, Effects Action )
 update action model zoneId =
   case action of
     NoOp ->
       ( model, Effects.none )
 
     ExecuteAction a ->
-      ( model, ( sendAction zoneId a ) )
+      ( model, (sendAction zoneId a) )
 
     Response folder ->
       ( (pushLevel model folder), Effects.none )
@@ -208,38 +220,47 @@ node address library folder node =
 breadcrumb : Signal.Address Action -> Model -> Folder -> Html
 breadcrumb address model folder =
   let
-      breadcrumbLink classes index level =
-        -- Debug.log ("level " ++ level.action)
-        a [ class classes, onClick address (PopLevel ( index + 1 ))  ] [ text level.title ]
-      sections  = case List.tail model.levels of
+    breadcrumbLink classes index level =
+      -- Debug.log ("level " ++ level.action)
+      a [ class classes, onClick address (PopLevel (index + 1)) ] [ text level.title ]
+
+    sections =
+      case List.tail model.levels of
         Just levels ->
           List.indexedMap (breadcrumbLink "section") levels
+
         Nothing ->
           []
-      levels = (div [ class "section active" ] [ text folder.title ]) :: sections
-      breadcrumb = List.intersperse (i [ class "right angle icon divider" ] []) levels
 
+    levels =
+      (div [ class "section active" ] [ text folder.title ]) :: sections
+
+    breadcrumb =
+      List.intersperse (i [ class "right angle icon divider" ] []) levels
   in
-      div [ class "ui breadcrumb" ] (List.reverse breadcrumb)
+    div [ class "ui breadcrumb" ] (List.reverse breadcrumb)
 
 
 folder : Signal.Address Action -> Model -> Folder -> Html
 folder address model folder =
   let
-      children = if List.isEmpty folder.children then
+    children =
+      if List.isEmpty folder.children then
         div [] []
       else
-        div [ class "block-group library-contents" ] (List.map (node address model folder) folder.children )
-
+        div [ class "block-group library-contents" ] (List.map (node address model folder) folder.children)
   in
-      -- Debug.log (" folder " ++ (toString folder))
-      div [] [
-        div [ class "block-group library-folder" ] [
-          div [ class "library-breadcrumb" ] [
-            (breadcrumb address model folder)
+    -- Debug.log (" folder " ++ (toString folder))
+    div
+      []
+      [ div
+          [ class "block-group library-folder" ]
+          [ div
+              [ class "library-breadcrumb" ]
+              [ (breadcrumb address model folder)
+              ]
           ]
-        ]
-        , children
+      , children
       ]
 
 
@@ -248,25 +269,23 @@ currentLevel model =
   case List.head model.levels of
     Just level ->
       level
+
     Nothing ->
       Debug.crash "Model has no root level!"
+
 
 root : Signal.Address Action -> Model -> Html
 root address model =
   folder address model (currentLevel model)
 
 
-libraryRequestsBox : Signal.Mailbox (String, String)
+libraryRequestsBox : Signal.Mailbox ( String, String )
 libraryRequestsBox =
-  Signal.mailbox ("", "")
+  Signal.mailbox ( "", "" )
 
 
 sendAction : String -> String -> Effects Action
 sendAction zoneId action =
-  Signal.send libraryRequestsBox.address (zoneId, action)
+  Signal.send libraryRequestsBox.address ( zoneId, action )
     |> Effects.task
     |> Effects.map (always NoOp)
-
-
-
-
