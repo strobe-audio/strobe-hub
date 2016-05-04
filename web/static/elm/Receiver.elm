@@ -19,3 +19,6 @@ type Action
   | Online ID.Channel
   | Offline
 
+sort : List Model -> List Model
+sort receivers =
+  List.sortBy (\r -> r.name) receivers

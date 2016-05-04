@@ -67,18 +67,23 @@ receiverList context channel =
       attachedReceiver receiver =
         (Receiver.View.attached (context.receiverAddress receiver) receiver)
 
+      attachedReceivers = Receiver.sort context.attached
+
 
   in
      div [ class "channel-receivers" ] [
        div [ class "channel-receivers--head" ] ( (div [ class "block divider" ] [ text "Receivers" ]) :: addButton )
      , attachList
-     , div [ class "channel-receivers--list" ] (List.map attachedReceiver context.attached)
+     , div [ class "channel-receivers--list" ] (List.map attachedReceiver attachedReceivers)
      ]
 
 
 attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
 attachReceiverList context channel receivers =
-    div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) receivers)
+  let
+      sortedReceivers = (Receiver.sort receivers)
+  in
+      div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) sortedReceivers)
 
 
 attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
