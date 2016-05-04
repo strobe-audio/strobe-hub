@@ -18,7 +18,7 @@ defmodule Otis.State do
   @doc "Returns the current state from the db"
   def current do
     zones = [ active_zone | _ ] = zones()
-    %{ zones: zones, receivers: receivers(), sources: sources(), activeZoneId: active_zone.id }
+    %{ channels: zones, receivers: receivers(), sources: sources() }
   end
 
   defp zones do
