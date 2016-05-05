@@ -12,7 +12,7 @@ defmodule Otis.Channels do
   end
 
   def create(registry, id, name) do
-    add(:create, registry, id, %Otis.State.Channel{name: name})
+    add(:create, registry, id, %Otis.State.Channel{id: id, name: name})
   end
 
   @doc "Start an existing channel"

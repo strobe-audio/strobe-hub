@@ -42,13 +42,13 @@ defmodule ChannelsTest do
   test "broadcasts an event when a channel is added", %{channels: channels} do
     id = Otis.uuid
     {:ok, _channel} = Otis.Channels.create(channels, id, "My New Channel")
-    assert_receive {:channel_added, ^id, %{name: "My New Channel"}}, 200
+    assert_receive {:channel_added, ^id, %{id: ^id, name: "My New Channel"}}, 200
   end
 
   test "broadcasts an event when a channel is removed", %{channels: channels} do
     id = Otis.uuid
     {:ok, channel} = Otis.Channels.create(channels, id, "My New Channel")
-    assert_receive {:channel_added, ^id, %{name: "My New Channel"}}, 200
+    assert_receive {:channel_added, ^id, %{id: ^id, name: "My New Channel"}}, 200
 
     Otis.Channels.destroy!(channels, id)
     assert_receive {:channel_removed, ^id}, 200
