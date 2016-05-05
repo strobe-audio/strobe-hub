@@ -7,6 +7,10 @@ defmodule Otis.Channels do
     GenServer.start_link(__MODULE__, [], name: name)
   end
 
+  def create(name) when is_binary(name) do
+    create(Otis.uuid(), name)
+  end
+
   def create(id, name) do
     create(@registry_name, id, name)
   end
