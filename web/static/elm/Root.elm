@@ -10,7 +10,6 @@ import Input
 
 type Action
   = InitialState BroadcasterState
-  | ModifyChannel ID.Channel Channel.Action
   | ModifyReceiver ID.Receiver Receiver.Action
   | ReceiverStatus ( String, ReceiverStatusEvent )
     -- | ChannelStatus (String, ChannelStatusEvent)
@@ -25,12 +24,15 @@ type Action
   | LibraryRegistration Library.Node
   | Library Library.Action
   | SetListMode ChannelListMode
+    -- Channels...
+  | ModifyChannel ID.Channel Channel.Action
   | ToggleChannelSelector
   | ToggleAddChannel
   | AddChannel String
   | NewChannelInput Input.Action
   | ChannelAdded Channel.State
   | ChooseChannel Channel.Model
+    -- End Channels...
   | Viewport Int
   | NoOp
 
