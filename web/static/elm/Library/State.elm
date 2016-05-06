@@ -61,7 +61,7 @@ add model library =
     root =
       case (List.head levels) of
         Just level ->
-          { level | children = (library :: level.children) }
+          { level | children = (addUniqueLibrary library level.children) }
 
         Nothing ->
           Debug.crash "Model has no root level!"
@@ -75,3 +75,17 @@ add model library =
           []
   in
     { model | levels = (List.reverse (root :: others)) }
+
+addUniqueLibrary : Library.Node -> List Library.Node -> List Library.Node
+addUniqueLibrary library libraries =
+  let
+      duplicate = Debug.log "Duplicate library?" (List.any (\l -> l.id == library.id) libraries)
+      libraries' = case duplicate of
+        True ->
+          libraries
+
+        False ->
+          library :: libraries
+
+  in
+      libraries'
