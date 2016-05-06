@@ -2,7 +2,7 @@ module Channel.State (initialState, update, newChannel) where
 
 import Effects exposing (Effects, Never)
 import Debug
-import Root exposing (ChannelState, ReceiverState, BroadcasterState)
+import Root exposing (BroadcasterState)
 import Channel
 import Channel.Effects
 import Receiver
@@ -16,7 +16,7 @@ forChannel channelId list =
   List.filter (\r -> r.channelId == channelId) list
 
 
-initialState : BroadcasterState -> ChannelState -> Channel.Model
+initialState : BroadcasterState -> Channel.State -> Channel.Model
 initialState broadcasterState channelState =
   let
     renditions =
@@ -28,7 +28,7 @@ initialState broadcasterState channelState =
     { model | playlist = renditions }
 
 
-newChannel : ChannelState -> Channel.Model
+newChannel : Channel.State -> Channel.Model
 newChannel channelState =
   { id = channelState.id
   , name = channelState.name

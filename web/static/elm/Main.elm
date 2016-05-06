@@ -184,7 +184,7 @@ libraryResponseActions =
   in
     Signal.map translate libraryResponse
 
-port channelAdditions : Signal Root.ChannelState
+port channelAdditions : Signal Channel.State
 channelAdditionActions =
   Signal.map Root.ChannelAdded channelAdditions
 

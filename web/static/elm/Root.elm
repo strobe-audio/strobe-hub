@@ -29,7 +29,7 @@ type Action
   | ToggleAddChannel
   | AddChannel String
   | NewChannelInput Input.Action
-  | ChannelAdded ChannelState
+  | ChannelAdded Channel.State
   | ChooseChannel Channel.Model
   | Viewport Int
   | NoOp
@@ -57,57 +57,10 @@ type ChannelListMode
   | PlaylistMode
 
 
-
--- { channels : List Channel
--- , receivers : List Receiver
--- , sources : List PlaylistEntry
--- , library : Library.Model
--- , ui : UIState
--- , activeChannelId: String
--- , activeState: String
--- }
-
-
-type alias ChannelState =
-  { id : String
-  , name : String
-  , position : Int
-  , volume : Float
-  , playing : Bool
-  }
-
-
 type alias BroadcasterState =
-  { channels : List ChannelState
-  , receivers : List ReceiverState
+  { channels : List Channel.State
+  , receivers : List Receiver.State
   , sources : List Rendition.Model
-  }
-
-
-
--- type alias UIState =
---   { channels : List ChannelUIState
---   , receivers: List ReceiverUIState
---   }
--- type alias ChannelUIState =
---   { id: String
---   , showAddReceivers : Bool
---   , showRename : Bool
---   }
---
---
--- type alias ReceiverUIState =
---   { id: String
---   , showRename : Bool
---   }
-
-
-type alias ReceiverState =
-  { id : String
-  , name : String
-  , online : Bool
-  , volume : Float
-  , channelId : String
   }
 
 

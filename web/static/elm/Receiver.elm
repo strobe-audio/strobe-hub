@@ -21,6 +21,13 @@ type Action
   | Online ID.Channel
   | Offline
 
+type alias State =
+  { id : String
+  , name : String
+  , online : Bool
+  , volume : Float
+  , channelId : String
+  }
 
 sort : List Model -> List Model
 sort receivers =

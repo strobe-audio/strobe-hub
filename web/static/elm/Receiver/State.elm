@@ -1,12 +1,11 @@
 module Receiver.State (initialState, update) where
 
 import Effects exposing (Effects, Never)
-import Root exposing (ReceiverState)
 import Receiver
 import Receiver.Effects
 
 
-initialState : ReceiverState -> Receiver.Model
+initialState : Receiver.State -> Receiver.Model
 initialState state =
   { id = state.id
   , name = state.name

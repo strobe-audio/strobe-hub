@@ -26,3 +26,13 @@ type Action
   | RenditionChange Rendition.ChangeEvent
   | AddRendition Rendition.Model
   | NoOp
+
+
+type alias State =
+  { id : String
+  , name : String
+  , position : Int
+  , volume : Float
+  , playing : Bool
+  }
+
