@@ -84,7 +84,7 @@ $progress-height: 4px;
 .progress-complete {
   height: $progress-height;
   background: red;
-  transition: width 0.2s;
+  /* transition: width 0.43s; */
 }
 
 .volume-controls{
