@@ -4,12 +4,15 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Debug
+import Json.Decode as Json
 import Root
 import State
 import Channel
 import Channel.View
 import Volume.View
 import Library.View
+import Input
+import Input.View
 
 
 root : Signal.Address Root.Action -> Root.Model -> Html
@@ -129,4 +132,26 @@ channelSelectorPanel address model activeChannel =
       True ->
         div
           [ class "channel-selector" ]
-          (List.map channelChoice unselectedChannels)
+          [ div
+              [ class "channel-selector--select" ]
+              (List.map channelChoice unselectedChannels)
+          , addChannelPanel address model
+          ]
+
+
+addChannelPanel : Signal.Address Root.Action -> Root.Model -> Html
+addChannelPanel address model =
+  let
+      context =
+        { address = Signal.forwardTo address Root.NewChannelInput
+        , cancelAddress = Signal.forwardTo address (always Root.ToggleAddChannel)
+        , submitAddress = Signal.forwardTo address Root.AddChannel }
+  in
+    case model.showAddChannel of
+      False ->
+        div
+          [ class "channel-selector--add", onClick address (Root.ToggleAddChannel) ]
+          [ text "Add new channel..." ]
+
+      True ->
+        Input.View.inputSubmitCancel context model.newChannelInput

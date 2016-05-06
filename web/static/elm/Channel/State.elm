@@ -1,4 +1,4 @@
-module Channel.State (initialState, update) where
+module Channel.State (initialState, update, newChannel) where
 
 import Effects exposing (Effects, Never)
 import Debug
@@ -21,15 +21,23 @@ initialState broadcasterState channelState =
   let
     renditions =
       forChannel channelState.id broadcasterState.sources
+
+    model =
+      newChannel channelState
   in
-    { id = channelState.id
-    , name = channelState.name
-    , position = channelState.position
-    , volume = channelState.volume
-    , playing = channelState.playing
-    , playlist = renditions
-    , showAddReceiver = False
-    }
+    { model | playlist = renditions }
+
+
+newChannel : ChannelState -> Channel.Model
+newChannel channelState =
+  { id = channelState.id
+  , name = channelState.name
+  , position = channelState.position
+  , volume = channelState.volume
+  , playing = channelState.playing
+  , playlist = []
+  , showAddReceiver = False
+  }
 
 
 update : Channel.Action -> Channel.Model -> ( Channel.Model, Effects Channel.Action )

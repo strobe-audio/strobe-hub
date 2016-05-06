@@ -34,6 +34,11 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("add_channel", channel_name, socket) do
+    {:ok, _channel} = Otis.Channels.create(channel_name)
+    {:noreply, socket}
+  end
+
   def handle_in("library", [channel_id, action], socket) do
     Otis.State.Events.notify({:library_request, channel_id, action, socket})
     {:noreply, socket}

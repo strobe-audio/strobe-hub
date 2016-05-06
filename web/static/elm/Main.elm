@@ -6,6 +6,7 @@ import Task exposing (Task)
 import Window
 import StartApp
 import Root
+import Root.Signals
 import State
 import View
 import Rendition
@@ -36,6 +37,7 @@ app =
         , libraryResponseActions
         , viewportWidth
         , windowStartupActions
+        , channelAdditionActions
         ]
     }
 
@@ -146,6 +148,13 @@ port playlistSkipRequests =
   in
     mailbox.signal
 
+port addChannelRequests : Signal String
+port addChannelRequests =
+  let
+    mailbox =
+      Root.Signals.addChannel
+  in
+    mailbox.signal
 
 port attachReceiverRequests : Signal ( String, String )
 port attachReceiverRequests =
@@ -174,3 +183,8 @@ libraryResponseActions =
       Root.Library (Library.Response response.folder)
   in
     Signal.map translate libraryResponse
+
+port channelAdditions : Signal Root.ChannelState
+channelAdditionActions =
+  Signal.map Root.ChannelAdded channelAdditions
+

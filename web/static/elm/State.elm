@@ -2,34 +2,30 @@ module State (initialState, update, activeChannel, attachedReceivers, detachedRe
 
 import Effects exposing (Effects, Never)
 import Debug
+import Window
 import List.Extra
 import Root
+import Root.Effects
 import Channel
 import Channel.State
 import Receiver
 import Receiver.State
 import Library.State
-import Window
+import Input.State
 
 
 initialState : Root.Model
 initialState =
-  let
-    model =
-      { channels = []
-      , receivers = []
-      , showChannelSwitcher = False
-      , activeChannelId = Nothing
-      , listMode = Root.PlaylistMode
-      , mustShowLibrary = False
-      , library = Library.State.initialState
-      }
-
-    -- , ui = initUIState [] []
-    -- , activeState = "channel"
-    -- }
-  in
-    model
+  { channels = []
+  , receivers = []
+  , showChannelSwitcher = False
+  , activeChannelId = Nothing
+  , listMode = Root.PlaylistMode
+  , mustShowLibrary = False
+  , library = Library.State.initialState
+  , showAddChannel = False
+  , newChannelInput = Input.State.blank
+  }
 
 
 broadcasterState : Root.BroadcasterState -> List Channel.Model
@@ -123,6 +119,36 @@ update action model =
 
     Root.ToggleChannelSelector ->
       ( { model | showChannelSwitcher = not (model.showChannelSwitcher) }, Effects.none )
+
+    Root.ToggleAddChannel ->
+      ( { model | showAddChannel = not model.showAddChannel, newChannelInput = Input.State.blank }, Effects.none )
+
+    Root.NewChannelInput inputAction ->
+      let
+        ( input, effect ) =
+          Input.State.update inputAction model.newChannelInput
+      in
+        ( { model | newChannelInput = input }, (Effects.map Root.NewChannelInput effect) )
+
+    Root.AddChannel name ->
+      let
+        _ =
+          Debug.log "add channel" name
+
+        model' =
+          { model | newChannelInput = Input.State.blank, showAddChannel = False, showChannelSwitcher = False }
+      in
+        ( model', Root.Effects.addChannel name )
+
+    Root.ChannelAdded channelState ->
+      let
+        channel =
+          Channel.State.newChannel channelState
+
+        model' =
+          { model | channels = channel :: model.channels }
+      in
+        update (Root.ChooseChannel channel) model'
 
     Root.ChooseChannel channel ->
       let

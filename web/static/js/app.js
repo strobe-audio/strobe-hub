@@ -44,6 +44,7 @@ let folder = { id: "", title: "", icon: "", action: "", children: []}
 let libraryRegistration = { id: "", title: "", icon: "", action: "" }
 let libraryResponse = { libraryId: "", folder}
 let windowWidth = window.innerWidth
+let channelAdditions = { id: "", name: "", position: 0, volume: 0.0, playing: false }
 
 let portValues = {
   broadcasterState,
@@ -56,6 +57,7 @@ let portValues = {
   libraryRegistration,
   libraryResponse,
   windowWidth,
+  channelAdditions,
 }
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
@@ -112,6 +114,11 @@ channel.on('library', payload => {
   elmApp.ports.libraryResponse.send(payload)
 })
 
+channel.on('channel_added', payload => {
+  console.log('new channel', payload)
+  elmApp.ports.channelAdditions.send(payload)
+})
+
 channel.join()
 .receive('ok', resp => { console.log('joined!', resp); })
 .receive('error', resp => { console.error('unable to join', resp); })
@@ -143,6 +150,12 @@ elmApp.ports.attachReceiverRequests.subscribe(event => {
 elmApp.ports.libraryRequests.subscribe(event => {
   console.log('library action', event)
   channel.push("library", event)
+  .receive("error", payload => console.log(payload.message))
+})
+
+elmApp.ports.addChannelRequests.subscribe(name => {
+  console.log("add_channel", name)
+  channel.push("add_channel", name)
   .receive("error", payload => console.log(payload.message))
 })
 

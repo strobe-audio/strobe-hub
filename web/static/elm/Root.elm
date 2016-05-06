@@ -1,11 +1,11 @@
 module Root (..) where
 
-import Dict exposing (Dict)
 import Library
 import Channel
 import Receiver
 import Rendition
 import ID
+import Input
 
 
 type Action
@@ -26,6 +26,10 @@ type Action
   | Library Library.Action
   | SetListMode ChannelListMode
   | ToggleChannelSelector
+  | ToggleAddChannel
+  | AddChannel String
+  | NewChannelInput Input.Action
+  | ChannelAdded ChannelState
   | ChooseChannel Channel.Model
   | Viewport Int
   | NoOp
@@ -43,6 +47,8 @@ type alias Model =
   , listMode : ChannelListMode
   , mustShowLibrary : Bool
   , library : Library.Model
+  , showAddChannel : Bool
+  , newChannelInput : Input.Model
   }
 
 
