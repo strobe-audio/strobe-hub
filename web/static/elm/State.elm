@@ -69,6 +69,9 @@ update action model =
       in
         ( updatedModel, Effects.none )
 
+    Root.SetListMode mode ->
+      ( { model | listMode = mode }, Effects.none )
+
     Root.ReceiverStatus ( eventType, event ) ->
       case eventType of
         "receiver_added" ->
@@ -79,23 +82,6 @@ update action model =
 
         _ ->
           ( model, Effects.none )
-
-    Root.ModifyChannel channelId channelAction ->
-      let
-        updateChannel channel =
-          if channel.id == channelId then
-            let
-              ( updatedChannel, effect ) =
-                (Channel.State.update channelAction channel)
-            in
-              ( updatedChannel, Effects.map (Root.ModifyChannel channelId) effect )
-          else
-            ( channel, Effects.none )
-
-        ( channels, effects ) =
-          (List.map updateChannel model.channels) |> List.unzip
-      in
-        ( { model | channels = channels }, (Effects.batch effects) )
 
     Root.ModifyReceiver receiverId receiverAction ->
       let
@@ -114,9 +100,24 @@ update action model =
       in
         ( { model | receivers = receivers }, (Effects.batch effects) )
 
-    Root.SetListMode mode ->
-      ( { model | listMode = mode }, Effects.none )
+    Root.ModifyChannel channelId channelAction ->
+      let
+        updateChannel channel =
+          if channel.id == channelId then
+            let
+              ( updatedChannel, effect ) =
+                (Channel.State.update channelAction channel)
+            in
+              ( updatedChannel, Effects.map (Root.ModifyChannel channelId) effect )
+          else
+            ( channel, Effects.none )
 
+        ( channels, effects ) =
+          (List.map updateChannel model.channels) |> List.unzip
+      in
+        ( { model | channels = channels }, (Effects.batch effects) )
+
+    -- BEGIN CHANNEL STUFF
     Root.ToggleChannelSelector ->
       ( { model | showChannelSwitcher = not (model.showChannelSwitcher) }, Effects.none )
 
@@ -160,6 +161,8 @@ update action model =
           }
       in
         ( updatedModel, Effects.none )
+
+    -- END CHANNEL STUFF
 
     Root.VolumeChange event ->
       case event.target of
