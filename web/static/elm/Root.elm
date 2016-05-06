@@ -37,10 +37,6 @@ type Action
   | NoOp
 
 
-
--- would love to use these but it causes problems with ports
-
-
 type alias Model =
   { channels : List Channel.Model
   , receivers : List Receiver.Model
