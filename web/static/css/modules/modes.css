@@ -7,7 +7,7 @@
   -ms-user-select: none;
 	display: flex;
 	flex-direction: column;
-	height: $mode-selector-height;
+	/* height: $mode-selector-height; */
   line-height: $button-size;
   position: fixed;
   top: 0;
@@ -40,7 +40,8 @@
 }
 
 .channel-selector {
-	flex: 0 0 $button-size;
+	/* flex: 0 0 $button-size; */
+  flex: 1;
   background: #333;
   /* position: fixed; */
   /* top: $button-size; */
