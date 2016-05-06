@@ -155,6 +155,7 @@ update action model =
         updatedModel =
           { model
             | showChannelSwitcher = False
+            , showAddChannel = False
             , activeChannelId = Just channel.id
           }
       in

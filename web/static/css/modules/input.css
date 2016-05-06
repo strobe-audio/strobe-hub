@@ -13,7 +13,7 @@
   flex: 0 0 $button-size;
   &::before {
     @mixin fa;
-    content: "\f067";
+    content: "\f00c";
     width: $button-size;
     height: $button-size;
     line-height: $button-size;

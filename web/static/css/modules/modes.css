@@ -15,6 +15,17 @@
   z-index: 10000;
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
+
+}
+
+.mode-selector__select-channel {
+  bottom: 0;
+}
+
+.mode-selector--outer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 .mode-current-channel {
 	display: flex;
@@ -41,10 +52,19 @@
 
 .channel-selector {
 	/* flex: 0 0 $button-size; */
-  flex: 1;
+  flex: 1 1 auto;
   background: #333;
   /* position: fixed; */
   /* top: $button-size; */
+
+  display: flex;
+  flex-direction: column;
+}
+
+.channel-selector--select {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  height: 0;
 }
 .channel-selector--channel {
   /* &::before { */
@@ -76,6 +96,32 @@
   }
   & + & {
     border-top: solid 1px #444;
+  }
+  &:last-child {
+    border-bottom: solid 1px #444;
+  }
+}
+
+.channel-selector--add {
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 $button-size;
+  cursor: pointer;
+  background-color: rgba(0, 0, 0, 0.3);
+  &::before {
+    @mixin fa;
+    content: "\f067";
+    flex: 0 0 $button-size;
+    /* width: $button-size; */
+    height: $button-size;
+    line-height: $button-size;
+    display: block;
+    /* position: absolute; */
+    /* left: 0; */
+    /* top: 0; */
+    text-align: center;
+    border-right: solid 1px rgba(0, 0, 0, 0.1);
+    margin-right: $padding;
   }
 }
 

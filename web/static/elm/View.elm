@@ -99,7 +99,7 @@ modeSelectorPanel address model channel =
             ]
   in
     div
-      [ class "mode-selector" ]
+      [ classList [("mode-selector", True), ("mode-selector__select-channel", model.showChannelSwitcher)] ]
       [ div
           [ class "mode-current-channel" ]
           [ div
