@@ -85,7 +85,10 @@ addChannelPanel address model =
 
 player : Signal.Address Channels.Action -> Channel.Model -> Html
 player address channel =
-  div [] [ text "player" ]
+  let
+      playerAddress = Signal.forwardTo address (Channels.Modify channel.id)
+  in
+    Channel.View.root playerAddress channel
 
 
 

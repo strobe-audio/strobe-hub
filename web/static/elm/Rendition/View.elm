@@ -10,21 +10,21 @@ import Source.View
 playing : Signal.Address () -> Rendition.Model -> Html
 playing playPauseAddress rendition =
   div
-    [ id rendition.id, class "player" ]
+    [ id rendition.id, class "rendition" ]
     [ div
-        [ class "player-icon" ]
+        [ class "rendition--cover" ]
         [ img [ src "/images/cover.jpg", alt "", onClick playPauseAddress () ] []
         , div
-            [ class "player-song" ]
+            [ class "rendition--song" ]
             [ div
-                [ class "player-title" ]
+                [ class "rendition--title" ]
                 [ text (renditionTitle rendition)
-                , div [ class "block player-duration duration" ] [ text (Source.View.duration rendition.source) ]
+                , div [ class "rendition--meta--duration duration" ] [ text (Source.View.duration rendition.source) ]
                 ]
             , div
-                [ class "player-meta" ]
-                [ div [ class "player-artist" ] [ text (renditionPerformer rendition) ]
-                , div [ class "player-album" ] [ text (renditionAlbum rendition) ]
+                [ class "rendition--meta" ]
+                [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
+                , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
                 ]
             ]
         ]
@@ -47,7 +47,7 @@ progress address rendition =
       in
         div
           [ class "progress" ]
-          [ div [ class "progress-complete", style progressStyle ] []
+          [ div [ class "progress--complete", style progressStyle ] []
           ]
 
 

@@ -1,0 +1,13 @@
+$progress-height: 4px;
+
+.progress {
+  height: $progress-height;
+  background: rgba(0, 0, 0, 0.5);
+}
+.progress--complete {
+  height: $progress-height;
+  background: red;
+  /* transition: width 0.43s; */
+}
+
+
