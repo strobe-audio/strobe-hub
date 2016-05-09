@@ -6,6 +6,7 @@ import Receiver
 import Rendition
 import ID
 import Input
+import Channels
 
 
 type Action
@@ -25,28 +26,31 @@ type Action
   | Library Library.Action
   | SetListMode ChannelListMode
     -- Channels...
-  | ModifyChannel ID.Channel Channel.Action
-  | ToggleChannelSelector
-  | ToggleAddChannel
-  | AddChannel String
-  | NewChannelInput Input.Action
-  | ChannelAdded Channel.State
-  | ChooseChannel Channel.Model
+  | Channels Channels.Action
+    -- Channels...
+  -- | ModifyChannel ID.Channel Channel.Action
+  -- | ToggleChannelSelector
+  -- | ToggleAddChannel
+  -- | AddChannel String
+  -- | NewChannelInput Input.Action
+  -- | ChannelAdded Channel.State
+  -- | ChooseChannel Channel.Model
     -- End Channels...
   | Viewport Int
   | NoOp
 
 
 type alias Model =
-  { channels : List Channel.Model
+  { channels : Channels.Model
+  -- , channels : List Channel.Model
   , receivers : List Receiver.Model
-  , showChannelSwitcher : Bool
-  , activeChannelId : Maybe ID.Channel
+  -- , showChannelSwitcher : Bool
+  -- , activeChannelId : Maybe ID.Channel
   , listMode : ChannelListMode
   , mustShowLibrary : Bool
   , library : Library.Model
-  , showAddChannel : Bool
-  , newChannelInput : Input.Model
+  -- , showAddChannel : Bool
+  -- , newChannelInput : Input.Model
   }
 
 

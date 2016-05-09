@@ -1,0 +1,58 @@
+.volume-controls{
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+	cursor: pointer;
+}
+.volume-control {
+  display: flex;
+  height: $button-size;
+  background: rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+$volume-height: $button-size;
+
+.volume-mute-btn,
+.volume-full-btn {
+	flex: 0 0 $volume-height;
+  /* height: $volume-height; */
+  /* width: $volume-height; */
+  /* min-width: $volume-height; */
+  text-align: center;
+  line-height: $button-size;
+}
+
+
+.volume {
+  /* width: calc(100% - ( 2 * $button-size )); */
+	flex: 1;
+  height: $volume-height;
+  line-height: $volume-height;
+  position: relative;
+  padding: 0 $padding;
+}
+.volume-level {
+  height: $volume-height;
+  background-color: rgba(255, 255, 255, 0.5);
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  /* disable mouse events */
+}
+
+.volume-label {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  position: relative;
+  z-index: 10;
+  height: $volume-height;
+	cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  /* disable mouse events */
+}
+

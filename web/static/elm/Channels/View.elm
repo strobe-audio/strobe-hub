@@ -1,4 +1,4 @@
-module View (root) where
+module Channels.View (channels, player) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -7,55 +7,107 @@ import Debug
 import Json.Decode as Json
 import Root
 import State
+import Channels
 import Channel
 import Channel.View
-import Channels
-import Channels.View
 import Volume.View
 import Library.View
 import Input
 import Input.View
 
 
-root : Signal.Address Root.Action -> Root.Model -> Html
-root address model =
+channels : Signal.Address Channels.Action -> Channels.Model -> Channel.Model -> Html
+channels address model activeChannel =
   let
-    channels = model.channels
-    activeChannel =
-      (State.activeChannel model)
+    channelAddress =
+      Signal.forwardTo address (Channels.Modify activeChannel.id)
 
-    context =
-      { address = Signal.forwardTo address Root.Channels
-      , modeAddress = Signal.forwardTo address Root.SetListMode
-      }
-
+    volumeAddress =
+      Signal.forwardTo channelAddress Channel.Volume
   in
-    case activeChannel of
-      Nothing ->
-        div [] [ text "NO ACTIVE CHANNEL" ]
+    div
+      [ classList [ ( "channels", True ), ( "channels__select-channel", model.showChannelSwitcher ) ] ]
+      [ div
+          [ class "channels--bar" ]
+          [ div
+              [ class "channels--channel-select", onClick address (Channels.ToggleSelector) ]
+              [ i [ class "fa fa-bullseye" ] [] ]
+          , div
+              [ class "channels--channel-volume" ]
+              [ (Volume.View.control volumeAddress activeChannel.volume activeChannel.name) ]
+          ]
+      , (channelSelectorPanel address model activeChannel)
+      ]
 
-      Just channel ->
-        -- activeChannelView address model channel
-        -- Channels.View.root context model channel
-        div []
-          [ Channels.View.channels context.address channels channel
-          , Channels.View.player context.address channel
-          -- , Receviers.View.receivers address model
+
+channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Channel.Model -> Html
+channelSelectorPanel address model activeChannel =
+  let
+    channelChoice channel =
+      div
+        [ class "channels-selector--channel", onClick address (Channels.Choose channel) ]
+        [ text channel.name ]
+
+    unselectedChannels =
+      List.filter (\channel -> channel.id /= activeChannel.id) model.channels
+  in
+    case model.showChannelSwitcher of
+      False ->
+        div [] []
+
+      True ->
+        div
+          [ class "channels-selector" ]
+          [ div
+              [ class "channels-selector--list" ]
+              (List.map channelChoice unselectedChannels)
+          , addChannelPanel address model
           ]
 
 
--- activeChannelView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
--- activeChannelView address model channel =
+addChannelPanel : Signal.Address Channels.Action -> Channels.Model -> Html
+addChannelPanel address model =
+  let
+      context =
+        { address = Signal.forwardTo address Channels.NewInput
+        , cancelAddress = Signal.forwardTo address (always Channels.ToggleAdd)
+        , submitAddress = Signal.forwardTo address Channels.Add }
+  in
+    case model.showAddChannel of
+      False ->
+        div
+          [ class "channel-selector--add", onClick address (Channels.ToggleAdd) ]
+          [ text "Add new channel..." ]
+
+      True ->
+        Input.View.inputSubmitCancel context model.newChannelInput
+
+
+player : Signal.Address Channels.Action -> Channel.Model -> Html
+player address channel =
+  div [] [ text "player" ]
+
+
+
+-- root : Channels.Context -> Root.Model -> Channel.Model -> Html
+-- root context model activeChannel =
+--   activeChannelView context model channel
+--
+--
+-- activeChannelView : Channels.Context -> Root.Model -> Channel.Model -> Html
+-- activeChannelView context model channel =
 --   let
+--     address = context.address
+--     modeAddress = context.modeAddress
 --     context =
 --       { receiverAddress = (\receiver -> (Signal.forwardTo address (Root.ModifyReceiver receiver.id)))
---       , channelAddress = (Signal.forwardTo address (Root.ModifyChannel channel.id))
+--       , channelAddress = (Signal.forwardTo address (Channels.Modify channel.id))
 --       , attached = (State.attachedReceivers model channel)
 --       , detached = (State.detachedReceivers model channel)
 --       }
 --
 --     channelAddress =
---       Signal.forwardTo address (Root.ModifyChannel channel.id)
+--       Signal.forwardTo address (Channels.Modify channel.id)
 --
 --     libraryView =
 --       Library.View.root (Signal.forwardTo address Root.Library) model.library
@@ -170,3 +222,4 @@ root address model =
 --
 --       True ->
 --         Input.View.inputSubmitCancel context model.newChannelInput
+--

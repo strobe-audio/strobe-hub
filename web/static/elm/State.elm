@@ -8,6 +8,8 @@ import Root
 import Root.Effects
 import Channel
 import Channel.State
+import Channels
+import Channels.State
 import Receiver
 import Receiver.State
 import Library.State
@@ -16,15 +18,15 @@ import Input.State
 
 initialState : Root.Model
 initialState =
-  { channels = []
+  { channels = Channels.State.initialState
   , receivers = []
-  , showChannelSwitcher = False
-  , activeChannelId = Nothing
+  -- , showChannelSwitcher = False
+  -- , activeChannelId = Nothing
   , listMode = Root.PlaylistMode
   , mustShowLibrary = False
   , library = Library.State.initialState
-  , showAddChannel = False
-  , newChannelInput = Input.State.blank
+  -- , showAddChannel = False
+  -- , newChannelInput = Input.State.blank
   }
 
 
@@ -35,12 +37,7 @@ broadcasterState state =
 
 activeChannel : Root.Model -> Maybe Channel.Model
 activeChannel model =
-  case model.activeChannelId of
-    Nothing ->
-      Nothing
-
-    Just id ->
-      List.Extra.find (\c -> c.id == id) model.channels
+  Channels.State.activeChannel model.channels
 
 
 update : Root.Action -> Root.Model -> ( Root.Model, Effects Root.Action )
@@ -51,20 +48,21 @@ update action model =
 
     Root.InitialState state ->
       let
-        channels =
-          List.map (Channel.State.initialState state) state.channels
+        channels =  Channels.State.loadChannels state model.channels
+        -- channels =
+        --   List.map (Channel.State.initialState state) state.channels
 
         receivers =
           List.map Receiver.State.initialState state.receivers
 
-        activeChannelId =
-          Maybe.map (\channel -> channel.id) (List.head channels)
+        -- activeChannelId =
+        --   Maybe.map (\channel -> channel.id) (List.head channels)
 
         updatedModel =
           { model
             | channels = channels
             , receivers = receivers
-            , activeChannelId = activeChannelId
+            -- , activeChannelId = activeChannelId
           }
       in
         ( updatedModel, Effects.none )
@@ -100,67 +98,11 @@ update action model =
       in
         ( { model | receivers = receivers }, (Effects.batch effects) )
 
-    Root.ModifyChannel channelId channelAction ->
+    Root.Channels channelsAction ->
       let
-        updateChannel channel =
-          if channel.id == channelId then
-            let
-              ( updatedChannel, effect ) =
-                (Channel.State.update channelAction channel)
-            in
-              ( updatedChannel, Effects.map (Root.ModifyChannel channelId) effect )
-          else
-            ( channel, Effects.none )
-
-        ( channels, effects ) =
-          (List.map updateChannel model.channels) |> List.unzip
+          (channelsModel, effect) = Channels.State.update channelsAction model.channels
       in
-        ( { model | channels = channels }, (Effects.batch effects) )
-
-    -- BEGIN CHANNEL STUFF
-    Root.ToggleChannelSelector ->
-      ( { model | showChannelSwitcher = not (model.showChannelSwitcher) }, Effects.none )
-
-    Root.ToggleAddChannel ->
-      ( { model | showAddChannel = not model.showAddChannel, newChannelInput = Input.State.blank }, Effects.none )
-
-    Root.NewChannelInput inputAction ->
-      let
-        ( input, effect ) =
-          Input.State.update inputAction model.newChannelInput
-      in
-        ( { model | newChannelInput = input }, (Effects.map Root.NewChannelInput effect) )
-
-    Root.AddChannel name ->
-      let
-        _ =
-          Debug.log "add channel" name
-
-        model' =
-          { model | newChannelInput = Input.State.blank, showAddChannel = False, showChannelSwitcher = False }
-      in
-        ( model', Root.Effects.addChannel name )
-
-    Root.ChannelAdded channelState ->
-      let
-        channel =
-          Channel.State.newChannel channelState
-
-        model' =
-          { model | channels = channel :: model.channels }
-      in
-        update (Root.ChooseChannel channel) model'
-
-    Root.ChooseChannel channel ->
-      let
-        updatedModel =
-          { model
-            | showChannelSwitcher = False
-            , showAddChannel = False
-            , activeChannelId = Just channel.id
-          }
-      in
-        ( updatedModel, Effects.none )
+          ( { model | channels = channelsModel }, Effects.map Root.Channels effect )
 
     -- END CHANNEL STUFF
 
@@ -170,7 +112,7 @@ update action model =
           update (Root.ModifyReceiver event.id (Receiver.VolumeChanged event.volume)) model
 
         "channel" ->
-          update (Root.ModifyChannel event.id (Channel.VolumeChanged event.volume)) model
+          update (Root.Channels (Channels.VolumeChanged (event.id, event.volume))) model
 
         _ ->
           ( model, Effects.none )
@@ -192,14 +134,14 @@ update action model =
         -- _ =
         --   Debug.log "library" libraryAction
         ( library, effect ) =
-          Library.State.update libraryAction model.library model.activeChannelId
+          Library.State.update libraryAction model.library model.channels.activeChannelId
       in
         ( { model | library = library }
         , (Effects.map Root.Library effect)
         )
 
     Root.NewRendition rendition ->
-      update (Root.ModifyChannel rendition.channelId (Channel.AddRendition rendition)) model
+      update (Root.Channels (Channels.AddRendition (rendition.channelId, rendition))) model
 
 
 attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model

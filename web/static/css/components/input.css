@@ -1,0 +1,37 @@
+.input {
+  display: flex;
+  flex-direction: row;
+}
+
+.input--input {
+  flex: 1;
+  font-size: 2rem;
+  padding: 0 $padding;
+}
+.input--submit {
+  flex: 0 0 $button-size;
+  &::before {
+    @mixin fa;
+    content: "\f00c";
+    width: $button-size;
+    height: $button-size;
+    line-height: $button-size;
+    text-align: center;
+  }
+}
+.input--submit__valid {
+  background-color: green;
+}
+.input--cancel {
+  flex: 0 0 $button-size;
+  &::before {
+    @mixin fa;
+    content: "\f00d";
+    width: $button-size;
+    height: $button-size;
+    line-height: $button-size;
+    text-align: center;
+  }
+}
+
+

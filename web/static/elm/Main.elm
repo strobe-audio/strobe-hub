@@ -6,7 +6,6 @@ import Task exposing (Task)
 import Window
 import StartApp
 import Root
-import Root.Signals
 import State
 import View
 import Rendition
@@ -15,6 +14,8 @@ import Library
 import Library.Signals
 import Channel
 import Channel.Signals
+import Channels
+import Channels.Signals
 import Volume.Signals
 import Receiver.Signals
 
@@ -89,7 +90,7 @@ sourceProgressActions : Signal Root.Action
 sourceProgressActions =
   let
     forward event =
-      (Root.ModifyChannel event.channelId) (Channel.RenditionProgress event)
+      Root.Channels ((Channels.Modify event.channelId) (Channel.RenditionProgress event))
   in
     Signal.map forward sourceProgress
 
@@ -99,7 +100,7 @@ sourceChangeActions : Signal Root.Action
 sourceChangeActions =
   let
     forward event =
-      (Root.ModifyChannel event.channelId) (Channel.RenditionChange event)
+      Root.Channels ((Channels.Modify event.channelId) (Channel.RenditionChange event))
   in
     Signal.map forward sourceChange
 
@@ -152,7 +153,7 @@ port addChannelRequests : Signal String
 port addChannelRequests =
   let
     mailbox =
-      Root.Signals.addChannel
+      Channels.Signals.addChannel
   in
     mailbox.signal
 
@@ -186,5 +187,9 @@ libraryResponseActions =
 
 port channelAdditions : Signal Channel.State
 channelAdditionActions =
-  Signal.map Root.ChannelAdded channelAdditions
+  let
+    translate state =
+      Root.Channels (Channels.Added state)
+  in
+    Signal.map translate channelAdditions
 
