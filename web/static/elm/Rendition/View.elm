@@ -7,32 +7,36 @@ import Rendition
 import Source.View
 
 
-playing : Signal.Address () -> Rendition.Model -> Html
-playing playPauseAddress rendition =
+playing : Signal.Address () -> Rendition.Model -> Bool -> Html
+playing playPauseAddress rendition playing =
   div
     [ id rendition.id, class "rendition" ]
     [ div
-        [ class "rendition--cover" ]
+        [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
         [ img [ src "/images/cover.jpg", alt "", onClick playPauseAddress () ] []
         , div
             [ class "rendition--song" ]
             [ div
-                [ class "rendition--title" ]
-                [ text (renditionTitle rendition)
-                , div [ class "rendition--meta--duration duration" ] [ text (Source.View.duration rendition.source) ]
+                [ class "rendition--details" ]
+                [ div
+                    [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
+                    [ text (renditionTitle rendition)
+                    ]
+                , div
+                    [ class "rendition--meta" ]
+                    [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
+                    , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
+                    , div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration rendition.source) ++ ")") ]
+                    ]
                 ]
-            , div
-                [ class "rendition--meta" ]
-                [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
-                , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
-                ]
+            , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
             ]
         ]
     ]
 
 
-progress : Signal.Address () -> Rendition.Model -> Html
-progress address rendition =
+progress : Signal.Address () -> Rendition.Model -> Bool -> Html
+progress address rendition playing =
   case rendition.source.metadata.duration_ms of
     Nothing ->
       div [] []

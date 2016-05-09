@@ -46,8 +46,8 @@ playingSong address channel maybeRendition =
     Just rendition ->
       div
         [ class "channel--rendition" ]
-        [ (Rendition.View.playing address rendition)
-        , (Rendition.View.progress address rendition)
+        [ (Rendition.View.playing address rendition channel.playing)
+        , (Rendition.View.progress address rendition channel.playing)
         ]
 
 
