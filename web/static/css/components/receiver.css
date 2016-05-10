@@ -23,10 +23,8 @@
 }
 
 .receiver--action__attach {
+  @mixin fa-btn "\f067";
   flex: 0 0 $button-size;
   background-color: #444;
-  &:before {
-    content: "+";
-  }
 }
 

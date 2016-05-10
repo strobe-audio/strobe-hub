@@ -7,3 +7,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+@define-mixin fa-btn $icon {
+  &:before {
+    @mixin fa;
+    content: $icon; /* fa-plus */
+    display: block;
+    line-height: $button-size;
+    text-align: center;
+  }
+}
