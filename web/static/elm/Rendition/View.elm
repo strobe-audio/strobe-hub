@@ -15,7 +15,7 @@ playing playPauseAddress rendition playing =
         [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
         [ img [ src "/images/cover.jpg", alt "", onClick playPauseAddress () ] []
         , div
-            [ class "rendition--song" ]
+            [ class "rendition--song", onClick playPauseAddress () ]
             [ div
                 [ class "rendition--details" ]
                 [ div
