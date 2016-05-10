@@ -11,12 +11,17 @@
 
 .receiver--name {
   padding: 0 $padding;
-  flex: 1;
   line-height: $button-size;
+  flex: 1;
+}
+
+.receiver--volume {
+  flex: 1;
 }
 
 .receiver__attached {
 }
+
 .receiver--action__attach {
   flex: 0 0 $button-size;
   background-color: #444;

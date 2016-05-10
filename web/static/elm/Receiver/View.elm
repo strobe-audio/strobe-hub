@@ -9,13 +9,14 @@ import Channel
 import Volume.View
 
 
-receiverClasses : Receiver.Model -> Bool -> List (String, Bool)
+receiverClasses : Receiver.Model -> Bool -> List ( String, Bool )
 receiverClasses receiver attached =
   [ ( "receiver", True )
   , ( "receiver__offline", not receiver.online )
   , ( "receiver__attached", attached )
   , ( "receiver__detached", not attached )
   ]
+
 
 attached : Signal.Address Receiver.Action -> Receiver.Model -> Channel.Model -> Html
 attached address receiver channel =
@@ -26,20 +27,12 @@ attached address receiver channel =
     div
       [ classList (receiverClasses receiver True) ]
       [ div [ class "receiver--state" ] []
-      , div [ class "receiver--name" ] [ text receiver.name ]
+      , div
+          [ class "receiver--volume" ]
+          [ Volume.View.control volumeAddress receiver.volume receiver.name
+          ]
       , div [ class "receiver--action" ] []
       ]
-
-
-
--- div
---   [ classList
---       [ ( "receiver", True )
---       , ( "receiver--online", receiver.online )
---       , ( "receiver--offline", not receiver.online )
---       ]
---   ]
---   [ Volume.View.control volumeAddress receiver.volume receiver.name ]
 
 
 detached : Signal.Address Receiver.Action -> Receiver.Model -> Channel.Model -> Html
