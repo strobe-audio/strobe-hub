@@ -34,7 +34,7 @@ root address model =
   in
     case activeChannel of
       Nothing ->
-        div [] [ text "NO ACTIVE CHANNEL" ]
+        div [ class "loading" ] [ text "Loading..." ]
 
       Just channel ->
         -- activeChannelView address model channel
