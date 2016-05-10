@@ -8,7 +8,7 @@ defmodule Elvis.Events.Broadcast do
   require Logger
 
   # Send progress updates every @progress_interval times
-  @progress_interval 3 # * 100 ms intervals
+  @progress_interval 5 # * 100 ms intervals
 
   def register do
     Otis.State.Events.add_mon_handler(__MODULE__, %{ progress_count: %{} })
