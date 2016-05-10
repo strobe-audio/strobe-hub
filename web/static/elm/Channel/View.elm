@@ -51,48 +51,6 @@ playingSong address channel maybeRendition =
         ]
 
 
-receiverList : Root.ChannelContext -> Channel.Model -> Html
-receiverList context channel =
-  let
-    addButton =
-      case List.length context.detached of
-        0 ->
-          []
-
-        _ ->
-          if channel.showAddReceiver then
-            [ div
-                [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver False) ]
-                [ i [ class "fa fa-caret-up" ] [] ]
-            ]
-          else
-            [ div
-                [ class "channel-receivers--add", onClick context.channelAddress (Channel.ShowAddReceiver True) ]
-                [ i [ class "fa fa-plus" ] [] ]
-            ]
-
-    attachList =
-      case channel.showAddReceiver of
-        False ->
-          div [] []
-
-        True ->
-          (attachReceiverList context channel context.detached)
-
-    attachedReceiver receiver =
-      (Receiver.View.attached (context.receiverAddress receiver) receiver)
-
-    attachedReceivers =
-      Receiver.sort context.attached
-  in
-    div
-      [ class "channel-receivers" ]
-      [ div [ class "channel-receivers--head" ] ((div [ class "block divider" ] [ text "Receivers" ]) :: addButton)
-      , attachList
-      , div [ class "channel-receivers--list" ] (List.map attachedReceiver attachedReceivers)
-      ]
-
-
 attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
 attachReceiverList context channel receivers =
   let

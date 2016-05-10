@@ -1,4 +1,4 @@
-module State (initialState, update, activeChannel, attachedReceivers, detachedReceivers, libraryVisible, playlistVisible) where
+module State (initialState, update, activeChannel, libraryVisible, playlistVisible) where
 
 import Effects exposing (Effects, Never)
 import Debug
@@ -12,6 +12,8 @@ import Channels
 import Channels.State
 import Receiver
 import Receiver.State
+import Receivers
+import Receivers.State
 import Library.State
 import Input.State
 
@@ -19,7 +21,7 @@ import Input.State
 initialState : Root.Model
 initialState =
   { channels = Channels.State.initialState
-  , receivers = []
+  , receivers = Receivers.State.initialState
   , listMode = Root.PlaylistMode
   , mustShowLibrary = False
   , library = Library.State.initialState
@@ -46,8 +48,8 @@ update action model =
       let
         channels =  Channels.State.loadChannels state model.channels
 
-        receivers =
-          List.map Receiver.State.initialState state.receivers
+        receivers = Receivers.State.loadReceivers state model.receivers
+          -- List.map Receiver.State.initialState state.receivers
 
         updatedModel =
           { model
@@ -60,33 +62,39 @@ update action model =
     Root.SetListMode mode ->
       ( { model | listMode = mode }, Effects.none )
 
-    Root.ReceiverStatus ( eventType, event ) ->
-      case eventType of
-        "receiver_added" ->
-          update ((Root.ModifyReceiver event.receiverId) (Receiver.Online event.channelId)) model
-
-        "receiver_removed" ->
-          update ((Root.ModifyReceiver event.receiverId) Receiver.Offline) model
-
-        _ ->
-          ( model, Effects.none )
-
-    Root.ModifyReceiver receiverId receiverAction ->
+    Root.Receivers receiversAction ->
       let
-        updateReceiver receiver =
-          if receiver.id == receiverId then
-            let
-              ( updatedReceiver, effect ) =
-                (Receiver.State.update receiverAction receiver)
-            in
-              ( updatedReceiver, Effects.map (Root.ModifyReceiver receiver.id) effect )
-          else
-            ( receiver, Effects.none )
-
-        ( receivers, effects ) =
-          (List.map updateReceiver model.receivers) |> List.unzip
+          (receiversModel, effect) = Receivers.State.update receiversAction model.receivers
       in
-        ( { model | receivers = receivers }, (Effects.batch effects) )
+          ( { model | receivers = receiversModel }, Effects.map Root.Receivers effect )
+
+    -- Root.ReceiverStatus ( eventType, event ) ->
+    --   case eventType of
+    --     "receiver_added" ->
+    --       update (Root.Receivers (Receivers.Status event.receiverId event.channelId)) model
+    --
+    --     "receiver_removed" ->
+    --       update (Root.Receivers (Receivers.Status eventType event.receiverId event.channelId)) model
+    --
+    --     _ ->
+    --       ( model, Effects.none )
+
+    -- Root.ModifyReceiver receiverId receiverAction ->
+    --   let
+    --     updateReceiver receiver =
+    --       if receiver.id == receiverId then
+    --         let
+    --           ( updatedReceiver, effect ) =
+    --             (Receiver.State.update receiverAction receiver)
+    --         in
+    --           ( updatedReceiver, Effects.map (Root.ModifyReceiver receiver.id) effect )
+    --       else
+    --         ( receiver, Effects.none )
+    --
+    --     ( receivers, effects ) =
+    --       (List.map updateReceiver model.receivers) |> List.unzip
+    --   in
+    --     ( { model | receivers = receivers }, (Effects.batch effects) )
 
     Root.Channels channelsAction ->
       let
@@ -97,7 +105,7 @@ update action model =
     Root.VolumeChange event ->
       case event.target of
         "receiver" ->
-          update (Root.ModifyReceiver event.id (Receiver.VolumeChanged event.volume)) model
+          update (Root.Receivers (Receivers.VolumeChanged (event.id, event.volume))) model
 
         "channel" ->
           update (Root.Channels (Channels.VolumeChanged (event.id, event.volume))) model
@@ -129,15 +137,6 @@ update action model =
     Root.NewRendition rendition ->
       update (Root.Channels (Channels.AddRendition (rendition.channelId, rendition))) model
 
-
-attachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
-attachedReceivers model channel =
-  List.filter (\r -> r.channelId == channel.id) model.receivers
-
-
-detachedReceivers : Root.Model -> Channel.Model -> List Receiver.Model
-detachedReceivers model channel =
-  List.filter (\r -> r.channelId /= channel.id) model.receivers
 
 
 libraryVisible : Root.Model -> Bool

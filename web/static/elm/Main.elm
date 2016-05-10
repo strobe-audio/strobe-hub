@@ -18,6 +18,7 @@ import Channels
 import Channels.Signals
 import Volume.Signals
 import Receiver.Signals
+import Receivers
 
 
 app : StartApp.App Root.Model
@@ -73,7 +74,12 @@ broadcasterStateActions =
 port receiverStatus : Signal ( String, Root.ReceiverStatusEvent )
 receiverStatusActions : Signal Root.Action
 receiverStatusActions =
-  Signal.map Root.ReceiverStatus receiverStatus
+  let
+      forward (event, status) =
+        Root.Receivers (Receivers.Status event status.receiverId status.channelId)
+
+  in
+    Signal.map forward receiverStatus
 
 
 port channelStatus : Signal ( String, Root.ChannelStatusEvent )

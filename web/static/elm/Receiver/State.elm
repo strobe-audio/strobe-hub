@@ -38,6 +38,9 @@ update action model =
     Receiver.Attach channelId ->
       ( model, (Receiver.Effects.attach channelId model.id) )
 
+    Receiver.Attached channelId ->
+      ( { model | channelId = channelId }, Effects.none )
+
     Receiver.Online channelId ->
       ( { model | online = True, channelId = channelId }, Effects.none )
 

@@ -19,6 +19,8 @@
 @import "components/input.css";
 @import "components/rendition.css";
 @import "components/progress.css";
+@import "components/receivers.css";
+@import "components/receiver.css";
 
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,300,200,700,600italic,400italic,300italic,200italic);
 

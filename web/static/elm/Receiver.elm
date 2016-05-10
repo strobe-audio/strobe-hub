@@ -18,6 +18,7 @@ type Action
   | Volume (Maybe Float)
   | VolumeChanged Float
   | Attach ID.Channel
+  | Attached ID.Channel
   | Online ID.Channel
   | Offline
 

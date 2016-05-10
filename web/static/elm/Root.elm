@@ -2,17 +2,18 @@ module Root (..) where
 
 import Library
 import Channel
+import Channels
 import Receiver
+import Receivers
 import Rendition
 import ID
 import Input
-import Channels
 
 
 type Action
   = InitialState BroadcasterState
-  | ModifyReceiver ID.Receiver Receiver.Action
-  | ReceiverStatus ( String, ReceiverStatusEvent )
+  -- | ModifyReceiver ID.Receiver Receiver.Action
+  -- | ReceiverStatus ( String, ReceiverStatusEvent )
     -- | ChannelStatus (String, ChannelStatusEvent)
     -- | UpdateReceiverVolume Receiver Float
     -- | UpdateChannelVolume Channel Float
@@ -26,13 +27,14 @@ type Action
   | Library Library.Action
   | SetListMode ChannelListMode
   | Channels Channels.Action
+  | Receivers Receivers.Action
   | Viewport Int
   | NoOp
 
 
 type alias Model =
   { channels : Channels.Model
-  , receivers : List Receiver.Model
+  , receivers : Receivers.Model
   , listMode : ChannelListMode
   , mustShowLibrary : Bool
   , library : Library.Model

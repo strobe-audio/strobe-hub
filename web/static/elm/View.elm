@@ -15,6 +15,7 @@ import Volume.View
 import Library.View
 import Input
 import Input.View
+import Receivers.View
 
 
 root : Signal.Address Root.Action -> Root.Model -> Html
@@ -28,6 +29,7 @@ root address model =
       { address = Signal.forwardTo address Root.Channels
       , modeAddress = Signal.forwardTo address Root.SetListMode
       }
+    receiversAddress = Signal.forwardTo address Root.Receivers
 
   in
     case activeChannel of
@@ -40,7 +42,7 @@ root address model =
         div []
           [ Channels.View.channels context.address channels channel
           , Channels.View.player context.address channel
-          -- , Receviers.View.receivers address model
+          , Receivers.View.receivers receiversAddress model.receivers channel
           ]
 
 

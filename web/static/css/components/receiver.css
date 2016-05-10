@@ -1,0 +1,27 @@
+.receiver {
+  display: flex;
+  align-items: stretch;
+  height: $button-size;
+  flex-direction: row;
+}
+
+.receiver__offline {
+  opacity: 0.5;
+}
+
+.receiver--name {
+  padding: 0 $padding;
+  flex: 1;
+  line-height: $button-size;
+}
+
+.receiver__attached {
+}
+.receiver--action__attach {
+  flex: 0 0 $button-size;
+  background-color: #444;
+  &:before {
+    content: "+";
+  }
+}
+

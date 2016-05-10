@@ -9,20 +9,49 @@ import Channel
 import Volume.View
 
 
-attached : Signal.Address Receiver.Action -> Receiver.Model -> Html
-attached address receiver =
+receiverClasses : Receiver.Model -> Bool -> List (String, Bool)
+receiverClasses receiver attached =
+  [ ( "receiver", True )
+  , ( "receiver__offline", not receiver.online )
+  , ( "receiver__attached", attached )
+  , ( "receiver__detached", not attached )
+  ]
+
+attached : Signal.Address Receiver.Action -> Receiver.Model -> Channel.Model -> Html
+attached address receiver channel =
   let
     volumeAddress =
       (Signal.forwardTo address Receiver.Volume)
   in
     div
-      [ classList
-          [ ( "receiver", True )
-          , ( "receiver--online", receiver.online )
-          , ( "receiver--offline", not receiver.online )
-          ]
+      [ classList (receiverClasses receiver True) ]
+      [ div [ class "receiver--state" ] []
+      , div [ class "receiver--name" ] [ text receiver.name ]
+      , div [ class "receiver--action" ] []
       ]
-      [ Volume.View.control volumeAddress receiver.volume receiver.name ]
+
+
+
+-- div
+--   [ classList
+--       [ ( "receiver", True )
+--       , ( "receiver--online", receiver.online )
+--       , ( "receiver--offline", not receiver.online )
+--       ]
+--   ]
+--   [ Volume.View.control volumeAddress receiver.volume receiver.name ]
+
+
+detached : Signal.Address Receiver.Action -> Receiver.Model -> Channel.Model -> Html
+detached address receiver channel =
+  div
+    [ classList (receiverClasses receiver False)
+    , onClick address (Receiver.Attach channel.id)
+    ]
+    [ div [ class "receiver--state" ] []
+    , div [ class "receiver--name" ] [ text receiver.name ]
+    , div [ class "receiver--action receiver--action__attach" ] []
+    ]
 
 
 attach : Signal.Address Receiver.Action -> Channel.Model -> Receiver.Model -> Html
