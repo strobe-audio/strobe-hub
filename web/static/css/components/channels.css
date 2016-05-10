@@ -11,10 +11,38 @@
   z-index: 10000;
   background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
+
+  animation-duration: 0.2s;
+  animation-count: 1;
+  animation-play-state: running;
+  animation-fill-mode: forwards;
+  animation-timing-function: linear;
+
+  /* animation-name: slideUp; */
+}
+
+@keyframes slideUp {
+  from {
+    bottom: 0;
+  }
+  to {
+    bottom: 100%;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    bottom: calc(100% - 2 * $button-size);
+  }
+  to {
+    bottom: 0;
+  }
 }
 
 .channels__select-channel {
-  bottom: 0;
+  /* bottom: 0; */
+  /* transition: bottom 1s; */
+  animation-name: slideDown;
   background-color: rgba(0, 0, 0, 0.95);
 }
 
