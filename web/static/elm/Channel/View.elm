@@ -22,17 +22,6 @@ root address channel =
     playPauseAddress =
       Signal.forwardTo address (always Channel.PlayPause)
 
-    -- renditions =
-    --   case playlistVisible of
-    --     True ->
-    --       div
-    --         []
-    --         [ (receiverList context channel)
-    --         , (playlist context channel)
-    --         ]
-    --
-    --     False ->
-    --       div [] []
   in
     playingSong playPauseAddress channel rendition
 
@@ -49,19 +38,6 @@ playingSong address channel maybeRendition =
         [ (Rendition.View.playing address rendition channel.playing)
         , (Rendition.View.progress address rendition channel.playing)
         ]
-
-
-
--- attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
--- attachReceiverList context channel receivers =
---   let
---     sortedReceivers =
---       (Receiver.sort receivers)
---   in
---     div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) sortedReceivers)
--- attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
--- attachReceiverEntry context channel receiver =
---   Receiver.View.attach (context.receiverAddress receiver) channel receiver
 
 
 playlist : Signal.Address Channel.Action -> Channel.Model -> Html
