@@ -1,4 +1,4 @@
-module View (root) where
+module Root.View (root) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -6,7 +6,7 @@ import Html.Events exposing (..)
 import Debug
 import Json.Decode as Json
 import Root
-import State
+import Root.State
 import Channel
 import Channel.View
 import Channels
@@ -23,7 +23,7 @@ root address model =
   let
     channels = model.channels
     activeChannel =
-      (State.activeChannel model)
+      (Root.State.activeChannel model)
 
     context =
       { address = Signal.forwardTo address Root.Channels

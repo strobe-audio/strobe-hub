@@ -6,7 +6,7 @@ import Html.Events exposing (..)
 import Debug
 import Json.Decode as Json
 import Root
-import State
+import Root.State
 import Channels
 import Channel
 import Channel.View

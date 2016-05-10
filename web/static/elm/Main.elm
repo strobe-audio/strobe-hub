@@ -6,8 +6,8 @@ import Task exposing (Task)
 import Window
 import StartApp
 import Root
-import State
-import View
+import Root.State
+import Root.View
 import Rendition
 import Rendition.Signals
 import Library
@@ -24,9 +24,9 @@ import Receivers
 app : StartApp.App Root.Model
 app =
   StartApp.start
-    { init = ( State.initialState, Effects.none )
-    , update = State.update
-    , view = View.root
+    { init = ( Root.State.initialState, Effects.none )
+    , update = Root.State.update
+    , view = Root.View.root
     , inputs =
         [ broadcasterStateActions
         , receiverStatusActions

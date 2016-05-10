@@ -1,4 +1,4 @@
-module State (initialState, update, activeChannel, libraryVisible, playlistVisible) where
+module Root.State (initialState, update, activeChannel, libraryVisible, playlistVisible) where
 
 import Effects exposing (Effects, Never)
 import Debug
