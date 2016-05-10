@@ -20,6 +20,11 @@ receivers address model channel =
         False ->
           Receivers.State.attachedReceivers model channel
 
+    count =
+      toString
+        (List.length
+          (Receivers.State.attachedReceivers model channel)
+          )
     detached =
       Receivers.State.detachedReceivers model channel
 
@@ -55,6 +60,6 @@ receivers address model channel =
   in
     div
       [ class "receivers" ]
-      [ div [ class "receivers--head", onClick address action ] ((div [ class "receivers--title" ] [ text "Receivers" ]) :: addButton)
+      [ div [ class "receivers--head", onClick address action ] ((div [ class "receivers--title" ] [ text (count ++ " Receivers") ]) :: addButton)
       , div [ class "receivers--list" ] receiverList
       ]
