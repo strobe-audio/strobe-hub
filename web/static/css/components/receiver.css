@@ -22,9 +22,17 @@
 .receiver__attached {
 }
 
+.receiver__detached {
+  background-color: #4caf50;
+  color: #fff;
+  cursor: pointer;
+  &:hover {
+    background-color: #00c853;
+  }
+}
 .receiver--action__attach {
   @mixin fa-btn "\f067";
   flex: 0 0 $button-size;
-  background-color: #444;
+  background-color: rgba(0, 0, 0, 0.333);
 }
 

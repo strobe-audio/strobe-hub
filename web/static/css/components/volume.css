@@ -16,11 +16,13 @@ $volume-height: $button-size;
 .volume-mute-btn,
 .volume-full-btn {
 	flex: 0 0 $volume-height;
-  /* height: $volume-height; */
-  /* width: $volume-height; */
-  /* min-width: $volume-height; */
   text-align: center;
   line-height: $button-size;
+  cursor: pointer;
+  &:hover {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+  }
 }
 
 
