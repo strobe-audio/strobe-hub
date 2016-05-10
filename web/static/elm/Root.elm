@@ -25,32 +25,17 @@ type Action
   | LibraryRegistration Library.Node
   | Library Library.Action
   | SetListMode ChannelListMode
-    -- Channels...
   | Channels Channels.Action
-    -- Channels...
-  -- | ModifyChannel ID.Channel Channel.Action
-  -- | ToggleChannelSelector
-  -- | ToggleAddChannel
-  -- | AddChannel String
-  -- | NewChannelInput Input.Action
-  -- | ChannelAdded Channel.State
-  -- | ChooseChannel Channel.Model
-    -- End Channels...
   | Viewport Int
   | NoOp
 
 
 type alias Model =
   { channels : Channels.Model
-  -- , channels : List Channel.Model
   , receivers : List Receiver.Model
-  -- , showChannelSwitcher : Bool
-  -- , activeChannelId : Maybe ID.Channel
   , listMode : ChannelListMode
   , mustShowLibrary : Bool
   , library : Library.Model
-  -- , showAddChannel : Bool
-  -- , newChannelInput : Input.Model
   }
 
 

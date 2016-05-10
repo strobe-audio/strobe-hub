@@ -20,13 +20,9 @@ initialState : Root.Model
 initialState =
   { channels = Channels.State.initialState
   , receivers = []
-  -- , showChannelSwitcher = False
-  -- , activeChannelId = Nothing
   , listMode = Root.PlaylistMode
   , mustShowLibrary = False
   , library = Library.State.initialState
-  -- , showAddChannel = False
-  -- , newChannelInput = Input.State.blank
   }
 
 
@@ -49,20 +45,14 @@ update action model =
     Root.InitialState state ->
       let
         channels =  Channels.State.loadChannels state model.channels
-        -- channels =
-        --   List.map (Channel.State.initialState state) state.channels
 
         receivers =
           List.map Receiver.State.initialState state.receivers
-
-        -- activeChannelId =
-        --   Maybe.map (\channel -> channel.id) (List.head channels)
 
         updatedModel =
           { model
             | channels = channels
             , receivers = receivers
-            -- , activeChannelId = activeChannelId
           }
       in
         ( updatedModel, Effects.none )
@@ -104,8 +94,6 @@ update action model =
       in
           ( { model | channels = channelsModel }, Effects.map Root.Channels effect )
 
-    -- END CHANNEL STUFF
-
     Root.VolumeChange event ->
       case event.target of
         "receiver" ->
@@ -131,8 +119,6 @@ update action model =
 
     Root.Library libraryAction ->
       let
-        -- _ =
-        --   Debug.log "library" libraryAction
         ( library, effect ) =
           Library.State.update libraryAction model.library model.channels.activeChannelId
       in
