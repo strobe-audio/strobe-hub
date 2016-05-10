@@ -46,11 +46,13 @@ update action model =
 
     Root.InitialState state ->
       let
-        channels =  Channels.State.loadChannels state model.channels
+        channels =
+          Channels.State.loadChannels state model.channels
 
-        receivers = Receivers.State.loadReceivers state model.receivers
-          -- List.map Receiver.State.initialState state.receivers
+        receivers =
+          Receivers.State.loadReceivers state model.receivers
 
+        -- List.map Receiver.State.initialState state.receivers
         updatedModel =
           { model
             | channels = channels
@@ -61,9 +63,10 @@ update action model =
 
     Root.Receivers receiversAction ->
       let
-          (receiversModel, effect) = Receivers.State.update receiversAction model.receivers
+        ( receiversModel, effect ) =
+          Receivers.State.update receiversAction model.receivers
       in
-          ( { model | receivers = receiversModel }, Effects.map Root.Receivers effect )
+        ( { model | receivers = receiversModel }, Effects.map Root.Receivers effect )
 
     -- Root.ReceiverStatus ( eventType, event ) ->
     --   case eventType of
@@ -75,7 +78,6 @@ update action model =
     --
     --     _ ->
     --       ( model, Effects.none )
-
     -- Root.ModifyReceiver receiverId receiverAction ->
     --   let
     --     updateReceiver receiver =
@@ -92,20 +94,20 @@ update action model =
     --       (List.map updateReceiver model.receivers) |> List.unzip
     --   in
     --     ( { model | receivers = receivers }, (Effects.batch effects) )
-
     Root.Channels channelsAction ->
       let
-          (channelsModel, effect) = Channels.State.update channelsAction model.channels
+        ( channelsModel, effect ) =
+          Channels.State.update channelsAction model.channels
       in
-          ( { model | channels = channelsModel }, Effects.map Root.Channels effect )
+        ( { model | channels = channelsModel }, Effects.map Root.Channels effect )
 
     Root.VolumeChange event ->
       case event.target of
         "receiver" ->
-          update (Root.Receivers (Receivers.VolumeChanged (event.id, event.volume))) model
+          update (Root.Receivers (Receivers.VolumeChanged ( event.id, event.volume ))) model
 
         "channel" ->
-          update (Root.Channels (Channels.VolumeChanged (event.id, event.volume))) model
+          update (Root.Channels (Channels.VolumeChanged ( event.id, event.volume ))) model
 
         _ ->
           ( model, Effects.none )
@@ -135,8 +137,7 @@ update action model =
         )
 
     Root.NewRendition rendition ->
-      update (Root.Channels (Channels.AddRendition (rendition.channelId, rendition))) model
-
+      update (Root.Channels (Channels.AddRendition ( rendition.channelId, rendition ))) model
 
 
 libraryVisible : Root.Model -> Bool

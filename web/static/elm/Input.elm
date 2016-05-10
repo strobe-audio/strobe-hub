@@ -1,10 +1,12 @@
-module Input where
+module Input (..) where
+
 
 type alias Model =
   { originalValue : String
   , value : String
-  , validator : (String -> Bool)
+  , validator : String -> Bool
   }
+
 
 type alias Context =
   { address : Signal.Address Action
@@ -12,9 +14,9 @@ type alias Context =
   , submitAddress : Signal.Address String
   }
 
+
 type Action
   = NoOp
   | Update String
   | Cancel Context
   | Submit Context
-

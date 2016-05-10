@@ -14,4 +14,3 @@ addChannel channelName =
     Signal.send mailbox.address channelName
       |> Effects.task
       |> Effects.map (always Root.NoOp)
-

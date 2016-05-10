@@ -55,16 +55,16 @@ channelSelectorPanel address model activeChannel =
           div
             [ class "channels-selector--channel", onClick address (Channels.Choose channel) ]
             [ text channel.name ]
+
         True ->
           div
-            [ class "channels-selector--channel channels-selector--channel__active"  ]
+            [ class "channels-selector--channel channels-selector--channel__active" ]
             [ text channel.name ]
 
     -- unselectedChannels =
     --   List.filter (\channel -> channel.id /= activeChannel.id) model.channels
-
-    channels = orderedChannels model.channels
-
+    channels =
+      orderedChannels model.channels
   in
     case model.showChannelSwitcher of
       False ->
@@ -83,10 +83,11 @@ channelSelectorPanel address model activeChannel =
 addChannelPanel : Signal.Address Channels.Action -> Channels.Model -> Html
 addChannelPanel address model =
   let
-      context =
-        { address = Signal.forwardTo address Channels.NewInput
-        , cancelAddress = Signal.forwardTo address (always Channels.ToggleAdd)
-        , submitAddress = Signal.forwardTo address Channels.Add }
+    context =
+      { address = Signal.forwardTo address Channels.NewInput
+      , cancelAddress = Signal.forwardTo address (always Channels.ToggleAdd)
+      , submitAddress = Signal.forwardTo address Channels.Add
+      }
   in
     case model.showAddChannel of
       False ->
@@ -101,7 +102,8 @@ addChannelPanel address model =
 player : Signal.Address Channels.Action -> Channel.Model -> Html
 player address channel =
   let
-      playerAddress = Signal.forwardTo address (Channels.Modify channel.id)
+    playerAddress =
+      Signal.forwardTo address (Channels.Modify channel.id)
   in
     Channel.View.root playerAddress channel
 
@@ -109,9 +111,12 @@ player address channel =
 playlist : Signal.Address Channels.Action -> Channels.Model -> Html
 playlist address model =
   let
-      playlist = case Channels.State.activeChannel model of
+    playlist =
+      case Channels.State.activeChannel model of
         Nothing ->
           div [] []
+
         Just channel ->
           Channel.View.playlist (Signal.forwardTo address (Channels.Modify channel.id)) channel
   in
+    playlist

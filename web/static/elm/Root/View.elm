@@ -47,8 +47,6 @@ root address model =
         Channels.View.playlist (Signal.forwardTo address Root.Channels) model.channels
       else
         div [] []
-
-
   in
     case activeChannel of
       Nothing ->
@@ -69,7 +67,9 @@ root address model =
 libraryToggleView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
 libraryToggleView address model channel =
   let
-    duration = Source.View.durationString (Channel.playlistDuration channel)
+    duration =
+      Source.View.durationString (Channel.playlistDuration channel)
+
     playlistButton =
       [ div
           [ classList

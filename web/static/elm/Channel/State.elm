@@ -79,7 +79,6 @@ update action channel =
 
             _ ->
               channel
-
       in
         ( channel', Effects.none )
 

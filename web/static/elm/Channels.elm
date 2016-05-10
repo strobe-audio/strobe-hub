@@ -18,7 +18,7 @@ type alias Model =
 type Action
   = NoOp
   | VolumeChanged ( ID.Channel, Float )
-  | AddRendition ( ID.Channel,  Rendition.Model )
+  | AddRendition ( ID.Channel, Rendition.Model )
   | Modify ID.Channel Channel.Action
   | ToggleSelector
   | ToggleAdd
@@ -27,6 +27,8 @@ type Action
   | Added Channel.State
   | Choose Channel.Model
 
+
 type alias Context =
   { address : Signal.Address Action
-  , modeAddress : Signal.Address () }
+  , modeAddress : Signal.Address ()
+  }

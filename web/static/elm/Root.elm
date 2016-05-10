@@ -12,8 +12,8 @@ import Input
 
 type Action
   = InitialState BroadcasterState
-  -- | ModifyReceiver ID.Receiver Receiver.Action
-  -- | ReceiverStatus ( String, ReceiverStatusEvent )
+    -- | ModifyReceiver ID.Receiver Receiver.Action
+    -- | ReceiverStatus ( String, ReceiverStatusEvent )
     -- | ChannelStatus (String, ChannelStatusEvent)
     -- | UpdateReceiverVolume Receiver Float
     -- | UpdateChannelVolume Channel Float

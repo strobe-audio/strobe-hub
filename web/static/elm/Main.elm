@@ -75,24 +75,22 @@ port receiverStatus : Signal ( String, Root.ReceiverStatusEvent )
 receiverStatusActions : Signal Root.Action
 receiverStatusActions =
   let
-      forward (event, status) =
-        Root.Receivers (Receivers.Status event status.receiverId status.channelId)
-
+    forward ( event, status ) =
+      Root.Receivers (Receivers.Status event status.receiverId status.channelId)
   in
     Signal.map forward receiverStatus
 
 
 port channelStatus : Signal ( String, Root.ChannelStatusEvent )
-
-
 channelStatusActions : Signal Root.Action
 channelStatusActions =
   let
-    forward (eventName, event) =
+    forward ( eventName, event ) =
       let
-          _ = Debug.log "channelStatusActions" (eventName, event)
+        _ =
+          Debug.log "channelStatusActions" ( eventName, event )
       in
-          Root.Channels ((Channels.Modify event.channelId) (Channel.Status (eventName, event.status)))
+        Root.Channels ((Channels.Modify event.channelId) (Channel.Status ( eventName, event.status )))
   in
     Signal.map forward channelStatus
 
@@ -161,6 +159,7 @@ port playlistSkipRequests =
   in
     mailbox.signal
 
+
 port addChannelRequests : Signal String
 port addChannelRequests =
   let
@@ -168,6 +167,7 @@ port addChannelRequests =
       Channels.Signals.addChannel
   in
     mailbox.signal
+
 
 port attachReceiverRequests : Signal ( String, String )
 port attachReceiverRequests =
@@ -197,6 +197,7 @@ libraryResponseActions =
   in
     Signal.map translate libraryResponse
 
+
 port channelAdditions : Signal Channel.State
 channelAdditionActions =
   let
@@ -204,4 +205,3 @@ channelAdditionActions =
       Root.Channels (Channels.Added state)
   in
     Signal.map translate channelAdditions
-

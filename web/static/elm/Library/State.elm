@@ -76,16 +76,19 @@ add model library =
   in
     { model | levels = (List.reverse (root :: others)) }
 
+
 addUniqueLibrary : Library.Node -> List Library.Node -> List Library.Node
 addUniqueLibrary library libraries =
   let
-      duplicate = Debug.log "Duplicate library?" (List.any (\l -> l.id == library.id) libraries)
-      libraries' = case duplicate of
+    duplicate =
+      Debug.log "Duplicate library?" (List.any (\l -> l.id == library.id) libraries)
+
+    libraries' =
+      case duplicate of
         True ->
           libraries
 
         False ->
           library :: libraries
-
   in
-      libraries'
+    libraries'

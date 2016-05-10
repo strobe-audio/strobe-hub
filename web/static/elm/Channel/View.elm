@@ -21,7 +21,6 @@ root address channel =
 
     playPauseAddress =
       Signal.forwardTo address (always Channel.PlayPause)
-
   in
     playingSong playPauseAddress channel rendition
 
@@ -52,7 +51,6 @@ playlist address channel =
 
     playlist =
       Maybe.withDefault [] (List.tail channel.playlist)
-
   in
     div
       [ class "channel-playlist" ]
