@@ -3,11 +3,14 @@
   flex-direction: row;
 }
 
+
 .input--input {
   flex: 1;
   font-size: 2rem;
   padding: 0 $padding;
 }
+
+
 .input--submit {
   flex: 0 0 $button-size;
   &::before {
@@ -19,9 +22,13 @@
     text-align: center;
   }
 }
+
+
 .input--submit__valid {
   background-color: green;
 }
+
+
 .input--cancel {
   flex: 0 0 $button-size;
   &::before {
@@ -33,5 +40,4 @@
     text-align: center;
   }
 }
-
 
