@@ -23,7 +23,7 @@ initialState =
   { channels = Channels.State.initialState
   , receivers = Receivers.State.initialState
   , listMode = Root.PlaylistMode
-  , mustShowLibrary = False
+  , showPlaylistAndLibrary = False
   , library = Library.State.initialState
   }
 
@@ -58,9 +58,6 @@ update action model =
           }
       in
         ( updatedModel, Effects.none )
-
-    Root.SetListMode mode ->
-      ( { model | listMode = mode }, Effects.none )
 
     Root.Receivers receiversAction ->
       let
@@ -113,12 +110,15 @@ update action model =
         _ ->
           ( model, Effects.none )
 
+    Root.SetListMode mode ->
+      ( { model | listMode = mode }, Effects.none )
+
     Root.Viewport width ->
       let
-        mustShowLibrary =
+        showPlaylistAndLibrary =
           width > 800
       in
-        ( { model | mustShowLibrary = mustShowLibrary }, Effects.none )
+        ( { model | showPlaylistAndLibrary = showPlaylistAndLibrary }, Effects.none )
 
     Root.LibraryRegistration node ->
       ( { model | library = Library.State.add model.library node }
@@ -141,7 +141,7 @@ update action model =
 
 libraryVisible : Root.Model -> Bool
 libraryVisible model =
-  case model.mustShowLibrary of
+  case model.showPlaylistAndLibrary of
     True ->
       True
 
@@ -156,7 +156,7 @@ libraryVisible model =
 
 playlistVisible : Root.Model -> Bool
 playlistVisible model =
-  case model.mustShowLibrary of
+  case model.showPlaylistAndLibrary of
     True ->
       True
 

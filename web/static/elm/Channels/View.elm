@@ -1,4 +1,4 @@
-module Channels.View (channels, player) where
+module Channels.View (channels, player, playlist) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -8,6 +8,7 @@ import Json.Decode as Json
 import Root
 import Root.State
 import Channels
+import Channels.State
 import Channel
 import Channel.View
 import Volume.View
@@ -104,6 +105,17 @@ player address channel =
   in
     Channel.View.root playerAddress channel
 
+
+playlist : Signal.Address Channels.Action -> Channels.Model -> Html
+playlist address model =
+  let
+      playlist = case Channels.State.activeChannel model of
+        Nothing ->
+          div [] []
+        Just channel ->
+          Channel.View.playlist (Signal.forwardTo address (Channels.Modify channel.id)) channel
+  in
+      playlist
 
 
 -- root : Channels.Context -> Root.Model -> Channel.Model -> Html

@@ -1,0 +1,43 @@
+
+.root--mode {
+  display: flex;
+  height: $button-size;
+  align-items: stretch;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.root--mode--choice {
+  flex: 1;
+  padding: 0 $padding;
+  line-height: $button-size;
+  font-weight: 200;
+  &:before {
+    @mixin fa;
+    content: "\f140";
+    padding-right: calc($padding/2);
+  }
+}
+.root--mode--choice__active {
+  background: rgba(0, 0, 0, 0.2);
+  font-weight: 400;
+  color: #fff;
+}
+.root--mode--choice + .root--mode--choice {
+  /* border-left: solid 1px rgba(0, 0, 0, 0.2); */
+}
+.root--mode--library {
+  &:before {
+    content: "\f001";
+  }
+}
+.root--mode--playlist {
+  &:before {
+    content: "\f140";
+  }
+}
+.root--mode--playlist-label {
+  text-transform: uppercase;
+  font-size: 0.8em;
+  padding-right: calc($padding / 2);
+  font-weight: 100;
+}

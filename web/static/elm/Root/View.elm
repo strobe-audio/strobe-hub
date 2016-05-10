@@ -21,7 +21,9 @@ import Receivers.View
 root : Signal.Address Root.Action -> Root.Model -> Html
 root address model =
   let
-    channels = model.channels
+    channels =
+      model.channels
+
     activeChannel =
       (Root.State.activeChannel model)
 
@@ -29,7 +31,22 @@ root address model =
       { address = Signal.forwardTo address Root.Channels
       , modeAddress = Signal.forwardTo address Root.SetListMode
       }
-    receiversAddress = Signal.forwardTo address Root.Receivers
+
+    receiversAddress =
+      Signal.forwardTo address Root.Receivers
+
+    library =
+      if Root.State.libraryVisible model then
+        Library.View.root (Signal.forwardTo address Root.Library) model.library
+      else
+        div [] []
+
+    playlist =
+      if Root.State.playlistVisible model then
+        Channels.View.playlist (Signal.forwardTo address Root.Channels) model.channels
+      else
+        div [] []
+
 
   in
     case activeChannel of
@@ -37,13 +54,56 @@ root address model =
         div [ class "loading" ] [ text "Loading..." ]
 
       Just channel ->
-        -- activeChannelView address model channel
-        -- Channels.View.root context model channel
-        div []
+        div
+          [ class "root" ]
           [ Channels.View.channels context.address channels channel
           , Channels.View.player context.address channel
           , Receivers.View.receivers receiversAddress model.receivers channel
+          , libraryToggleView address model channel
+          , library
+          , playlist
           ]
+
+
+libraryToggleView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
+libraryToggleView address model channel =
+  let
+    playlistButton =
+      [ div
+          [ classList
+              [ ( "root--mode--choice root--mode--playlist", True )
+              , ( "root--mode--choice__active", model.listMode == Root.PlaylistMode )
+              ]
+          , onClick address (Root.SetListMode Root.PlaylistMode)
+          ]
+          -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
+          [ span [ class "root--mode--channel-name" ] [ text channel.name ]
+          ]
+      ]
+
+    libraryButton =
+      [ div
+          [ classList
+              [ ( "root--mode--choice root--mode--library", True )
+              , ( "root--mode--choice__active", model.listMode == Root.LibraryMode )
+              ]
+          , onClick address (Root.SetListMode Root.LibraryMode)
+          ]
+          [ text "Library" ]
+      ]
+
+    buttons =
+      case model.showPlaylistAndLibrary of
+        True ->
+          playlistButton
+
+        False ->
+          List.append playlistButton libraryButton
+  in
+    div
+      [ class "root--mode" ]
+      buttons
+
 
 
 -- activeChannelView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html

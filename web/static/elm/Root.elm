@@ -36,7 +36,7 @@ type alias Model =
   { channels : Channels.Model
   , receivers : Receivers.Model
   , listMode : ChannelListMode
-  , mustShowLibrary : Bool
+  , showPlaylistAndLibrary : Bool
   , library : Library.Model
   }
 

@@ -51,27 +51,27 @@ playingSong address channel maybeRendition =
         ]
 
 
-attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
-attachReceiverList context channel receivers =
-  let
-    sortedReceivers =
-      (Receiver.sort receivers)
-  in
-    div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) sortedReceivers)
+-- attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
+-- attachReceiverList context channel receivers =
+--   let
+--     sortedReceivers =
+--       (Receiver.sort receivers)
+--   in
+--     div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) sortedReceivers)
 
 
-attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
-attachReceiverEntry context channel receiver =
-  Receiver.View.attach (context.receiverAddress receiver) channel receiver
+-- attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
+-- attachReceiverEntry context channel receiver =
+--   Receiver.View.attach (context.receiverAddress receiver) channel receiver
 
 
-playlist : Root.ChannelContext -> Channel.Model -> Html
-playlist context channel =
+playlist : Signal.Address Channel.Action -> Channel.Model -> Html
+playlist address channel =
   let
     entry rendition =
       let
         renditionAddress =
-          Signal.forwardTo context.channelAddress (Channel.ModifyRendition rendition.id)
+          Signal.forwardTo address (Channel.ModifyRendition rendition.id)
       in
         Rendition.View.playlist renditionAddress rendition
 
