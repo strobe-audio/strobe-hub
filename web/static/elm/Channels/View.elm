@@ -16,6 +16,11 @@ import Input
 import Input.View
 
 
+orderedChannels : List Channel.Model -> List Channel.Model
+orderedChannels channels =
+  List.sortBy (\c -> c.name) channels
+
+
 channels : Signal.Address Channels.Action -> Channels.Model -> Channel.Model -> Html
 channels address model activeChannel =
   let
@@ -44,12 +49,21 @@ channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Chann
 channelSelectorPanel address model activeChannel =
   let
     channelChoice channel =
-      div
-        [ class "channels-selector--channel", onClick address (Channels.Choose channel) ]
-        [ text channel.name ]
+      case channel.id == activeChannel.id of
+        False ->
+          div
+            [ class "channels-selector--channel", onClick address (Channels.Choose channel) ]
+            [ text channel.name ]
+        True ->
+          div
+            [ class "channels-selector--channel channels-selector--channel__active"  ]
+            [ text channel.name ]
 
-    unselectedChannels =
-      List.filter (\channel -> channel.id /= activeChannel.id) model.channels
+    -- unselectedChannels =
+    --   List.filter (\channel -> channel.id /= activeChannel.id) model.channels
+
+    channels = orderedChannels model.channels
+
   in
     case model.showChannelSwitcher of
       False ->
@@ -60,7 +74,7 @@ channelSelectorPanel address model activeChannel =
           [ class "channels-selector" ]
           [ div
               [ class "channels-selector--list" ]
-              (List.map channelChoice unselectedChannels)
+              (List.map channelChoice channels)
           , addChannelPanel address model
           ]
 

@@ -9,9 +9,8 @@
   top: 0;
   left: 0;
   z-index: 10000;
-  background-color: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.93);
   color: #fff;
-
 }
 
 .channels__select-channel {
@@ -39,8 +38,9 @@
 }
 
 .channels-selector--list {
-
   flex: 1;
+	height: 0;
+	overflow-y: auto;
 }
 
 $channel-select-border: rgba(0, 0, 0, 0.1);
@@ -75,6 +75,15 @@ $channel-select-border: rgba(0, 0, 0, 0.1);
     border-bottom: solid 1px $channel-select-border;
   }
 }
+
+.channels-selector--channel__active {
+	color: rgba(255, 255, 255, 0.3);
+	font-weight: 600;
+	&:hover {
+		color: rgba(255, 255, 255, 0.5);
+	}
+}
+
 
 .channel-selector--add {
   box-sizing: border-box;
