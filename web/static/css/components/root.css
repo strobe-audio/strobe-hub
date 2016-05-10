@@ -57,5 +57,5 @@
 .root--mode--channel-duration {
   padding-left: calc($padding/2);
   font-size: 0.8em;
-  color: rgba(0, 0, 0, 0.4);
+  color: rgba(0, 0, 0, 0.8);
 }
