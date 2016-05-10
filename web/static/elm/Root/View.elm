@@ -16,6 +16,7 @@ import Library.View
 import Input
 import Input.View
 import Receivers.View
+import Source.View
 
 
 root : Signal.Address Root.Action -> Root.Model -> Html
@@ -68,6 +69,7 @@ root address model =
 libraryToggleView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
 libraryToggleView address model channel =
   let
+    duration = Source.View.durationString (Channel.playlistDuration channel)
     playlistButton =
       [ div
           [ classList
@@ -78,6 +80,7 @@ libraryToggleView address model channel =
           ]
           -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
           [ span [ class "root--mode--channel-name" ] [ text channel.name ]
+          , span [ class "root--mode--channel-duration" ] [ text duration ]
           ]
       ]
 

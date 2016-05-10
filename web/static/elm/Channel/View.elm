@@ -34,7 +34,7 @@ root address channel =
     --     False ->
     --       div [] []
   in
-       playingSong playPauseAddress channel rendition
+    playingSong playPauseAddress channel rendition
 
 
 playingSong : Signal.Address () -> Channel.Model -> Maybe Rendition.Model -> Html
@@ -51,6 +51,7 @@ playingSong address channel maybeRendition =
         ]
 
 
+
 -- attachReceiverList : Root.ChannelContext -> Channel.Model -> List Receiver.Model -> Html
 -- attachReceiverList context channel receivers =
 --   let
@@ -58,8 +59,6 @@ playingSong address channel maybeRendition =
 --       (Receiver.sort receivers)
 --   in
 --     div [ class "channel-receivers--available" ] (List.map (attachReceiverEntry context channel) sortedReceivers)
-
-
 -- attachReceiverEntry : Root.ChannelContext -> Channel.Model -> Receiver.Model -> Html
 -- attachReceiverEntry context channel receiver =
 --   Receiver.View.attach (context.receiverAddress receiver) channel receiver
@@ -77,6 +76,7 @@ playlist address channel =
 
     playlist =
       Maybe.withDefault [] (List.tail channel.playlist)
+
   in
     div
       [ class "channel-playlist" ]

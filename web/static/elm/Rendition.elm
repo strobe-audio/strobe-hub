@@ -59,3 +59,10 @@ type alias ChangeEvent =
   { channelId : String
   , removeSourceIds : List String
   }
+
+
+duration : Model -> Maybe Int
+duration rendition =
+  Maybe.map
+    (\duration -> duration - rendition.playbackPosition)
+    rendition.source.metadata.duration_ms

@@ -3,6 +3,7 @@ module Channel (..) where
 import Receiver
 import Rendition
 import ID
+import Maybe.Extra
 
 
 type alias Model =
@@ -20,7 +21,7 @@ type Action
   = Volume (Maybe Float)
   | VolumeChanged Float
   | PlayPause
-  | Status (String, String)
+  | Status ( String, String )
   | ModifyRendition String Rendition.Action
   | ShowAddReceiver Bool
   | RenditionProgress Rendition.ProgressEvent
@@ -37,3 +38,17 @@ type alias State =
   , playing : Bool
   }
 
+
+playlistDuration : Model -> Maybe Int
+playlistDuration channel =
+  let
+    playlist =
+      Maybe.withDefault [] (List.tail channel.playlist)
+
+    durations =
+      Maybe.Extra.combine (List.map Rendition.duration playlist)
+
+    duration =
+      Maybe.map (List.foldr (+) 0) durations
+  in
+    duration

@@ -8,6 +8,7 @@
 
 .root--mode--choice {
   flex: 1;
+  display: flex;
   padding: 0 $padding;
   line-height: $button-size;
   font-weight: 200;
@@ -15,6 +16,7 @@
     @mixin fa;
     content: "\f140";
     padding-right: calc($padding/2);
+    line-height: $button-size;
   }
 }
 .root--mode--choice__active {
@@ -40,4 +42,12 @@
   font-size: 0.8em;
   padding-right: calc($padding / 2);
   font-weight: 100;
+}
+.root--mode--channel-name {
+  flex: 1;
+}
+.root--mode--channel-duration {
+  padding-left: calc($padding/2);
+  font-size: 0.8em;
+  color: rgba(0, 0, 0, 0.4);
 }
