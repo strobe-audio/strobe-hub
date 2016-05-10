@@ -27,6 +27,10 @@
   flex: 0 0 $button-size;
   text-align: center;
   line-height: $button-size;
+  cursor: pointer;
+  &:hover {
+    color: red;
+  }
 }
 .channels--channel-volume {
   flex: 1;

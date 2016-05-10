@@ -12,6 +12,7 @@
   position: relative;
   left: 0;
   top: 0;
+  cursor: pointer;
   img {
     position: absolute;
     left: 0;
@@ -30,6 +31,7 @@
 	padding: $padding;
   display: flex;
   flex-direction: row;
+  cursor: pointer;
 }
 .rendition--meta,
 .rendition--title {
@@ -50,6 +52,12 @@
     width: calc($button-size / 2);
     text-align: left;
     color: rgba(255, 255, 255, 1);
+  }
+}
+
+.rendition--cover:hover {
+  .rendition--title:before {
+    color: red;
   }
 }
 .rendition--title__playing {

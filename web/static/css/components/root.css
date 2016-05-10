@@ -12,6 +12,11 @@
   padding: 0 $padding;
   line-height: $button-size;
   font-weight: 200;
+  cursor: pointer;
+  &:hover {
+    background-color: red;
+    color: #fff;
+  }
   &:before {
     @mixin fa;
     content: "\f140";
@@ -23,6 +28,9 @@
   background: rgba(0, 0, 0, 0.2);
   font-weight: 400;
   color: #fff;
+  &:hover {
+    background: rgba(0, 0, 0, 0.2);
+  }
 }
 .root--mode--choice + .root--mode--choice {
   /* border-left: solid 1px rgba(0, 0, 0, 0.2); */
