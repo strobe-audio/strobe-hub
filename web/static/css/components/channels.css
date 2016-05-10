@@ -9,12 +9,13 @@
   top: 0;
   left: 0;
   z-index: 10000;
-  background-color: rgba(0, 0, 0, 0.93);
+  background-color: rgba(0, 0, 0, 0.8);
   color: #fff;
 }
 
 .channels__select-channel {
   bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
 }
 
 .channels--bar {
@@ -43,7 +44,7 @@
 	overflow-y: auto;
 }
 
-$channel-select-border: rgba(0, 0, 0, 0.1);
+$channel-select-border: rgba(255, 255, 255, 0.05);
 
 .channels-selector--channel {
   &::before {
