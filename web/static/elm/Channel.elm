@@ -20,6 +20,7 @@ type Action
   = Volume (Maybe Float)
   | VolumeChanged Float
   | PlayPause
+  | Status (String, String)
   | ModifyRendition String Rendition.Action
   | ShowAddReceiver Bool
   | RenditionProgress Rendition.ProgressEvent

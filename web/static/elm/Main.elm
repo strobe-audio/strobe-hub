@@ -29,7 +29,7 @@ app =
     , inputs =
         [ broadcasterStateActions
         , receiverStatusActions
-          -- , channelStatusActions
+        , channelStatusActions
         , sourceProgressActions
         , sourceChangeActions
         , volumeChangeActions
@@ -79,10 +79,16 @@ receiverStatusActions =
 port channelStatus : Signal ( String, Root.ChannelStatusEvent )
 
 
-
--- channelStatusActions : Signal Root.Action
--- channelStatusActions =
---   Signal.map ChannelStatus channelStatus
+channelStatusActions : Signal Root.Action
+channelStatusActions =
+  let
+    forward (eventName, event) =
+      let
+          _ = Debug.log "channelStatusActions" (eventName, event)
+      in
+          Root.Channels ((Channels.Modify event.channelId) (Channel.Status (eventName, event.status)))
+  in
+    Signal.map forward channelStatus
 
 
 port sourceProgress : Signal Rendition.ProgressEvent
