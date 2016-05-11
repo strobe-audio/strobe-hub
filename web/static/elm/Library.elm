@@ -12,6 +12,7 @@ type Action
   | ExecuteAction String
   | Response Folder
   | PopLevel Int
+  | ActionComplete
 
 
 
@@ -134,6 +135,7 @@ type alias Node =
 
 type alias Model =
   { levels : List Folder
+  , currentRequest : Maybe String
   }
 
 

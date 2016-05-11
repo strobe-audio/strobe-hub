@@ -1,0 +1,46 @@
+.library--breadcrumb {
+  min-height: $button-size;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  padding: 0 $padding;
+  align-items: center;
+}
+
+
+.library--breadcrumb--section {
+  cursor: pointer;
+  &:hover {
+    color: red;
+  }
+}
+
+
+.library--breadcrumb--divider {
+  &:before {
+    content: "›";
+    margin: 0 $padding;
+  }
+}
+
+@media (--mobile) {
+  .library--node {
+    height: $button-size;
+    border-bottom: solid 1px #ddd;
+    cursor: pointer;
+    &:hover {
+      color: red;
+    }
+    transition: background-color 200ms;
+  }
+  .library--node__active {
+    background-color: rgba(255, 0, 0, 0.2);
+  }
+
+  .library--node--inner {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 0 $padding;
+    cursor: pointer;
+  }
+}

@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Library
 import Library.State
+import List.Extra
 
 
 root : Signal.Address Library.Action -> Library.Model -> Html
@@ -14,31 +15,23 @@ root address model =
 
 node : Signal.Address Library.Action -> Library.Model -> Library.Folder -> Library.Node -> Html
 node address library folder node =
-  div [ class "block", onClick address (Library.ExecuteAction node.action) ] [ text node.title ]
-
-
-breadcrumb : Signal.Address Library.Action -> Library.Model -> Library.Folder -> Html
-breadcrumb address model folder =
   let
-    breadcrumbLink classes index level =
-      -- Debug.log ("level " ++ level.action)
-      a [ class classes, onClick address (Library.PopLevel (index + 1)) ] [ text level.title ]
-
-    sections =
-      case List.tail model.levels of
-        Just levels ->
-          List.indexedMap (breadcrumbLink "section") levels
-
-        Nothing ->
-          []
-
-    levels =
-      (div [ class "section active" ] [ text folder.title ]) :: sections
-
-    breadcrumb =
-      List.intersperse (i [ class "right angle icon divider" ] []) levels
+    isActive =
+      Maybe.withDefault
+        False
+        (Maybe.map (\action -> node.action == action) library.currentRequest)
   in
-    div [ class "ui breadcrumb" ] (List.reverse breadcrumb)
+    div
+      [ classList
+          [ ( "library--node", True )
+          , ( "library--node__active", isActive )
+          ]
+      , onClick address (Library.ExecuteAction node.action)
+      ]
+      [ div
+          [ class "library--node--inner" ]
+          [ text node.title ]
+      ]
 
 
 folder : Signal.Address Library.Action -> Library.Model -> Library.Folder -> Html
@@ -53,12 +46,36 @@ folder address model folder =
     -- Debug.log (" folder " ++ (toString folder))
     div
       []
-      [ div
-          [ class "block-group library-folder" ]
-          [ div
-              [ class "library-breadcrumb" ]
-              [ (breadcrumb address model folder)
-              ]
-          ]
+      [ (breadcrumb address model folder)
       , children
+      ]
+
+
+breadcrumb : Signal.Address Library.Action -> Library.Model -> Library.Folder -> Html
+breadcrumb address model folder =
+  let
+    breadcrumbLink classes index level =
+      a [ class classes, onClick address (Library.PopLevel (index)) ] [ text level.title ]
+
+    sections =
+      (model.levels)
+        |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
+
+    ( list', dropdown' ) =
+      List.Extra.splitAt 2 (sections)
+
+    dividers list =
+      List.intersperse (span [ class "library--breadcrumb--divider" ] []) list
+
+    dropdown =
+      dividers (List.reverse dropdown')
+
+    list =
+      dividers (List.reverse list')
+  in
+    div
+      [ class "library--breadcrumb" ]
+      [ div [ class "library--breadcrumb--dropdown" ] dropdown
+        -- , span [ class "library--breadcrumb--divider" ] []
+      , div [ class "library--breadcrumb--sections" ] list
       ]

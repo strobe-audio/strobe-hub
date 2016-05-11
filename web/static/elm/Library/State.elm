@@ -4,6 +4,7 @@ import Effects exposing (Effects, Never)
 import ID
 import Library
 import Library.Effects
+import Time exposing (millisecond)
 
 
 initialState : Library.Model
@@ -12,7 +13,9 @@ initialState =
     root =
       { id = "libraries", title = "Libraries", icon = "", children = [] }
   in
-    { levels = [ root ] }
+    { levels = [ root ]
+    , currentRequest = Nothing
+    }
 
 
 update : Library.Action -> Library.Model -> Maybe ID.Channel -> ( Library.Model, Effects Library.Action )
@@ -21,16 +24,32 @@ update action model maybeChannelId =
     Library.NoOp ->
       ( model, Effects.none )
 
+    Library.ActionComplete ->
+      let
+          _ = Debug.log "action complete" model.currentRequest
+      in
+        ( { model | currentRequest = Nothing }, Effects.none )
+
     Library.ExecuteAction a ->
       case maybeChannelId of
         Just channelId ->
-          ( model, (Library.Effects.sendAction channelId a) )
+          (
+            { model | currentRequest = Just a }
+            , Effects.batch
+              [ (Library.Effects.sendAction channelId a)
+              , (Library.Effects.requestComplete (300 * millisecond))
+              ]
+          )
 
         Nothing ->
           ( model, Effects.none )
 
     Library.Response folder ->
-      ( (pushLevel model folder), Effects.none )
+      let
+          _ = Debug.log "current action" model.currentRequest
+          model' = pushLevel model folder
+      in
+        ( { model' | currentRequest = Nothing }, Effects.none )
 
     Library.PopLevel index ->
       ( { model | levels = List.drop index model.levels }, Effects.none )
