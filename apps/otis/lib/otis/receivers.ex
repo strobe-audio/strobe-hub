@@ -96,7 +96,7 @@ defmodule Otis.Receivers do
   end
 
   def handle_call({:attach, receiver_id, channel_id}, _from, %S{receivers: receivers} = state) do
-    {:ok, receiver} = Map.fetch(receivers, receiver_id)
+    receiver = Map.get(receivers, receiver_id, nil)
     # In this case the event comes before the state change. Feels wrong but is
     # much simpler than any other way of moving receivers that I can think of
     Otis.State.Events.notify({:reattach_receiver, receiver_id, channel_id, receiver})

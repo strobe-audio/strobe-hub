@@ -34,6 +34,7 @@ defmodule Otis.Receiver do
     %R{ receiver | latch: start_latch_process() }
   end
 
+  def release_latch(nil), do: nil
   def release_latch(%R{latch: pid} = receiver) do
     send(pid, @latch_exit_signal)
     create_latch(receiver)
