@@ -51,18 +51,27 @@ channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Chann
 channelSelectorPanel address model activeChannel =
   let
     channelChoice channel =
-      div
-        [ classList
-            [ ( "channels-selector--channel", True )
-            , ( "channels-selector--channel__active", channel.id == activeChannel.id )
-            , ( "channels-selector--channel__playing", channel.playing )
-            ]
-        , onClick address (Channels.Choose channel)
-        ]
-        [ div [ class "channels-selector--channel--name" ] [ text channel.name ]
-        , div [ class "channels-selector--channel--duration" ] [ text (Source.View.durationString (Channel.playlistDuration channel)) ]
-        , div [ class "channels-selector--channel--receivers" ] [ text "" ]
-        ]
+      let
+          duration = case (Channel.playlistDuration channel) of
+            Nothing ->
+              ""
+            Just 0 ->
+              ""
+            time ->
+              Source.View.durationString time
+      in
+        div
+          [ classList
+              [ ( "channels-selector--channel", True )
+              , ( "channels-selector--channel__active", channel.id == activeChannel.id )
+              , ( "channels-selector--channel__playing", channel.playing )
+              ]
+          , onClick address (Channels.Choose channel)
+          ]
+          [ div [ class "channels-selector--channel--name" ] [ text channel.name ]
+          , div [ class "channels-selector--channel--duration" ] [ text duration ]
+          , div [ class "channels-selector--channel--receivers" ] [ text "" ]
+          ]
 
     -- unselectedChannels =
     --   List.filter (\channel -> channel.id /= activeChannel.id) model.channels
