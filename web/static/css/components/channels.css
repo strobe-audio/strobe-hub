@@ -155,7 +155,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 }
 
 
-.channels-selector--channel__playing {
+.channels-selector--channel__playing .channels-selector--display {
   &:before {
     color: rgba(255, 255, 255, 1);
     content: "\f144";
