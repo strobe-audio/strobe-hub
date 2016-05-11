@@ -42,7 +42,7 @@ root address model =
       Just channel ->
         div
           [ class "root" ]
-          [ Channels.View.channels channelsAddress model.channels channel
+          [ Channels.View.channels channelsAddress model.channels model.receivers
           , Channels.View.player channelsAddress channel
           , Receivers.View.receivers receiversAddress model.receivers channel
           , libraryToggleView address model channel

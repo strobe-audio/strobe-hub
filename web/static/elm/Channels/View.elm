@@ -9,6 +9,8 @@ import Root
 import Root.State
 import Channels
 import Channels.State
+import Receivers
+import Receivers.State
 import Channel
 import Channel.View
 import Volume.View
@@ -18,13 +20,18 @@ import Input.View
 import Source.View
 
 
-orderedChannels : List Channel.Model -> List Channel.Model
-orderedChannels channels =
-  List.sortBy (\c -> c.name) channels
+channels : Signal.Address Channels.Action -> Channels.Model -> Receivers.Model -> Html
+channels address channels receivers =
+  case Channels.State.activeChannel channels of
+    Nothing ->
+      div [] []
+
+    Just activeChannel ->
+      channelsBar address channels receivers activeChannel
 
 
-channels : Signal.Address Channels.Action -> Channels.Model -> Channel.Model -> Html
-channels address model activeChannel =
+channelsBar : Signal.Address Channels.Action -> Channels.Model -> Receivers.Model -> Channel.Model -> Html
+channelsBar address channels receivers activeChannel =
   let
     channelAddress =
       Signal.forwardTo address (Channels.Modify activeChannel.id)
@@ -33,7 +40,7 @@ channels address model activeChannel =
       Signal.forwardTo channelAddress Channel.Volume
   in
     div
-      [ classList [ ( "channels", True ), ( "channels__select-channel", model.showChannelSwitcher ) ] ]
+      [ classList [ ( "channels", True ), ( "channels__select-channel", channels.showChannelSwitcher ) ] ]
       [ div
           [ class "channels--bar" ]
           [ div
@@ -43,19 +50,19 @@ channels address model activeChannel =
               [ class "channels--channel-volume" ]
               [ (Volume.View.control volumeAddress activeChannel.volume activeChannel.name) ]
           ]
-      , (channelSelectorPanel address model activeChannel)
+      , (channelSelectorPanel address channels receivers activeChannel)
       ]
 
 
-channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Channel.Model -> Html
-channelSelectorPanel address model activeChannel =
+channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Receivers.Model -> Channel.Model -> Html
+channelSelectorPanel address channels receivers activeChannel =
   let
     -- unselectedChannels =
-    --   List.filter (\channel -> channel.id /= activeChannel.id) model.channels
-    channels =
-      orderedChannels model.channels
+    --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
+    orderedChannels =
+      List.sortBy (\c -> c.name) channels.channels
   in
-    case model.showChannelSwitcher of
+    case channels.showChannelSwitcher of
       False ->
         div [] []
 
@@ -64,14 +71,17 @@ channelSelectorPanel address model activeChannel =
           [ class "channels-selector" ]
           [ div
               [ class "channels-selector--list" ]
-              (List.map (channelChoice address activeChannel) channels)
-          , addChannelPanel address model
+              (List.map (channelChoice address receivers activeChannel) orderedChannels)
+          , addChannelPanel address channels
           ]
 
 
-channelChoice : Signal.Address Channels.Action -> Channel.Model -> Channel.Model -> Html
-channelChoice address activeChannel channel =
+channelChoice : Signal.Address Channels.Action -> Receivers.Model -> Channel.Model -> Channel.Model -> Html
+channelChoice address receivers activeChannel channel =
   let
+    attachedReceivers =
+      (Receivers.State.attachedReceivers receivers channel) |> List.length
+
     duration =
       case (Channel.playlistDuration channel) of
         Nothing ->
@@ -92,8 +102,14 @@ channelChoice address activeChannel channel =
       , onClick address (Channels.Choose channel)
       ]
       [ div [ class "channels-selector--channel--name" ] [ text channel.name ]
-      , div [ class "channels-selector--channel--duration" ] [ text duration ]
-      , div [ class "channels-selector--channel--receivers" ] [ text "" ]
+      , div [ class "channels-selector--channel--duration duration" ] [ text duration ]
+      , div
+          [ classList
+              [ ( "channels-selector--channel--receivers", True )
+              , ( "channels-selector--channel--receivers__empty", attachedReceivers == 0 )
+              ]
+          ]
+          [ text (toString attachedReceivers) ]
       ]
 
 
