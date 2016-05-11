@@ -8,7 +8,7 @@ defmodule Peel.Events.Library do
 
   def handle_event({:controller_join, socket}, state) do
     # TODO: icon
-    Otis.State.Events.notify({:add_library, %{id: "peel", title: "Your Music", icon: "", action: "peel:root"}, socket})
+    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", action: "peel:root"}, socket})
     {:ok, state}
   end
 

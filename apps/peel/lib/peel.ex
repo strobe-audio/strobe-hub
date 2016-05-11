@@ -2,6 +2,8 @@ defmodule Peel do
   use     Application
   require Logger
 
+  @library_id "d2e91614-135a-11e6-9170-002500f418fc"
+
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
@@ -19,6 +21,8 @@ defmodule Peel do
     opts = [strategy: :one_for_one, name: Peel.Supervisor]
     Supervisor.start_link(children, opts)
   end
+
+  def library_id, do: @library_id
 
   def scan([]) do
     Logger.info("Scan done...")
