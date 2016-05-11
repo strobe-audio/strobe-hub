@@ -4,17 +4,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Debug
-import Json.Decode as Json
 import Root
 import Root.State
 import Channel
 import Channel.View
-import Channels
 import Channels.View
-import Volume.View
 import Library.View
-import Input
-import Input.View
 import Receivers.View
 import Source.View
 
@@ -22,16 +17,8 @@ import Source.View
 root : Signal.Address Root.Action -> Root.Model -> Html
 root address model =
   let
-    channels =
-      model.channels
-
-    activeChannel =
-      (Root.State.activeChannel model)
-
-    context =
-      { address = Signal.forwardTo address Root.Channels
-      , modeAddress = Signal.forwardTo address Root.SetListMode
-      }
+    channelsAddress =
+      Signal.forwardTo address Root.Channels
 
     receiversAddress =
       Signal.forwardTo address Root.Receivers
@@ -48,15 +35,15 @@ root address model =
       else
         div [] []
   in
-    case activeChannel of
+    case (Root.State.activeChannel model) of
       Nothing ->
         div [ class "loading" ] [ text "Loading..." ]
 
       Just channel ->
         div
           [ class "root" ]
-          [ Channels.View.channels context.address channels channel
-          , Channels.View.player context.address channel
+          [ Channels.View.channels channelsAddress model.channels channel
+          , Channels.View.player channelsAddress channel
           , Receivers.View.receivers receiversAddress model.receivers channel
           , libraryToggleView address model channel
           , library
@@ -106,6 +93,3 @@ libraryToggleView address model channel =
     div
       [ class "root--mode" ]
       buttons
-
-
-
