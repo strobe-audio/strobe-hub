@@ -18,6 +18,7 @@
   animation-fill-mode: forwards;
   animation-timing-function: linear;
 
+  /* transition: bottom 1s; */
   /* animation-name: slideUp; */
 }
 
@@ -40,9 +41,8 @@
 }
 
 .channels__select-channel {
-  /* bottom: 0; */
-  /* transition: bottom 1s; */
-  animation-name: slideDown;
+  bottom: 0;
+  /* animation-name: slideDown; */
   background-color: rgba(0, 0, 0, 0.95);
 }
 
@@ -91,7 +91,9 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
     top: 0;
     text-align: center;
     border-right: solid 1px rgba(0, 0, 0, 0.05);
+    color: rgba(255, 255, 255, 0.3);
   }
+  display: flex;
   position: relative;
   padding-left: calc($button-size + $padding);
   color: #fff;
@@ -109,6 +111,18 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   }
 }
 
+.channels-selector--channel__playing {
+  &:before {
+    color: rgba(255, 255, 255, 1);
+    content: "\f144";
+  }
+}
+.channels-selector--channel--name {
+  flex: 1;
+}
+.channels-selector--channel--duration {
+  padding: 0 $padding;
+}
 .channels-selector--channel__active {
 	color: rgba(255, 255, 255, 0.3);
 	font-weight: 600;
@@ -117,6 +131,11 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 	}
 }
 
+.channels-selector--channel__active  .channels-selector--channel__playing {
+    &:before {
+      color: rgba(255, 255, 255, 1);
+    }
+}
 
 .channel-selector--add {
   box-sizing: border-box;

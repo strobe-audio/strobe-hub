@@ -15,6 +15,7 @@ import Volume.View
 import Library.View
 import Input
 import Input.View
+import Source.View
 
 
 orderedChannels : List Channel.Model -> List Channel.Model
@@ -50,16 +51,18 @@ channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Chann
 channelSelectorPanel address model activeChannel =
   let
     channelChoice channel =
-      case channel.id == activeChannel.id of
-        False ->
-          div
-            [ class "channels-selector--channel", onClick address (Channels.Choose channel) ]
-            [ text channel.name ]
-
-        True ->
-          div
-            [ class "channels-selector--channel channels-selector--channel__active" ]
-            [ text channel.name ]
+      div
+        [ classList
+            [ ( "channels-selector--channel", True )
+            , ( "channels-selector--channel__active", channel.id == activeChannel.id )
+            , ( "channels-selector--channel__playing", channel.playing )
+            ]
+        , onClick address (Channels.Choose channel)
+        ]
+        [ div [ class "channels-selector--channel--name" ] [ text channel.name ]
+        , div [ class "channels-selector--channel--duration" ] [ text (Source.View.durationString (Channel.playlistDuration channel)) ]
+        , div [ class "channels-selector--channel--receivers" ] [ text "" ]
+        ]
 
     -- unselectedChannels =
     --   List.filter (\channel -> channel.id /= activeChannel.id) model.channels
