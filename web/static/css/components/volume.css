@@ -33,6 +33,8 @@ $volume-height: $button-size;
   line-height: $volume-height;
   position: relative;
   padding: 0 $padding;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .volume-level {
   height: $volume-height;
@@ -52,8 +54,8 @@ $volume-height: $button-size;
   z-index: 10;
   height: $volume-height;
 	cursor: pointer;
-  overflow: hidden;
   white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
   /* disable mouse events */
 }
