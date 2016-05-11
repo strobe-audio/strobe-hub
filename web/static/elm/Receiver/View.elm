@@ -41,9 +41,9 @@ detached address receiver channel =
     [ classList (receiverClasses receiver False)
     , onClick address (Receiver.Attach channel.id)
     ]
-    [ div [ class "receiver--state" ] []
+    [ div [ class "receiver--state receiver--state__detached" ] []
     , div [ class "receiver--name" ] [ text receiver.name ]
-    , div [ class "receiver--action receiver--action__attach" ] []
+    , div [ class "receiver--action" ] []
     ]
 
 

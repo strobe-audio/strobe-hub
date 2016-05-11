@@ -53,7 +53,7 @@ update action model =
         "receiver_added" ->
           let
             ( model', effect ) =
-              update (Receivers.Receiver receiverId (Receiver.Attached channelId)) model
+              update (Receivers.Receiver receiverId (Receiver.Online channelId)) model
 
             allAttachedToChannel =
               List.isEmpty (detachedReceivers model' { id = channelId })
@@ -70,6 +70,13 @@ update action model =
           let
             ( model', effect ) =
               update (Receivers.Receiver receiverId Receiver.Offline) model
+          in
+            ( model', effect )
+
+        "reattach_receiver" ->
+          let
+            ( model', effect ) =
+              update (Receivers.Receiver receiverId (Receiver.Attached channelId)) model
           in
             ( model', effect )
 

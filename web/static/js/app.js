@@ -90,6 +90,11 @@ channel.on('receiver_added', payload => {
   elmApp.ports.receiverStatus.send(['receiver_added', payload])
 })
 
+channel.on('reattach_receiver', payload => {
+  console.log('reattach_receiver', payload)
+  elmApp.ports.receiverStatus.send(['reattach_receiver', payload])
+})
+
 channel.on('channel_play_pause', payload => {
   console.log('channel_play_pause', payload)
   elmApp.ports.channelStatus.send(['channel_play_pause', payload])
