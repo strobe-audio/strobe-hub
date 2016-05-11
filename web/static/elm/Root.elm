@@ -12,17 +12,8 @@ import Input
 
 type Action
   = InitialState BroadcasterState
-    -- | ModifyReceiver ID.Receiver Receiver.Action
-    -- | ReceiverStatus ( String, ReceiverStatusEvent )
-    -- | ChannelStatus (String, ChannelStatusEvent)
-    -- | UpdateReceiverVolume Receiver Float
-    -- | UpdateChannelVolume Channel Float
-    -- | TogglePlayPause (Channel, Bool)
   | VolumeChange VolumeChangeEvent
   | NewRendition Rendition.Model
-    -- | PlaylistSkip PlaylistEntry
-    -- | ShowAddReceiver ( Channel, Bool )
-    -- | AttachReceiver Channel Receiver
   | LibraryRegistration Library.Node
   | Library Library.Action
   | SetListMode ChannelListMode

@@ -68,32 +68,6 @@ update action model =
       in
         ( { model | receivers = receiversModel }, Effects.map Root.Receivers effect )
 
-    -- Root.ReceiverStatus ( eventType, event ) ->
-    --   case eventType of
-    --     "receiver_added" ->
-    --       update (Root.Receivers (Receivers.Status event.receiverId event.channelId)) model
-    --
-    --     "receiver_removed" ->
-    --       update (Root.Receivers (Receivers.Status eventType event.receiverId event.channelId)) model
-    --
-    --     _ ->
-    --       ( model, Effects.none )
-    -- Root.ModifyReceiver receiverId receiverAction ->
-    --   let
-    --     updateReceiver receiver =
-    --       if receiver.id == receiverId then
-    --         let
-    --           ( updatedReceiver, effect ) =
-    --             (Receiver.State.update receiverAction receiver)
-    --         in
-    --           ( updatedReceiver, Effects.map (Root.ModifyReceiver receiver.id) effect )
-    --       else
-    --         ( receiver, Effects.none )
-    --
-    --     ( receivers, effects ) =
-    --       (List.map updateReceiver model.receivers) |> List.unzip
-    --   in
-    --     ( { model | receivers = receivers }, (Effects.batch effects) )
     Root.Channels channelsAction ->
       let
         ( channelsModel, effect ) =
