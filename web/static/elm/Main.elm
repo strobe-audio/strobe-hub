@@ -156,9 +156,11 @@ port playPauseChanges =
 port channelNameChanges : Signal ( ID.Channel, String )
 port channelNameChanges =
   let
-      mailbox = Channel.Signals.rename
+    mailbox =
+      Channel.Signals.rename
   in
-      mailbox.signal
+    mailbox.signal
+
 
 port playlistSkipRequests : Signal ( String, String )
 port playlistSkipRequests =
@@ -216,10 +218,10 @@ channelAdditionActions =
     Signal.map translate channelAdditions
 
 
-port channelRenames : Signal (ID.Channel, String)
+port channelRenames : Signal ( ID.Channel, String )
 channelRenameActions =
   let
-    translate (channelId, name) =
+    translate ( channelId, name ) =
       Root.Channels ((Channels.Modify channelId) (Channel.Renamed name))
   in
     Signal.map translate channelRenames

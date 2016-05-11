@@ -144,9 +144,11 @@ update action channel =
 
     Channel.ShowEditName state ->
       let
-          editNameInput = case state of
+        editNameInput =
+          case state of
             True ->
               Input.State.withValue channel.editNameInput channel.name
+
             False ->
               Input.State.clear channel.editNameInput
       in
@@ -154,19 +156,22 @@ update action channel =
 
     Channel.EditName inputAction ->
       let
-        (input, effect) = Input.State.update inputAction channel.editNameInput
+        ( input, effect ) =
+          Input.State.update inputAction channel.editNameInput
       in
-          ( { channel | editNameInput = input }, Effects.map Channel.EditName effect )
+        ( { channel | editNameInput = input }, Effects.map Channel.EditName effect )
 
     Channel.Rename name ->
       let
-         channel' = { channel | name = name, editName = False }
+        channel' =
+          { channel | name = name, editName = False }
       in
         ( channel', Channel.Effects.rename channel' )
 
     Channel.Renamed name ->
       let
-         channel' = { channel | name = name, originalName = name }
+        channel' =
+          { channel | name = name, originalName = name }
       in
         ( channel', Effects.none )
 

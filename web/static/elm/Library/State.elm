@@ -26,16 +26,16 @@ update action model maybeChannelId =
 
     Library.ActionComplete ->
       let
-          _ = Debug.log "action complete" model.currentRequest
+        _ =
+          Debug.log "action complete" model.currentRequest
       in
         ( { model | currentRequest = Nothing }, Effects.none )
 
     Library.ExecuteAction a ->
       case maybeChannelId of
         Just channelId ->
-          (
-            { model | currentRequest = Just a }
-            , Effects.batch
+          ( { model | currentRequest = Just a }
+          , Effects.batch
               [ (Library.Effects.sendAction channelId a)
               , (Library.Effects.requestComplete (300 * millisecond))
               ]
@@ -46,8 +46,11 @@ update action model maybeChannelId =
 
     Library.Response folder ->
       let
-          _ = Debug.log "current action" model.currentRequest
-          model' = pushLevel model folder
+        _ =
+          Debug.log "current action" model.currentRequest
+
+        model' =
+          pushLevel model folder
       in
         ( { model' | currentRequest = Nothing }, Effects.none )
 

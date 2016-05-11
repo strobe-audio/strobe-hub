@@ -52,13 +52,15 @@ playlist address channel =
     playlist =
       Maybe.withDefault [] (List.tail channel.playlist)
 
-    panel = case List.length playlist of
-      0 ->
-        div [ class "playlist__empty" ] [ text "Playlist empty" ]
-      _ ->
-        div
-          [ class "block-group playlist" ]
-          (List.map entry playlist)
+    panel =
+      case List.length playlist of
+        0 ->
+          div [ class "playlist__empty" ] [ text "Playlist empty" ]
+
+        _ ->
+          div
+            [ class "block-group playlist" ]
+            (List.map entry playlist)
   in
     div
       [ class "channel--playlist" ]
