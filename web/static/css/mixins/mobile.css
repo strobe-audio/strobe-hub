@@ -1,0 +1,5 @@
+@define-mixin overflowScroll {
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
+

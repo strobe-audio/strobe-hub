@@ -59,19 +59,22 @@ playlist : Signal.Address Rendition.Action -> Rendition.Model -> Html
 playlist address rendition =
   div
     [ key rendition.id
-    , class "block playlist-entry"
+    , class "block playlist--entry"
     , onDoubleClick address Rendition.SkipTo
     ]
     [ div
-        [ class "playlist-entry--title" ]
-        [ strong [] [ text (renditionTitle rendition) ] ]
-    , div
-        [ class "playlist-entry--album" ]
-        [ strong
-            []
-            [ text (renditionPerformer rendition) ]
-        , text ", "
-        , text (renditionAlbum rendition)
+        [ class "playlist--entry--inner" ]
+        [ div
+            [ class "playlist--entry--title" ]
+            [ strong [] [ text (renditionTitle rendition) ] ]
+        , div
+            [ class "playlist--entry--album" ]
+            [ strong
+                []
+                [ text (renditionPerformer rendition) ]
+            , text ", "
+            , text (renditionAlbum rendition)
+            ]
         ]
     ]
 

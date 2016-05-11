@@ -38,13 +38,17 @@ channelsBar address channels receivers activeChannel =
 
     volumeAddress =
       Signal.forwardTo channelAddress Channel.Volume
+
+    options = { defaultOptions | preventDefault = True }
+    onTouch =
+      onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.ToggleSelector))
   in
     div
       [ classList [ ( "channels", True ), ( "channels__select-channel", channels.showChannelSwitcher ) ] ]
       [ div
           [ class "channels--bar" ]
           [ div
-              [ class "channels--channel-select", onClick address (Channels.ToggleSelector) ]
+              [ class "channels--channel-select", onClick address (Channels.ToggleSelector), onTouch ]
               [ i [ class "fa fa-bullseye" ] [] ]
           , div
               [ class "channels--channel-volume" ]
@@ -95,6 +99,12 @@ channelChoice address receivers activeChannel channel =
 
     onClickChoose =
       onClick address (Channels.Choose channel)
+
+    -- options = { defaultOptions | preventDefault = True }
+
+    -- this kinda works, but it triggered even after a scroll...
+    -- onTouchChoose =
+    --   onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.Choose channel))
 
     channelAddress =
       Signal.forwardTo address (Channels.Modify channel.id)

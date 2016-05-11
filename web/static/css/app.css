@@ -3,6 +3,8 @@
 @import "mixins/headers.css";
 @import "mixins/pocketgrid.css";
 @import "mixins/fa.css";
+@import "mixins/mobile.css";
+
 @import "modules/font-awesome.css";
 @import "modules/pocketgrid.css";
 @import "modules/layout.css";
@@ -16,6 +18,8 @@
 
 @import "components/root.css";
 @import "components/channels.css";
+@import "components/channel.css";
+@import "components/playlist.css";
 @import "components/volume.css";
 @import "components/input.css";
 @import "components/rendition.css";
@@ -49,45 +53,4 @@ body {
   }
 }
 
-
-/* legacy styles */
-.volume-control {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
-.volume-control input[type="range"] {
-  display: flex;
-  flex: 1;
-  display: inline-block;
-  margin: 0 5px;
-  position: relative;
-  top: 1px;
-}
-
-.volume-control i.volume {
-  /* display: flex; */
-  flex: 0;
-  /* justify-content: center; */
-}
-
-.receiver {
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.receiver--offline {
-  opacity: 0.5;
-}
-.playlist-entry--album {
-  color: #999;
-}
-
-.playlist-entry-progress--inner {
-  /* override semantic ui's strange default */
-  min-width: 0 !important;
-  transition: none;
-  -webkit-transition: none !important;
-}
 

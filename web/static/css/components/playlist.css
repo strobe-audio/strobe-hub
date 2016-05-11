@@ -1,0 +1,27 @@
+
+.playlist__empty {
+  text-align: center;
+  padding-top: calc(3 * $padding);
+  color: #bbb;
+}
+
+.playlist--entry {
+  height: $button-size;
+  padding: 0 $padding;
+  border-bottom: solid 1px #ddd;
+  cursor: pointer;
+  &:hover {
+    color: red;
+  }
+}
+.playlist--entry--inner {
+  position: relative;
+  top: 50%;
+  transform: translateY(-50%);
+  max-height: calc($button-size - $padding);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.playlist--entry--album {
+  color: #999;
+}

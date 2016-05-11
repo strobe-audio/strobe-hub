@@ -71,9 +71,9 @@
 }
 
 .channels-selector--list {
+  @mixin overflowScroll;
   flex: 1;
 	height: 0;
-	overflow-y: auto;
   display: flex;
   flex-direction: column;
 }
