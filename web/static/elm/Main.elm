@@ -5,20 +5,21 @@ import Html exposing (Html)
 import Task exposing (Task)
 import Window
 import StartApp
-import Root
-import Root.State
-import Root.View
-import Rendition
-import Rendition.Signals
-import Library
-import Library.Signals
 import Channel
 import Channel.Signals
 import Channels
 import Channels.Signals
-import Volume.Signals
+import ID
+import Library
+import Library.Signals
 import Receiver.Signals
 import Receivers
+import Rendition
+import Rendition.Signals
+import Root
+import Root.State
+import Root.View
+import Volume.Signals
 
 
 app : StartApp.App Root.Model
@@ -40,6 +41,7 @@ app =
         , viewportWidth
         , windowStartupActions
         , channelAdditionActions
+        , channelRenameActions
         ]
     }
 
@@ -151,6 +153,13 @@ port playPauseChanges =
     mailbox.signal
 
 
+port channelNameChanges : Signal ( ID.Channel, String )
+port channelNameChanges =
+  let
+      mailbox = Channel.Signals.rename
+  in
+      mailbox.signal
+
 port playlistSkipRequests : Signal ( String, String )
 port playlistSkipRequests =
   let
@@ -205,3 +214,12 @@ channelAdditionActions =
       Root.Channels (Channels.Added state)
   in
     Signal.map translate channelAdditions
+
+
+port channelRenames : Signal (ID.Channel, String)
+channelRenameActions =
+  let
+    translate (channelId, name) =
+      Root.Channels ((Channels.Modify channelId) (Channel.Renamed name))
+  in
+    Signal.map translate channelRenames

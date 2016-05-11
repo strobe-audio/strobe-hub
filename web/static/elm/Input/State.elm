@@ -9,9 +9,27 @@ blank : Input.Model
 blank =
   { originalValue = ""
   , value = ""
-  , validator = (\s -> s /= "")
+  , validator = notBlankValidator
   }
 
+
+withValue : Input.Model -> String -> Input.Model
+withValue input value =
+  { input
+  | originalValue = value
+  , value = value
+  }
+
+clear : Input.Model -> Input.Model
+clear input =
+  { input
+  | originalValue = ""
+  , value = ""
+  }
+
+notBlankValidator : String -> Bool
+notBlankValidator value =
+  value /= ""
 
 update : Input.Action -> Input.Model -> ( Input.Model, Effects Input.Action )
 update action model =

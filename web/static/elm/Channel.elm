@@ -4,16 +4,20 @@ import Receiver
 import Rendition
 import ID
 import Maybe.Extra
+import Input
 
 
 type alias Model =
   { id : ID.Channel
   , name : String
+  , originalName : String
   , position : Int
   , volume : Float
   , playing : Bool
   , playlist : List Rendition.Model
   , showAddReceiver : Bool
+  , editName : Bool
+  , editNameInput : Input.Model
   }
 
 
@@ -27,6 +31,10 @@ type Action
   | RenditionProgress Rendition.ProgressEvent
   | RenditionChange Rendition.ChangeEvent
   | AddRendition Rendition.Model
+  | ShowEditName Bool
+  | EditName Input.Action
+  | Rename String
+  | Renamed String
   | NoOp
 
 

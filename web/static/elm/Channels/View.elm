@@ -60,7 +60,7 @@ channelSelectorPanel address channels receivers activeChannel =
     -- unselectedChannels =
     --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
     orderedChannels =
-      List.sortBy (\c -> c.name) channels.channels
+      List.sortBy (\c -> c.originalName) channels.channels
   in
     case channels.showChannelSwitcher of
       False ->
@@ -92,24 +92,61 @@ channelChoice address receivers activeChannel channel =
 
         time ->
           Source.View.durationString time
+
+    onClickChoose =
+      onClick address (Channels.Choose channel)
+
+    channelAddress =
+      Signal.forwardTo address (Channels.Modify channel.id)
+
+    editNameInput =
+      case channel.editName of
+        False ->
+          div [] []
+
+        True ->
+          let
+            context =
+              { address = Signal.forwardTo channelAddress Channel.EditName
+              , cancelAddress = Signal.forwardTo channelAddress (always (Channel.ShowEditName False))
+              , submitAddress = Signal.forwardTo channelAddress Channel.Rename
+              }
+          in
+            Input.View.inputSubmitCancel context channel.editNameInput
   in
     div
       [ classList
           [ ( "channels-selector--channel", True )
           , ( "channels-selector--channel__active", channel.id == activeChannel.id )
           , ( "channels-selector--channel__playing", channel.playing )
+          , ( "channels-selector--channel__edit", channel.editName )
           ]
-      , onClick address (Channels.Choose channel)
       ]
-      [ div [ class "channels-selector--channel--name" ] [ text channel.name ]
-      , div [ class "channels-selector--channel--duration duration" ] [ text duration ]
-      , div
+      [ div
           [ classList
-              [ ( "channels-selector--channel--receivers", True )
-              , ( "channels-selector--channel--receivers__empty", attachedReceivers == 0 )
+              [ ( "channels-selector--display", True )
+              , ( "channels-selector--display__inactive", channel.editName )
               ]
           ]
-          [ text (toString attachedReceivers) ]
+          [ div [ class "channels-selector--channel--name", onClickChoose ] [ text channel.name ]
+          , div [ class "channels-selector--channel--duration duration", onClickChoose ] [ text duration ]
+          , div
+              [ classList
+                  [ ( "channels-selector--channel--receivers", True )
+                  , ( "channels-selector--channel--receivers__empty", attachedReceivers == 0 )
+                  ]
+              , onClickChoose
+              ]
+              [ text (toString attachedReceivers) ]
+          , div [ class "channels-selector--channel--edit", onClick address (Channels.Modify channel.id (Channel.ShowEditName True)) ] []
+          ]
+      , div
+          [ classList
+              [ ( "channels-selector--edit", True )
+              , ( "channels-selector--edit__active", channel.editName )
+              ]
+          ]
+          [ editNameInput ]
       ]
 
 

@@ -21,3 +21,13 @@ playPause channel =
 volume : Channel.Model -> Effects Channel.Action
 volume channel =
   Volume.Effects.channelVolumeChange channel |> Effects.map (always Channel.NoOp)
+
+rename : Channel.Model -> Effects Channel.Action
+rename channel =
+  let
+      mailbox =
+        Channel.Signals.rename
+  in
+      Signal.send mailbox.address (channel.id, channel.name)
+      |> Effects.task
+      |> Effects.map (always Channel.NoOp)

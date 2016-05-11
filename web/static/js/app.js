@@ -45,6 +45,7 @@ let libraryRegistration = { id: "", title: "", icon: "", action: "" }
 let libraryResponse = { libraryId: "", folder}
 let windowWidth = window.innerWidth
 let channelAdditions = { id: "", name: "", position: 0, volume: 0.0, playing: false }
+let channelRenames = ["", ""]
 
 let portValues = {
   broadcasterState,
@@ -58,6 +59,7 @@ let portValues = {
   libraryResponse,
   windowWidth,
   channelAdditions,
+  channelRenames,
 }
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
@@ -119,6 +121,11 @@ channel.on('channel_added', payload => {
   elmApp.ports.channelAdditions.send(payload)
 })
 
+channel.on('channel_rename', payload => {
+  console.log('channel_rename', payload)
+  elmApp.ports.channelRenames.send([payload.channelId, payload.name])
+})
+
 channel.join()
 .receive('ok', resp => { console.log('joined!', resp); })
 .receive('error', resp => { console.error('unable to join', resp); })
@@ -134,6 +141,11 @@ elmApp.ports.volumeChangeRequests.subscribe(event => {
 
 elmApp.ports.playPauseChanges.subscribe(event => {
   channel.push("play_pause", event)
+  .receive("error", payload => console.log(payload.message))
+})
+
+elmApp.ports.channelNameChanges.subscribe(event => {
+  channel.push("rename_channel", event)
   .receive("error", payload => console.log(payload.message))
 })
 

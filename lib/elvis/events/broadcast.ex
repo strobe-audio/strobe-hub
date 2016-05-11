@@ -36,6 +36,11 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:channel_rename, channel_id, name}, state) do
+    broadcast!("channel_rename", %{channelId: channel_id, name: name})
+    {:ok, state}
+  end
+
   def handle_event({:sources_skipped, channel_id, source_ids}, state) do
     broadcast!("source_changed", %{channelId: channel_id, removeSourceIds: source_ids})
     {:ok, state}

@@ -9,6 +9,7 @@ import Receiver
 import Receiver.State
 import Rendition
 import Rendition.State
+import Input.State
 
 
 forChannel : String -> List { a | channelId : String } -> List { a | channelId : String }
@@ -32,11 +33,14 @@ newChannel : Channel.State -> Channel.Model
 newChannel channelState =
   { id = channelState.id
   , name = channelState.name
+  , originalName = channelState.name
   , position = channelState.position
   , volume = channelState.volume
   , playing = channelState.playing
   , playlist = []
   , showAddReceiver = False
+  , editName = False
+  , editNameInput = Input.State.blank
   }
 
 
@@ -137,6 +141,34 @@ update action channel =
           List.concat [ before, after ]
       in
         ( { channel | playlist = playlist }, Effects.none )
+
+    Channel.ShowEditName state ->
+      let
+          editNameInput = case state of
+            True ->
+              Input.State.withValue channel.editNameInput channel.name
+            False ->
+              Input.State.clear channel.editNameInput
+      in
+        ( { channel | editName = state, editNameInput = editNameInput }, Effects.none )
+
+    Channel.EditName inputAction ->
+      let
+        (input, effect) = Input.State.update inputAction channel.editNameInput
+      in
+          ( { channel | editNameInput = input }, Effects.map Channel.EditName effect )
+
+    Channel.Rename name ->
+      let
+         channel' = { channel | name = name, editName = False }
+      in
+        ( channel', Channel.Effects.rename channel' )
+
+    Channel.Renamed name ->
+      let
+         channel' = { channel | name = name, originalName = name }
+      in
+        ( channel', Effects.none )
 
 
 channelPlayPause : Channel.Model -> Channel.Model
