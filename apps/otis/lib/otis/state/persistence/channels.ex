@@ -28,6 +28,12 @@ defmodule Otis.State.Persistence.Channels do
     end
     {:ok, state}
   end
+  def handle_event({:channel_rename, id, name}, state) do
+    Repo.transaction fn ->
+      id |> Channel.find |> rename(id, name)
+    end
+    {:ok, state}
+  end
   def handle_event(_evt, state) do
     {:ok, state}
   end
@@ -54,5 +60,12 @@ defmodule Otis.State.Persistence.Channels do
   end
   defp volume_change(channel, _id, volume) do
     Channel.volume(channel, volume)
+  end
+
+  defp rename(nil, id, _name) do
+    Logger.warn "Rename of unknown channel #{ id }"
+  end
+  defp rename(channel, _id, name) do
+    Channel.rename(channel, name)
   end
 end

@@ -84,4 +84,17 @@ defmodule Otis.Persistence.ChannelsTest do
 
     assert channel.volume == 0.33
   end
+
+  test "persists name changes", _context do
+    id = Otis.uuid
+    name = "A new channel"
+    {:ok, _channel} = Otis.Channels.create(id, name)
+    assert_receive {:channel_added, ^id, %{name: ^name}}, 200
+    Otis.Channels.rename(id, "Believe in whales")
+    assert_receive {:channel_rename, ^id, "Believe in whales"}
+
+    channel = Otis.State.Channel.find(id)
+
+    assert channel.name == "Believe in whales"
+  end
 end

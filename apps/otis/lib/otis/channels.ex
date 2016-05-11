@@ -113,6 +113,10 @@ defmodule Otis.Channels do
     Otis.Channel.skip(find!(registry, id), source_id)
   end
 
+  def rename(id, name) when is_binary(id) do
+    Otis.State.Events.notify({:channel_rename, id, name})
+  end
+
   defp add(action, registry, id, config) do
     {:ok, channel} = Otis.Channels.Supervisor.start_channel(id, config)
     add(action, registry, channel, id, config)

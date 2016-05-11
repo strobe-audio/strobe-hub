@@ -66,6 +66,10 @@ defmodule Otis.State.Channel do
   def volume(channel, volume) do
     Changeset.change(channel, volume: volume) |> Repo.update!
   end
+
+  def rename(channel, name) do
+    Changeset.change(channel, name: name) |> Repo.update!
+  end
 #
 #   def create(name)
 #
