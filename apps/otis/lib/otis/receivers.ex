@@ -34,9 +34,14 @@ defmodule Otis.Receivers do
   @doc "A useful wrapper command to set the volume for a given receiver id"
   def volume(id, volume)
   when is_binary(id) do
-    {:ok, receiver} = receiver(id)
-    Otis.Receiver.volume receiver, volume
-    {:ok, receiver}
+    volume = Otis.sanitize_volume(volume)
+    case receiver(id) do
+      {:ok, receiver} = result ->
+        Otis.Receiver.volume receiver, volume
+      result ->
+        Otis.State.Events.notify({:receiver_volume_change, id, volume})
+    end
+    {:ok, volume}
   end
 
   def attach(receiver_id, channel_id)
