@@ -39,7 +39,9 @@ channelsBar address channels receivers activeChannel =
     volumeAddress =
       Signal.forwardTo channelAddress Channel.Volume
 
-    options = { defaultOptions | preventDefault = True }
+    options =
+      { defaultOptions | preventDefault = True }
+
     onTouch =
       onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.ToggleSelector))
   in
@@ -100,12 +102,19 @@ channelChoice address receivers activeChannel channel =
     onClickChoose =
       onClick address (Channels.Choose channel)
 
-    -- options = { defaultOptions | preventDefault = True }
+    onClickEdit =
+      onWithOptions
+        "click"
+        { defaultOptions | stopPropagation = True }
+        Json.value
+        (\_ ->
+          Signal.message address (Channels.Modify channel.id (Channel.ShowEditName True))
+        )
 
+    -- options = { defaultOptions | preventDefault = True }
     -- this kinda works, but it triggered even after a scroll...
     -- onTouchChoose =
     --   onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.Choose channel))
-
     channelAddress =
       Signal.forwardTo address (Channels.Modify channel.id)
 
@@ -137,6 +146,7 @@ channelChoice address receivers activeChannel channel =
               [ ( "channels-selector--display", True )
               , ( "channels-selector--display__inactive", channel.editName )
               ]
+          , onClickChoose
           ]
           [ div [ class "channels-selector--channel--name", onClickChoose ] [ text channel.name ]
           , div [ class "channels-selector--channel--duration duration", onClickChoose ] [ text duration ]
@@ -148,7 +158,8 @@ channelChoice address receivers activeChannel channel =
               , onClickChoose
               ]
               [ text (toString attachedReceivers) ]
-          , div [ class "channels-selector--channel--edit", onClick address (Channels.Modify channel.id (Channel.ShowEditName True)) ] []
+          , div [ class "channels-selector--channel--edit", onClickEdit ] []
+            -- , div [ class "channels-selector--channel--edit", onClick address (Channels.Modify channel.id (Channel.ShowEditName True)) ] []
           ]
       , div
           [ classList
