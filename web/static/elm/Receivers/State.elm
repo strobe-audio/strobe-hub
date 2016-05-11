@@ -66,6 +66,13 @@ update action model =
           in
             ( updatedModel, effect )
 
+        "receiver_removed" ->
+          let
+            ( model', effect ) =
+              update (Receivers.Receiver receiverId Receiver.Offline) model
+          in
+            ( model', effect )
+
         _ ->
           ( model, Effects.none )
 
