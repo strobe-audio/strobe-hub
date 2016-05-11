@@ -1,3 +1,6 @@
+.playlist {
+  padding-bottom: 50vh;
+}
 
 .playlist__empty {
   text-align: center;

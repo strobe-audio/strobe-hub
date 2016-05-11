@@ -10,7 +10,9 @@ import List.Extra
 
 root : Signal.Address Library.Action -> Library.Model -> Html
 root address model =
-  folder address model (Library.State.currentLevel model)
+  div
+    [ class "library" ]
+    [ folder address model (Library.State.currentLevel model) ]
 
 
 node : Signal.Address Library.Action -> Library.Model -> Library.Folder -> Library.Node -> Html

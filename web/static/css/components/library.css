@@ -1,3 +1,6 @@
+.library {
+  padding-bottom: 50vh;
+}
 .library--breadcrumb {
   min-height: $button-size;
   background: rgba(0, 0, 0, 0.5);
