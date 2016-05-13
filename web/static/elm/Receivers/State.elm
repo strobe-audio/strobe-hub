@@ -83,6 +83,9 @@ update action model =
         _ ->
           ( model, Effects.none )
 
+    Receivers.VolumeChanged ( receiverId, volume ) ->
+      update (Receivers.Receiver receiverId (Receiver.VolumeChanged volume)) model
+
     _ ->
       ( model, Effects.none )
 
