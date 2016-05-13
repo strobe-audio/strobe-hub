@@ -1,6 +1,6 @@
 .rendition {
   /* flex: 0; */
-  background-color: rgba(255, 0, 0, 0.5);;
+  /* background-color: rgba(255, 0, 0, 0.5);; */
   position: relative;
 }
 
@@ -43,15 +43,21 @@
 }
 .rendition--title {
   @mixin h1;
+  @mixin fa-btn "\f04b";
   color: #fff;
   position: relative;
   /* padding: $padding 0; */
   &:before {
-    @mixin fa;
-    content: "\f04b"; /* fa-play */
+    /* @mixin fa; */
+		/* fa-play */
+    /* content: "\f04b"; */
+    /* width: calc($button-size / 2); */
+    /* text-align: left; */
+    /* color: rgba(255, 255, 255, 1); */
+    display: inline-block;
+    padding-right: calc($padding/2);
+    line-height: normal;
     width: calc($button-size / 2);
-    text-align: left;
-    color: rgba(255, 255, 255, 1);
   }
 }
 
@@ -62,8 +68,9 @@
 }
 .rendition--title__playing {
   &:before {
-    @mixin fa;
-    content: "\f04c"; /* fa-pause */
+    /* @mixin fa; */
+    /*    fa-pause */
+    content: "\f04c";
   }
 }
 
@@ -102,3 +109,36 @@
   line-height: 1.9;
 }
 
+
+/* ----------- */
+
+.rendition--control {
+  display: flex;
+  flex: 1;
+  cursor: pointer;
+}
+.rendition--play-pause-btn {
+  /* @mixin fa-btn "\f04b"; */
+  flex: 0 0 $button-size;
+  height: $button-size;
+  background-size: cover;
+  /* &:before { */
+  /*   border-radius: 40px; */
+  /*   background: rgba(0, 0, 0, 0.5); */
+  /*   display: block; */
+  /*   width: calc($button-size - 20); */
+  /*   height: calc($button-size - 20); */
+  /*   margin: 10px; */
+  /*   line-height: 32px; */
+  /* } */
+}
+.rendition__playing {
+  .rendition--play-pause-btn:before {
+    content: "\f04c"; /* fa-pause */
+  }
+}
+
+.rendition--details {
+  padding-left: $padding;
+  white-space: nowrap;
+}

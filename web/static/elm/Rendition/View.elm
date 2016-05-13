@@ -7,6 +7,33 @@ import Rendition
 import Source.View
 
 
+control : Signal.Address () -> Rendition.Model -> Bool -> Html
+control playPauseAddress rendition playing =
+  div
+    [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ]  ]
+    [ div
+        [ class "rendition--control", onClick playPauseAddress () ]
+        [ div
+            [ class "rendition--play-pause-btn", style [("backgroundImage", "url(/images/cover.jpg)")] ]
+            []
+        , div
+            [ class "rendition--details" ]
+            [ div
+                [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
+                [ text (renditionTitle rendition)
+                ]
+            , div
+                [ class "rendition--meta" ]
+                [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
+                , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
+                , div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration rendition.source) ++ ")") ]
+                ]
+            ]
+        , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
+        ]
+    ]
+
+
 playing : Signal.Address () -> Rendition.Model -> Bool -> Html
 playing playPauseAddress rendition playing =
   div
@@ -14,23 +41,23 @@ playing playPauseAddress rendition playing =
     [ div
         [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
         [ img [ src "/images/cover.jpg", alt "", onClick playPauseAddress () ] []
-        , div
-            [ class "rendition--song", onClick playPauseAddress () ]
-            [ div
-                [ class "rendition--details" ]
-                [ div
-                    [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
-                    [ text (renditionTitle rendition)
-                    ]
-                , div
-                    [ class "rendition--meta" ]
-                    [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
-                    , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
-                    , div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration rendition.source) ++ ")") ]
-                    ]
-                ]
-            , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
-            ]
+        -- , div
+        --     [ class "rendition--song", onClick playPauseAddress () ]
+        --     [ div
+        --         [ class "rendition--details" ]
+        --         [ div
+        --             [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
+        --             [ text (renditionTitle rendition)
+        --             ]
+        --         , div
+        --             [ class "rendition--meta" ]
+        --             [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
+        --             , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
+        --             , div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration rendition.source) ++ ")") ]
+        --             ]
+        --         ]
+        --     , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
+        --     ]
         ]
     ]
 

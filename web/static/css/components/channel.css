@@ -1,2 +1,12 @@
 .channel--playlist {
 }
+.channel--rendition {
+  flex: 1;
+}
+.channel--name {
+  &:before {
+    @mixin fa;
+    content: $channel-icon;
+    padding-right: calc($padding/2);
+  }
+}

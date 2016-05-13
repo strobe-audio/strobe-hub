@@ -23,7 +23,7 @@ inputSubmitCancel context model =
           , on "input" targetValue (Signal.message context.address << Input.Update)
           , onKeyDown context.address (Input.Submit context) (Input.Cancel context)
           , autofocus True
-          , attribute "autocapitalize" "words"
+          , attribute "autocapitalize" model.autoCapitalize
           ]
           []
       , div

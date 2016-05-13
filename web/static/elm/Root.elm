@@ -8,6 +8,7 @@ import Receivers
 import Rendition
 import ID
 import Input
+import Json.Decode as Json
 
 
 type Action
@@ -20,6 +21,7 @@ type Action
   | Channels Channels.Action
   | Receivers Receivers.Action
   | Viewport Int
+  | Scroll Int
   | NoOp
 
 

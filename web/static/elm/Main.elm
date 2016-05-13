@@ -42,6 +42,7 @@ app =
         , windowStartupActions
         , channelAdditionActions
         , channelRenameActions
+        , scrollTopActions
         ]
     }
 
@@ -61,6 +62,11 @@ windowStartupActions : Signal Root.Action
 windowStartupActions =
   Signal.map Root.Viewport windowWidth
 
+
+port scrollTop : Signal Int
+scrollTopActions : Signal Root.Action
+scrollTopActions =
+  Signal.map Root.Scroll scrollTop
 
 port tasks : Signal (Task Never ())
 port tasks =

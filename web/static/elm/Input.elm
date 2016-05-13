@@ -5,6 +5,7 @@ type alias Model =
   { originalValue : String
   , value : String
   , validator : String -> Bool
+  , autoCapitalize : String
   }
 
 

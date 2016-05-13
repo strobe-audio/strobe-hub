@@ -46,7 +46,7 @@
 
 .mode-channel .volume-label:before {
   @mixin fa;
-  content: "\f140";
+  content: $channel-icon;
   padding-right: calc($padding/2);
 }
 
@@ -69,12 +69,12 @@
 .channel-selector--channel {
   /* &::before { */
   /*   @mixin fa; */
-  /*   content: "\f140"; */
+  /*   content: $channel-icon; */
   /*   padding-right: calc($padding/2); */
   /* } */
   &::before {
     @mixin fa;
-    content: "\f140";
+    content: $channel-icon;
     width: $button-size;
     height: $button-size;
     line-height: $button-size;

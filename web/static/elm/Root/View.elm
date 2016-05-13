@@ -7,11 +7,14 @@ import Debug
 import Root
 import Root.State
 import Channel
+import Channels
 import Channel.View
 import Channels.View
 import Library.View
 import Receivers.View
 import Source.View
+import Json.Decode as Json
+import Player.View
 
 
 root : Signal.Address Root.Action -> Root.Model -> Html
@@ -34,6 +37,9 @@ root address model =
         Channels.View.playlist (Signal.forwardTo address Root.Channels) model.channels
       else
         div [] []
+
+    overlayActive = Channels.overlayActive model.channels
+
   in
     case (Root.State.activeChannel model) of
       Nothing ->
@@ -41,10 +47,15 @@ root address model =
 
       Just channel ->
         div
-          [ class "root" ]
-          [ Channels.View.channels channelsAddress model.channels model.receivers
+          [ classList
+            [ ("root", True)
+            , ("root__obscured", overlayActive)
+            ]
+            {-, on "scroll" Json.value (Signal.message address << Root.Scroll) -}
+          ]
+          [ Channels.View.channels channelsAddress model.channels receiversAddress model.receivers
           , Channels.View.player channelsAddress channel
-          , Receivers.View.receivers receiversAddress model.receivers channel
+          -- , Receivers.View.receivers receiversAddress model.receivers channel
           , libraryToggleView address model channel
           , library
           , playlist
@@ -66,8 +77,8 @@ libraryToggleView address model channel =
           , onClick address (Root.SetListMode Root.PlaylistMode)
           ]
           -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
-          [ span [ class "root--mode--channel-name" ] [ text channel.name ]
-          , span [ class "root--mode--channel-duration" ] [ text duration ]
+          [ div [ class "root--mode--channel-name" ] [ text channel.name ]
+          , div [ class "root--mode--channel-duration" ] [ text duration ]
           ]
       ]
 

@@ -46,6 +46,7 @@ let libraryResponse = { libraryId: "", folder}
 let windowWidth = window.innerWidth
 let channelAdditions = { id: "", name: "", position: 0, volume: 0.0, playing: false }
 let channelRenames = ["", ""]
+let scrollTop = document.body.scrollTop
 
 let portValues = {
   broadcasterState,
@@ -60,6 +61,7 @@ let portValues = {
   windowWidth,
   channelAdditions,
   channelRenames,
+  scrollTop,
 }
 
 let elmApp = Elm.embed(Elm.Main, document.getElementById('elm-main'), portValues)
@@ -69,6 +71,10 @@ let socket = new Socket("/controller", {params: {}})
 socket.connect();
 
 let channel = socket.channel('controllers:browser', {})
+
+document.body.onscroll = function(e) {
+  // elmApp.ports.scrollTop.send(document.body.scrollTop)
+}
 
 channel.on('state', payload => {
   console.log('got startup', payload)

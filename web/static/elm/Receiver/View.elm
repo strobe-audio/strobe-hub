@@ -25,11 +25,11 @@ attached address receiver channel =
       (Signal.forwardTo address Receiver.Volume)
   in
     div
-      [ classList (receiverClasses receiver True) ]
+      [ id ("receiver-" ++ receiver.id), classList (receiverClasses receiver True) ]
       [ div [ class "receiver--state" ] []
       , div
           [ class "receiver--volume" ]
-          [ Volume.View.control volumeAddress receiver.volume receiver.name
+          [ Volume.View.control volumeAddress receiver.volume (text receiver.name)
           ]
       , div [ class "receiver--action" ] []
       ]

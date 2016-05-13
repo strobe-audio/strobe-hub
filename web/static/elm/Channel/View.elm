@@ -25,6 +25,28 @@ root address channel =
     playingSong playPauseAddress channel rendition
 
 
+player : Signal.Address Channel.Action -> Channel.Model -> Html
+player address channel =
+  let
+    maybeRendition =
+      List.head channel.playlist
+
+    playPauseAddress =
+      Signal.forwardTo address (always Channel.PlayPause)
+
+  in
+    case maybeRendition of
+      Nothing ->
+        div [] [ text "No song..." ]
+
+      Just rendition ->
+        div
+          [ class "channel--rendition" ]
+          [ (Rendition.View.control playPauseAddress rendition channel.playing)
+          , (Rendition.View.progress playPauseAddress rendition channel.playing)
+          ]
+
+
 playingSong : Signal.Address () -> Channel.Model -> Maybe Rendition.Model -> Html
 playingSong address channel maybeRendition =
   case maybeRendition of
@@ -35,7 +57,7 @@ playingSong address channel maybeRendition =
       div
         [ class "channel--rendition" ]
         [ (Rendition.View.playing address rendition channel.playing)
-        , (Rendition.View.progress address rendition channel.playing)
+        -- , (Rendition.View.progress address rendition channel.playing)
         ]
 
 

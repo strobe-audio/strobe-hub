@@ -1,13 +1,21 @@
 
+.root__obscured {
+  max-height: 100vh;
+  overflow: hidden;
+}
+
 .root--mode {
   display: flex;
+  flex-wrap: wrap;
   height: $button-size;
   align-items: stretch;
   background: rgba(0, 0, 0, 0.5);
+  max-width: 100vw;
 }
 
 .root--mode--choice {
   flex: 1;
+  max-width: 50%;
   display: flex;
   padding: 0 $padding;
   line-height: $button-size;
@@ -19,7 +27,7 @@
   }
   &:before {
     @mixin fa;
-    content: "\f140";
+    content: $channel-icon;
     padding-right: calc($padding/2);
     line-height: $button-size;
   }
@@ -42,7 +50,7 @@
 }
 .root--mode--playlist {
   &:before {
-    content: "\f140";
+    content: $channel-icon;
   }
 }
 .root--mode--playlist-label {
@@ -53,9 +61,14 @@
 }
 .root--mode--channel-name {
   flex: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
 }
 .root--mode--channel-duration {
   padding-left: calc($padding/2);
   font-size: 0.8em;
   color: rgba(0, 0, 0, 0.8);
+  display: block;
 }

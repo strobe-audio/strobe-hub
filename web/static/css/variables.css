@@ -12,6 +12,8 @@ $button-size: 50px;
 
 $mode-selector-height: $button-size;
 
+$channel-icon: "\f140";
+
 @custom-media --mobile (max-width: 800px);
 @custom-media --desktop (min-width: 801px);
 

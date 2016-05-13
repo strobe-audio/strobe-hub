@@ -113,6 +113,12 @@ update action model =
     Root.NewRendition rendition ->
       update (Root.Channels (Channels.AddRendition ( rendition.channelId, rendition ))) model
 
+    Root.Scroll value ->
+      -- let
+          -- _ = Debug.log "scroll" value
+      -- in
+        ( model, Effects.none )
+
 
 libraryVisible : Root.Model -> Bool
 libraryVisible model =

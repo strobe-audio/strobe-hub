@@ -11,6 +11,7 @@ import Channels
 import Channels.State
 import Receivers
 import Receivers.State
+import Receivers.View
 import Channel
 import Channel.View
 import Volume.View
@@ -20,53 +21,69 @@ import Input.View
 import Source.View
 
 
-channels : Signal.Address Channels.Action -> Channels.Model -> Receivers.Model -> Html
-channels address channels receivers =
+channels : Signal.Address Channels.Action -> Channels.Model -> Signal.Address Receivers.Action -> Receivers.Model -> Html
+channels address channels receiversAddress receivers =
   case Channels.State.activeChannel channels of
     Nothing ->
       div [] []
 
     Just activeChannel ->
-      channelsBar address channels receivers activeChannel
+      channelsBar address channels receiversAddress receivers activeChannel
 
 
-channelsBar : Signal.Address Channels.Action -> Channels.Model -> Receivers.Model -> Channel.Model -> Html
-channelsBar address channels receivers activeChannel =
+channelsBar : Signal.Address Channels.Action -> Channels.Model -> Signal.Address Receivers.Action -> Receivers.Model -> Channel.Model -> Html
+channelsBar address channels receiversAddress receivers activeChannel =
   let
+    channelAddress =
+      Signal.forwardTo address (Channels.Modify activeChannel.id)
+
+    options =
+      { defaultOptions | preventDefault = True }
+
+    -- onTouch =
+    --   onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.ToggleSelector))
+  in
+    div
+      [ classList [ ( "channels", True ), ( "channels__select-channel", channels.showChannelSwitcher ) ] ]
+      [ div
+          [ class "channels--bar" ]
+          [ (channelSettingsButton address)
+          , (currentChannelPlayer address activeChannel)
+          ]
+      , (channelSelectorPanel address channels receiversAddress receivers activeChannel)
+      ]
+
+
+channelSettingsButton : Signal.Address Channels.Action -> Html
+channelSettingsButton address =
+  div
+    [ class "channels--channel-select", onClick address (Channels.ToggleSelector) {- , onTouch -} ]
+    [ i [ class "fa fa-bullseye" ] [] ]
+
+
+currentChannelPlayer : Signal.Address Channels.Action -> Channel.Model -> Html
+currentChannelPlayer address channel =
+  let
+    playerAddress =
+      Signal.forwardTo address (Channels.Modify channel.id)
+  in
+    Channel.View.player playerAddress channel
+
+
+channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Signal.Address Receivers.Action -> Receivers.Model -> Channel.Model -> Html
+channelSelectorPanel address channels receiversAddress receivers activeChannel =
+  let
+    -- unselectedChannels =
+    --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
+    orderedChannels =
+      List.sortBy (\c -> c.originalName) channels.channels
+
     channelAddress =
       Signal.forwardTo address (Channels.Modify activeChannel.id)
 
     volumeAddress =
       Signal.forwardTo channelAddress Channel.Volume
 
-    options =
-      { defaultOptions | preventDefault = True }
-
-    onTouch =
-      onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.ToggleSelector))
-  in
-    div
-      [ classList [ ( "channels", True ), ( "channels__select-channel", channels.showChannelSwitcher ) ] ]
-      [ div
-          [ class "channels--bar" ]
-          [ div
-              [ class "channels--channel-select", onClick address (Channels.ToggleSelector), onTouch ]
-              [ i [ class "fa fa-bullseye" ] [] ]
-          , div
-              [ class "channels--channel-volume" ]
-              [ (Volume.View.control volumeAddress activeChannel.volume activeChannel.name) ]
-          ]
-      , (channelSelectorPanel address channels receivers activeChannel)
-      ]
-
-
-channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Receivers.Model -> Channel.Model -> Html
-channelSelectorPanel address channels receivers activeChannel =
-  let
-    -- unselectedChannels =
-    --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
-    orderedChannels =
-      List.sortBy (\c -> c.originalName) channels.channels
   in
     case channels.showChannelSwitcher of
       False ->
@@ -74,11 +91,19 @@ channelSelectorPanel address channels receivers activeChannel =
 
       True ->
         div
-          [ class "channels-selector" ]
+          [ class "channels--overlay" ]
           [ div
-              [ class "channels-selector--list" ]
-              (List.map (channelChoice address receivers activeChannel) orderedChannels)
-          , addChannelPanel address channels
+              [ class "channels--channel-control" ]
+              [ (Volume.View.control volumeAddress activeChannel.volume (div [ class "channel--name" ] [ text activeChannel.name ]))
+              , Receivers.View.receivers receiversAddress receivers activeChannel
+              ]
+          , div
+              [ class "channels-selector" ]
+              [ div
+                  [ class "channels-selector--list" ]
+                  (List.map (channelChoice address receivers activeChannel) orderedChannels)
+              , addChannelPanel address channels
+              ]
           ]
 
 

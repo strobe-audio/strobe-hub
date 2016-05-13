@@ -32,3 +32,7 @@ type alias Context =
   { address : Signal.Address Action
   , modeAddress : Signal.Address ()
   }
+
+overlayActive : Model -> Bool
+overlayActive channels =
+  channels.showChannelSwitcher

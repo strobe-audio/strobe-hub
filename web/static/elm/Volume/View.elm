@@ -6,7 +6,7 @@ import Html.Events exposing (..)
 import Json.Decode exposing ((:=))
 
 
-control : Signal.Address (Maybe Float) -> Float -> String -> Html
+control : Signal.Address (Maybe Float) -> Float -> Html -> Html
 control address volume label =
   let
     handler buttons offset width =
@@ -86,7 +86,7 @@ control address volume label =
       , div
           [ class "volume", mousemove, touchmove, mousedown, touchstart, touchend ]
           [ div [ class "volume-level", style [ ( "width", (toString (volume * 100)) ++ "%" ) ] ] []
-          , div [ class "volume-label" ] [ text label ]
+          , div [ class "volume-label" ] [ label ]
           ]
       , div [ class "volume-full-btn fa fa-volume-up", onClick address (Just 1.0) ] []
       ]

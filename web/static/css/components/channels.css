@@ -70,6 +70,12 @@
   flex: 1;
 }
 
+.channels--overlay {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
 .channels-selector--list {
   @mixin overflowScroll;
   flex: 1;
@@ -115,7 +121,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   position: relative;
   &::before {
     @mixin fa;
-    content: "\f140";
+    content: $channel-icon;
     width: $button-size;
     display: block;
     text-align: center;

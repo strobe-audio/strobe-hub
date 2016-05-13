@@ -10,6 +10,7 @@ blank =
   { originalValue = ""
   , value = ""
   , validator = notBlankValidator
+  , autoCapitalize = "words"
   }
 
 
