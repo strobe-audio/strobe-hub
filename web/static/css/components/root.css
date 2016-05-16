@@ -21,6 +21,7 @@
   line-height: $button-size;
   font-weight: 200;
   cursor: pointer;
+  align-items: baseline;
   &:hover {
     background-color: red;
     color: #fff;
@@ -69,6 +70,6 @@
 .root--mode--channel-duration {
   padding-left: calc($padding/2);
   font-size: 0.8em;
-  color: rgba(0, 0, 0, 0.8);
+  color: rgba(0, 0, 0, 0.6);
   display: block;
 }
