@@ -79,3 +79,8 @@ playlistDuration channel =
       Maybe.map (List.foldr (+) 0) durations
   in
     duration
+
+isActive : Summary -> Bool
+isActive summary =
+  summary.channel.playing || ( summary.receiverCount > 0 )
+

@@ -78,8 +78,11 @@ channelSelectorPanel address channels receiversAddress receivers activeChannel =
     channelSummaries =
       List.map (Channel.summary receivers.receivers) channels.channels
 
-    orderedChannels =
-      List.sortBy (\c -> c.channel.originalName) channelSummaries
+    (activeChannels, inactiveChannels) =
+      List.partition Channel.isActive channelSummaries
+
+    orderChannels summaries =
+      List.sortBy (\c -> c.channel.originalName) summaries
 
     channelAddress =
       Signal.forwardTo address (Channels.Modify activeChannel.id)
@@ -119,7 +122,11 @@ channelSelectorPanel address channels receiversAddress receivers activeChannel =
               [ class "channels-selector" ]
               [ div
                   [ class "channels-selector--list" ]
-                  (List.map (channelChoice address receivers activeChannel) orderedChannels)
+                  [ div [ class "channels-selector--separator" ] [ text "Active" ]
+                  , div [ class "channels-selector--group" ] (List.map (channelChoice address receivers activeChannel) (orderChannels activeChannels))
+                  , div [ class "channels-selector--separator" ] [ text "Inactive" ]
+                  , div [ class "channels-selector--group" ] (List.map (channelChoice address receivers activeChannel) (orderChannels inactiveChannels))
+                  ]
               ]
           ]
 
