@@ -1,6 +1,7 @@
 module Channel (..) where
 
 import Receiver
+import Receivers
 import Rendition
 import ID
 import Maybe.Extra
@@ -20,6 +21,24 @@ type alias Model =
   , editNameInput : Input.Model
   }
 
+type alias Summary =
+  { channel : Model
+  , id : ID.Channel
+  , playlistDuration : Maybe Int
+  , receiverCount : Int
+  }
+
+summary : List Receiver.Model -> Model -> Summary
+summary receivers channel =
+  let
+    receiverCount =
+      (Receivers.attachedToChannel receivers channel) |> List.length
+  in
+    { channel = channel
+    , id = channel.id
+    , receiverCount = receiverCount
+    , playlistDuration = (playlistDuration channel)
+    }
 
 type Action
   = Volume (Maybe Float)

@@ -56,7 +56,7 @@ update action model =
               update (Receivers.Receiver receiverId (Receiver.Online channelId)) model
 
             allAttachedToChannel =
-              List.isEmpty (detachedReceivers model' { id = channelId })
+              List.isEmpty (Receivers.detachedReceivers model' { id = channelId })
 
             updatedModel =
               if allAttachedToChannel then
@@ -90,11 +90,3 @@ update action model =
       ( model, Effects.none )
 
 
-attachedReceivers : Receivers.Model -> { a | id : ID.Channel } -> List Receiver.Model
-attachedReceivers model channel =
-  List.filter (\r -> r.channelId == channel.id) model.receivers
-
-
-detachedReceivers : Receivers.Model -> { a | id : ID.Channel } -> List Receiver.Model
-detachedReceivers model channel =
-  List.filter (\r -> r.channelId /= channel.id) model.receivers

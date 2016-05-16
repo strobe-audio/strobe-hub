@@ -14,5 +14,6 @@
     display: block;
     line-height: $button-size;
     text-align: center;
+    cursor: pointer;
   }
 }

@@ -108,6 +108,34 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   transition: left 10.3s;
 }
 
+.channels--header {
+  height: $button-size;
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.channels--title {
+  flex: 1;
+  padding: 0 $padding;
+}
+
+.channels--add-btn {
+  @mixin fa-btn "\f067";
+  background-color: rgba(0, 0, 0, 0.3);
+  flex: 0 0 $button-size;
+  cursor: pointer;
+  &:hover {
+    background-color: rgba(255, 0, 0, 0.5);
+  }
+}
+
+.channels--add-btn__active {
+  &:before {
+    content: "\f0d8";
+    background-color: #000;
+  }
+}
 .channels-selector--display {
   /* @mixin slideEditName; */
   display: flex;

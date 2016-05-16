@@ -12,22 +12,22 @@ import Receiver.View
 receivers : Signal.Address Receivers.Action -> Receivers.Model -> Channel.Model -> Html
 receivers address model channel =
   let
+    attached = Receivers.attachedReceivers model channel
+
     receivers =
       case model.showAttach of
         True ->
           model.receivers
 
         False ->
-          Receivers.State.attachedReceivers model channel
+          attached
 
     count =
       toString
-        (List.length
-          (Receivers.State.attachedReceivers model channel)
-        )
+        (List.length attached)
 
     detached =
-      Receivers.State.detachedReceivers model channel
+      Receivers.detachedReceivers model channel
 
     receiverEntry receiver =
       let
