@@ -3,7 +3,7 @@
 }
 .library--breadcrumb {
   min-height: $button-size;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.1);
   display: flex;
   padding: 0 $padding;
   align-items: center;

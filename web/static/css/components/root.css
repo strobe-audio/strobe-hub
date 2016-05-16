@@ -34,11 +34,13 @@
   }
 }
 .root--mode--choice__active {
-  background: rgba(0, 0, 0, 0.2);
+  /* background: rgba(0, 0, 0, 0.2); */
+  /* color: #fff; */
   font-weight: 400;
-  color: #fff;
+  background-color: #fff !important;
+  color: rgba(0, 0, 0, 0.9) !important;
   &:hover {
-    background: rgba(0, 0, 0, 0.2);
+    /* background: rgba(0, 0, 0, 0.2); */
   }
 }
 .root--mode--choice + .root--mode--choice {
