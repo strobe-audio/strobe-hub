@@ -1,4 +1,4 @@
-module Channels.View (channels, player, playlist) where
+module Channels.View (channels, cover, playlist) where
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -239,13 +239,13 @@ channelChoice address receivers activeChannel channelSummary =
       ]
 
 
-player : Signal.Address Channels.Action -> Channel.Model -> Html
-player address channel =
+cover : Signal.Address Channels.Action -> Channel.Model -> Html
+cover address channel =
   let
     playerAddress =
       Signal.forwardTo address (Channels.Modify channel.id)
   in
-    Channel.View.root playerAddress channel
+    Channel.View.cover playerAddress channel
 
 
 playlist : Signal.Address Channels.Action -> Channels.Model -> Html

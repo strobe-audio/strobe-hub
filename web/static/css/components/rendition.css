@@ -5,7 +5,7 @@
 }
 
 .rendition--cover {
-	flex: 0 0 100vw;
+  flex: 0 0 100vw;
   width: 100%;
   padding-top: 100%;
   overflow: hidden;
@@ -27,8 +27,8 @@
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.7);
-	color: #fff;
-	padding: $padding;
+  color: #fff;
+  padding: $padding;
   display: flex;
   flex-direction: row;
   cursor: pointer;
@@ -42,21 +42,27 @@
   flex: 1;
 }
 .rendition--title {
-  @mixin h1;
-  @mixin fa-btn "\f04b";
+  /* @mixin h2; */
+  /* @mixin fa-btn "\f04b"; */
   color: #fff;
   position: relative;
+  flex: 1;
+  align-items: center;
   /* padding: $padding 0; */
   &:before {
+    @mixin fa;
+    content: "\f04b";
+    text-align: center;
+    cursor: pointer;
     /* @mixin fa; */
-		/* fa-play */
+    /* fa-play */
     /* content: "\f04b"; */
     /* width: calc($button-size / 2); */
     /* text-align: left; */
     /* color: rgba(255, 255, 255, 1); */
     display: inline-block;
     padding-right: calc($padding/2);
-    line-height: normal;
+    /* line-height: normal; */
     width: calc($button-size / 2);
   }
 }
@@ -78,15 +84,17 @@
   /* @mixin block-group; */
   /* margin-left: $channel-player-height; */
   /* padding: 0 $padding; */
-	font-size: 1.6rem;
-	font-weight: 400;
+  padding-left: $padding;
+  font-size: 1.6rem;
+  font-weight: 400;
+  flex: 1;
 }
 
 .rendition--meta--artist,
 .rendition--meta--duration,
 .rendition--meta--album {
   /* @mixin block; */
-	display: inline-block;
+  display: inline-block;
 }
 
 .rendition--meta--artist,
@@ -104,9 +112,9 @@
 
 .rendition--duration {
   padding: 0 $padding;
-  @mixin h1;
-  font-size: 1.8rem;
-  line-height: 1.9;
+  /* @mixin h1; */
+  /* font-size: 1.8rem; */
+  /* line-height: 1.9; */
 }
 
 
@@ -116,6 +124,7 @@
   display: flex;
   flex: 1;
   cursor: pointer;
+  align-items: stretch;
 }
 .rendition--play-pause-btn {
   /* @mixin fa-btn "\f04b"; */
@@ -139,6 +148,17 @@
 }
 
 .rendition--details {
+  /* white-space: nowrap; */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.rendition--details--top {
+  @mixin h2;
   padding-left: $padding;
-  white-space: nowrap;
+  display: flex;
+  align-items: baseline;
+  flex: 1;
+
 }

@@ -4,3 +4,8 @@
   line-height: 140%;
   font-weight: 200;
 }
+@define-mixin h2 {
+  font-size: 1.8rem;
+  line-height: 140%;
+  font-weight: 100;
+}

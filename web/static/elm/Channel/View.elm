@@ -13,16 +13,24 @@ import Receiver
 import Receiver.View
 
 
-root : Signal.Address Channel.Action -> Channel.Model -> Html
-root address channel =
+cover : Signal.Address Channel.Action -> Channel.Model -> Html
+cover address channel =
   let
-    rendition =
+    maybeRendition =
       List.head channel.playlist
 
     playPauseAddress =
       Signal.forwardTo address (always Channel.PlayPause)
   in
-    playingSong playPauseAddress channel rendition
+    case maybeRendition of
+      Nothing ->
+        div [] [ text "No song..." ]
+
+      Just rendition ->
+        div
+          [ class "channel--rendition" ]
+          [ (Rendition.View.cover playPauseAddress rendition channel.playing)
+          ]
 
 
 player : Signal.Address Channel.Action -> Channel.Model -> Html
@@ -42,23 +50,8 @@ player address channel =
       Just rendition ->
         div
           [ class "channel--rendition" ]
-          [ (Rendition.View.control playPauseAddress rendition channel.playing)
-          , (Rendition.View.progress playPauseAddress rendition channel.playing)
+          [ (Rendition.View.player playPauseAddress rendition channel.playing)
           ]
-
-
-playingSong : Signal.Address () -> Channel.Model -> Maybe Rendition.Model -> Html
-playingSong address channel maybeRendition =
-  case maybeRendition of
-    Nothing ->
-      div [] [ text "No song..." ]
-
-    Just rendition ->
-      div
-        [ class "channel--rendition" ]
-        [ (Rendition.View.playing address rendition channel.playing)
-        -- , (Rendition.View.progress address rendition channel.playing)
-        ]
 
 
 playlist : Signal.Address Channel.Action -> Channel.Model -> Html

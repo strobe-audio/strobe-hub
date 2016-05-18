@@ -54,7 +54,7 @@ root address model =
             {-, on "scroll" Json.value (Signal.message address << Root.Scroll) -}
           ]
           [ Channels.View.channels channelsAddress model.channels receiversAddress model.receivers
-          , Channels.View.player channelsAddress channel
+          , Channels.View.cover channelsAddress channel
           -- , Receivers.View.receivers receiversAddress model.receivers channel
           , libraryToggleView address model channel
           , library
