@@ -65,17 +65,17 @@
 }
 
 .channels-selector {
-  @mixin overflowScroll;
   display: flex;
   flex-direction: column;
   flex: 1;
-  height: 0;
 }
 
 .channels--overlay {
   display: flex;
   flex-direction: column;
   flex: 1;
+  @mixin overflowScroll;
+  height: 0;
 }
 
 .channels-selector--list {
