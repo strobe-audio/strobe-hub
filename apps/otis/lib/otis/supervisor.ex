@@ -20,6 +20,7 @@ defmodule Otis.Supervisor do
       worker(Otis.State.Repo, []),
       worker(Otis.State.Events, []),
       worker(Otis.State.Persistence, []),
+      worker(Otis.Receivers.Database, []),
       worker(Otis.Receivers, []),
 
       :poolboy.child_spec(Otis.EmitterPool, emitter_pool_options, [

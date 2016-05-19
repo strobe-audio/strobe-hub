@@ -8,7 +8,7 @@ defmodule Otis.Receivers do
   @name Otis.Receivers
 
   defmodule S do
-    defstruct [receivers: %{}]
+    defstruct [receivers: nil]
   end
 
   def start_link() do
@@ -73,8 +73,10 @@ defmodule Otis.Receivers do
   # :gen_tcp.send s, "id:" <> Janis.receiver_id
   # :gen_tcp.close s
   def init([]) do
-    {:ok, _data_pid} = start_listener(@name.DataListener, data_port, DataConnection)
-    {:ok, _ctrl_pid} = start_listener(@name.ControlListener, ctrl_port, ControlConnection)
+    Logger.info "Starting Receivers registry..."
+    start_listener(@name.DataListener, data_port, DataConnection)
+    start_listener(@name.ControlListener, ctrl_port, ControlConnection)
+    Otis.Receivers.Database.attach(self())
     {:ok, %S{}}
   end
 
@@ -83,25 +85,28 @@ defmodule Otis.Receivers do
   end
 
   def handle_cast({:connect, type, id, {pid, socket}, params}, state) do
-    state = connect(type, id, {pid, socket}, params, Map.get(state.receivers, id), state)
+    state = connect(type, id, {pid, socket}, params, lookup(state, id), state)
     {:noreply, state}
   end
 
   def handle_cast({:disconnect, type, id}, state) do
-    state = disconnect(type, id, Map.get(state.receivers, id), state)
+    state = disconnect(type, id, lookup(state, id), state)
     {:noreply, state}
   end
 
-  def handle_call(:receivers, _from, %S{receivers: receivers} = state) do
-    {:reply, Map.values(receivers), state}
+  def handle_call(:receivers, _from, state) do
+    {:reply, all(state), state}
   end
 
-  def handle_call({:receiver, id}, _from, %S{receivers: receivers} = state) do
-    {:reply, Map.fetch(receivers, id), state}
+  def handle_call({:receiver, id}, _from, state) do
+    {:reply, lookup(state, id), state}
   end
 
-  def handle_call({:attach, receiver_id, channel_id}, _from, %S{receivers: receivers} = state) do
-    receiver = Map.get(receivers, receiver_id, nil)
+  def handle_call({:attach, receiver_id, channel_id}, _from, state) do
+    receiver = case lookup(state, receiver_id) do
+      {:ok, r} -> r
+      _ -> nil
+    end
     # In this case the event comes before the state change. Feels wrong but is
     # much simpler than any other way of moving receivers that I can think of
     Otis.State.Events.notify({:reattach_receiver, receiver_id, channel_id, receiver})
@@ -109,40 +114,80 @@ defmodule Otis.Receivers do
   end
 
   def handle_call({:is_connected, id}, _from, state) do
-    connected? = case Map.fetch(state.receivers, id) do
+    connected? = case lookup(state, id) do
       :error -> false
       {:ok, receiver} -> Receiver.alive?(receiver)
     end
     {:reply, connected?, state}
   end
 
+  def handle_info({:'ETS-TRANSFER', table, _old_owner, _}, state) do
+    {:noreply, %{state | receivers: table}}
+  end
+
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    {id, receiver} = state.receivers |> Receiver.matching_pid(pid)
+    {id, receiver} = all(state) |> Receiver.matching_pid(pid)
     state = relatch(receiver, id, state)
     {:noreply, state}
   end
 
-  def connect(:ctrl, id, {pid, socket}, params, nil, state) do
+  defp insert(state, receiver) do
+    insert(state, Receiver.id!(receiver), receiver)
+  end
+  defp insert(%S{receivers: nil}, _id, _receiver) do
+    Logger.error("Receivers table nil!")
+  end
+  defp insert(%S{receivers: receivers} = state, id, receiver) do
+    :ets.insert(receivers, {id, receiver})
+    state
+  end
+
+  defp delete(%S{receivers: nil}, _receiver) do
+    Logger.error("Receivers table nil!")
+  end
+  defp delete(%S{receivers: receivers} = state, receiver) do
+    :ets.delete(receivers, receiver.id)
+    state
+  end
+
+  defp lookup(%S{receivers: nil}, _id) do
+    Logger.error("Receivers table nil!")
+  end
+  defp lookup(%S{receivers: receivers}, id) do
+    case :ets.lookup(receivers, id) do
+      [{^id, receiver}] -> {:ok, receiver}
+      [] -> :error
+    end
+  end
+
+  defp all(%{receivers: nil}) do
+    Logger.error("Receivers table nil!")
+  end
+  defp all(%{receivers: receivers}) do
+    :ets.foldl(fn(entry, list) -> [entry | list] end, [], receivers)
+  end
+
+  def connect(:ctrl, id, {pid, socket}, params, :error, state) do
     Receiver.new(id: id, ctrl: {pid, socket}, params: params) |> update_connect(id, state)
   end
-  def connect(:ctrl, id, {pid, socket}, params, receiver, state) do
+  def connect(:ctrl, id, {pid, socket}, params, {:ok, receiver}, state) do
     Receiver.update(receiver, ctrl: {pid, socket}, params: params) |> update_connect(id, state)
   end
 
-  def connect(:data, id, {pid, socket}, params, nil, state) do
+  def connect(:data, id, {pid, socket}, params, :error, state) do
     Receiver.new(id: id, data: {pid, socket}, params: params) |> update_connect(id, state)
   end
-  def connect(:data, id, {pid, socket}, params, receiver, state) do
+  def connect(:data, id, {pid, socket}, params, {:ok, receiver}, state) do
     Receiver.update(receiver, data: {pid, socket}, params: params) |> update_connect(id, state)
   end
 
-  def disconnect(type, id, nil, _state) do
+  def disconnect(type, id, :error, _state) do
     Logger.warn "#{ inspect type } disconnect from unknown receiver #{ id }"
   end
-  def disconnect(:data, id, receiver, state) do
+  def disconnect(:data, id, {:ok, receiver}, state) do
     Receiver.update(receiver, data: nil) |> update_disconnect(id, state)
   end
-  def disconnect(:ctrl, id, receiver, state) do
+  def disconnect(:ctrl, id, {:ok, receiver}, state) do
     Receiver.update(receiver, ctrl: nil) |> update_disconnect(id, state)
   end
 
@@ -162,11 +207,11 @@ defmodule Otis.Receivers do
   end
 
   def update_receiver(receiver, state) do
-    %{ state | receivers: Map.put(state.receivers, Receiver.id!(receiver), receiver)}
+    insert(state, receiver)
   end
 
   def update_receiver(receiver, id, state) do
-    %{ state | receivers: Map.put(state.receivers, id, receiver)}
+    insert(state, id, receiver)
   end
 
   def after_connect(state, receiver) do
@@ -206,7 +251,7 @@ defmodule Otis.Receivers do
 
   def remove_dead_receiver(state, receiver, true) do
     Otis.State.Events.notify({:receiver_offline, receiver.id, receiver})
-    %{state | receivers: Map.delete(state.receivers, receiver.id)}
+    delete(state, receiver)
   end
   def remove_dead_receiver(state, _receiver, false) do
     state
