@@ -14,7 +14,6 @@ import Library.View
 import Receivers.View
 import Source.View
 import Json.Decode as Json
-import Player.View
 
 
 root : Signal.Address Root.Action -> Root.Model -> Html
@@ -54,11 +53,14 @@ root address model =
             {-, on "scroll" Json.value (Signal.message address << Root.Scroll) -}
           ]
           [ Channels.View.channels channelsAddress model.channels receiversAddress model.receivers
-          , Channels.View.cover channelsAddress channel
-          -- , Receivers.View.receivers receiversAddress model.receivers channel
-          , libraryToggleView address model channel
-          , library
-          , playlist
+          , div
+              [ class "root--active-channel" ]
+              [ Channels.View.cover channelsAddress channel
+              -- , Receivers.View.receivers receiversAddress model.receivers channel
+              , libraryToggleView address model channel
+              , library
+              , playlist
+              ]
           ]
 
 

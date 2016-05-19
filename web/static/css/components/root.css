@@ -4,6 +4,11 @@
   overflow: hidden;
 }
 
+.root--active-channel {
+  @mixin overflowScroll;
+  height: 100vh;
+}
+
 .root--mode {
   display: flex;
   flex-wrap: wrap;

@@ -1,5 +1,11 @@
 @define-mixin overflowScroll {
   overflow-y: scroll;
   -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000;
+  & > * {
+    transform: translateZ(0);
+  }
 }
 
