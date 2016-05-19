@@ -5,7 +5,8 @@ defmodule Peel.String do
     |> replace_ampersands
     |> String.normalize(:nfd)
     |> String.codepoints
-    |> Enum.reject(&search_version_strip?/1)
+    |> Enum.map(&convert_punctuation/1)
+    |> Enum.reject(&is_combining_mark?/1)
     |> Enum.join
     |> String.strip
     |> normalize_whitespace
@@ -13,18 +14,43 @@ defmodule Peel.String do
   end
 
   # http://www.regular-expressions.info/unicode.html
-  @mark_regex ~r/(\p{M}|\p{P}|\p{S}|\p{C})/u
-  @whitespace_regex ~r/\p{Z}+/u
-  @ampersand_regex ~r/&/u
 
-  def search_version_strip?(char) do
+  # \p{M} -> a character intended to be combined with another character (e.g.
+  #          accents, umlauts, enclosing boxes, etc.)
+  # \p{C} -> invisible control characters and unused code points
+  @mark_regex ~r/(\p{M}|\p{C})/u
+
+  # \p{P} -> any kind of punctuation character.
+  # \p{S} -> math symbols, currency signs, dingbats, box-drawing characters, etc.
+  @punctuation_regex ~r/(\p{P}|\p{S})/u
+
+  # \p{Z} -> any kind of whitespace or invisible separator.
+  @whitespace_regex ~r/\p{Z}+/u
+
+  @ampersand_regex ~r/&(?:amp)?;?/u
+
+  @doc "Replace punctuation characters with spaces."
+  def convert_punctuation(char) do
+    case Regex.match?(@punctuation_regex, char) do
+      true -> " "
+      false -> char
+    end
+  end
+
+  @doc "Remove any combining marks (exposed by String.normalize(:nfd))"
+  def is_combining_mark?(char) do
     Regex.match?(@mark_regex, char)
   end
 
+  @doc "Replace runs of whitespace with single spaces"
   def normalize_whitespace(string) do
     Regex.replace(@whitespace_regex, string, " ")
   end
 
+  @doc """
+  Replace '&' characters with the word 'and'. Handles HTML encoded values because
+  they crop up every bloody where.
+  """
   def replace_ampersands(string) do
     Regex.replace(@ampersand_regex, string, "and")
   end

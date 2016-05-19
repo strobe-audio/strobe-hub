@@ -19,7 +19,7 @@ defmodule Peel.Test.StringTest do
       "bjork", [ "Björk", "Bjork" ]
     ],
     [
-      "john and paul", [ "john & paul" ]
+      "john and paul", [ "john & paul", "john &amp; paul", "john &amp paul" ]
     ],
     [
       "john paul", [
@@ -36,6 +36,9 @@ defmodule Peel.Test.StringTest do
     ],
     [
       "count to 10", [ "Count to 10" ]
+    ],
+    [
+      "wiener philharmoniker franz lehar", [ "Wiener Philharmoniker/Franz Lehár" ]
     ],
   ]
 
