@@ -15,25 +15,34 @@ defmodule Peel.Scanner do
 
   def scan(path) do
     Peel.Repo.transaction fn ->
-      path |> Peel.Track.from_path |> track(path)
+      path |> Peel.Track.by_path |> track(path)
     end
   end
 
   def track(nil, path) do
-    path
-    |> Track.new
-    |> struct(metadata(path))
-    |> Album.for_track
-    |> Track.create!
+    create_track(path, metadata(path))
   end
   def track(%Peel.Track{} = track, _path) do
     # Exists - TODO: should check mtime for modifications and act...
     track
   end
 
+  def create_track(path, path_metadata) do
+    IO.inspect path_metadata
+    path
+    |> Track.new
+    |> struct(clean_metadata(path_metadata))
+    |> Album.for_track
+    |> Track.create!
+  end
+
   def metadata(path) do
     path
     |> Otis.Source.File.metadata!
+  end
+
+  def clean_metadata(metadata) do
+    metadata
     |> Map.from_struct
     # Reject any nil values so that they don't overwrite defaults
     |> Enum.reject(fn({_, v}) -> is_nil(v) end)

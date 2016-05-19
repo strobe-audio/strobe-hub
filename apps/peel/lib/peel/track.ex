@@ -45,7 +45,7 @@ defmodule Peel.Track do
     }
   end
 
-  def from_path(path) do
+  def by_path(path) do
     Track
     |> where(path: ^path)
     |> limit(1)
