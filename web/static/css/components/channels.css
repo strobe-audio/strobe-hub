@@ -65,9 +65,11 @@
 }
 
 .channels-selector {
+  @mixin overflowScroll;
   display: flex;
   flex-direction: column;
   flex: 1;
+  height: 0;
 }
 
 .channels--overlay {
@@ -77,19 +79,16 @@
 }
 
 .channels-selector--list {
-  @mixin overflowScroll;
   flex: 1;
-	height: 0;
-  display: flex;
-  flex-direction: column;
 }
 
 $channel-select-border: rgba(255, 255, 255, 0.05);
 
 .channels-selector--channel {
-  flex: 0 0 $button-size;
-  align-items: center;
+  /* flex: 0 0 $button-size; */
+  height: 50px;
   display: flex;
+  align-items: center;
   color: #fff;
   cursor: pointer;
   position: relative;
@@ -138,8 +137,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 }
 
 .channels-selector--separator {
-  flex: 0 0 calc($button-size / 2);
-  /* height: calc($button-size / 2); */
+  height: calc($button-size / 2);
   padding: 0 $padding;
   display: flex;
   align-items: center;
