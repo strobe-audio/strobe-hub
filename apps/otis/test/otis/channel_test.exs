@@ -12,7 +12,7 @@ defmodule Otis.ChannelTest do
     channel_id = Otis.uuid
     receiver_id = Otis.uuid
 
-    channel = spawn(fn ->
+    _channel = spawn(fn ->
       receive do
         :stop -> :ok
       end

@@ -36,9 +36,9 @@ defmodule Otis.Receivers do
   when is_binary(id) do
     volume = Otis.sanitize_volume(volume)
     case receiver(id) do
-      {:ok, receiver} = result ->
+      {:ok, receiver} ->
         Otis.Receiver.volume receiver, volume
-      result ->
+      _error ->
         Otis.State.Events.notify({:receiver_volume_change, id, volume})
     end
     {:ok, volume}
