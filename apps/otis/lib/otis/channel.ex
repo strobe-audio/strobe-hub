@@ -348,7 +348,6 @@ defmodule Otis.Channel do
   end
 
   defp set_state(%S{state: status} = state, status) do
-    IO.inspect [:no_state_change, status]
     state
   end
   defp set_state(channel, state) do
