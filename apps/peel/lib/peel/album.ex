@@ -19,6 +19,8 @@ defmodule Peel.Album do
     field :disk_total, :integer
     field :track_total, :integer
 
+    field :normalized_title, :string
+
     belongs_to :artist, Peel.Artist, type: Ecto.UUID
     has_many   :tracks, Peel.Track
   end
@@ -33,9 +35,10 @@ defmodule Peel.Album do
   def for_track(%Track{disk_number: nil} = track) do
     %Track{track | disk_number: 1} |> for_track
   end
-  def for_track(%Track{album_title: title, disk_number: disk_number} = track) do
+  def for_track(%Track{album_title: title} = track) do
+    normalized_title = Peel.String.normalize(title)
     Album
-    |> where(title: ^title, disk_number: ^disk_number)
+    |> where(normalized_title: ^normalized_title)
     |> limit(1)
     |> Repo.one
     |> return_or_create(track)
@@ -52,11 +55,16 @@ defmodule Peel.Album do
       disk_total: track.disk_total,
       track_total: track.track_total,
     }
+    |> normalize
     |> Artist.for_album
     |> Repo.insert!
   end
   def return_or_create(album, _track) do
     album
+  end
+
+  defp normalize(album) do
+    %Album{ album | normalized_title: Peel.String.normalize(album.title) }
   end
 
   def associate(album, track) do

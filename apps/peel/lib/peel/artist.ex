@@ -9,6 +9,8 @@ defmodule Peel.Artist do
     # Musical info
     field :name, :string
 
+    field :normalized_name, :string
+
     has_many   :albums, Peel.Album
   end
 
@@ -16,8 +18,9 @@ defmodule Peel.Artist do
     %Album{ album | performer: "Unknown artist" } |> for_album
   end
   def for_album(%Album{performer: performer} = album) do
+    normalized_performer = Peel.String.normalize(performer)
     Artist
-    |> where(name: ^performer)
+    |> where(normalized_name: ^normalized_performer)
     |> limit(1)
     |> Repo.one
     |> return_or_create(album)
@@ -25,10 +28,16 @@ defmodule Peel.Artist do
   end
 
   def return_or_create(nil, album) do
-    %Artist{ name: album.performer } |> Repo.insert!
+    %Artist{ name: album.performer }
+    |> normalize
+    |> Repo.insert!
   end
   def return_or_create(artist, _album) do
     artist
+  end
+
+  defp normalize(artist) do
+    %Artist{ artist | normalized_name: Peel.String.normalize(artist.name) }
   end
 
   def associate(artist, album) do

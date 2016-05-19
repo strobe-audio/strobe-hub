@@ -28,10 +28,8 @@ defmodule Peel.Scanner do
   end
 
   def create_track(path, path_metadata) do
-    IO.inspect path_metadata
     path
-    |> Track.new
-    |> struct(clean_metadata(path_metadata))
+    |> Track.new(clean_metadata(path_metadata))
     |> Album.for_track
     |> Track.create!
   end

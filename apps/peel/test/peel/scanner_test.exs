@@ -56,6 +56,7 @@ defmodule Peel.Test.ScannerTest do
     Peel.Scanner.create_track(context.path, context.metadata)
     [track] = Track.all
     assert track.title == "I Feel Free"
+    assert track.normalized_title == "i feel free"
     assert track.album_title == "Fresh Cream"
     assert track.performer == "Cream"
     assert track.genre == "Rock"
@@ -92,6 +93,7 @@ defmodule Peel.Test.ScannerTest do
             |> Repo.preload(:album)
     album = track.album
     assert album.title == "Fresh Cream"
+    assert album.normalized_title == "fresh cream"
     assert album.disk_number == 1
     assert album.disk_total == 1
     assert album.genre == "Rock"
@@ -120,6 +122,24 @@ defmodule Peel.Test.ScannerTest do
     assert Enum.map(album.tracks, fn(t) -> t.album_id end) == [album.id]
   end
 
+  test "it uses an existing album based on normalized title", context do
+    assert length(Album.all) == 0
+    Peel.Scanner.create_track(context.path, context.metadata)
+    assert length(Album.all) == 1
+    album = Album.first
+    album_id = album.id
+    Track.delete_all
+    Peel.Scanner.create_track(context.path, %Metadata{context.metadata | album: "fresh  cream"})
+    assert length(Album.all) == 1
+    track = List.first(context.paths)
+            |> Track.by_path
+            |> Repo.preload(:album)
+    album = track.album |> Repo.preload(:tracks)
+    assert album.id == album_id
+
+    assert Enum.map(album.tracks, fn(t) -> t.album_id end) == [album.id]
+  end
+
   test "it creates an artist when one isn't available", context do
     assert length(Artist.all) == 0
     Peel.Scanner.create_track(context.path, context.metadata)
@@ -130,6 +150,7 @@ defmodule Peel.Test.ScannerTest do
     album = track.album |> Repo.preload(:artist)
     artist = album.artist
     assert artist.name == "Cream"
+    assert artist.normalized_name == "cream"
     artist = artist |> Repo.preload(:albums)
     assert Enum.map(artist.albums, fn(a) -> a.id end) == [album.id]
   end
@@ -143,6 +164,20 @@ defmodule Peel.Test.ScannerTest do
     Track.delete_all
     Album.delete_all
     Peel.Scanner.create_track(context.path, %Metadata{ context.metadata | title: "White Room", track_number: 2 })
+    assert length(Artist.all) == 1
+    album = Album.first |> Repo.preload(:tracks)
+    assert album.artist_id == artist_id
+  end
+
+  test "it uses an existing artist based on normalized name", context do
+    assert length(Artist.all) == 0
+    Peel.Scanner.create_track(context.path, context.metadata)
+    assert length(Artist.all) == 1
+    artist = Artist.first
+    artist_id = artist.id
+    Track.delete_all
+    Album.delete_all
+    Peel.Scanner.create_track(context.path, %Metadata{ context.metadata | performer: "cream", title: "White Room", track_number: 2 })
     assert length(Artist.all) == 1
     album = Album.first |> Repo.preload(:tracks)
     assert album.artist_id == artist_id

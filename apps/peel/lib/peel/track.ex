@@ -27,6 +27,7 @@ defmodule Peel.Track do
     # Peel metadata
     field :path, :string
     field :mtime, Ecto.DateTime
+    field :normalized_title, :string
 
     belongs_to :album, Peel.Album, type: Ecto.UUID
   end
@@ -35,14 +36,20 @@ defmodule Peel.Track do
     track |> Repo.insert!
   end
 
-  def new(path) do
-    new(path, File.stat!(path))
+  def new(path, metadata) do
+    new(path, metadata, File.stat!(path))
   end
-  def new(path, %File.Stat{mtime: mtime}) do
+  def new(path, metadata, %File.Stat{mtime: mtime}) do
     %Track{
       mtime: Ecto.DateTime.from_erl(mtime),
       path: path
     }
+    |> struct(metadata)
+    |> normalize
+  end
+
+  defp normalize(track) do
+    %Track{ track | normalized_title: Peel.String.normalize(track.title) }
   end
 
   def by_path(path) do

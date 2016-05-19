@@ -5,12 +5,15 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
     create table(:artists, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :name, :string
+      add :normalized_name, :string
     end
     create index(:artists, [:name])
+    create index(:artists, [:normalized_name])
 
     create table(:albums, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :title, :string
+      add :normalized_title, :string
       add :date, :string
       add :genre, :string
       add :performer, :string
@@ -21,10 +24,12 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
       add :artist_id, references(:artists, type: :string)
     end
     create index(:albums, [:title, :disk_number])
+    create index(:albums, [:normalized_title])
 
     create table(:tracks, primary_key: false) do
       add :id, :uuid, primary_key: true
       add :title, :string
+      add :normalized_title, :string
       add :album_title, :string
       add :composer, :string
       add :date, :string
@@ -44,5 +49,6 @@ defmodule Peel.Repo.Migrations.CreateBasicStructure do
       add :album_id, references(:albums, type: :string)
     end
     create index(:tracks, [:path])
+    create index(:tracks, [:normalized_title])
   end
 end
