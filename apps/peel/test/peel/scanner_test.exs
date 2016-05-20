@@ -181,6 +181,62 @@ defmodule Peel.Test.ScannerTest do
     assert Album.artists(album) == [artist]
   end
 
+  test "it handles tracks with blank artists", context do
+    path = Path.join(context.root, "../broken/missing_disk_number")
+    metadata = %Metadata{
+      album: "the world of Thomas Tallis",
+      bit_rate: 128000,
+      channels: 2,
+      composer: "Kings College Choir/Thomas Tallis",
+      date: nil,
+      disk_number: nil,
+      disk_total: nil,
+      duration_ms: 697667,
+      extension: "m4a",
+      filename: "01 Spem in alium",
+      genre: "Classical",
+      mime_type: "audio/mp4",
+      performer: nil,
+      sample_rate: 44100,
+      stream_size: 11108509,
+      title: "Spem in alium",
+      track_number: 1,
+      track_total: 11 }
+    Peel.Scanner.create_track(path, metadata)
+    tracks = Track.all
+    assert length(tracks) == 1
+    [track] = tracks
+    assert track.performer == "Unknown artist"
+  end
+
+  test "it handles tracks with blank titles", context do
+    path = Path.join(context.root, "../broken/missing_disk_number")
+    metadata = %Metadata{
+      album: "the world of Thomas Tallis",
+      bit_rate: 128000,
+      channels: 2,
+      composer: "Kings College Choir/Thomas Tallis",
+      date: nil,
+      disk_number: nil,
+      disk_total: nil,
+      duration_ms: 697667,
+      extension: "m4a",
+      filename: "01 Spem in alium",
+      genre: "Classical",
+      mime_type: "audio/mp4",
+      performer: "Various Artists",
+      sample_rate: 44100,
+      stream_size: 11108509,
+      title: nil,
+      track_number: 1,
+      track_total: 11 }
+    Peel.Scanner.create_track(path, metadata)
+    tracks = Track.all
+    assert length(tracks) == 1
+    [track] = tracks
+    assert track.title == "Untitled"
+  end
+
   test "it handles tracks with no disk number", context do
     path = Path.join(context.root, "../broken/missing_disk_number")
     metadata = %Metadata{

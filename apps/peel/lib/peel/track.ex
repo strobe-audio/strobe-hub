@@ -54,6 +54,9 @@ defmodule Peel.Track do
     |> normalize
   end
 
+  defp normalize(%Track{ title: nil } = track) do
+    normalize(%Track{ track | title: "Untitled" })
+  end
   defp normalize(track) do
     %Track{ track | normalized_title: Peel.String.normalize(track.title) }
   end
