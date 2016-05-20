@@ -1,38 +1,40 @@
 defmodule Peel.Artist do
   use    Peel.Model
 
-  alias  Peel.Repo
-  alias  Peel.Artist
   alias  Peel.Album
+  alias  Peel.AlbumArtist
+  alias  Peel.Artist
+  alias  Peel.Repo
+  alias  Peel.Track
 
   schema "artists" do
-    # Musical info
     field :name, :string
 
     field :normalized_name, :string
 
-    has_many   :albums, Peel.Album
+    has_many :album_artists, AlbumArtist
+    has_many :tracks, Track
   end
 
-  def for_album(%Album{performer: nil} = album) do
-    %Album{ album | performer: "Unknown artist" } |> for_album
+  def for_track(%Track{performer: nil} = track) do
+    %Track{ track | performer: "Unknown artist" } |> for_track
   end
-  def for_album(%Album{performer: performer} = album) do
+  def for_track(%Track{performer: performer} = track) do
     normalized_performer = Peel.String.normalize(performer)
     Artist
     |> where(normalized_name: ^normalized_performer)
     |> limit(1)
     |> Repo.one
-    |> return_or_create(album)
-    |> associate(album)
+    |> return_or_create(track)
+    |> associate(track)
   end
 
-  def return_or_create(nil, album) do
-    %Artist{ name: album.performer }
+  def return_or_create(nil, track) do
+    %Artist{ name: track.performer }
     |> normalize
     |> Repo.insert!
   end
-  def return_or_create(artist, _album) do
+  def return_or_create(artist, _track) do
     artist
   end
 
@@ -40,13 +42,17 @@ defmodule Peel.Artist do
     %Artist{ artist | normalized_name: Peel.String.normalize(artist.name) }
   end
 
-  def associate(artist, album) do
-    %Album{album | artist: artist, artist_id: artist.id}
+  def associate(artist, track) do
+    %Track{ track | artist: artist, artist_id: artist.id }
   end
 
-  def albums(artist) do
-    artist = artist |> Repo.preload(:albums)
-    artist.albums
+  def albums(for_artist) do
+    from(artist in Artist,
+      join: aa in AlbumArtist, on: artist.id == aa.artist_id,
+      inner_join: album in Album, on: album.id == aa.album_id,
+      select: album,
+      where: artist.id == ^for_artist.id
+    ) |> Repo.all
   end
 end
 

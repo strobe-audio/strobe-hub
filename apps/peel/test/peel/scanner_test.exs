@@ -146,13 +146,12 @@ defmodule Peel.Test.ScannerTest do
     assert length(Artist.all) == 1
     track = List.first(context.paths)
             |> Track.by_path
-            |> Repo.preload(:album)
-    album = track.album |> Repo.preload(:artist)
-    artist = album.artist
+            |> Repo.preload([:artist, :album])
+    artist = track.artist
     assert artist.name == "Cream"
     assert artist.normalized_name == "cream"
-    artist = artist |> Repo.preload(:albums)
-    assert Enum.map(artist.albums, fn(a) -> a.id end) == [album.id]
+    albums = Artist.albums(artist)
+    assert albums == [track.album]
   end
 
   test "it uses an existing artist", context do
@@ -160,13 +159,12 @@ defmodule Peel.Test.ScannerTest do
     Peel.Scanner.create_track(context.path, context.metadata)
     assert length(Artist.all) == 1
     artist = Artist.first
-    artist_id = artist.id
     Track.delete_all
     Album.delete_all
     Peel.Scanner.create_track(context.path, %Metadata{ context.metadata | title: "White Room", track_number: 2 })
     assert length(Artist.all) == 1
     album = Album.first |> Repo.preload(:tracks)
-    assert album.artist_id == artist_id
+    assert Album.artists(album) == [artist]
   end
 
   test "it uses an existing artist based on normalized name", context do
@@ -174,13 +172,13 @@ defmodule Peel.Test.ScannerTest do
     Peel.Scanner.create_track(context.path, context.metadata)
     assert length(Artist.all) == 1
     artist = Artist.first
-    artist_id = artist.id
     Track.delete_all
-    Album.delete_all
+    # Album.delete_all
     Peel.Scanner.create_track(context.path, %Metadata{ context.metadata | performer: "cream", title: "White Room", track_number: 2 })
     assert length(Artist.all) == 1
+    assert length(Album.all) == 1
     album = Album.first |> Repo.preload(:tracks)
-    assert album.artist_id == artist_id
+    assert Album.artists(album) == [artist]
   end
 
   test "it handles tracks with no disk number", context do
@@ -231,8 +229,7 @@ defmodule Peel.Test.ScannerTest do
     album = track.album
     assert track.performer == "Unknown artist"
     assert album.performer == "Unknown artist"
-    album = album |> Repo.preload(:artist)
-    artist = album.artist
+    [artist] = Album.artists(album)
     assert artist.name == "Unknown artist"
   end
 end

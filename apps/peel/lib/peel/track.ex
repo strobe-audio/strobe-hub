@@ -5,6 +5,7 @@ defmodule Peel.Track do
   alias  Peel.Track
   alias  Peel.Album
   alias  Peel.Artist
+  alias  Peel.AlbumArtist
 
   schema "tracks" do
     # Musical info
@@ -30,10 +31,15 @@ defmodule Peel.Track do
     field :normalized_title, :string
 
     belongs_to :album, Peel.Album, type: Ecto.UUID
+    belongs_to :artist, Peel.Artist, type: Ecto.UUID
   end
 
   def create!(track) do
-    track |> Repo.insert!
+    track
+    |> Album.for_track
+    |> Artist.for_track
+    |> AlbumArtist.for_track
+    |> Repo.insert!
   end
 
   def new(path, metadata) do

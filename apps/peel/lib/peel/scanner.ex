@@ -1,6 +1,5 @@
 defmodule Peel.Scanner do
   alias Peel.Track
-  alias Peel.Album
 
   def start(path) do
     path |> stream |> Enum.each(&scan/1)
@@ -30,7 +29,6 @@ defmodule Peel.Scanner do
   def create_track(path, path_metadata) do
     path
     |> Track.new(clean_metadata(path_metadata))
-    |> Album.for_track
     |> Track.create!
   end
 

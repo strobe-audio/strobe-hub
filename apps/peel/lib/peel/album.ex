@@ -2,9 +2,10 @@ defmodule Peel.Album do
   use    Peel.Model
 
   alias  Peel.Repo
-  alias  Peel.Album
   alias  Peel.Track
   alias  Peel.Artist
+  alias  Peel.Album
+  alias  Peel.AlbumArtist
 
   @derive {Poison.Encoder, only: [:id, :title, :performer, :date, :genre, :disk_number, :disk_total, :track_total, :artist_id]}
 
@@ -21,8 +22,8 @@ defmodule Peel.Album do
 
     field :normalized_title, :string
 
-    belongs_to :artist, Peel.Artist, type: Ecto.UUID
-    has_many   :tracks, Peel.Track
+    has_many :album_artists, Peel.AlbumArtist
+    has_many :tracks, Peel.Track
   end
 
   def by_title(title) do
@@ -56,7 +57,6 @@ defmodule Peel.Album do
       track_total: track.track_total,
     }
     |> normalize
-    |> Artist.for_album
     |> Repo.insert!
   end
   def return_or_create(album, _track) do
@@ -74,5 +74,14 @@ defmodule Peel.Album do
   def tracks(album) do
     album = album |> Repo.preload(:tracks)
     album.tracks
+  end
+
+  def artists(album) do
+    from(a in Album,
+      join: aa in AlbumArtist, on: a.id == aa.album_id,
+      inner_join: ar in Artist, on: ar.id == aa.artist_id,
+      select: ar,
+      where: a.id == ^album.id
+    ) |> Repo.all
   end
 end
