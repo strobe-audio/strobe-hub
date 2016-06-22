@@ -19,7 +19,9 @@ defmodule Peel.CoverArt.Importer do
   end
 
   def handle_cast(:start, state) do
-    {:ok, _pid} = Task.start(&rescan_library/0)
+    # Make this block this process so that repeat calls to start execute
+    # sequentially
+    rescan_library()
     {:noreply, state}
   end
 
