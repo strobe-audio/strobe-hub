@@ -288,4 +288,16 @@ defmodule Peel.Test.ScannerTest do
     [artist] = Album.artists(album)
     assert artist.name == "Unknown artist"
   end
+
+  test "it assigns the album cover image to new tracks", context do
+    Peel.Scanner.create_track(context.path, context.metadata)
+    album = Album.first
+    Album.change(album, %{cover_image: "/path/to/cover.jpg"}) |> Peel.Repo.update
+    Track.delete_all
+    Peel.Scanner.create_track(context.path, context.metadata)
+    assert length(Album.all) == 1
+    track = List.first(context.paths)
+            |> Track.by_path
+    assert track.cover_image == "/path/to/cover.jpg"
+  end
 end

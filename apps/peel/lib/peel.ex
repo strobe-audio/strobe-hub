@@ -14,6 +14,8 @@ defmodule Peel do
       # worker(Peel.Worker, [arg1, arg2, arg3]),
       worker(Peel.Repo, []),
       worker(Peel.Events, []),
+      worker(Peel.CoverArt, []),
+      worker(Peel.CoverArt.Importer, []),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

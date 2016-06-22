@@ -30,6 +30,8 @@ defmodule Peel.Track do
     field :mtime, Ecto.DateTime
     field :normalized_title, :string
 
+    field :cover_image, :string
+
     belongs_to :album, Peel.Album, type: Ecto.UUID
     belongs_to :artist, Peel.Artist, type: Ecto.UUID
   end
@@ -66,6 +68,10 @@ defmodule Peel.Track do
     |> where(path: ^path)
     |> limit(1)
     |> Repo.one
+  end
+
+  def album(track) do
+    track.album_id |> Album.find
   end
 
   def lookup_album(track) do

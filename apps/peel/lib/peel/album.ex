@@ -22,6 +22,8 @@ defmodule Peel.Album do
 
     field :normalized_title, :string
 
+    field :cover_image, :string
+
     has_many :album_artists, Peel.AlbumArtist
     has_many :tracks, Peel.Track
   end
@@ -31,6 +33,20 @@ defmodule Peel.Album do
     |> where(title: ^title)
     |> limit(1)
     |> Repo.one
+  end
+
+  def without_cover_image do
+    from(a in Album,
+      where: is_nil(a.cover_image)
+    ) |> Repo.all
+  end
+
+  def set_cover_image(album, image_path) do
+    album = Album.change(album, %{cover_image: image_path}) |> Repo.update!
+    from(t in Peel.Track,
+      where: (t.album_id == ^album.id) and is_nil(t.cover_image),
+    ) |> Repo.update_all(set: [cover_image: image_path])
+    album
   end
 
   def for_track(%Track{disk_number: nil} = track) do
@@ -68,7 +84,7 @@ defmodule Peel.Album do
   end
 
   def associate(album, track) do
-    %Track{ track | album: album, album_id: album.id }
+    %Track{ track | album: album, album_id: album.id, cover_image: album.cover_image }
   end
 
   def tracks(album) do
@@ -83,5 +99,9 @@ defmodule Peel.Album do
       select: ar,
       where: a.id == ^album.id
     ) |> Repo.all
+  end
+
+  def change(model, changes) do
+    Ecto.Changeset.change(model, changes)
   end
 end

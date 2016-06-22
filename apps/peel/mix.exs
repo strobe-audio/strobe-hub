@@ -40,7 +40,8 @@ defmodule Peel.Mixfile do
   defp deps do
     [ {:uuid, "~> 1.1"},
       {:sqlite_ecto, "~> 1.0.0"},
-      {:ecto, "~> 1.0"}
+      {:ecto, "~> 1.0"},
+      {:work_queue, github: "pragdave/work_queue"},
     ]
   end
 end

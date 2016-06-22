@@ -1,8 +1,10 @@
 defmodule Peel.Scanner do
-  alias Peel.Track
+  require Logger
+
+  alias   Peel.Track
 
   def start(path) do
-    path |> stream |> Enum.each(&scan/1)
+    path |> stream |> Enum.each(&scan/1) |> scan_complete
   end
 
   def stream(path) do
@@ -14,22 +16,28 @@ defmodule Peel.Scanner do
 
   def scan(path) do
     Peel.Repo.transaction fn ->
-      path |> Peel.Track.by_path |> track(path)
+      path |> Peel.Track.by_path |> track(path, true)
     end
+    path
   end
 
-  def track(nil, path) do
-    create_track(path, metadata(path))
+  def scan_complete(path) do
+    Otis.State.Events.notify({:scan_finished, path})
   end
-  def track(%Peel.Track{} = track, _path) do
+
+  def track(nil, path, notify) do
+    create_track(path, metadata(path), notify)
+  end
+  def track(%Peel.Track{} = track, _path, _notify) do
     # Exists - TODO: should check mtime for modifications and act...
     track
   end
 
-  def create_track(path, path_metadata) do
+  def create_track(path, path_metadata, notify \\ false) do
     path
     |> Track.new(clean_metadata(path_metadata))
     |> Track.create!
+    |> log_track_creation(notify)
   end
 
   def metadata(path) do
@@ -43,6 +51,15 @@ defmodule Peel.Scanner do
     # Reject any nil values so that they don't overwrite defaults
     |> Enum.reject(fn({_, v}) -> is_nil(v) end)
     |> Enum.map(&translate_metadata_key/1)
+  end
+
+  def log_track_creation(track, false) do
+    track
+  end
+
+  def log_track_creation(track, true) do
+    Logger.info "Added track #{ track.id } #{ track.performer } > #{ track.album_title } > #{ inspect track.title }"
+    track
   end
 
   # We reserve %Track.album to point to the album relation
