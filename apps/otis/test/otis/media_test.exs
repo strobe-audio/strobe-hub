@@ -1,4 +1,4 @@
-defmodule Test.Otis.Packet do
+defmodule Test.Otis.MediaTest do
   use ExUnit.Case, async: true
 
   setup do
