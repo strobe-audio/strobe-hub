@@ -15,8 +15,6 @@ defmodule Otis.Media.Filesystem do
       @root Path.expand(root)
       @at   at
 
-      IO.inspect [root: @root, at: @at]
-
       import Path, only: [join: 1]
 
       def root do
