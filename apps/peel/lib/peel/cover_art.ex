@@ -2,6 +2,7 @@ defmodule Peel.CoverArt do
   use    GenServer
 
   alias Peel.Album
+  alias Peel.Track
 
   require Logger
 
@@ -29,8 +30,7 @@ defmodule Peel.CoverArt do
   def album_art(%Album{cover_image: nil} = album, track_path) do
     # This path should come from the global peep media config
     # and should be a URL suitable for use in the client
-    filename = "#{album.id}.jpg"
-    {:ok, path, url} = Otis.Media.location([Peel.library_id, "cover"], filename, optimize: 2)
+    {:ok, path, url} = media_location(album)
     case extract(track_path, path) do
       :ok ->
         {:ok, url}
@@ -41,6 +41,16 @@ defmodule Peel.CoverArt do
 
   def album_art(album, _track_path) do
     {:ok, album.cover_image}
+  end
+
+  def media_location(%Album{id: id}), do: media_location(id)
+  def media_location(%Track{album_id: album_id}), do: media_location(album_id)
+  def media_location(album_id) when is_binary(album_id) do
+    Otis.Media.location(media_namespace, "#{album_id}.jpg", optimize: 2)
+  end
+
+  def media_namespace do
+    [Peel.library_id, "cover"]
   end
 
   def start_link do
