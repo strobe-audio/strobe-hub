@@ -120,7 +120,7 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_connected, ^id, _}
     {:ok, receiver} = Receivers.receiver(id)
     Receiver.volume receiver, 0.13
-    assert_receive {:receiver_volume_change, id, 0.13}
+    assert_receive {:receiver_volume_change, ^id, 0.13}
   end
 
   test "the receiver remembers its volume setting", _context do
