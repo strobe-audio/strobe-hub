@@ -29,8 +29,9 @@ defmodule Peel.Album do
   end
 
   def by_title(title) do
+    normalized_title = Peel.String.normalize(title)
     Album
-    |> where(title: ^title)
+    |> where(normalized_title: ^normalized_title)
     |> limit(1)
     |> Repo.one
   end
