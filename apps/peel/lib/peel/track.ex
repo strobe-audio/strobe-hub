@@ -44,6 +44,13 @@ defmodule Peel.Track do
     |> Repo.insert!
   end
 
+  def album_by_artist(album_id, artist_id) do
+    Track
+    |> where(album_id: ^album_id, artist_id: ^artist_id)
+    |> order_by([:track_number])
+    |> Repo.all
+  end
+
   def new(path, metadata) do
     new(path, metadata, File.stat!(path))
   end
