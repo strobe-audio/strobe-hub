@@ -1,5 +1,5 @@
 defmodule Peel.Test.LibraryTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   alias Peel.Repo
   alias Peel.Album
@@ -8,6 +8,12 @@ defmodule Peel.Test.LibraryTest do
   alias Peel.Events.Library
 
   setup_all do
+    Ecto.Adapters.SQL.restart_test_transaction(Peel.Repo)
+
+    on_exit fn ->
+      Ecto.Adapters.SQL.rollback_test_transaction(Peel.Repo)
+    end
+
     artists = [
       %Artist{
         id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", name: "Talking Heads",
