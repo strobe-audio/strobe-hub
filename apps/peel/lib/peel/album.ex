@@ -98,7 +98,8 @@ defmodule Peel.Album do
       join: aa in AlbumArtist, on: a.id == aa.album_id,
       inner_join: ar in Artist, on: ar.id == aa.artist_id,
       select: ar,
-      where: a.id == ^album.id
+      where: a.id == ^album.id,
+      order_by: ar.normalized_name
     ) |> Repo.all
   end
 
