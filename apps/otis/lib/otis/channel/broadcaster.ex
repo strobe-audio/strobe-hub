@@ -194,9 +194,10 @@ defmodule Otis.Channel.Broadcaster do
     next_check = time + interval
     diff = (next_check - state.emit_time)
     if (abs(diff) < interval) || (diff > 0) do
-      state = send_next_packet(state)
+      send_next_packet(state)
+    else
+      state
     end
-    state
   end
 
   # XXX: uncomment when re-enabling fast-buffering of new receivers
