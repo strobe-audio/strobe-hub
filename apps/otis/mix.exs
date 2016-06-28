@@ -33,7 +33,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [ {:porcelain, "~> 2.0"},
+    [ {:porcelain, github: "alco/porcelain"},
       {:dnssd, github: "benoitc/dnssd_erlang"},
       {:poolboy, "~> 1.4"},
       {:monotonic, github: "magnetised/monotonic.ex"},
