@@ -7,8 +7,8 @@ defmodule Peel.CoverArt do
   require Logger
 
   @name Peel.CoverArt
-  @placeholder_image "/peel/placeholder.jpg"
-
+  @placeholder_path  Path.expand("./cover_art/placeholder.jpg", __DIR__)
+  @placeholder_image Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
 
   def pending_albums do
     Album.without_cover_image()

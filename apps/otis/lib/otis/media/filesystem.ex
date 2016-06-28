@@ -29,6 +29,11 @@ defmodule Otis.Media.Filesystem do
         @at
       end
 
+      def copy!(ns, filename, path, opts \\ [optimize: false]) do
+        {:ok, url} = copy(ns, filename, path, opts)
+        url
+      end
+
       def copy(ns, filename, path, opts \\ [optimize: false]) do
         _copy(ns, filename, path, opts, File.exists?(path))
       end
