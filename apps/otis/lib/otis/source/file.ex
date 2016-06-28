@@ -35,10 +35,6 @@ defmodule Otis.Source.File do
       {:ok, <<139, 254, 231, 254, 139, 254, 233, 254, 152, 254, 232, 254, 160, ...>>}
 
   """
-  #TODO: remove this!
-  def source!(path) do
-    path |> new! |> Otis.SourceStream.new
-  end
 
   def extension(%__MODULE__{path: path}) do
     Path.extname(path)
