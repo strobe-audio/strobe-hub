@@ -2,17 +2,23 @@ defmodule Peel.Events.Library do
   use     GenEvent
   require Logger
 
+	alias Peel.Album
+	alias Peel.Artist
+	alias Peel.Track
+
+	@namespace "peel:"
+
   def register do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
   def handle_event({:controller_join, socket}, state) do
     # TODO: icon
-    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", action: "peel:root"}, socket})
+    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", action: url("root")}, socket})
     {:ok, state}
   end
 
-  def handle_event({:library_request, channel_id, "peel:" <> route, socket}, state) do
+  def handle_event({:library_request, channel_id, @namespace <> route, socket}, state) do
     case route_library_request(channel_id, route) do
       nil ->
         nil
@@ -34,7 +40,7 @@ defmodule Peel.Events.Library do
 
   def route_library_request(channel_id, ["track", track_id], _path) do
     {:ok, channel} = Otis.Channels.find(channel_id)
-    case Peel.Track.find(track_id) do
+    case Track.find(track_id) do
       nil ->
         nil
       track ->
@@ -49,20 +55,21 @@ defmodule Peel.Events.Library do
       title: "Your Music",
       icon: "",
       children: [
-        %{ id: "peel:albums", title: "Albums", icon: "", action: "peel:albums" },
-        %{ id: "peel:artists", title: "Artists", icon: "", action: "peel:artists" },
+        %{ id: "peel:albums", title: "Albums", icon: "", action: url("albums") },
+        %{ id: "peel:artists", title: "Artists", icon: "", action: url("artists") },
         # TODO: other top-level items
       ],
     }
   end
 
   def route_library_request(_channel_id, ["albums"], path) do
-    albums = Peel.Album.all |> Enum.map(fn(album) ->
+    albums = Album.all |> Enum.map(fn(album) ->
       %{
         id: "peel:album/#{album.id}",
         title: album.title,
+        metadata: node_metadata(album),
         icon: album.cover_image,
-        action: "peel:album/#{album.id}"
+        action: action(album)
       }
     end)
     %{
@@ -74,16 +81,16 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["album", album_id], path) do
-    case Peel.Album.find(album_id) do
+    case Album.find(album_id) do
       nil ->
         nil
       album ->
-        tracks = album |> Peel.Album.tracks |> Enum.map(fn(track) ->
+        tracks = album |> Album.tracks |> Enum.map(fn(track) ->
           %{
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            action: "peel:track/#{track.id}"
+            action: action(track)
           }
         end)
         %{
@@ -96,12 +103,12 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["artists"], path) do
-    artists = Peel.Artist.all |> Enum.map(fn(artist) ->
+    artists = Artist.all |> Enum.map(fn(artist) ->
       %{
         id: "peel:artist/#{artist.id}",
         title: artist.name,
         icon: "",
-        action: "peel:artist/#{artist.id}"
+        action: action(artist)
       }
     end)
     %{
@@ -113,16 +120,16 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["artist", artist_id], path) do
-    case Peel.Artist.find(artist_id) do
+    case Artist.find(artist_id) do
       nil ->
         nil
       artist ->
-        albums = artist |> Peel.Artist.albums |> Enum.map(fn(album) ->
+        albums = artist |> Artist.albums |> Enum.map(fn(album) ->
           %{
             id: "peel:album/#{album.id}",
             title: album.title,
             icon: album.cover_image,
-            action: "peel:album/#{album.id}/artist/#{artist_id}"
+            action: "#{action(album)}/artist/#{artist_id}"
           }
         end)
         %{
@@ -135,17 +142,17 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["album", album_id, "artist", artist_id], path) do
-    case Peel.Album.find(album_id) do
+    case Album.find(album_id) do
       nil ->
         nil
       album ->
-        tracks = Peel.Track.album_by_artist(album_id, artist_id)
+        tracks = Track.album_by_artist(album_id, artist_id)
         children = Enum.map(tracks, fn(track) ->
           %{
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            action: "peel:track/#{track.id}"
+            action: action(track)
           }
         end)
         %{
@@ -161,4 +168,41 @@ defmodule Peel.Events.Library do
     Logger.warn "Invalid path #{path}"
     nil
   end
+
+	def node_metadata(%Album{} = album) do
+		artists = Album.artists(album)
+		[Enum.map(artists, &link/1)]
+	end
+
+  def link(%Track{title: title} = track) do
+    {title, action(track)}
+  end
+
+  def link(%Album{title: title} = album) do
+    {title, action(album)}
+  end
+
+  def link(%Artist{name: name} = artist) do
+    {name, action(artist)}
+  end
+
+  def link(_) do
+    {"", ""}
+  end
+
+  def action(%Track{id: id}) do
+    url "track/#{id}"
+  end
+
+  def action(%Album{id: id}) do
+    url "album/#{id}"
+  end
+
+  def action(%Artist{id: id}) do
+    url "artist/#{id}"
+  end
+
+	def url(path) do
+		"#{@namespace}#{path}"
+	end
 end

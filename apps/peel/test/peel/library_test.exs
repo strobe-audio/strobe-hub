@@ -138,23 +138,6 @@ defmodule Peel.Test.LibraryTest do
      title: track.title }
   end
 
-  def album_node(%Album{} = album, action \\ fn(album) -> "peel:album/#{album.id}" end) do
-    %{action: action.(album),
-     icon: album.cover_image,
-     id: "peel:album/#{album.id}",
-     title: album.title }
-  end
-
-  test "album_node" do
-    album = Album.find("7aed1ef3-de88-4ea8-9af7-29a1327a5898")
-    assert album_node(album) == %{
-     action: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
-     icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-     id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
-     title: "Talking Heads: 77"
-    }
-  end
-
   test "track_node" do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     assert track_node(track) == %{
@@ -187,10 +170,27 @@ defmodule Peel.Test.LibraryTest do
       title: "Albums",
       icon: "",
       children: [
-        album_node(Album.find("7aed1ef3-de88-4ea8-9af7-29a1327a5898")),
-        album_node(Album.find("1f74a72a-800d-443e-9bb2-4fc5e10ff43d")),
-      ],
-    }
+        %{action: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+         icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
+         id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+         title: "Talking Heads: 77",
+         metadata: [
+           [{"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}]
+         ],
+       },
+       %{action: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+        icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
+        id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+        title: "Some Compilation",
+        metadata: [
+          [ {"Echo and the Bunnymen", "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090"},
+            {"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"},
+            {"The Lurkers", "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"}
+          ],
+        ],
+      },
+    ],
+  }
   end
 
   test "peel:album/{album_id}", context do
@@ -235,9 +235,6 @@ defmodule Peel.Test.LibraryTest do
     artist = Artist.find("fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e")
     path = "artist/#{artist.id}"
     response = Library.route_library_request(context.channel_id, path)
-    action = fn(album) ->
-      "peel:album/#{album.id}/artist/#{artist.id}"
-    end
 
     assert response == %{
       id: path,
@@ -245,9 +242,25 @@ defmodule Peel.Test.LibraryTest do
       # icon: artist.cover_image,
       icon: "",
       children: [
-        album_node(Album.find("7aed1ef3-de88-4ea8-9af7-29a1327a5898"), action),
-        album_node(Album.find("1f74a72a-800d-443e-9bb2-4fc5e10ff43d"), action),
-      ],
+        %{action: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e",
+         icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
+         id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+         title: "Talking Heads: 77",
+         # subtitle: [
+         #   {"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}
+         # ],
+       },
+       %{action: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e",
+        icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
+        id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+        title: "Some Compilation",
+        # subtitle: [
+        #   {"Echo and the Bunnymen", "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090"},
+        #   {"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"},
+        #   {"The Lurkers", "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"},
+        # ]
+      }
+    ],
     }
   end
 
