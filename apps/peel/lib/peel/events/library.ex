@@ -14,7 +14,7 @@ defmodule Peel.Events.Library do
 
   def handle_event({:controller_join, socket}, state) do
     # TODO: icon
-    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", action: url("root"), metadata: nil}, socket})
+    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", actions: %{ click: url("root"), play: nil }, metadata: nil}, socket})
     {:ok, state}
   end
 
@@ -55,8 +55,8 @@ defmodule Peel.Events.Library do
       title: "Your Music",
       icon: "",
       children: [
-        %{ id: "peel:albums", title: "Albums", icon: "", action: url("albums"), metadata: nil },
-        %{ id: "peel:artists", title: "Artists", icon: "", action: url("artists"), metadata: nil },
+        %{ id: "peel:albums", title: "Albums", icon: "", actions: %{ click: url("albums"), play: nil }, metadata: nil },
+        %{ id: "peel:artists", title: "Artists", icon: "", actions: %{ click: url("artists"), play: nil }, metadata: nil },
         # TODO: other top-level items
       ],
     }
@@ -69,7 +69,7 @@ defmodule Peel.Events.Library do
         title: album.title,
         metadata: node_metadata(album),
         icon: album.cover_image,
-        action: action(album)
+        actions: %{ click: click_action(album), play: nil }
       }
     end)
     %{
@@ -90,7 +90,7 @@ defmodule Peel.Events.Library do
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            action: action(track),
+            actions: %{ click: click_action(track), play: nil },
             metadata: nil,
           }
         end)
@@ -109,7 +109,7 @@ defmodule Peel.Events.Library do
         id: "peel:artist/#{artist.id}",
         title: artist.name,
         icon: "",
-        action: action(artist),
+        actions: %{ click: click_action(artist), play: nil },
         metadata: nil,
       }
     end)
@@ -131,7 +131,7 @@ defmodule Peel.Events.Library do
             id: "peel:album/#{album.id}",
             title: album.title,
             icon: album.cover_image,
-            action: "#{action(album)}/artist/#{artist_id}",
+            actions: %{ click: "#{click_action(album)}/artist/#{artist_id}", play: nil },
             metadata: nil,
           }
         end)
@@ -155,7 +155,7 @@ defmodule Peel.Events.Library do
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            action: action(track),
+            actions: %{ click: click_action(track), play: nil },
             metadata: nil,
           }
         end)
@@ -193,15 +193,15 @@ defmodule Peel.Events.Library do
   end
 
   def link(%Track{title: title} = track) do
-    link title, action(track)
+    link title, click_action(track)
   end
 
   def link(%Album{title: title} = album) do
-    link title, action(album)
+    link title, click_action(album)
   end
 
   def link(%Artist{name: name} = artist) do
-    link name, action(artist)
+    link name, click_action(artist)
   end
 
   def link(_) do
@@ -212,15 +212,15 @@ defmodule Peel.Events.Library do
     %{title: title, action: action}
   end
 
-  def action(%Track{id: id}) do
+  def click_action(%Track{id: id}) do
     url "track/#{id}"
   end
 
-  def action(%Album{id: id}) do
+  def click_action(%Album{id: id}) do
     url "album/#{id}"
   end
 
-  def action(%Artist{id: id}) do
+  def click_action(%Artist{id: id}) do
     url "artist/#{id}"
   end
 
