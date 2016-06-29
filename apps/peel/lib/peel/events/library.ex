@@ -2,11 +2,11 @@ defmodule Peel.Events.Library do
   use     GenEvent
   require Logger
 
-	alias Peel.Album
-	alias Peel.Artist
-	alias Peel.Track
+  alias Peel.Album
+  alias Peel.Artist
+  alias Peel.Track
 
-	@namespace "peel:"
+  @namespace "peel:"
 
   def register do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
@@ -169,10 +169,10 @@ defmodule Peel.Events.Library do
     nil
   end
 
-	def node_metadata(%Album{} = album) do
-		artists = Album.artists(album)
-		[Enum.map(artists, &link/1)]
-	end
+  def node_metadata(%Album{} = album) do
+    artists = Album.artists(album)
+    [Enum.map(artists, &link/1)]
+  end
 
   def link(%Track{title: title} = track) do
     {title, action(track)}
@@ -202,7 +202,7 @@ defmodule Peel.Events.Library do
     url "artist/#{id}"
   end
 
-	def url(path) do
-		"#{@namespace}#{path}"
-	end
+  def url(path) do
+    "#{@namespace}#{path}"
+  end
 end
