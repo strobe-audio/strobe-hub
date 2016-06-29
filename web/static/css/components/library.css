@@ -38,10 +38,18 @@
   color: #999;
   font-weight: 700;
   font-size: 0.85em;
+  display: inline-block;
 }
 
-.library--node--metadata-group + .library--node--metadata-group:before {
-  content: "•";
+.library--node--metadata-group {
+  display: inline-block;
+}
+.library--node--metadata-group + .library--node--metadata-group {
+  margin-left: 0.2em;
+  &:before {
+    content: "|";
+    margin-right: 0.2em;
+  }
 }
 @media (--mobile) {
   .library--node {
