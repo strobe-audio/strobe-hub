@@ -175,19 +175,19 @@ defmodule Peel.Events.Library do
   end
 
   def link(%Track{title: title} = track) do
-    {title, action(track)}
+    %{title: title, action: action(track)}
   end
 
   def link(%Album{title: title} = album) do
-    {title, action(album)}
+    %{title: title, action: action(album)}
   end
 
   def link(%Artist{name: name} = artist) do
-    {name, action(artist)}
+    %{title: name, action: action(artist)}
   end
 
   def link(_) do
-    {"", ""}
+    %{title: "", action: ""}
   end
 
   def action(%Track{id: id}) do
