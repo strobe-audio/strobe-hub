@@ -129,7 +129,7 @@ type alias Node =
   { id : String
   , title : String
   , icon : String
-  , action : String
+  , actions : Actions
   , metadata : Maybe (List Metadata)
   }
 
@@ -153,6 +153,10 @@ type alias Link =
   , action : Maybe String
   }
 
+type alias Actions =
+  { click : String
+  , play : Maybe String
+  }
 -- rootLevel : Model -> Folder
 -- rootLevel library =
 --   { id = library.id

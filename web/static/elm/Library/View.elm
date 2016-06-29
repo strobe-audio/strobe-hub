@@ -63,14 +63,14 @@ node address library folder node =
     isActive =
       Maybe.withDefault
         False
-        (Maybe.map (\action -> node.action == action) library.currentRequest)
+        (Maybe.map (\action -> node.actions.click == action) library.currentRequest)
   in
     div
       [ classList
           [ ( "library--node", True )
           , ( "library--node__active", isActive )
           ]
-      , onClick address (Library.ExecuteAction node.action)
+      , onClick address (Library.ExecuteAction node.actions.click)
       ]
       [ div
           [ class "library--node--icon", style [("backgroundImage", (url node.icon))] ]

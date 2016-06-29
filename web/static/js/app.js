@@ -40,8 +40,8 @@ let metadata = { bit_rate: 0
   , track_total:  0
 }
 let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", channelId: "" , source: { id: "", metadata: metadata}}
-let folder = { id: "", title: "", icon: "", action: "", children: []}
-let libraryRegistration = { id: "", title: "", icon: "", action: "", metadata: null }
+let folder = { id: "", title: "", icon: "", actions: { click: "", play: null }, children: []}
+let libraryRegistration = { id: "", title: "", icon: "", actions: { click: "", play: null }, metadata: null }
 let libraryResponse = { libraryId: "", folder}
 let windowWidth = window.innerWidth
 let channelAdditions = { id: "", name: "", position: 0, volume: 0.0, playing: false }
