@@ -3,9 +3,12 @@ module Library.View (..) where
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Json.Decode as Json
 import Library
 import Library.State
 import List.Extra
+import String
+import Debug
 
 
 root : Signal.Address Library.Action -> Library.Model -> Html
@@ -13,6 +16,45 @@ root address model =
   div
     [ class "library" ]
     [ folder address model (Library.State.currentLevel model) ]
+
+url : String -> String
+url path =
+  String.concat ["url(\"", path, "\")"]
+
+metadata : Signal.Address Library.Action -> Maybe (List Library.Metadata) -> Html
+metadata address metadata =
+  case metadata of
+    Nothing ->
+      div [] []
+
+    Just metadataGroups ->
+      div [ class "library--node--metadata" ] (List.map (metadataGroup address) metadataGroups)
+
+
+metadataClick : Signal.Address Library.Action -> String -> Html.Attribute
+metadataClick address action =
+  let
+      options =
+        { preventDefault = True, stopPropagation = True }
+  in
+      onWithOptions "click" options Json.value (\_ -> Signal.message address (Library.ExecuteAction action) )
+
+metadataGroup : Signal.Address Library.Action -> Library.Metadata -> Html
+metadataGroup address group =
+  let
+      makeLink link =
+        let
+            attrs = case link.action of
+              Nothing ->
+                []
+              Just action ->
+                [ (metadataClick address action) ]
+        in
+            (a attrs [ text link.title ])
+      links =
+        List.map makeLink group
+  in
+      div [ class "library--node--metadata-group" ] links
 
 
 node : Signal.Address Library.Action -> Library.Model -> Library.Folder -> Library.Node -> Html
@@ -31,8 +73,15 @@ node address library folder node =
       , onClick address (Library.ExecuteAction node.action)
       ]
       [ div
+          [ class "library--node--icon", style [("backgroundImage", (url node.icon))] ]
+          []
+      , div
           [ class "library--node--inner" ]
-          [ text node.title ]
+          [ div
+            []
+            [ a [] [text node.title] ]
+          , (metadata address node.metadata)
+          ]
       ]
 
 

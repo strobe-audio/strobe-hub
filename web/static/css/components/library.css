@@ -25,12 +25,31 @@
   }
 }
 
+.library--node--icon {
+  width: $button-size;
+  height: $button-size;
+  background-size: cover;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.library--node--metadata {
+  color: #999;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+
+.library--node--metadata-group + .library--node--metadata-group:before {
+  content: "•";
+}
 @media (--mobile) {
   .library--node {
+    position: relative;
     height: $button-size;
     border-bottom: solid 1px #ddd;
     cursor: pointer;
-    &:hover {
+    a:hover {
       color: red;
     }
     transition: background-color 200ms;
@@ -41,6 +60,7 @@
 
   .library--node--inner {
     position: relative;
+    left: $button-size;
     top: 50%;
     transform: translateY(-50%);
     padding: 0 $padding;

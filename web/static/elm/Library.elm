@@ -130,6 +130,7 @@ type alias Node =
   , title : String
   , icon : String
   , action : String
+  , metadata : Maybe (List Metadata)
   }
 
 
@@ -144,7 +145,13 @@ type alias FolderResponse =
   , folder : Folder
   }
 
+type alias Metadata =
+  List Link
 
+type alias Link =
+  { title: String
+  , action : Maybe String
+  }
 
 -- rootLevel : Model -> Folder
 -- rootLevel library =

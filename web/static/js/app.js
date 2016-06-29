@@ -41,7 +41,7 @@ let metadata = { bit_rate: 0
 }
 let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", channelId: "" , source: { id: "", metadata: metadata}}
 let folder = { id: "", title: "", icon: "", action: "", children: []}
-let libraryRegistration = { id: "", title: "", icon: "", action: "" }
+let libraryRegistration = { id: "", title: "", icon: "", action: "", metadata: null }
 let libraryResponse = { libraryId: "", folder}
 let windowWidth = window.innerWidth
 let channelAdditions = { id: "", name: "", position: 0, volume: 0.0, playing: false }
