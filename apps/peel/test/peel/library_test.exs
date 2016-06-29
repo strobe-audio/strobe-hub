@@ -185,9 +185,9 @@ defmodule Peel.Test.LibraryTest do
         id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         title: "Some Compilation",
         metadata: [
-          [ {"Echo and the Bunnymen", "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090"},
-            {"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"},
-            {"The Lurkers", "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"}
+          [ %{title: "Various Artists", action: nil},
+            # %{title: "Talking Heads", action: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"},
+            # %{title: "The Lurkers", action: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"}
           ],
         ],
       },

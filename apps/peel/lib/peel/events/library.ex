@@ -23,7 +23,7 @@ defmodule Peel.Events.Library do
       nil ->
         nil
       response ->
-        IO.inspect {:peel, :library, response}
+        # IO.inspect {:peel, :library, response}
         Otis.State.Events.notify({:library_response, "peel", response, socket})
     end
     {:ok, state}
@@ -174,24 +174,34 @@ defmodule Peel.Events.Library do
   end
 
   def node_metadata(%Album{} = album) do
-    artists = Album.artists(album)
-    [Enum.map(artists, &link/1)]
+    album_metadata(album, Album.artists(album))
+  end
+
+  def album_metadata(_album, [artist]) do
+    [ [link(artist.name, action(artist))] ]
+  end
+  def album_metadata(_album, _artists) do
+    [ [link("Various Artists", nil)] ]
   end
 
   def link(%Track{title: title} = track) do
-    %{title: title, action: action(track)}
+    link title, action(track)
   end
 
   def link(%Album{title: title} = album) do
-    %{title: title, action: action(album)}
+    link title, action(album)
   end
 
   def link(%Artist{name: name} = artist) do
-    %{title: name, action: action(artist)}
+    link name, action(artist)
   end
 
   def link(_) do
-    %{title: "", action: ""}
+    link("", nil)
+  end
+
+  def link(title, action) do
+    %{title: title, action: action}
   end
 
   def action(%Track{id: id}) do
