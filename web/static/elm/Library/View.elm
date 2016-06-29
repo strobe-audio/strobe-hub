@@ -46,9 +46,9 @@ metadataGroup address group =
         let
             attrs = case link.action of
               Nothing ->
-                []
+                [ class "library--no-action" ]
               Just action ->
-                [ (metadataClick address action) ]
+                [ class "library--click-action", (metadataClick address action) ]
         in
             (a attrs [ text link.title ])
       links =
@@ -69,6 +69,7 @@ node address library folder node =
       [ classList
           [ ( "library--node", True )
           , ( "library--node__active", isActive )
+          , ( "library--click-action", True )
           ]
       , onClick address (Library.ExecuteAction node.actions.click)
       ]
