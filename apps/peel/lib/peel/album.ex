@@ -89,7 +89,7 @@ defmodule Peel.Album do
   end
 
   def tracks(album) do
-    album = album |> Repo.preload(:tracks)
+    album = album |> Repo.preload(tracks: from(t in Peel.Track, order_by: t.track_number))
     album.tracks
   end
 

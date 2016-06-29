@@ -13,8 +13,17 @@ defmodule Peel.Events.Library do
   end
 
   def handle_event({:controller_join, socket}, state) do
-    # TODO: icon
-    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", actions: %{ click: url("root"), play: nil }, metadata: nil}, socket})
+    library = %{
+      id: Peel.library_id,
+      title: "Your Music",
+      icon: "",
+      actions: %{
+        click: url("root"),
+        play: nil
+      },
+      metadata: nil
+    }
+    Otis.State.Events.notify({:add_library, library, socket})
     {:ok, state}
   end
 
@@ -23,7 +32,6 @@ defmodule Peel.Events.Library do
       nil ->
         nil
       response ->
-        # IO.inspect {:peel, :library, response}
         Otis.State.Events.notify({:library_response, "peel", response, socket})
     end
     {:ok, state}
@@ -38,16 +46,13 @@ defmodule Peel.Events.Library do
     route_library_request(channel_id, String.split(route, "/", trim: true), route)
   end
 
-  def route_library_request(channel_id, ["track", track_id], _path) do
-    {:ok, channel} = Otis.Channels.find(channel_id)
-    case Track.find(track_id) do
-      nil ->
-        nil
-      track ->
-        Otis.Channel.append(channel, track)
-        nil
-    end
+  def route_library_request(channel_id, ["track", track_id, "play"], _path) do
+    Track.find(track_id) |> play(channel_id)
   end
+  def route_library_request(channel_id, ["track", track_id], _path) do
+    Track.find(track_id) |> play(channel_id)
+  end
+
 
   def route_library_request(_channel_id, ["root"], _path) do
     %{
@@ -106,6 +111,15 @@ defmodule Peel.Events.Library do
           icon: album.cover_image,
           children: tracks
         }
+    end
+  end
+
+  def route_library_request(channel_id, ["album", album_id, "play"], _path) do
+    case Album.find(album_id) do
+      nil ->
+        nil
+      album ->
+        Album.tracks(album) |> play(channel_id)
     end
   end
 
@@ -225,7 +239,7 @@ defmodule Peel.Events.Library do
   end
 
   def click_action(%Track{id: id}) do
-    url "track/#{id}"
+    url "track/#{id}/play"
   end
 
   def click_action(%Album{id: id}) do
@@ -237,7 +251,7 @@ defmodule Peel.Events.Library do
   end
 
   def play_action(%Track{id: id}) do
-    url "track/#{id}"
+    url "track/#{id}/play"
   end
 
   def play_action(%Album{id: id}) do
@@ -250,5 +264,16 @@ defmodule Peel.Events.Library do
 
   def url(path) do
     "#{@namespace}#{path}"
+  end
+
+  def play(nil, channel_id) do
+  end
+  def play(tracks, channel_id) when is_list(tracks) do
+    with {:ok, channel} <- Otis.Channels.find(channel_id) do
+      Otis.Channel.append(channel, tracks)
+    end
+  end
+  def play(track, channel_id) do
+    play([track], channel_id)
   end
 end

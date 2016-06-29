@@ -119,6 +119,8 @@ defmodule Peel.Test.LibraryTest do
 
     Enum.each album_artists, &Repo.insert!/1
 
+    Otis.State.Channel.delete_all
+
     channel_id = "6df968bf-3454-4514-940b-4829dfcf4d3c"
 
     channels = [
@@ -128,11 +130,33 @@ defmodule Peel.Test.LibraryTest do
     ]
     Enum.each channels, &Otis.State.Repo.insert!/1
 
+    Enum.each Otis.State.Channel.all, fn(channel) ->
+      Otis.Channels.start(Otis.Channels, channel.id, channel)
+    end
+
+    on_exit fn ->
+      Enum.each Otis.State.Channel.all, fn(channel) ->
+        Otis.Channels.destroy!(Otis.Channels, channel.id)
+      end
+    end
+
     {:ok, channel_id: channel_id}
   end
 
+  setup context do
+    TestEventHandler.attach
+    on_exit fn ->
+      with {:ok, channel} <- Otis.Channels.find(context.channel_id),
+           {:ok, source_list} <- Otis.Channel.source_list(channel)
+      do
+        Otis.SourceList.clear(source_list)
+      end
+    end
+    :ok
+  end
+
   def track_node(%Track{} = track) do
-    %{actions: %{ click: "peel:track/#{track.id}", play: "peel:track/#{track.id}" },
+    %{actions: %{ click: "peel:track/#{track.id}/play", play: "peel:track/#{track.id}/play" },
      icon: track.cover_image,
      id: "peel:track/#{track.id}",
      title: track.title,
@@ -142,7 +166,7 @@ defmodule Peel.Test.LibraryTest do
   test "track_node" do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     assert track_node(track) == %{
-     actions: %{ click: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428", play: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428" },
+     actions: %{ click: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play", play: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play" },
      icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
      id: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428",
      title: "Uh-Oh, Love Comes To Town",
@@ -287,5 +311,26 @@ defmodule Peel.Test.LibraryTest do
         track_node(Track.find("0a89f07e-0f5e-48c4-8b00-d83026a90724")),
       ],
     }
+  end
+
+  test "peel:track/{track_id}/play", %{channel_id: channel_id} = _context do
+    track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
+    path = "track/#{track.id}/play"
+    Library.route_library_request(channel_id, path)
+    assert_receive {:new_source, ^channel_id, 0, {_, 0, ^track}}
+  end
+
+  test "peel:album/{album_id}/play", %{channel_id: channel_id} = _context do
+    album = Album.find("7aed1ef3-de88-4ea8-9af7-29a1327a5898")
+    path = "album/#{album.id}/play"
+    Library.route_library_request(channel_id, path)
+
+    [track1, track2] = [
+      Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428"),
+      Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df"),
+    ]
+
+    assert_receive {:new_source, ^channel_id, 0, {_, 0, ^track1}}
+    assert_receive {:new_source, ^channel_id, 1, {_, 0, ^track2}}
   end
 end
