@@ -178,7 +178,7 @@ defmodule Peel.Events.Library do
   end
 
   def album_metadata(album, [artist]) do
-    [ [link(artist.name, action(artist))] ] |> album_date_metadata(album.date)
+    [ [link(artist)] ] |> album_date_metadata(album.date)
   end
   def album_metadata(album, _artists) do
     [ [link("Various Artists", nil)] ] |> album_date_metadata(album.date)
@@ -188,6 +188,7 @@ defmodule Peel.Events.Library do
     metadata
   end
   def album_date_metadata(metadata, date) do
+    # TODO: add action for searching by date
     metadata ++ [[ link(date, nil) ]]
   end
 
