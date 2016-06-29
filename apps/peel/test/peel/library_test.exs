@@ -132,7 +132,7 @@ defmodule Peel.Test.LibraryTest do
   end
 
   def track_node(%Track{} = track) do
-    %{actions: %{ click: "peel:track/#{track.id}", play: nil },
+    %{actions: %{ click: "peel:track/#{track.id}", play: "peel:track/#{track.id}" },
      icon: track.cover_image,
      id: "peel:track/#{track.id}",
      title: track.title,
@@ -142,7 +142,7 @@ defmodule Peel.Test.LibraryTest do
   test "track_node" do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     assert track_node(track) == %{
-     actions: %{ click: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428", play: nil },
+     actions: %{ click: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428", play: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428" },
      icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
      id: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428",
      title: "Uh-Oh, Love Comes To Town",
@@ -172,7 +172,10 @@ defmodule Peel.Test.LibraryTest do
       title: "Albums",
       icon: "",
       children: [
-        %{actions: %{ click: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898", play: nil },
+        %{ actions: %{
+            click: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+            play:  "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play",
+          },
          icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
          id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
          title: "Talking Heads: 77",
@@ -181,7 +184,10 @@ defmodule Peel.Test.LibraryTest do
            [%{title: "1977", action: nil}]
          ],
        },
-       %{actions: %{ click: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d", play: nil },
+       %{ actions: %{
+           click: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+           play: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/play",
+         },
         icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
         id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         title: "Some Compilation",
@@ -242,7 +248,7 @@ defmodule Peel.Test.LibraryTest do
       # icon: artist.cover_image,
       icon: "",
       children: [
-        %{actions: %{ click: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", play: nil },
+        %{actions: %{ click: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", play: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play" },
          icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
          id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
          title: "Talking Heads: 77",
@@ -252,7 +258,7 @@ defmodule Peel.Test.LibraryTest do
          #   [{"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}]
          # ],
        },
-       %{actions: %{ click: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", play: nil },
+       %{actions: %{ click: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", play: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play" },
         icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
         id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         title: "Some Compilation",

@@ -69,7 +69,10 @@ defmodule Peel.Events.Library do
         title: album.title,
         metadata: node_metadata(album),
         icon: album.cover_image,
-        actions: %{ click: click_action(album), play: nil }
+        actions: %{
+          click: click_action(album),
+          play: play_action(album),
+        },
       }
     end)
     %{
@@ -90,7 +93,10 @@ defmodule Peel.Events.Library do
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            actions: %{ click: click_action(track), play: nil },
+            actions: %{
+              click: click_action(track),
+              play: play_action(track)
+            },
             metadata: nil,
           }
         end)
@@ -131,7 +137,10 @@ defmodule Peel.Events.Library do
             id: "peel:album/#{album.id}",
             title: album.title,
             icon: album.cover_image,
-            actions: %{ click: "#{click_action(album)}/artist/#{artist_id}", play: nil },
+            actions: %{
+              click: "#{click_action(album)}/artist/#{artist_id}",
+              play: "#{click_action(album)}/artist/#{artist_id}/play",
+            },
             metadata: nil,
           }
         end)
@@ -155,7 +164,10 @@ defmodule Peel.Events.Library do
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            actions: %{ click: click_action(track), play: nil },
+            actions: %{
+              click: click_action(track),
+              play: play_action(track)
+            },
             metadata: nil,
           }
         end)
@@ -222,6 +234,18 @@ defmodule Peel.Events.Library do
 
   def click_action(%Artist{id: id}) do
     url "artist/#{id}"
+  end
+
+  def play_action(%Track{id: id}) do
+    url "track/#{id}"
+  end
+
+  def play_action(%Album{id: id}) do
+    url "album/#{id}/play"
+  end
+
+  def play_action(%Artist{id: id}) do
+    url "artist/#{id}/play"
   end
 
   def url(path) do
