@@ -34,7 +34,7 @@ defmodule Peel.Test.LibraryTest do
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
         title: "Talking Heads: 77", track_total: 2 },
       %Album{ id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
-        date: "1987", disk_number: 1, disk_total: 1, genre: "Rock",
+        date: nil, disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "some compilation", performer: "Various Artists",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
         title: "Some Compilation", track_total: 3 },
@@ -177,7 +177,8 @@ defmodule Peel.Test.LibraryTest do
          id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
          title: "Talking Heads: 77",
          metadata: [
-           [%{title: "Talking Heads", action: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}]
+           [%{title: "Talking Heads", action: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}],
+           [%{title: "1977", action: nil}]
          ],
        },
        %{action: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
@@ -185,10 +186,7 @@ defmodule Peel.Test.LibraryTest do
         id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         title: "Some Compilation",
         metadata: [
-          [ %{title: "Various Artists", action: nil},
-            # %{title: "Talking Heads", action: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"},
-            # %{title: "The Lurkers", action: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"}
-          ],
+          [ %{title: "Various Artists", action: nil} ],
         ],
       },
     ],
