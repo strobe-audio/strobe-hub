@@ -47,7 +47,7 @@ defmodule Peel.Test.LibraryTest do
         album_title: "Talking Heads: 77",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 169227,
+        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 159000,
         genre: "Rock", mime_type: "audio/mp4",
         normalized_title: "uh oh love comes to town",
         path: "iTunes/iTunes Media/Music/Talking Heads/Talking Heads_ 77/01 Uh-Oh, Love Comes To Town.m4a",
@@ -160,7 +160,10 @@ defmodule Peel.Test.LibraryTest do
      icon: track.cover_image,
      id: "peel:track/#{track.id}",
      title: track.title,
-     metadata: nil }
+     metadata: [
+      [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
+     ]
+   }
   end
 
   test "track_node" do
@@ -170,7 +173,10 @@ defmodule Peel.Test.LibraryTest do
      icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
      id: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428",
      title: "Uh-Oh, Love Comes To Town",
-     metadata: nil }
+     metadata: [
+      [%{ title: "02:39", action: nil}]
+     ],
+   }
   end
 
   test "peel:root", context do

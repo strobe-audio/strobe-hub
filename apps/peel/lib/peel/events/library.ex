@@ -102,7 +102,9 @@ defmodule Peel.Events.Library do
               click: click_action(track),
               play: play_action(track)
             },
-            metadata: nil,
+            metadata: [
+              [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
+            ],
           }
         end)
         %{
@@ -182,7 +184,9 @@ defmodule Peel.Events.Library do
               click: click_action(track),
               play: play_action(track)
             },
-            metadata: nil,
+            metadata: [
+              [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
+            ],
           }
         end)
         %{
@@ -266,7 +270,7 @@ defmodule Peel.Events.Library do
     "#{@namespace}#{path}"
   end
 
-  def play(nil, channel_id) do
+  def play(nil, _channel_id) do
   end
   def play(tracks, channel_id) when is_list(tracks) do
     with {:ok, channel} <- Otis.Channels.find(channel_id) do
