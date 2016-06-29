@@ -135,7 +135,8 @@ defmodule Peel.Test.LibraryTest do
     %{action: "peel:track/#{track.id}",
      icon: track.cover_image,
      id: "peel:track/#{track.id}",
-     title: track.title }
+     title: track.title,
+     metadata: nil }
   end
 
   test "track_node" do
@@ -144,7 +145,8 @@ defmodule Peel.Test.LibraryTest do
      action: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428",
      icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
      id: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428",
-     title: "Uh-Oh, Love Comes To Town" }
+     title: "Uh-Oh, Love Comes To Town",
+     metadata: nil }
   end
 
   test "peel:root", context do
@@ -155,8 +157,8 @@ defmodule Peel.Test.LibraryTest do
       title: "Your Music",
       icon: "",
       children: [
-        %{ id: "peel:albums", title: "Albums", icon: "", action: "peel:albums" },
-        %{ id: "peel:artists", title: "Artists", icon: "", action: "peel:artists" },
+        %{ id: "peel:albums", title: "Albums", icon: "", action: "peel:albums", metadata: nil },
+        %{ id: "peel:artists", title: "Artists", icon: "", action: "peel:artists", metadata: nil },
       ],
     }
   end
@@ -175,7 +177,7 @@ defmodule Peel.Test.LibraryTest do
          id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
          title: "Talking Heads: 77",
          metadata: [
-           [{"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}]
+           [%{title: "Talking Heads", action: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}]
          ],
        },
        %{action: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
@@ -220,13 +222,13 @@ defmodule Peel.Test.LibraryTest do
       children: [
         %{ id: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e",
           action: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e",
-          icon: "", title: "Talking Heads"},
+          icon: "", title: "Talking Heads", metadata: nil},
         %{ id: "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090",
           action: "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090",
-          icon: "", title: "Echo and the Bunnymen"},
+          icon: "", title: "Echo and the Bunnymen", metadata: nil},
         %{ id: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de",
           action: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de",
-          icon: "", title: "The Lurkers"},
+          icon: "", title: "The Lurkers", metadata: nil},
       ],
     }
   end
@@ -246,6 +248,8 @@ defmodule Peel.Test.LibraryTest do
          icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
          id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
          title: "Talking Heads: 77",
+         metadata: nil,
+
          # metadata: [
          #   [{"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}]
          # ],
@@ -254,6 +258,7 @@ defmodule Peel.Test.LibraryTest do
         icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
         id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         title: "Some Compilation",
+        metadata: nil,
         # metadata: [
         #   [{"Echo and the Bunnymen", "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090"},
         #   {"Talking Heads", "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"},

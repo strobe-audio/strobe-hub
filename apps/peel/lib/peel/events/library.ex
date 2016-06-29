@@ -14,7 +14,7 @@ defmodule Peel.Events.Library do
 
   def handle_event({:controller_join, socket}, state) do
     # TODO: icon
-    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", action: url("root")}, socket})
+    Otis.State.Events.notify({:add_library, %{id: Peel.library_id, title: "Your Music", icon: "", action: url("root"), metadata: nil}, socket})
     {:ok, state}
   end
 
@@ -55,8 +55,8 @@ defmodule Peel.Events.Library do
       title: "Your Music",
       icon: "",
       children: [
-        %{ id: "peel:albums", title: "Albums", icon: "", action: url("albums") },
-        %{ id: "peel:artists", title: "Artists", icon: "", action: url("artists") },
+        %{ id: "peel:albums", title: "Albums", icon: "", action: url("albums"), metadata: nil },
+        %{ id: "peel:artists", title: "Artists", icon: "", action: url("artists"), metadata: nil },
         # TODO: other top-level items
       ],
     }
@@ -90,7 +90,8 @@ defmodule Peel.Events.Library do
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            action: action(track)
+            action: action(track),
+            metadata: nil,
           }
         end)
         %{
@@ -108,7 +109,8 @@ defmodule Peel.Events.Library do
         id: "peel:artist/#{artist.id}",
         title: artist.name,
         icon: "",
-        action: action(artist)
+        action: action(artist),
+        metadata: nil,
       }
     end)
     %{
@@ -129,7 +131,8 @@ defmodule Peel.Events.Library do
             id: "peel:album/#{album.id}",
             title: album.title,
             icon: album.cover_image,
-            action: "#{action(album)}/artist/#{artist_id}"
+            action: "#{action(album)}/artist/#{artist_id}",
+            metadata: nil,
           }
         end)
         %{
@@ -152,7 +155,8 @@ defmodule Peel.Events.Library do
             id: "peel:track/#{track.id}",
             title: track.title,
             icon: track.cover_image,
-            action: action(track)
+            action: action(track),
+            metadata: nil,
           }
         end)
         %{
