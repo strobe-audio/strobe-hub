@@ -20,7 +20,7 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:channel_added, id, channel}, state) do
+  def handle_event({:channel_added, _id, channel}, state) do
     broadcast!("channel_added", Otis.State.status(channel))
     {:ok, state}
   end
