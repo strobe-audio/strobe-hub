@@ -207,7 +207,7 @@ defmodule Peel.Events.Library do
     album_metadata(album, Album.artists(album))
   end
 
-  def album_metadata(album, nil) do
+  def album_metadata(_album, nil) do
   end
   def album_metadata(album, [artist]) do
     [ [link(artist)] ] |> album_date_metadata(album.date)
