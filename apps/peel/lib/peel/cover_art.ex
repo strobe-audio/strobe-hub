@@ -8,7 +8,12 @@ defmodule Peel.CoverArt do
 
   @name Peel.CoverArt
   @placeholder_path  Path.expand("./cover_art/placeholder.jpg", __DIR__)
-  @placeholder_image Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
+
+  if Code.ensure_loaded?(Otis.Media) do
+    @placeholder_image Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
+  else
+    @placeholder_image "placeholder.jpg"
+  end
 
   def pending_albums do
     Album.without_cover_image()

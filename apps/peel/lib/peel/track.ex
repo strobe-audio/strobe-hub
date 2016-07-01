@@ -95,42 +95,44 @@ defmodule Peel.Track do
   def strip_leading_dot("." <> rest), do: rest
 end
 
-defimpl Otis.Source, for: Peel.Track do
-  alias Peel.Track
+if Code.ensure_loaded?(Otis.Source) do
+  defimpl Otis.Source, for: Peel.Track do
+    alias Peel.Track
 
-  def id(track) do
-    track.id
+    def id(track) do
+      track.id
+    end
+
+    def type(_track) do
+      Peel.Track
+    end
+
+    def open!(%Track{path: path}, packet_size_bytes) do
+      Elixir.File.stream!(path, [], packet_size_bytes)
+    end
+
+    def close(%Track{}, stream) do
+      Elixir.File.close(stream)
+    end
+
+    def audio_type(track) do
+      {Track.extension(track), track.mime_type}
+    end
+
+    # TODO: what should this return?
+    def metadata(track) do
+      track
+    end
+
+    def duration(%Track{duration_ms: duration_ms}) do
+      {:ok, duration_ms}
+    end
   end
 
-  def type(_track) do
-    Peel.Track
-  end
-
-  def open!(%Track{path: path}, packet_size_bytes) do
-    Elixir.File.stream!(path, [], packet_size_bytes)
-  end
-
-  def close(%Track{}, stream) do
-    Elixir.File.close(stream)
-  end
-
-  def audio_type(track) do
-    {Track.extension(track), track.mime_type}
-  end
-
-  # TODO: what should this return?
-  def metadata(track) do
-    track
-  end
-
-  def duration(%Track{duration_ms: duration_ms}) do
-    {:ok, duration_ms}
-  end
-end
-
-defimpl Otis.Source.Origin, for: Peel.Track do
-  def load!(track) do
-    Peel.Track.find(track.id)
+  defimpl Otis.Source.Origin, for: Peel.Track do
+    def load!(track) do
+      Peel.Track.find(track.id)
+    end
   end
 end
 
