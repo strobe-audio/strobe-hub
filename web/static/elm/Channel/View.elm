@@ -76,7 +76,23 @@ playlist address channel =
           div
             [ class "block-group playlist" ]
             (List.map entry playlist)
+    actionButtons = case  List.length playlist of
+        0 ->
+          [ ]
+
+        _ ->
+          [ div [ class "channel--playlist-actions--space" ] []
+          , div
+            [ class "channel--playlist-actions--clear"
+            , onClick address (Channel.ClearPlaylist)
+            ]
+            []
+          ]
   in
     div
       [ class "channel--playlist" ]
-      [ panel ]
+      [ div
+          [ class "channel--playlist-actions" ]
+          actionButtons
+      , panel
+      ]

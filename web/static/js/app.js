@@ -160,6 +160,11 @@ elmApp.ports.channelNameChanges.subscribe(event => {
   .receive("error", payload => console.log(payload.message))
 })
 
+elmApp.ports.channelClearPlaylist.subscribe(event => {
+  channel.push("clear_playlist", event)
+  .receive("error", payload => console.log(payload.message))
+})
+
 elmApp.ports.playlistSkipRequests.subscribe(event => {
   channel.push("skip_track", event)
   .receive("error", payload => console.log(payload.message))

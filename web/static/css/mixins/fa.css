@@ -8,6 +8,7 @@
 }
 
 @define-mixin fa-btn $icon {
+  cursor: pointer;
   &:before {
     @mixin fa;
     content: $icon; /* fa-plus */

@@ -11,3 +11,8 @@ playPause =
 rename : Signal.Mailbox ( ID.Channel, String )
 rename =
   Signal.mailbox ( "", "" )
+
+
+clearPlaylist : Signal.Mailbox ID.Channel
+clearPlaylist =
+  Signal.mailbox ""

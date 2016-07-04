@@ -24,6 +24,11 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("clear_playlist", id, socket) do
+    Otis.Channels.clear id
+    {:noreply, socket}
+  end
+
   def handle_in("play_pause", [id, playing], socket) do
     Otis.Channels.play id, playing
     {:noreply, socket}

@@ -10,3 +10,25 @@
     padding-right: calc($padding/2);
   }
 }
+
+.channel--playlist-actions {
+  display: flex;
+  height: $button-size;
+  background-color: #eee;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+.channel--playlist-actions--space {
+  flex: 1;
+}
+.channel--playlist-actions--clear {
+  @mixin fa-btn "\f1f8";
+  flex: 0 0 $button-size;
+  width: $button-size;
+  height: $button-size;
+  background: rgba(0, 0, 0, 0.1);
+  &:hover {
+    color: red;
+    background: rgba(255, 0, 0, 0.4);
+  }
+}

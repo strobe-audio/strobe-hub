@@ -168,6 +168,15 @@ port channelNameChanges =
     mailbox.signal
 
 
+port channelClearPlaylist : Signal ID.Channel
+port channelClearPlaylist =
+  let
+    mailbox =
+      Channel.Signals.clearPlaylist
+  in
+    mailbox.signal
+
+
 port playlistSkipRequests : Signal ( String, String )
 port playlistSkipRequests =
   let

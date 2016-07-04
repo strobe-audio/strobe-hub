@@ -174,6 +174,11 @@ update action channel =
           { channel | name = name, originalName = name }
       in
         ( channel', Effects.none )
+    Channel.ClearPlaylist ->
+        let
+            channel' = { channel | playlist = [] }
+        in
+            ( channel', Channel.Effects.clearPlaylist channel' )
 
 
 channelPlayPause : Channel.Model -> Channel.Model

@@ -54,6 +54,7 @@ type Action
   | EditName Input.Action
   | Rename String
   | Renamed String
+  | ClearPlaylist
   | NoOp
 
 

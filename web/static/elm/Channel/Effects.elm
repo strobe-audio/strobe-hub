@@ -32,3 +32,14 @@ rename channel =
     Signal.send mailbox.address ( channel.id, channel.name )
       |> Effects.task
       |> Effects.map (always Channel.NoOp)
+
+
+clearPlaylist : Channel.Model -> Effects Channel.Action
+clearPlaylist channel =
+  let
+      mailbox =
+        Channel.Signals.clearPlaylist
+  in
+    Signal.send mailbox.address channel.id
+      |> Effects.task
+      |> Effects.map (always Channel.NoOp)
