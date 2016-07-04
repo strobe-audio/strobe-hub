@@ -54,8 +54,6 @@ So much.
 
 **BUGS**:
 
-- [ ] graphql for library requests? http://absinthe-graphql.org/
-
 - [ ] audio pops when switching receiver between channels
 
 - [ ] Fix janis crash when connecting over vpn:
@@ -67,8 +65,6 @@ So much.
       (janis) lib/janis/broadcaster.ex:28: Janis.Broadcaster.start_broadcaster/4
       (janis) lib/janis/dnssd.ex:32: Janis.DNSSD.handle_info/2
       ```
-- [ ] SourceList.clear doesn't send any events or delete any sources from the db
-
 - [ ] 'Progress event for unknown source' -- why?
 
       ```
@@ -153,13 +149,9 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 **Core:**
 
-- [ ] speed up volume changes (multiply in volume at last minute, not when
-  packet is delivered to the port driver)
-
 - [ ] mute receivers & channels (so you can temporarily turn the sound off without
   losing carefully set volumes)
 
-- [ ] change volume for receiver that's not connected
 
 - [ ] get metadata from tracks using libav (https://libav.org/documentation/doxygen/master/metadata_8c-example.html) (license!)
 - [ ] receiver connection keepalive/monitoring. ping-pong messages so that if a
@@ -175,16 +167,21 @@ State: %Otis.AudioStream.S{buffer: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 - [ ] channels stop when all receievers removed (postponed as it makes it hard to
 	test multi-channel playback with only 2 receivers)
 
-- [ ] rename `Zone` to `Channel` or `Station` -- zones are just static
+- [ ] move source list entries between channels
+
+
+- [x] SourceList.clear doesn't send any events or delete any sources from the db
+- [X] graphql for library requests? http://absinthe-graphql.org/
+- [X] rename `Zone` to `Channel` or `Station` -- zones are just static
   pre-configured playlists. 'zone' is geographic but we want to think of the
   setup more like 'tuning in' to a particular playlist -- more like a radio
   station than a room. Want to think of the 'zone' system as a way to keep a
   set of playlists -- we should be light about them -- it's ok to keep loads
   (say as a way to pop ideas for songs to play later) and then drop some number
   of receivers on to them to listen.
-
-- [ ] move source list entries between channels
-
+- [X] speed up volume changes (multiply in volume at last minute, not when
+  packet is delivered to the port driver)
+- [X] change volume for receiver that's not connected
 - [x] use `Ecto.UUID` for all ids in `Otis.State` -- currently we're on
   `:string` but I think this is a mistake
 - [x] replace phoenix websocket connection with raw TCP for control messages
