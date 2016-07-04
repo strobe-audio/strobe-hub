@@ -7,6 +7,7 @@ import Receivers
 import Receivers.State
 import Channel
 import Receiver.View
+import Debug
 
 
 receivers : Signal.Address Receivers.Action -> Receivers.Model -> Channel.Model -> Html
@@ -29,6 +30,9 @@ receivers address model channel =
     detached =
       Receivers.detachedReceivers model channel
 
+    online =
+      (Receivers.onlineReceivers model)
+
     receiverEntry receiver =
       let
         receiverAddress =
@@ -50,19 +54,24 @@ receivers address model channel =
           ( Receivers.NoOp, [] )
 
         _ ->
-          if model.showAttach then
-            ( (Receivers.ShowAttach False)
-            , [ div [ class "receivers--add" ] [ i [ class "fa fa-caret-up" ] [] ] ]
-            )
-          else
-            ( (Receivers.ShowAttach True)
-            , [ div [ class "receivers--add" ] [ i [ class "fa fa-plus" ] [] ] ]
-            )
+          case  (List.length online) of
+            0 ->
+              ( Receivers.NoOp, [] )
+
+            _ ->
+              if model.showAttach then
+                ( (Receivers.ShowAttach False)
+                , [ div [ class "receivers--add" ] [ i [ class "fa fa-caret-up" ] [] ] ]
+                )
+              else
+                ( (Receivers.ShowAttach True)
+                , [ div [ class "receivers--add" ] [ i [ class "fa fa-plus" ] [] ] ]
+                )
   in
     div
       [ class "receivers" ]
       [ div
           [ class "receivers--head", onClick address action ]
-          ((div [ class "receivers--title" ] [ text (count ++ " Receivers") ]) :: addButton)
+          ((div [ class "receivers--title" ] [ text (count ++ "/" ++ (toString (List.length model.receivers)) ++ " Receivers") ]) :: addButton)
       , div [ class "receivers--list" ] receiverList
       ]

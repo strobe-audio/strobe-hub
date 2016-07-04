@@ -31,3 +31,6 @@ detachedReceivers : Model -> { a | id : ID.Channel } -> List Receiver.Model
 detachedReceivers model channel =
     List.filter (\r -> r.channelId /= channel.id) model.receivers
 
+onlineReceivers : Model -> List Receiver.Model
+onlineReceivers model =
+  List.filter .online model.receivers
