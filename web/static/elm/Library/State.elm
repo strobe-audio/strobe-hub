@@ -44,6 +44,16 @@ update action model maybeChannelId =
         Nothing ->
           ( model, Effects.none )
 
+    Library.MaybeExecuteAction a ->
+      case a of
+        Nothing ->
+          ( model, Effects.none )
+
+        Just libraryAction ->
+          update (Library.ExecuteAction libraryAction) model maybeChannelId
+
+
+
     Library.Response folder ->
       let
         _ =

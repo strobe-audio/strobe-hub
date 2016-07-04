@@ -64,6 +64,12 @@ node address library folder node =
       Maybe.withDefault
         False
         (Maybe.map (\action -> node.actions.click == action) library.currentRequest)
+
+    options =
+      { preventDefault = True, stopPropagation = True }
+
+    click action =
+      onWithOptions "click" options Json.value (\_ -> Signal.message address action )
   in
     div
       [ classList
@@ -74,13 +80,16 @@ node address library folder node =
       , onClick address (Library.ExecuteAction node.actions.click)
       ]
       [ div
-          [ class "library--node--icon", style [("backgroundImage", (url node.icon))] ]
+          [ class "library--node--icon"
+          , style [("backgroundImage", (url node.icon))]
+          , click (Library.MaybeExecuteAction node.actions.play)
+          ]
           []
       , div
           [ class "library--node--inner" ]
           [ div
             []
-            [ a [] [text node.title] ]
+            [ text node.title ]
           , (metadata address node.metadata)
           ]
       ]

@@ -10,6 +10,7 @@ module Library (..) where
 type Action
   = NoOp
   | ExecuteAction String
+  | MaybeExecuteAction (Maybe String)
   | Response Folder
   | PopLevel Int
   | ActionComplete
