@@ -117,6 +117,13 @@ defmodule Otis.Channels do
     Otis.State.Events.notify({:channel_rename, id, name})
   end
 
+  def clear(id) when is_binary(id) do
+    clear(@registry_name, id)
+  end
+  def clear(registry, id) when is_binary(id) do
+    Otis.Channel.clear(find!(registry, id))
+  end
+
   defp add(action, registry, id, config) do
     {:ok, channel} = Otis.Channels.Supervisor.start_channel(id, config)
     add(action, registry, channel, id, config)

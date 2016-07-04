@@ -133,6 +133,13 @@ defmodule Otis.Channel do
     GenServer.cast(channel, {:skip, source_id})
   end
 
+  def clear(%__MODULE__{pid: pid}) do
+    clear(pid)
+  end
+  def clear(channel) when is_pid(channel) do
+    GenServer.cast(channel, :clear)
+  end
+
   def receiver_buffered(channel, receiver) do
     GenServer.cast(channel, {:receiver_buffered, receiver})
   end
@@ -269,6 +276,11 @@ defmodule Otis.Channel do
     {:noreply, state}
   end
 
+  def handle_cast(:clear, state) do
+    state = state |> set_state(:stop) |> flush |> clear_playlist()
+    {:noreply, state}
+  end
+
   # Called by the broadcaster when it has finished sending in-flight packets.
   def handle_cast({:receiver_buffered, receiver}, state) do
     state = receiver_ready(receiver, state)
@@ -295,6 +307,11 @@ defmodule Otis.Channel do
 
   defp skip_to(state, id) do
     {:ok, _} = Otis.SourceList.skip(state.source_list, id)
+    state
+  end
+
+  defp clear_playlist(state) do
+    :ok = Otis.SourceList.clear(state.source_list)
     state
   end
 

@@ -117,7 +117,11 @@ defmodule Otis.SourceList do
     {:reply, {:ok, id, playback_position, source}, %S{ state | sources: sources, active: active }}
   end
 
-  def handle_call(:clear, _from, state) do
+  def handle_call(:clear, _from, %S{sources: sources} = state) do
+    Enum.each(sources, fn({id, _offset, _source}) ->
+      Otis.State.Events.notify({:source_deleted, id, state.id})
+    end)
+    Otis.State.Events.notify({:source_list_cleared, state.id})
     {:reply, :ok, %S{ state | sources: [] }}
   end
 

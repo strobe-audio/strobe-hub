@@ -27,6 +27,12 @@ defmodule Otis.State.Persistence.Sources do
     end
     {:ok, state}
   end
+  def handle_event({:source_deleted, id, channel_id}, state) do
+    Repo.transaction fn ->
+      [id] |> Enum.map(&load_source/1) |> sources_deleted(channel_id)
+    end
+    {:ok, state}
+  end
   def handle_event({:source_progress, _channel_id, source_id, position, _duration}, state) do
     Repo.transaction fn ->
       source_id |> load_source |> source_progress(source_id, position)
@@ -82,9 +88,18 @@ defmodule Otis.State.Persistence.Sources do
     Logger.warn "Missing record for source channel:#{ channel_id }"
     sources_skipped(sources, channel_id)
   end
+
   defp sources_skipped([source | sources], channel_id) do
     source |> Source.delete!
     sources_skipped(sources, channel_id)
+  end
+
+  defp sources_deleted([], channel_id) do
+    Source.renumber(channel_id)
+  end
+  defp sources_deleted([source | sources], channel_id) do
+    source |> Source.delete!
+    sources_deleted(sources, channel_id)
   end
 
   defp source_progress(nil, id, position) do

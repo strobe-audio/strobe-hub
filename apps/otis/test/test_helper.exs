@@ -147,6 +147,54 @@ defmodule MessagingHandler do
   end
 end
 
+defmodule Otis.Test.TestSource do
+  defstruct [
+    :id,
+    duration: 60000,
+    loaded: false,
+  ]
+  def new(duration \\ 60000) do
+    %__MODULE__{id: Otis.uuid, duration: duration}
+  end
+end
+
+defimpl Otis.Source, for: Otis.Test.TestSource do
+  def id(source) do
+    source.id
+  end
+
+  def type(_source) do
+    Otis.Test.TestSource
+  end
+
+  def open!(_source, _packet_size_bytes) do
+    # noop
+  end
+
+  def close(_source, _stream) do
+    # noop
+  end
+
+  def audio_type(_track) do
+    # noop
+  end
+
+  def metadata(_track) do
+    # noop
+  end
+
+  def duration(track) do
+    {:ok, track.duration}
+  end
+end
+
+defimpl Otis.Source.Origin, for: Otis.Test.TestSource do
+  def load!(source) do
+    %Otis.Test.TestSource{ source | loaded: true }
+  end
+end
+
+
 Faker.start
 Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
