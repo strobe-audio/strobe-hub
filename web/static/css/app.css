@@ -9,12 +9,6 @@
 @import "modules/pocketgrid.css";
 @import "modules/layout.css";
 @import "modules/breakpoints.css";
-/* @import "modules/headers.css"; */
-/* @import "modules/player.css"; */
-/* @import "modules/channel.css"; */
-/* @import "modules/modes.css"; */
-/* @import "modules/nodes.css"; */
-/* @import "modules/input.css"; */
 
 @import "components/root.css";
 @import "components/channels.css";
