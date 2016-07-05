@@ -36,3 +36,6 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
 - [ ] Switching library view from long list to short doesn't update the scroll
   position
 
+# Done
+
+- [X] Stop text overflow in to-level player
