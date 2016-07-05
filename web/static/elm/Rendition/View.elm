@@ -5,20 +5,20 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Rendition
 import Source.View
-import Debug
+import Utils.Css
 
 
 player : Signal.Address () -> Rendition.Model -> Bool -> Html
 player playPauseAddress rendition playing =
   let
-      coverImage = Debug.log "cover image" rendition.source.cover_image
+      coverImage = rendition.source.cover_image
   in
     div
       [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ]  ]
       [ div
           [ class "rendition--control", onClick playPauseAddress () ]
           [ div
-              [ class "rendition--play-pause-btn", style [("backgroundImage", "url(/images/cover.jpg)")] ]
+              [ class "rendition--play-pause-btn", style [("backgroundImage", (Utils.Css.url coverImage))] ]
               []
           , div
               [ class "rendition--details" ]
@@ -44,13 +44,16 @@ player playPauseAddress rendition playing =
 
 cover : Signal.Address () -> Rendition.Model -> Bool -> Html
 cover playPauseAddress rendition playing =
-  div
-    [ id rendition.id, class "rendition" ]
-    [ div
-        [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
-        [ img [ src "/images/cover.jpg", alt "", onClick playPauseAddress () ] []
+  let
+      coverImage = rendition.source.cover_image
+  in
+      div
+        [ id rendition.id, class "rendition" ]
+        [ div
+            [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
+            [ img [ src coverImage, alt "", onClick playPauseAddress () ] []
+            ]
         ]
-    ]
 
 
 empty : Html

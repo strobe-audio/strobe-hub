@@ -21,6 +21,10 @@
     width: 100%;
   }
 }
+.rendition--cover__blank {
+
+}
+
 .rendition--song {
   position: absolute;
   bottom: 0;

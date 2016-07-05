@@ -24,7 +24,10 @@ cover address channel =
   in
     case maybeRendition of
       Nothing ->
-        div [] [ text "No song..." ]
+        div
+          [ class "channel--rendition" ]
+          [ (Rendition.View.empty)
+          ]
 
       Just rendition ->
         div

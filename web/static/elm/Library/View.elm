@@ -9,6 +9,7 @@ import Library.State
 import List.Extra
 import String
 import Debug
+import Utils.Css
 
 
 root : Signal.Address Library.Action -> Library.Model -> Html
@@ -17,9 +18,6 @@ root address model =
     [ class "library" ]
     [ folder address model (Library.State.currentLevel model) ]
 
-url : String -> String
-url path =
-  String.concat ["url(\"", path, "\")"]
 
 metadata : Signal.Address Library.Action -> Maybe (List Library.Metadata) -> Html
 metadata address metadata =
@@ -81,7 +79,7 @@ node address library folder node =
       ]
       [ div
           [ class "library--node--icon"
-          , style [("backgroundImage", (url node.icon))]
+          , style [("backgroundImage", (Utils.Css.url node.icon))]
           , click (Library.MaybeExecuteAction node.actions.play)
           ]
           []
