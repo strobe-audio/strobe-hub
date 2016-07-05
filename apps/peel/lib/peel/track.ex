@@ -136,9 +136,9 @@ if Code.ensure_loaded?(Otis.Source) do
   end
 end
 
-# TODO: The encoded struct for a source is too fiddly
 defimpl Poison.Encoder, for: Peel.Track do
-  @metadata_required_fields [
+  @fields [
+    :id,
     :album,
     :bit_rate,
     :channels,
@@ -157,22 +157,18 @@ defimpl Poison.Encoder, for: Peel.Track do
     :title,
     :track_number,
     :track_total,
+    :cover_image,
   ]
-  @blank_metadata Enum.map(@metadata_required_fields, fn(key) -> {key, nil} end) |> Enum.into(%{})
 
-  defp track_metadata(track) do
-    track
-    |> Map.take(@metadata_required_fields)
-    |> Map.put(:album, track.album_title)
-    |> Enum.into(@blank_metadata)
-  end
+  # Elm is expecting these fields to be present so let's start with a struct
+  # that contains a blank version of everything.
+  @prototype Enum.map(@fields, fn(key) -> {key, nil} end) |> Enum.into(%{})
 
   def encode(track, opts) do
-    metadata = track_metadata(track)
-
     track
-    |> Map.take([:id])
-    |> Map.put(:metadata, metadata)
+    |> Map.take(@fields)
+    |> Enum.into(@prototype)
+    |> Map.put(:album, track.album_title)
     |> Poison.Encoder.encode(opts)
   end
 end
