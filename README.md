@@ -15,15 +15,19 @@ Ready to run in production? Please [check our deployment guides](http://www.phoe
 ## Short
 
 - [ ] Icons for top-level library items ("Albums", "Artists" etc.)
+- [ ] Fix display of library breadcrumb
 
 ## Medium
 
+- [ ] Folder-level actions (e.g. play an album when viewing it)
+- [ ] Library search (a new `search` action on the folder)
 - [ ] Delete individual playlist entries
 - [ ] Upgrade to Elm 0.17
 - [ ] Use url for routing (to avoid channel switches). Wait for Elm 0.17
   - current channel
   - playlist/library view
 
+- [ ] Delete a channel
 
 ## Long
 
