@@ -10,10 +10,29 @@ Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
 
 Ready to run in production? Please [check our deployment guides](http://www.phoenixframework.org/docs/deployment).
 
-## Learn more
+# TODO
 
-  * Official website: http://www.phoenixframework.org/
-  * Guides: http://phoenixframework.org/docs/overview
-  * Docs: http://hexdocs.pm/phoenix
-  * Mailing list: http://groups.google.com/group/phoenix-talk
-  * Source: https://github.com/phoenixframework/phoenix
+## Short
+
+- [ ] Icons for top-level library items ("Albums", "Artists" etc.)
+
+## Medium
+
+- [ ] Delete individual playlist entries
+- [ ] Upgrade to Elm 0.17
+- [ ] Use url for routing (to avoid channel switches). Wait for Elm 0.17
+  - current channel
+  - playlist/library view
+
+
+## Long
+
+- [ ] Use external api (musicbrainz) to improve track metadata (specifically
+  cover images)
+- [ ] Scroll long names (as in iOS)
+
+# Bugs
+
+- [ ] Switching library view from long list to short doesn't update the scroll
+  position
+
