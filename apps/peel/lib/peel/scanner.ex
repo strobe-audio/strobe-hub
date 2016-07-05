@@ -50,6 +50,7 @@ defmodule Peel.Scanner do
     |> Map.from_struct
     # Reject any nil values so that they don't overwrite defaults
     |> Enum.reject(fn({_, v}) -> is_nil(v) end)
+    |> Enum.map(&strip_whitespace/1)
     |> Enum.map(&translate_metadata_key/1)
   end
 
@@ -65,6 +66,11 @@ defmodule Peel.Scanner do
   # We reserve %Track.album to point to the album relation
   def translate_metadata_key({:album, album}), do: {:album_title, album}
   def translate_metadata_key(term), do: term
+
+  def strip_whitespace({key, value}) when is_binary(value) do
+    {key, String.trim(value)}
+  end
+  def strip_whitespace(term), do: term
 
   def filetype_filter(path) do
     path |> Path.extname |> is_accepted_format
