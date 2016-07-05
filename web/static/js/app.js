@@ -20,7 +20,8 @@ let channelStatus = ["", {event: "", channelId: "", status: ""}]
 let sourceProgress = {channelId: "", sourceId: "", progress: 0, duration: 0}
 let sourceChange = {channelId: "", removeSourceIds: []}
 let volumeChange = {id: "", target: "", volume: 0.0}
-let metadata = { bit_rate: 0
+let source = { id: ""
+  , bit_rate: 0
   , channels:     0
   , duration_ms:  0
   , extension:    ""
@@ -38,8 +39,9 @@ let metadata = { bit_rate: 0
   , title:        ""
   , track_number: 0
   , track_total:  0
+  , cover_image:  ""
 }
-let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", channelId: "" , source: { id: "", metadata: metadata}}
+let playlistAddition = { id: "", position: 0, playbackPosition: 0, sourceId: "", channelId: "" , source: source }
 let folder = { id: "", title: "", icon: "", actions: { click: "", play: null }, children: []}
 let libraryRegistration = { id: "", title: "", icon: "", actions: { click: "", play: null }, metadata: null }
 let libraryResponse = { libraryId: "", folder}

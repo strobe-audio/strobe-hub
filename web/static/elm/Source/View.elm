@@ -1,18 +1,18 @@
 module Source.View (..) where
 
 import String
-import Root
+import Rendition
 import List.Extra
 
 
-duration : Root.Source -> String
+duration : Rendition.Source -> String
 duration source =
-  durationString source.metadata.duration_ms
+  durationString source.duration_ms
 
 
-timeRemaining : Root.Source -> Int -> String
+timeRemaining : Rendition.Source -> Int -> String
 timeRemaining source position =
-  case source.metadata.duration_ms of
+  case source.duration_ms of
     Nothing ->
       ""
 

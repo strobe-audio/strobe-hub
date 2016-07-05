@@ -5,37 +5,42 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Rendition
 import Source.View
+import Debug
 
 
 player : Signal.Address () -> Rendition.Model -> Bool -> Html
 player playPauseAddress rendition playing =
-  div
-    [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ]  ]
-    [ div
-        [ class "rendition--control", onClick playPauseAddress () ]
-        [ div
-            [ class "rendition--play-pause-btn", style [("backgroundImage", "url(/images/cover.jpg)")] ]
-            []
-        , div
-            [ class "rendition--details" ]
-            [ div
-                [ class "rendition--details--top" ]
-                [ div
-                  [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
-                  [ text (renditionTitle rendition)
+  let
+      coverImage = Debug.log "cover image" rendition.source.cover_image
+  in
+    div
+      [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ]  ]
+      [ div
+          [ class "rendition--control", onClick playPauseAddress () ]
+          [ div
+              [ class "rendition--play-pause-btn", style [("backgroundImage", "url(/images/cover.jpg)")] ]
+              []
+          , div
+              [ class "rendition--details" ]
+              [ div
+                  [ class "rendition--details--top" ]
+                  [ div
+                    [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
+                    [ text (renditionTitle rendition)
+                    ]
+                  , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
                   ]
-                , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
-                ]
-            , div
-                [ class "rendition--meta" ]
-                [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
-                , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
-                , div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration rendition.source) ++ ")") ]
-                ]
-            , (progress playPauseAddress rendition playing)
-            ]
-        ]
-    ]
+              , div
+                  [ class "rendition--meta" ]
+                  [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
+                  , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
+                  , div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration rendition.source) ++ ")") ]
+                  ]
+              , (progress playPauseAddress rendition playing)
+              ]
+          ]
+      ]
+
 
 cover : Signal.Address () -> Rendition.Model -> Bool -> Html
 cover playPauseAddress rendition playing =
@@ -48,9 +53,19 @@ cover playPauseAddress rendition playing =
     ]
 
 
+empty : Html
+empty =
+  div
+    [ class "rendition" ]
+    [ div
+        [ class "rendition--cover rendition--cover__blank" ]
+        []
+    ]
+
+
 progress : Signal.Address () -> Rendition.Model -> Bool -> Html
 progress address rendition playing =
-  case rendition.source.metadata.duration_ms of
+  case rendition.source.duration_ms of
     Nothing ->
       div [] []
 
@@ -94,14 +109,14 @@ playlist address rendition =
 
 renditionTitle : Rendition.Model -> String
 renditionTitle rendition =
-  Maybe.withDefault "Untitled" rendition.source.metadata.title
+  Maybe.withDefault "Untitled" rendition.source.title
 
 
 renditionAlbum : Rendition.Model -> String
 renditionAlbum rendition =
-  Maybe.withDefault "Untitled Album" rendition.source.metadata.album
+  Maybe.withDefault "Untitled Album" rendition.source.album
 
 
 renditionPerformer : Rendition.Model -> String
 renditionPerformer rendition =
-  Maybe.withDefault "" rendition.source.metadata.performer
+  Maybe.withDefault "" rendition.source.performer

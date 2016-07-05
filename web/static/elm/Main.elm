@@ -129,7 +129,7 @@ volumeChangeActions =
   Signal.map Root.VolumeChange volumeChange
 
 
-port playlistAddition : Signal Root.PlaylistEntry
+port playlistAddition : Signal Rendition.Model
 playListAdditionActions : Signal Root.Action
 playListAdditionActions =
   Signal.map Root.NewRendition playlistAddition

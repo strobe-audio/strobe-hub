@@ -3,8 +3,9 @@ module Rendition (..) where
 import ID
 
 
-type alias SourceMetadata =
-  { bit_rate : Maybe Int
+type alias Source =
+  { id : String
+  , bit_rate : Maybe Int
   , channels : Maybe Int
   , duration_ms : Maybe Int
   , extension : Maybe String
@@ -22,12 +23,7 @@ type alias SourceMetadata =
   , title : Maybe String
   , track_number : Maybe Int
   , track_total : Maybe Int
-  }
-
-
-type alias Source =
-  { id : String
-  , metadata : SourceMetadata
+  , cover_image: String
   }
 
 
@@ -65,4 +61,4 @@ duration : Model -> Maybe Int
 duration rendition =
   Maybe.map
     (\duration -> duration - rendition.playbackPosition)
-    rendition.source.metadata.duration_ms
+    rendition.source.duration_ms
