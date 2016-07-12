@@ -1,0 +1,6 @@
+#EXTM3U
+#EXT-X-VERSION:2
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=101760,CODECS="mp4a.40.5"
+# http://as-hls-uk-live.edgesuite.net/pool_6/live/bbc_radio_fourfm/bbc_radio_fourfm.isml/bbc_radio_fourfm-audio%3d96000.norewind.m3u8
+
+low/segment.m3u8

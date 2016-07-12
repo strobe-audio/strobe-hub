@@ -1,0 +1,8 @@
+%{"certifi": {:hex, :certifi, "0.4.0"},
+  "hackney": {:hex, :hackney, "1.6.0"},
+  "httpoison": {:hex, :httpoison, "0.9.0"},
+  "idna": {:hex, :idna, "1.2.0"},
+  "metrics": {:hex, :metrics, "1.0.1"},
+  "mimerl": {:hex, :mimerl, "1.0.2"},
+  "poolboy": {:hex, :poolboy, "1.5.1"},
+  "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.0"}}
