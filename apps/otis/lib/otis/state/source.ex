@@ -54,10 +54,15 @@ defmodule Otis.State.Source do
   end
 
   def source(record) do
+    record
+    |> type
+    |> Otis.Source.Origin.load!
+  end
+
+  def type(record) do
     record.source_type
     |> String.to_atom
     |> struct(id: record.source_id)
-    |> Otis.Source.Origin.load!
   end
 
   def find(id) do
