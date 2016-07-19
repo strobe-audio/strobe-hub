@@ -33,6 +33,9 @@ defmodule Otis.State.Persistence.Sources do
     end
     {:ok, state}
   end
+  def handle_event({:source_progress, _channel_id, _source_id, _position, :infinity}, state) do
+    {:ok, state}
+  end
   def handle_event({:source_progress, _channel_id, source_id, position, _duration}, state) do
     Repo.transaction fn ->
       source_id |> load_source |> source_progress(source_id, position)

@@ -31,7 +31,7 @@ defprotocol Otis.Source do
   @spec metadata(t) :: Otis.Source.Metadata.t
   def metadata(source)
 
-  @spec duration(t) :: {:ok, integer}
+  @spec duration(t) :: {:ok, integer} | {:ok, :infinity}
   def duration(source)
 end
 
