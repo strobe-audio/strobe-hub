@@ -66,3 +66,45 @@ defimpl Otis.Source, for: Otis.Source.File do
     {:ok, metadata.duration_ms}
   end
 end
+
+if Code.ensure_loaded?(HLS.BBC.Channel) do
+  defimpl Otis.Source, for: HLS.BBC.Channel do
+    alias HLS.BBC.Channel
+
+    def id(bbc) do
+      bbc.id
+    end
+
+    def type(_bbc) do
+      Channel
+    end
+
+    def open!(bbc, _packet_size_bytes) do
+      HLS.BBC.open!(bbc)
+    end
+
+    def close(_bbc, _stream) do
+      # no-op until I can figure out what this should do..
+      # release data I suppose but that'll probably just be
+      # GC'd
+    end
+
+    def audio_type(_bbc) do
+      {".mpegts", "audio/mp2t"}
+    end
+
+    def metadata(_bbc) do
+      %Otis.Source.Metadata{}
+    end
+
+    def duration(_bbc) do
+      {:ok, :infinity}
+    end
+  end
+
+  defimpl Otis.Source.Origin, for: HLS.BBC.Channel do
+    def load!(bbc) do
+      bbc
+    end
+  end
+end
