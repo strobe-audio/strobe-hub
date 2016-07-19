@@ -17,7 +17,7 @@ Streams are MPEG-2 transports, or `mpegtsraw` in avconv/ffmpeg speak.
 # From some elvis instance
 $ iex -S mix
 {:ok, c} = Otis.Channels.find "83936d2d-4f50-4dff-80a7-24a672987faa"
-radio4 = %HLS.BBC{id: "radio4"}
+radio4 = HLS.BBC.radio4
 Otis.Channel.append c, radio4
 Otis.Channel.sources c
 Otis.Channel.play_pause c
