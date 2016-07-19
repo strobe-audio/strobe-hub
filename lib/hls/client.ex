@@ -14,13 +14,16 @@ defmodule HLS.Client do
         :url,
         :media,
         demand: 0,
-        reload_at: 0,
         reloading: false,
       ]
     end
 
     def init([stream, reader, opts]) do
       {:producer, %S{stream: stream, reader: reader, opts: opts}}
+    end
+
+    def handle_subscribe(_stage, _opts, _to_or_from, state) do
+      {:automatic, state}
     end
 
     def handle_demand(demand, %S{url: nil, stream: stream} = state) do
@@ -77,8 +80,13 @@ defmodule HLS.Client do
   defmodule ProducerConsumer do
     use GenStage
 
-    def init([reader]) do
-      {:producer_consumer, reader}
+    def start_link(stream, opts) do
+      GenStage.start_link(__MODULE__, [stream, opts])
+    end
+
+    def init([stream, opts]) do
+      {:ok, producer} = GenStage.start_link(HLS.Client.Producer, [stream, stream.reader, opts])
+      {:producer_consumer, stream.reader, subscribe_to: [{producer, [max_demand: 1]}]}
     end
 
     def handle_events(events, {producer, _ref} = _from, reader) do
@@ -93,90 +101,13 @@ defmodule HLS.Client do
     end
   end
 
-  defmodule Consumer do
-    use GenStage
-
-    defmodule S do
-      defstruct [
-        packets: [],
-        waiting: [],
-      ]
-    end
-
-    def init(_stream) do
-      {:consumer, %S{}}
-    end
-
-    def handle_events(events, _from, state) do
-      state = reply(%S{ state | packets: state.packets ++ events})
-      {:noreply, [], state}
-    end
-
-    def handle_call(:read, from, state) do
-      state = reply(%S{ state | waiting: state.waiting ++ [from] })
-      {:noreply, [], state}
-    end
-
-    defp reply(%S{ waiting: [] } = state) do
-      state
-    end
-    defp reply(%S{ packets: [] } = state) do
-      state
-    end
-    defp reply(%S{ waiting: [from | waiting], packets: [packet | packets] } = state) do
-      GenStage.reply(from, {:ok, packet})
-      reply(%S{ state | waiting: waiting, packets: packets })
-    end
-  end
-
-  def start_link(stream, opts) do
-    GenServer.start_link(__MODULE__, [stream, opts])
-  end
-
-  def init([stream, opts]) do
-    {:ok, producer} = GenStage.start_link(HLS.Client.Producer, [stream, stream.reader, opts])
-    {:ok, producer_consumer} = GenStage.start_link(HLS.Client.ProducerConsumer, [stream.reader])
-    {:ok, consumer} = GenStage.start_link(HLS.Client.Consumer, stream)
-    GenStage.sync_subscribe(producer_consumer, to: producer, max_demand: 1)
-    GenStage.sync_subscribe(consumer, to: producer_consumer)
-    {:ok, consumer}
-    {:ok, consumer}
-  end
-
-  def handle_call(:consumer, _from, consumer) do
-    {:reply, {:ok, consumer}, consumer}
-  end
-
-  def new!(stream, opts \\ [])
-  def new!(stream, opts) do
-    {:ok, pid, consumer} = new(stream, opts)
-    {pid, consumer}
-  end
-
-  def new(stream, opts \\ [])
-  def new(stream, opts) do
-    {:ok, pid} = HLS.Client.Supervisor.start(stream, opts)
-    {:ok, consumer} = GenServer.call(pid, :consumer)
-    {:ok, pid, consumer}
-  end
-
-
   def open!(stream, opts \\ [bandwidth: :highest])
   def open!(%HLS.Stream{} = stream, opts) do
-    Elixir.Stream.resource(
-      fn() -> new!(stream, opts) end,
-      fn(client) -> read!(client) end,
-      fn(client) -> close!(client) end
-    )
+    stream(stream, opts)
   end
 
-  def read!({_parent, consumer} = client) do
-    {:ok, data} = GenStage.call(consumer, :read, 30_000)
-    {[data], client}
-  end
-
-  def close!({parent, _} = client) do
-    :ok = HLS.Client.Supervisor.stop(parent)
-    {:ok, client}
+  def stream(stream, opts) do
+    {:ok, pid} = HLS.Client.Supervisor.start(stream, opts)
+    GenStage.stream([pid])
   end
 end
