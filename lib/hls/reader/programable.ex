@@ -32,12 +32,16 @@ defmodule HLS.Reader.Programmable do
     {{:ok, body}, state}
   end
 
+  defp read(path, [file], state) do
+    body = HLS.Reader.read!(state.dir, file)
+    {{:ok, body}, state}
+  end
   defp read(path, [file | paths], state) do
     body = HLS.Reader.read!(state.dir, file)
     {{:ok, body}, %{ state | urls: Map.put(state.urls, path, paths) }}
   end
   defp read(_path, [], state) do
-    {{:ok, ""}, state}
+    {{:ok, "#missing"}, state}
   end
 end
 

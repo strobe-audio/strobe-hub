@@ -43,6 +43,9 @@ defmodule M3.Parser do
   defp parse_line("#EXT-X-VERSION:" <> version, parser) do
     parser |> set_version(String.to_integer(version))
   end
+  defp parse_line("#EXT-X-TARGETDURATION:" <> duration, parser) do
+    parser |> set_target_duration(String.to_integer(duration))
+  end
   defp parse_line("#EXT-X-MEDIA-SEQUENCE:"<>seq, parser) do
     parser |> set_media_sequence(seq)
   end
@@ -121,8 +124,23 @@ defmodule M3.Parser do
     |> Enum.map(fn([type | versions]) -> [type, Enum.join(versions, ".")] end)
   end
 
+  defp set_target_duration(parser, duration) do
+    type = case parser.type do
+      %M3.Playlist.Live{} ->
+        %M3.Playlist.Live{ parser.type | target_duration: duration }
+      _ ->
+        %M3.Playlist.Live{ target_duration: duration }
+    end
+    %Parser{ parser | type: type }
+  end
   defp set_media_sequence(parser, seq) do
-    %Parser{ parser | type: %M3.Playlist.Live{media_sequence_number: String.to_integer(seq)} }
+    type = case parser.type do
+      %M3.Playlist.Live{} ->
+        %M3.Playlist.Live{ parser.type | media_sequence_number: String.to_integer(seq) }
+      _ ->
+        %M3.Playlist.Live{ media_sequence_number: String.to_integer(seq) }
+    end
+    %Parser{ parser | type: type }
   end
 
   defp set_version(parser, version) do

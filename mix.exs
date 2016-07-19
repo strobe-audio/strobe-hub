@@ -14,7 +14,7 @@ defmodule HLS.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :httpoison], mod: {HLS, []}]
+    [applications: [:logger, :httpoison, :gen_stage], mod: {HLS, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -29,6 +29,7 @@ defmodule HLS.Mixfile do
   defp deps do
     [ {:httpoison, "~> 0.9.0"},
       {:poolboy, "~> 1.4"},
+      {:gen_stage, "~> 0.1"},
     ]
   end
 end

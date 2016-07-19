@@ -39,6 +39,6 @@ defmodule HLS.ProgrammableReaderTest do
     playlist = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-3.m3u8"]))
     playlist = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
-    assert playlist == ""
+    assert playlist == "#missing"
   end
 end

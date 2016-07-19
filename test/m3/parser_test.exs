@@ -42,6 +42,7 @@ defmodule M3.ParserTest do
     playlist = M3.Parser.parse!(context.segment, "http://hlsstream.io/something/stream/high/segment.m3u8")
     assert playlist.__struct__ == M3.Playlist.Live
     assert playlist.media_sequence_number == 226201865
+    assert playlist.target_duration == 7
 
     assert playlist.media == [
       %M3.Media{url: "http://hlsstream.io/something/stream/high/226201865.ts", duration: 6, filename: "no desc"},

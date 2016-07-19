@@ -16,7 +16,7 @@ defmodule HLS.Supervisor do
     ]
 
     children = [
-      supervisor(HLS.DataStream.Supervisor, []),
+      supervisor(HLS.Client.Supervisor, []),
       :poolboy.child_spec(pool_name, reader_pool_options, [
         pool: pool_name
       ]),

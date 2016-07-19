@@ -16,4 +16,22 @@ defmodule M3.Playlist do
   def sort(playlist) do
     playlist.media
   end
+
+  def sequence(%M3.Playlist.Live{} = new_playlist, %M3.Playlist.Live{} = old_playlist) do
+    %M3.Playlist.Live{media_sequence_number: new_msn, media: new_media} = new_playlist
+    %M3.Playlist.Live{media_sequence_number: old_msn} = old_playlist
+    _sequence(new_msn, new_media, old_msn)
+  end
+  def sequence(new_playlist, _old_playlist) do
+    {:ok, new_playlist.media}
+  end
+
+  defp _sequence(new_msn, _new_media, old_msn) when new_msn < old_msn do
+    {:error, :invalid_sequence_number}
+  end
+  defp _sequence(new_msn, new_media, old_msn) do
+    gap = new_msn - old_msn
+    media = Enum.drop(new_media, length(new_media) - gap)
+    {:ok, media}
+  end
 end

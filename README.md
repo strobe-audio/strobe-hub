@@ -12,18 +12,14 @@ http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr\_low/a
 
 Streams are MPEG-2 transports, or `mpegtsraw` in avconv/ffmpeg speak.
 
-## Installation
+## Use via the CLI
+```
+# From some elvis instance
+$ iex -S mix
+{:ok, c} = Otis.Channels.find "83936d2d-4f50-4dff-80a7-24a672987faa"
+radio4 = %HLS.BBC{id: "radio4"}
+Otis.Channel.append c, radio4
+Otis.Channel.sources c
+Otis.Channel.play_pause c
+```
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
-
-  1. Add hls to your list of dependencies in `mix.exs`:
-
-        def deps do
-          [{:hls, "~> 0.0.1"}]
-        end
-
-  2. Ensure hls is started before your application:
-
-        def application do
-          [applications: [:hls]]
-        end

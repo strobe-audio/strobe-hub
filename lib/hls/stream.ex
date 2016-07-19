@@ -4,7 +4,6 @@ defmodule HLS.Stream do
   """
 
   alias HLS.Stream
-  # alias HLS.DataStream
   alias M3.Playlist
 
   defstruct [
@@ -29,15 +28,6 @@ defmodule HLS.Stream do
         resolved = M3.Parser.parse!(m3, variant.url)
         %Stream{stream | playlist: resolved} |> resolve(opts)
     end
-  end
-
-  def open!(stream, opts \\ [bandwidth: :highest])
-  def open!(%Stream{} = stream, opts) do
-    Elixir.Stream.resource(
-      fn() -> stream |> HLS.DataStream.open!(opts) end,
-      fn(data) -> HLS.DataStream.read!(data) end,
-      fn(data) -> HLS.DataStream.close!(data) end
-    )
   end
 
   def highest(%Stream{playlist: playlist}) do
