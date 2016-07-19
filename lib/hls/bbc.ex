@@ -2,7 +2,6 @@ defmodule HLS.BBC do
   require Logger
   alias HLS.BBC.Channel
 
-
   @channels [
     %Channel{id: "asian_network", title: "BBC Asian Network"},
     %Channel{id: "radio1", title: "BBC Radio 1"},
@@ -18,7 +17,7 @@ defmodule HLS.BBC do
   ]
   @channel_names Enum.map(@channels, fn(%Channel{id: id}) -> id end)
 
-  Enum.each @channels, fn(%Channel{id: id} = channel) ->
+  Enum.each @channels, fn(%Channel{id: id} = _channel) ->
     def unquote(String.to_atom(id))() do
       Enum.find(@channels, fn(%Channel{id: cid}) ->
         cid == unquote(id)
@@ -26,7 +25,7 @@ defmodule HLS.BBC do
     end
   end
 
-  def open!(%Channel{id: id} = channel) do #when id in @channel_names do
+  def open!(%Channel{id: id} = channel) when id in @channel_names do
     hls = stream(channel)
     HLS.Client.open!(hls)
   end
@@ -36,7 +35,7 @@ defmodule HLS.BBC do
     channel |> playlist |> HLS.Stream.new(reader)
   end
 
-  defp playlist(%Channel{id: id} = channel) do #when id in @channel_names do
+  defp playlist(%Channel{id: id}) when id in @channel_names do
     path = Path.join([__DIR__, "bbc/#{id}.m3u8"]) |> Path.expand
     file = File.read!(path)
     M3.Parser.parse!(file, "http://www.bbc.co.uk")
