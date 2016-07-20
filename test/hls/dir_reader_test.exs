@@ -7,7 +7,7 @@ defmodule HLS.DirReaderTest do
     {:ok, root: root, reader: reader}
   end
 
-  def fingerprint(data) do
+  def fingerprint({data, _expiry}) do
     :crypto.hash_init(:md5)
     |> :crypto.hash_update(data)
     |> :crypto.hash_final

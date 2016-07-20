@@ -51,27 +51,37 @@ defmodule HLS.Client.Playlist do
     {:noreply, [], state}
   end
 
-  def handle_cast({:data, :playlist, data}, state) do
+  def handle_info({:data, :playlist, {data, expiry}}, state) do
     playlist = M3.Parser.parse!(data, state.url)
     {:ok, media} = M3.Playlist.sequence(playlist, state.playlist)
-    Logger.info "New media #{length(media)}/#{state.demand} - #{playlist.media_sequence_number}"
-    {events, media} = Enum.split(media, state.demand)
-    state = %S{ state | playlist: playlist, media: media, demand: state.demand - length(events), reloading: false }
-    {:noreply, events, state}
+    schedule_reload(state.playlist, expiry)
+    handle_media(media, %S{state | playlist: playlist, reloading: false})
   end
 
   def handle_info(:reload, %S{reloading: true} = state) do
-    schedule_reload(state.playlist)
     {:noreply, [], state}
   end
   def handle_info(:reload, %S{reloading: false} = state) do
     HLS.Reader.Worker.read(state.reader, state.url, self(), :playlist)
-    schedule_reload(state.playlist)
     {:noreply, [], %S{state | reloading: true}}
   end
 
-  defp schedule_reload(playlist) do
-    wait = max(round(Float.floor(playlist.target_duration * 0.75)), 1)
+  defp handle_media([], state) do
+    {:noreply, [], state}
+  end
+  defp handle_media(media, state) do
+    Logger.info "New media #{length(media)}/#{state.demand} - #{state.playlist.media_sequence_number}"
+    {events, media} = Enum.split(media, state.demand)
+    state = %S{ state | media: media, demand: state.demand - length(events) }
+    {:noreply, events, state}
+  end
+
+  defp schedule_reload(playlist, wait \\ nil)
+  defp schedule_reload(playlist, nil) do
+    wait = max(round(Float.floor(playlist.target_duration * 0.5)), 1)
+    schedule_reload(playlist, wait)
+  end
+  defp schedule_reload(_playlist, wait) do
     Process.send_after(self(), :reload, wait * 1000)
   end
 end

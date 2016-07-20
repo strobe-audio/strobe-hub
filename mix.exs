@@ -28,7 +28,6 @@ defmodule HLS.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [ {:httpoison, "~> 0.9.0"},
-      {:poolboy, "~> 1.4"},
       {:gen_stage, "~> 0.1"},
     ]
   end

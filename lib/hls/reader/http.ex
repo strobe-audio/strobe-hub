@@ -1,27 +1,50 @@
 defmodule HLS.Reader.Http do
   defstruct []
 
-  def read(_url, 0, _delay) do
-    {:error, :http}
+  def read(url) do
+    # want to raise an error if we get an error, but if we get an error we want
+    # delay a bit
+    {:ok, _body, _expiry} =
+      case HTTPoison.get(url, [], []) do
+        {:ok, response} ->
+          {:ok, response.body, expiry(response.headers)}
+        {:error, error} ->
+          # wait a bit before our supervisor restarts us
+          Process.sleep(100)
+          {:error, error}
+      end
   end
 
-  def read(url, attempts, delay) do
-    try do
-      %HTTPoison.Response{status_code: 200, body: body} = HTTPoison.get!(url, [], params: [{"t", now()}])
-      {:ok, body}
-    catch
-:closed, _ ->
-      Process.sleep(delay)
-      read(url, attempts - 1, delay * 2)
-    end
+  @cache_control "Cache-Control"
+
+  defp expiry(headers) do
+    headers
+    |> cache_control_header
+    |> String.split(",")
+    |> Enum.map(&String.trim/1)
+    |> parse_cache_control
   end
 
-  defp now, do: :os.system_time(:seconds)
+  defp cache_control_header(headers) do
+    {@cache_control, value} =
+      Enum.find(headers, fn({k, _}) -> k == @cache_control end)
+    value
+  end
+
+  defp parse_cache_control([]) do
+    nil
+  end
+  defp parse_cache_control(["max-age=" <> age | _parts]) do
+    age |> String.trim() |> String.to_integer
+  end
+  defp parse_cache_control([_ | parts]) do
+    parse_cache_control(parts)
+  end
 end
 
 defimpl HLS.Reader, for: HLS.Reader.Http do
   def read!(_reader, url) do
-    {:ok, body} = HLS.Reader.Http.read(url, 5, 100)
-    body
+    {:ok, body, expiry} = HLS.Reader.Http.read(url)
+    {body, expiry}
   end
 end

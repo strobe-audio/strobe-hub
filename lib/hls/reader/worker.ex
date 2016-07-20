@@ -1,29 +1,30 @@
 defmodule HLS.Reader.Worker do
   use GenServer
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, [])
-  end
-
   def read(reader, url, parent, id) do
-    pid = :poolboy.checkout(HLS.ReaderPool)
-    read(pid, reader, url, parent, id)
+    HLS.Reader.Worker.Supervisor.start_reader(reader, url, parent, id)
   end
 
-  def read(pid, reader, url, parent, id) when is_pid(pid) do
-    GenServer.cast(pid, {:read, reader, url, parent, id})
+  def start_link(reader, url, parent, id) do
+    GenServer.start_link(__MODULE__, [reader, url, parent, id], [])
   end
 
   ## Callbacks
 
-  def init([pool: _pool] = opts) do
-    {:ok, opts}
+  def init([reader, url, parent, id]) do
+    GenServer.cast(self(), :read)
+    {:ok, {reader, url, parent, id}}
   end
 
-  def handle_cast({:read, reader, url, parent, id}, [pool: pool] = state) do
-    data = HLS.Reader.read!(reader, url)
-    :poolboy.checkin(pool, self())
-    GenServer.cast(parent, {:data, id, data})
-    {:noreply, state}
+  def handle_cast(:read, {reader, url, parent, id} = state) do
+    response = HLS.Reader.read!(reader, url)
+    reply(Process.alive?(parent), parent, id, response)
+    {:stop, :normal, state}
+  end
+
+  defp reply(true, parent, id, response) do
+    Kernel.send(parent, {:data, id, response})
+  end
+  defp reply(false, _parent, _id, _response) do
   end
 end
