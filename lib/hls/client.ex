@@ -29,8 +29,7 @@ defmodule HLS.Client do
   def handle_events(events, {producer, _ref} = _from, reader) do
     {times, data} = Enum.map(events, fn(media) ->
       {t, data} = :timer.tc(fn ->
-        {body, _expiry} = HLS.Reader.read!(reader, media.url)
-        body
+        HLS.Reader.read!(reader, media.url)
       end)
       {t / (media.duration * 1_000_000), data}
     end) |> Enum.unzip

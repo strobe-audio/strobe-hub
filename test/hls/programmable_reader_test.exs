@@ -7,6 +7,9 @@ defmodule HLS.ProgrammableReaderTest do
   end
 
   def fingerprint({data, _expiry}) do
+		fingerprint(data)
+	end
+  def fingerprint(data) do
     :crypto.hash_init(:md5)
     |> :crypto.hash_update(data)
     |> :crypto.hash_final
@@ -30,15 +33,15 @@ defmodule HLS.ProgrammableReaderTest do
     md5 = HLS.Reader.read!(reader, "http://something.io/high/226201867.ts") |> fingerprint
     assert md5 == "c96820e0b3af1e34b8a368a23b097a57"
 
-    {playlist, _expiry} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {playlist, _expiry} = HLS.Reader.read_with_expiry!(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-0.m3u8"]))
-    {playlist, _expiry} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {playlist, _expiry} = HLS.Reader.read_with_expiry!(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-1.m3u8"]))
-    {playlist, _expiry} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {playlist, _expiry} = HLS.Reader.read_with_expiry!(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-2.m3u8"]))
-    {playlist, _expiry} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {playlist, _expiry} = HLS.Reader.read_with_expiry!(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-3.m3u8"]))
-    {playlist, _expiry} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
-    assert playlist == "#missing"
+    {playlist, _expiry} = HLS.Reader.read_with_expiry!(reader, "http://something.io/high/segment.m3u8")
+    assert playlist == File.read!(Path.join([context.root, "/high/segment-3.m3u8"]))
   end
 end

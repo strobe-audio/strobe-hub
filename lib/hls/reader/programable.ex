@@ -50,8 +50,13 @@ defimpl HLS.Reader, for: HLS.Reader.Programmable do
     _read(Process.alive?(reader.pid), reader.pid, url)
   end
 
+	def read_with_expiry!(reader, url) do
+		body = read!(reader, url)
+		{body, 0}
+	end
+
   defp _read(false, _pid, _url) do
-    {"", 0}
+		""
   end
   defp _read(true, pid, url) do
     {:ok, body} = GenServer.call(pid, {:read, url})

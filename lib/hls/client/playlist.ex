@@ -77,15 +77,15 @@ defmodule HLS.Client.Playlist do
     state
   end
   defp reload(%S{reloading: false} = state, wait) do
-    delayed_read(state, wait)
+    read(state, wait)
   end
 
   defp read(state) do
-    HLS.Reader.Worker.read(state.reader, state.url, self(), :playlist)
+    HLS.Reader.Worker.read_with_expiry(state.reader, state.url, self(), :playlist)
     %S{state | reloading: true}
   end
 
-  defp delayed_read(state, seconds) do
+  defp read(state, seconds) do
     Process.send_after(self(), :reload, seconds * 1000)
     %S{state | reloading: true}
   end
