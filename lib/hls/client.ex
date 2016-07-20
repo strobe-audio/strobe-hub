@@ -1,7 +1,9 @@
 
 defmodule HLS.Client do
-  alias Experimental.{GenStage}
-  use   GenStage
+  alias   Experimental.{GenStage}
+	require Logger
+
+  use     GenStage
 
   def open!(stream, opts \\ [bandwidth: :highest])
   def open!(%HLS.Stream{} = stream, opts) do
@@ -32,7 +34,15 @@ defmodule HLS.Client do
       end)
       {t / (media.duration * 1_000_000), data}
     end) |> Enum.unzip
-    GenStage.cast(producer, {:bandwidth, times})
+		monitor_bandwidth(producer, times)
     {:noreply, data, reader}
   end
+
+	# TODO: upgrade/downgrade stream based on load times
+	# GenStage.cast(producer, :downgrade)
+	# GenStage.cast(producer, :upgrade)
+	defp monitor_bandwidth(_producer, times) do
+    average = Enum.reduce(times, 0, fn(p, sum) -> p + sum end) / length(times)
+    Logger.info "=== Media load time #{ inspect 100 * Float.round(average, 2) }%"
+	end
 end

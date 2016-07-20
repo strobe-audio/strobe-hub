@@ -1,17 +1,16 @@
-
 defmodule HLS.Client.Playlist do
   alias   Experimental.{GenStage}
-  use     GenStage
   require Logger
+
+  use     GenStage
 
   defmodule S do
     defstruct [
-      :stream,
+      :stream, :opts,
       :playlist,
-      :opts,
       :reader,
       :url,
-      :media,
+      media: [],
       demand: 0,
       reloading: false,
     ]
@@ -21,33 +20,27 @@ defmodule HLS.Client.Playlist do
     {:producer, %S{stream: stream, reader: reader, opts: opts}}
   end
 
-  def handle_subscribe(_stage, _opts, _to_or_from, state) do
-    {:automatic, state}
-  end
-
   def handle_demand(demand, %S{url: nil, stream: stream} = state) do
     playlist = HLS.Stream.resolve(stream, state.opts)
     state = %S{
-      state |
-      playlist: playlist,
-      url: to_string(playlist.uri),
-      media: playlist.media,
+      state | playlist: playlist, url: to_string(playlist.uri), media: playlist.media
     }
     handle_demand(demand, state)
   end
   def handle_demand(demand, %S{media: []} = state) do
-    state = reload(%S{state | demand: demand})
-    {:noreply, [], state}
+    {:noreply, [], reload(%S{state | demand: demand})}
   end
   def handle_demand(demand, state) do
     {events, media} = Enum.split(state.media, demand)
     {:noreply, events, %S{state | media: media}}
   end
 
-  def handle_cast({:bandwidth, times}, state) do
-    # TODO: call upgrade/downgrade based on this download speed info
-    average = Enum.reduce(times, 0, fn(p, sum) -> p + sum end) / length(times)
-    Logger.info "=== Media load time #{ inspect 100 * Float.round(average, 2) }%"
+  def handle_cast(:upgrade, state) do
+    # TODO: call Stream.upgrade
+    {:noreply, [], state}
+  end
+  def handle_cast(:downgrade, state) do
+    # TODO: call Stream.downgrade
     {:noreply, [], state}
   end
 
@@ -84,12 +77,16 @@ defmodule HLS.Client.Playlist do
     state
   end
   defp reload(%S{reloading: false} = state, wait) do
-    Process.send_after(self(), :reload, wait * 1000)
-    %S{state | reloading: true}
+    delayed_read(state, wait)
   end
 
   defp read(state) do
     HLS.Reader.Worker.read(state.reader, state.url, self(), :playlist)
+    %S{state | reloading: true}
+  end
+
+  defp delayed_read(state, seconds) do
+    Process.send_after(self(), :reload, seconds * 1000)
     %S{state | reloading: true}
   end
 end
