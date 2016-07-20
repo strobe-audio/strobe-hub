@@ -1,7 +1,9 @@
 defmodule HLS.Reader.Http do
+  require Logger
+
   defstruct []
 
-  def read(url) do
+  def read!(url) do
     # want to raise an error if we get an error, but if we get an error we want
     # delay a bit
     {:ok, _body, _expiry} =
@@ -9,6 +11,7 @@ defmodule HLS.Reader.Http do
         {:ok, response} ->
           {:ok, response.body, expiry(response.headers)}
         {:error, error} ->
+          Logger.warn "Error retreiving #{url} #{inspect error}"
           # wait a bit before our supervisor restarts us
           Process.sleep(100)
           {:error, error}
@@ -44,7 +47,7 @@ end
 
 defimpl HLS.Reader, for: HLS.Reader.Http do
   def read!(_reader, url) do
-    {:ok, body, expiry} = HLS.Reader.Http.read(url)
+    {:ok, body, expiry} = HLS.Reader.Http.read!(url)
     {body, expiry}
   end
 end
