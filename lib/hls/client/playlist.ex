@@ -31,13 +31,13 @@ defmodule HLS.Client.Playlist do
       state |
       playlist: playlist,
       url: to_string(playlist.uri),
-      media: playlist.media
+      media: playlist.media,
     }
-    schedule_reload(playlist)
     handle_demand(demand, state)
   end
   def handle_demand(demand, %S{media: []} = state) do
-    {:noreply, [], %S{state | demand: demand}}
+    state = reload(%S{state | demand: demand})
+    {:noreply, [], state}
   end
   def handle_demand(demand, state) do
     {events, media} = Enum.split(state.media, demand)
@@ -54,34 +54,42 @@ defmodule HLS.Client.Playlist do
   def handle_info({:data, :playlist, {data, expiry}}, state) do
     playlist = M3.Parser.parse!(data, state.url)
     {:ok, media} = M3.Playlist.sequence(playlist, state.playlist)
-    schedule_reload(state.playlist, expiry)
-    handle_media(media, %S{state | playlist: playlist, reloading: false})
+    handle_media(media, expiry, %S{state | playlist: playlist, reloading: false})
   end
 
-  def handle_info(:reload, %S{reloading: true} = state) do
-    {:noreply, [], state}
-  end
-  def handle_info(:reload, %S{reloading: false} = state) do
-    HLS.Reader.Worker.read(state.reader, state.url, self(), :playlist)
-    {:noreply, [], %S{state | reloading: true}}
+  def handle_info(:reload, state) do
+    {:noreply, [], read(state)}
   end
 
-  defp handle_media([], state) do
+  defp handle_media([], _expiry, %S{demand: 0} = state) do
     {:noreply, [], state}
   end
-  defp handle_media(media, state) do
+  defp handle_media([], expiry, state) do
+    {:noreply, [], reload(state, expiry)}
+  end
+  defp handle_media(media, _expiry, state) do
     Logger.info "New media #{length(media)}/#{state.demand} - #{state.playlist.media_sequence_number}"
     {events, media} = Enum.split(media, state.demand)
     state = %S{ state | media: media, demand: state.demand - length(events) }
     {:noreply, events, state}
   end
 
-  defp schedule_reload(playlist, wait \\ nil)
-  defp schedule_reload(playlist, nil) do
-    wait = max(round(Float.floor(playlist.target_duration * 0.5)), 1)
-    schedule_reload(playlist, wait)
+  defp reload(%S{reloading: true} = state) do
+    state
   end
-  defp schedule_reload(_playlist, wait) do
+  defp reload(%S{reloading: false} = state) do
+    read(state)
+  end
+  defp reload(%S{reloading: true} = state, _wait) do
+    state
+  end
+  defp reload(%S{reloading: false} = state, wait) do
     Process.send_after(self(), :reload, wait * 1000)
+    %S{state | reloading: true}
+  end
+
+  defp read(state) do
+    HLS.Reader.Worker.read(state.reader, state.url, self(), :playlist)
+    %S{state | reloading: true}
   end
 end
