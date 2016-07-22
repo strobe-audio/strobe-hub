@@ -51,7 +51,7 @@ defmodule HLS.Reader.Http do
     response
   end
   defp retry({:error, error} = response, url, 0, _delay) do
-    Logger.warn "Read failed #{url} #{ inspect error }"
+    Logger.error "Read failed #{url} #{ inspect error }"
     response
   end
   defp retry({:error, _}, url, tries, delay) do
