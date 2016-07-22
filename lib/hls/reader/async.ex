@@ -1,11 +1,11 @@
-defmodule HLS.Reader.Worker do
+defmodule HLS.Reader.Async do
   use GenServer
 
   def read_with_expiry(reader, url, parent, id) do
-    HLS.Reader.Worker.Supervisor.start_reader(:read_with_expiry, reader, url, parent, id)
+    HLS.Reader.Async.Supervisor.start_reader(:read_with_expiry, reader, url, parent, id)
   end
   def read(reader, url, parent, id) do
-    HLS.Reader.Worker.Supervisor.start_reader(:read, reader, url, parent, id)
+    HLS.Reader.Async.Supervisor.start_reader(:read, reader, url, parent, id)
   end
 
   def start_link(mode, reader, url, parent, id) do
@@ -25,7 +25,6 @@ defmodule HLS.Reader.Worker do
     {:stop, :normal, state}
   end
   def handle_cast(:read_with_expiry, {reader, url, parent, id} = state) do
-		IO.inspect [:reader, :read_with_expiry, reader, url]
     response = HLS.Reader.read_with_expiry!(reader, url)
     reply(Process.alive?(parent), parent, id, response)
     {:stop, :normal, state}

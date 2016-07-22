@@ -1,4 +1,4 @@
-defmodule HLS.ReaderWorkerTest do
+defmodule HLS.ReaderAsyncTest do
   use ExUnit.Case, async: true
 
   setup do
@@ -15,11 +15,11 @@ defmodule HLS.ReaderWorkerTest do
   end
 
   test "it can read the given file when given a url", context do
-    {:ok, _pid} = HLS.Reader.Worker.read(context.reader, "http://something.io/high/226201867.ts", self(), :test)
+    {:ok, _pid} = HLS.Reader.Async.read(context.reader, "http://something.io/high/226201867.ts", self(), :test)
     assert_receive {:data, :test, _}
   end
   test "it can read the given file with an expiry when given a url", context do
-    {:ok, _pid} = HLS.Reader.Worker.read_with_expiry(context.reader, "http://something.io/high/226201867.ts", self(), :test)
+    {:ok, _pid} = HLS.Reader.Async.read_with_expiry(context.reader, "http://something.io/high/226201867.ts", self(), :test)
     assert_receive {:data, :test, {_, 0}}
   end
 end

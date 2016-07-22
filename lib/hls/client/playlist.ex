@@ -81,7 +81,7 @@ defmodule HLS.Client.Playlist do
   end
 
   defp read(state) do
-    HLS.Reader.Worker.read_with_expiry(state.reader, state.url, self(), :playlist)
+    HLS.Reader.Async.read_with_expiry(state.reader, state.url, self(), :playlist)
     %S{state | reloading: true}
   end
 
