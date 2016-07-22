@@ -15,14 +15,26 @@ defprotocol Otis.Source do
   @doc """
   Returns a stream of raw PCM audio data
   """
-  @spec open!(t, non_neg_integer) :: Enumerable.t
-  def open!(source, packet_size_bytes)
+  @spec open!(t, binary, non_neg_integer) :: Enumerable.t
+  def open!(source, id, packet_size_bytes)
 
   @doc """
-  Returns a stream of raw PCM audio data
+  Pauses the current stream.
   """
-  @spec close(t, :file.io_device) :: :ok | {:error, :file.posix | :badarg | :terminated}
-  def close(file, source)
+  @spec pause(t, binary, Enumerable.t) :: :ok
+  def pause(source, id, stream)
+
+  @doc """
+  Resumes the current stream.
+  """
+  @spec pause(t, binary, Enumerable.t) :: {:reopen, Enumerable.t} | {:reuse, Enumerable.t}
+  def resume!(source, id, stream)
+
+  @doc """
+  Closes the given stream.
+  """
+  @spec close(t, binary, Enumerable.t) :: :ok | {:error, term}
+  def close(file, id, stream)
 
   @doc "Returns the audio type as a {extension, mime type} tuple"
   @spec audio_type(t) :: {binary, binary}
@@ -47,11 +59,19 @@ if Code.ensure_loaded?(Otis.Source.File) do
       Otis.Source.File
     end
 
-    def open!(%File{path: path}, packet_size_bytes) do
+    def open!(%File{path: path}, _id, packet_size_bytes) do
       Elixir.File.stream!(path, [], packet_size_bytes)
     end
 
-    def close(%File{}, stream) do
+    def pause(%File{}, _id, stream) do
+      :ok # no-op
+    end
+
+    def resume!(%File{}, _id, stream) do
+      {:reuse, stream}
+    end
+
+    def close(%File{}, id, stream) do
       Elixir.File.close(stream)
     end
 
@@ -71,24 +91,30 @@ end
 
 if Code.ensure_loaded?(HLS.BBC.Channel) do
   defimpl Otis.Source, for: HLS.BBC.Channel do
-    alias HLS.BBC.Channel
+    alias HLS.BBC
 
     def id(bbc) do
       bbc.id
     end
 
     def type(_bbc) do
-      Channel
+      BBC.Channel
     end
 
-    def open!(bbc, _packet_size_bytes) do
-      HLS.BBC.open!(bbc)
+    def open!(bbc, id, _packet_size_bytes) do
+      BBC.open!(bbc, id)
     end
 
-    def close(_bbc, _stream) do
-      # no-op until I can figure out what this should do..
-      # release data I suppose but that'll probably just be
-      # GC'd
+    def pause(bbc, id, stream) do
+      BBC.pause(bbc, id, stream)
+    end
+
+    def resume!(bbc, id, stream) do
+      BBC.resume!(bbc, id, stream)
+    end
+
+    def close(bbc, id, stream) do
+      BBC.close(bbc, id, stream)
     end
 
     def audio_type(_bbc) do
@@ -99,14 +125,14 @@ if Code.ensure_loaded?(HLS.BBC.Channel) do
       %Otis.Source.Metadata{}
     end
 
-    def duration(_bbc) do
-      {:ok, :infinity}
+    def duration(channel) do
+      {:ok, channel.duration}
     end
   end
 
   defimpl Otis.Source.Origin, for: HLS.BBC.Channel do
     def load!(bbc) do
-      bbc
+      HLS.BBC.find!(bbc)
     end
   end
 end

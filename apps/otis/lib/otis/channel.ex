@@ -379,6 +379,7 @@ defmodule Otis.Channel do
   defp change_state(%S{state: :play, broadcaster: nil, ctrl: ctrl} = state) do
     {:ok, broadcaster} = start_broadcaster(state)
     ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(state), @buffer_size)
+    Otis.Stream.resume(state.audio_stream)
     Otis.State.Events.notify({:channel_play_pause, state.id, :play})
     %S{ state | broadcaster: broadcaster, ctrl: ctrl }
   end

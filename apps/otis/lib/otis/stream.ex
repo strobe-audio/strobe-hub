@@ -5,5 +5,8 @@ defmodule Otis.Stream do
   def reset(pid) do
     GenServer.call(pid, :reset)
   end
+  def resume(pid) do
+    GenServer.call(pid, :resume)
+  end
 end
 

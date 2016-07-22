@@ -10,8 +10,12 @@ defmodule Otis.Transcoders.Avconv do
   """
   def transcode(inputstream, type, offset_ms \\ 0) do
     opts = [out: :stream, in: inputstream]
-    _proc = %Porcelain.Process{pid: pid, out: outstream } = Porcelain.spawn(executable, params(type, offset_ms), opts)
-    {pid, outstream}
+    proc = %Porcelain.Process{out: outstream } = Porcelain.spawn(executable, params(type, offset_ms), opts)
+    {proc, outstream}
+  end
+
+  def stop(process) do
+    Porcelain.Process.stop(process)
   end
 
   defp params(input_type, offset_ms) do

@@ -65,7 +65,15 @@ defmodule Otis.Channel.BufferedStream do
   end
 
   def handle_call(:reset, _from, state) do
+    Otis.Stream.reset(state.audio_stream)
     {:reply, :ok, change_state(state, :waiting)}
+  end
+
+  # This is a no-op on this stream because the next demand for data will just
+  # start things off again.
+  def handle_call(:resume, _from, state) do
+    Otis.Stream.resume(state.audio_stream)
+    {:reply, :ok, state}
   end
 
   def handle_cast({:push_frame, frame}, state) do

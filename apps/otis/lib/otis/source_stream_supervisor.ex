@@ -7,12 +7,12 @@ defmodule Otis.SourceStreamSupervisor do
     Supervisor.start_link(__MODULE__, :ok, name: @supervisor_name)
   end
 
-  def start(source, playback_position) do
-    start(@supervisor_name, source, playback_position)
+  def start(id, source, playback_position) do
+    start(@supervisor_name, id, source, playback_position)
   end
 
-  def start(supervisor, source, playback_position) do
-    Supervisor.start_child(supervisor, [source, playback_position])
+  def start(supervisor, id, source, playback_position) do
+    Supervisor.start_child(supervisor, [id, source, playback_position])
   end
 
   def init(:ok) do
