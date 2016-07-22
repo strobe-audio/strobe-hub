@@ -1,6 +1,7 @@
 defmodule HLS.BBC do
   require Logger
-  alias HLS.BBC.Channel
+  alias   HLS.BBC.Channel
+  alias   HLS.Client.Registry
 
   @channels [
     %Channel{id: "asian_network", title: "BBC Asian Network"},
@@ -25,9 +26,46 @@ defmodule HLS.BBC do
     end
   end
 
-  def open!(%Channel{id: id} = channel) when id in @channel_names do
+  def find!(%Channel{id: id} = channel) do
+    @channels
+    |> Enum.find(fn(%Channel{id: cid}) -> cid ==id end)
+    |> _validate_find!(channel)
+  end
+
+  defp _validate_find!(nil, channel), do: raise "BBC channel #{inspect channel} not found"
+  defp _validate_find!(result, _channel), do: result
+
+  def open!(%Channel{id: id} = channel, stream_id) when id in @channel_names do
+    {:ok, stream} = open(channel, stream_id)
+    stream
+  end
+
+  def open(%Channel{id: id} = channel, stream_id) when id in @channel_names do
     hls = stream(channel)
-    HLS.Client.open!(hls)
+    HLS.Client.open!(hls, stream_id)
+  end
+
+  def pause(_channel, stream_id, _stream) do
+    HLS.Client.stop(stream_id)
+    :ok
+  end
+
+  def resume!(channel, stream_id, stream) do
+    IO.inspect [:bbc, :resume, stream_id, Registry.whereis_name(stream_id), stream]
+    resume(channel, stream_id, stream, Registry.whereis_name(stream_id))
+  end
+
+  def resume(channel, stream_id, _stream, :undefined) do
+    stream = open!(channel, stream_id)
+    {:reopen, stream}
+  end
+  def resume(_channel, _stream_id, stream, pid) when is_pid(pid) do
+    {:reuse, stream}
+  end
+
+  def close(_channel, stream_id, _stream) do
+    HLS.Client.stop(stream_id)
+    :ok
   end
 
   defp stream(channel) do

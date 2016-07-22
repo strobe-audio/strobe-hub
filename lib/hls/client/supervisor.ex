@@ -5,8 +5,8 @@ defmodule HLS.Client.Supervisor do
     Supervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def start(%HLS.Stream{} = stream, opts) do
-    Supervisor.start_child(__MODULE__, [stream, opts])
+  def start(%HLS.Stream{} = stream, id, opts) do
+    Supervisor.start_child(__MODULE__, [stream, id, opts])
   end
 
   def stop(pid) do

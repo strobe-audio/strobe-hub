@@ -1,4 +1,4 @@
 defmodule HLS.BBC.Channel do
-  defstruct [:id, :title]
+  defstruct [:id, :title, duration: :infinity]
 end
 

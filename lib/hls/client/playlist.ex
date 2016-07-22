@@ -44,14 +44,14 @@ defmodule HLS.Client.Playlist do
     {:noreply, [], state}
   end
 
+  def handle_info(:reload, state) do
+    {:noreply, [], read(state)}
+  end
+
   def handle_info({:data, :playlist, {data, expiry}}, state) do
     playlist = M3.Parser.parse!(data, state.url)
     {:ok, media} = M3.Playlist.sequence(playlist, state.playlist)
     handle_media(media, expiry, %S{state | playlist: playlist, reloading: false})
-  end
-
-  def handle_info(:reload, state) do
-    {:noreply, [], read(state)}
   end
 
   defp handle_media([], _expiry, %S{demand: 0} = state) do

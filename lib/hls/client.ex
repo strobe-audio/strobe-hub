@@ -1,47 +1,66 @@
 
 defmodule HLS.Client do
   alias   Experimental.{GenStage}
-	require Logger
+  alias   HLS.Client.Registry
+  require Logger
 
   use     GenStage
 
-  def open!(stream, opts \\ [bandwidth: :highest])
-  def open!(%HLS.Stream{} = stream, opts) do
-    stream(stream, opts)
+  def open!(stream, id, opts \\ [bandwidth: :highest])
+  def open!(%HLS.Stream{} = stream, id, opts) do
+    stream(stream, id, opts)
   end
 
-  defp stream(stream, opts) do
-    {:ok, pid} = HLS.Client.Supervisor.start(stream, opts)
-    GenStage.stream([pid])
+  def stop(id) do
+    GenStage.call(Registry.via(id), :stop)
   end
 
-  def start_link(stream, opts) do
-    GenStage.start_link(__MODULE__, [stream, opts])
+  defp stream(stream, id, opts) do
+    {:ok, pid} =  HLS.Client.Supervisor.start(stream, id, opts)
+    {:ok, GenStage.stream([pid])}
+  end
+
+  def start_link(stream, id, opts) do
+    GenStage.start_link(__MODULE__, [stream, id, opts], name: Registry.via(id))
   end
 
   # Callbacks
 
-  def init([stream, opts]) do
+  defmodule S do
+    defstruct [:reader, :producer]
+  end
+
+  def init([stream, _id, opts]) do
     {:ok, producer} = GenStage.start_link(HLS.Client.Playlist, [stream, stream.reader, opts])
-    {:producer_consumer, stream.reader, subscribe_to: [{producer, [max_demand: 1]}]}
+    state = %S{reader: stream.reader, producer: producer}
+    {:producer_consumer, state, subscribe_to: [{producer, [max_demand: 1]}]}
   end
 
-  def handle_events(events, {producer, _ref} = _from, reader) do
-    {times, data} = Enum.map(events, fn(media) ->
-      {t, data} = :timer.tc(fn ->
-        HLS.Reader.read!(reader, media.url)
-      end)
-      {t / (media.duration * 1_000_000), data}
-    end) |> Enum.unzip
-		monitor_bandwidth(producer, times)
-    {:noreply, data, reader}
+  def handle_events(events, {producer, _ref} = _from, %S{reader: reader} = state) do
+    data =
+      events
+      |> Enum.map(&read_with_timing(&1, reader))
+      |> Enum.unzip
+      |> monitor_bandwidth(producer)
+    {:noreply, data, state}
   end
 
-	# TODO: upgrade/downgrade stream based on load times
-	# GenStage.cast(producer, :downgrade)
-	# GenStage.cast(producer, :upgrade)
-	defp monitor_bandwidth(_producer, times) do
+  def handle_call(:stop, _from, state) do
+    GenStage.stop(state.producer)
+    {:stop, :normal, :ok, state}
+  end
+
+  defp read_with_timing(media, reader) do
+    {t, data} = :timer.tc(fn -> HLS.Reader.read!(reader, media.url) end)
+    {t / (media.duration * 1_000_000), data}
+  end
+
+  # TODO: upgrade/downgrade stream based on load times
+  # GenStage.cast(producer, :downgrade)
+  # GenStage.cast(producer, :upgrade)
+  defp monitor_bandwidth({times, data}, _producer) do
     average = Enum.reduce(times, 0, fn(p, sum) -> p + sum end) / length(times)
     Logger.info "=== Media load time #{ inspect 100 * Float.round(average, 2) }%"
-	end
+    data
+  end
 end
