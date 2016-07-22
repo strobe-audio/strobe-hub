@@ -59,17 +59,24 @@ defmodule Otis.AudioStream do
     {:reply, :ok, %S{ state | stream: nil, state: :stopped, buffer: <<>> }}
   end
 
+  def handle_call(:reset, _from, %S{stream: nil} = state) do
+    {:reply, :ok, state}
+  end
   def handle_call(:reset, _from, state) do
     Otis.SourceStream.pause(state.stream)
     {:reply, :ok, state}
   end
 
   def handle_call(:resume, _from, %S{stream: nil} = state) do
-    {:reply, :ok, state}
+    {:reply, :resume, state}
   end
   def handle_call(:resume, _from, %S{stream: stream} = state) do
-    Otis.SourceStream.resume(stream)
-    {:reply, :ok, state}
+    reply = Otis.SourceStream.resume(stream)
+    state = case reply do
+      :resume -> state
+      :flush -> %S{state | buffer: <<>>, state: :starting}
+    end
+    {:reply, reply, state}
   end
 
   defp audio_frame(%S{stream: nil, state: :starting} = state) do

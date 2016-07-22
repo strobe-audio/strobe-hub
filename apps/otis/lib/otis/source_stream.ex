@@ -75,22 +75,21 @@ defmodule Otis.SourceStream do
     {:reply, :ok, state}
   end
   def handle_call(:pause, _from, state) do
-    IO.inspect [__MODULE__, :pause, state]
     Otis.Source.pause(state.source, state.id, state.inputstream)
     {:reply, :ok, state}
   end
   def handle_call(:resume, _from, state) do
-    IO.inspect [__MODULE__, :resume, state]
-    state =
+    {reply, state} =
       case Otis.Source.resume!(state.source, state.id, state.inputstream) do
         {:reuse, _stream} ->
-          state
+          {:resume, state}
         {:reopen, stream} ->
-          state
+          state = state
           |> close_transcoder()
           |> open_transcoder(stream)
+          {:flush, state}
       end
-    {:reply, :ok, state}
+    {:reply, reply, state}
   end
 
   def handle_call(:source_info, _from, state) do
