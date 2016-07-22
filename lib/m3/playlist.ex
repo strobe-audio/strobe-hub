@@ -27,7 +27,7 @@ defmodule M3.Playlist do
   end
 
   defp _sequence(new_msn, _new_media, old_msn) when new_msn < old_msn do
-    {:error, :invalid_sequence_number}
+    {:ok, []}
   end
   defp _sequence(new_msn, new_media, old_msn) do
     gap = new_msn - old_msn
