@@ -56,6 +56,21 @@ defmodule Otis.Library do
         "#{@protocol}#{path}"
       end
 
+
+      def play(nil, _channel_id) do
+        nil
+      end
+      def play(tracks, channel_id) when is_list(tracks) do
+        with {:ok, channel} <- Otis.Channels.find(channel_id) do
+          Otis.Channel.append(channel, tracks)
+        end
+        nil
+      end
+      def play(track, channel_id) do
+        play([track], channel_id)
+      end
+
+
       def namespace, do: @namespace
 
       defoverridable [
