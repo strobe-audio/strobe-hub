@@ -60,7 +60,9 @@ defmodule HLS.Client do
   # GenStage.cast(producer, :upgrade)
   defp monitor_bandwidth({times, data}, _producer) do
     average = Enum.reduce(times, 0, fn(p, sum) -> p + sum end) / length(times)
-    Logger.info "=== Media load time #{ inspect 100 * Float.round(average, 2) }%"
+    if average > 0.5 do
+      Logger.warn "=== Media load time #{ inspect 100 * Float.round(average, 2) }%"
+    end
     data
   end
 end

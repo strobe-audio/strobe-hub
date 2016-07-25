@@ -61,7 +61,7 @@ defmodule HLS.Client.Playlist do
     {:noreply, [], reload(state, expiry)}
   end
   defp handle_media(media, _expiry, state) do
-    Logger.info "New media #{length(media)}/#{state.demand} - #{state.playlist.media_sequence_number}"
+    # Logger.info "New media #{length(media)}/#{state.demand} - #{state.playlist.media_sequence_number}"
     {events, media} = Enum.split(media, state.demand)
     state = %S{ state | media: media, demand: state.demand - length(events) }
     {:noreply, events, state}
