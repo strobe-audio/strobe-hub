@@ -206,7 +206,7 @@ defmodule Peel.Events.Library do
     [ [link(artist)] ] |> album_date_metadata(album.date)
   end
   def album_metadata(album, _artists) do
-    [ [library_link("Various Artists", nil)] ] |> album_date_metadata(album.date)
+    [ [link("Various Artists", nil)] ] |> album_date_metadata(album.date)
   end
 
   def album_date_metadata([], nil) do
@@ -230,6 +230,10 @@ defmodule Peel.Events.Library do
 
   def link(%Artist{name: name} = artist) do
     library_link name, click_action(artist)
+  end
+
+  def link(title, action) when is_binary(title) do
+    library_link(title, action)
   end
 
   def link(_) do
