@@ -188,7 +188,7 @@ defimpl Otis.Source, for: Otis.Test.TestSource do
   end
 end
 
-defimpl Otis.Source.Origin, for: Otis.Test.TestSource do
+defimpl Otis.Library.Source.Origin, for: Otis.Test.TestSource do
   def load!(source) do
     %Otis.Test.TestSource{ source | loaded: true }
   end

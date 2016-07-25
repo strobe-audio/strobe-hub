@@ -6,15 +6,18 @@ defmodule Peel.Events.Library do
   alias Peel.Artist
   alias Peel.Track
 
-  @namespace "peel:"
+  use  Otis.Library, namespace: "peel"
 
   def register do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
-  def handle_event({:controller_join, socket}, state) do
-    library = %{
-      id: Peel.library_id,
+  def init do
+    # Copy my placeholder here
+  end
+
+  def library do
+    %{ id: Peel.library_id,
       title: "Your Music",
       icon: "",
       actions: %{
@@ -23,27 +26,6 @@ defmodule Peel.Events.Library do
       },
       metadata: nil
     }
-    Otis.State.Events.notify({:add_library, library, socket})
-    {:ok, state}
-  end
-
-  def handle_event({:library_request, channel_id, @namespace <> route, socket}, state) do
-    case route_library_request(channel_id, route) do
-      nil ->
-        nil
-      response ->
-        Otis.State.Events.notify({:library_response, "peel", response, socket})
-    end
-    {:ok, state}
-  end
-
-
-  def handle_event(_event, state) do
-    {:ok, state}
-  end
-
-  def route_library_request(channel_id, route) when is_binary(route) do
-    route_library_request(channel_id, String.split(route, "/", trim: true), route)
   end
 
   def route_library_request(channel_id, ["track", track_id, "play"], _path) do
@@ -210,10 +192,10 @@ defmodule Peel.Events.Library do
   def album_metadata(_album, nil) do
   end
   def album_metadata(album, [artist]) do
-    [ [link(artist)] ] |> album_date_metadata(album.date)
+    [ [library_link(artist)] ] |> album_date_metadata(album.date)
   end
   def album_metadata(album, _artists) do
-    [ [link("Various Artists", nil)] ] |> album_date_metadata(album.date)
+    [ [library_link("Various Artists", nil)] ] |> album_date_metadata(album.date)
   end
 
   def album_date_metadata([], nil) do
@@ -224,55 +206,47 @@ defmodule Peel.Events.Library do
   end
   def album_date_metadata(metadata, date) do
     # TODO: add action for searching by date
-    metadata ++ [[ link(date, nil) ]]
+    metadata ++ [[ library_link(date, nil) ]]
   end
 
   def link(%Track{title: title} = track) do
-    link title, click_action(track)
+    library_link title, click_action(track)
   end
 
   def link(%Album{title: title} = album) do
-    link title, click_action(album)
+    library_link title, click_action(album)
   end
 
   def link(%Artist{name: name} = artist) do
-    link name, click_action(artist)
+    library_link name, click_action(artist)
   end
 
   def link(_) do
-    link("", nil)
-  end
-
-  def link(title, action) do
-    %{title: title, action: action}
+    library_link("", nil)
   end
 
   def click_action(%Track{id: id}) do
-    url "track/#{id}/play"
+    url(["track", id, "play"])
   end
 
   def click_action(%Album{id: id}) do
-    url "album/#{id}"
+    url(["album", id])
   end
 
   def click_action(%Artist{id: id}) do
-    url "artist/#{id}"
+    url(["artist", id])
   end
 
   def play_action(%Track{id: id}) do
-    url "track/#{id}/play"
+    url(["track", id, "play"])
   end
 
   def play_action(%Album{id: id}) do
-    url "album/#{id}/play"
+    url(["album", id, "play"])
   end
 
   def play_action(%Artist{id: id}) do
-    url "artist/#{id}/play"
-  end
-
-  def url(path) do
-    "#{@namespace}#{path}"
+    url(["artist", id, "play"])
   end
 
   def play(nil, _channel_id) do

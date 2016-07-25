@@ -136,7 +136,7 @@ defmodule Otis.Source.File do
   end
 end
 
-defimpl Otis.Source, for: Otis.Source.File do
+defimpl Otis.Library.Source, for: Otis.Source.File do
   alias Otis.Source.File
 
   def id(file) do
@@ -176,7 +176,7 @@ defimpl Otis.Source, for: Otis.Source.File do
   end
 end
 
-defimpl Otis.Source.Origin, for: Otis.Source.File do
+defimpl Otis.Library.Source.Origin, for: Otis.Source.File do
   alias Otis.Source.File
 
   def load!(%File{id: id}) do

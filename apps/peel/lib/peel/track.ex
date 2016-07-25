@@ -129,7 +129,7 @@ if Code.ensure_loaded?(Otis.Source) do
     end
   end
 
-  defimpl Otis.Source.Origin, for: Peel.Track do
+  defimpl Otis.Library.Source.Origin, for: Peel.Track do
     def load!(track) do
       Peel.Track.find(track.id)
     end

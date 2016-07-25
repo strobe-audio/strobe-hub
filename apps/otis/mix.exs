@@ -44,6 +44,7 @@ defmodule Otis.Mixfile do
       {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
       {:faker, "~> 0.5", only: :test},
       {:logger_file_backend, "~> 0.0.7"},
+      {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
     ]
   end
 end

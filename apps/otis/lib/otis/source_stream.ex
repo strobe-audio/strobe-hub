@@ -38,7 +38,7 @@ defmodule Otis.SourceStream do
   @doc "Returns a new SourceStream for the given source"
   def new(id, playback_position, source) do
     {:ok, pid} = Otis.SourceStreamSupervisor.start(id, source, playback_position)
-    {:ok, duration} = Otis.Source.duration(source)
+    {:ok, duration} = Otis.Library.Source.duration(source)
     {:ok, id, playback_position, duration, pid}
   end
 
@@ -69,16 +69,16 @@ defmodule Otis.SourceStream do
   end
 
   def handle_call(:close, _from, state) do
-    Otis.Source.close(state.source, state.id, state.inputstream)
+    Otis.Library.Source.close(state.source, state.id, state.inputstream)
     {:reply, :ok, state}
   end
   def handle_call(:pause, _from, state) do
-    Otis.Source.pause(state.source, state.id, state.inputstream)
+    Otis.Library.Source.pause(state.source, state.id, state.inputstream)
     {:reply, :ok, state}
   end
   def handle_call(:resume, _from, state) do
     {reply, state} =
-      case Otis.Source.resume!(state.source, state.id, state.inputstream) do
+      case Otis.Library.Source.resume!(state.source, state.id, state.inputstream) do
         {:reuse, _stream} ->
           {:resume, state}
         {:reopen, stream} ->
@@ -116,7 +116,7 @@ defmodule Otis.SourceStream do
   end
 
   defp next_chunk(_chunk, %{id: id, source: source, inputstream: inputstream} = state) do
-    Otis.Source.close(source, id, inputstream)
+    Otis.Library.Source.close(source, id, inputstream)
     state = close_transcoder(state)
     {:stop,
       {:shutdown, :done},
@@ -145,11 +145,11 @@ defmodule Otis.SourceStream do
   end
 
   defp input_stream(%{ id: id, source: source }) do
-    Otis.Source.open!(source, id, Otis.stream_bytes_per_step * 4)
+    Otis.Library.Source.open!(source, id, Otis.stream_bytes_per_step * 4)
   end
 
   defp stream_type(%{ source: source }) do
-    {ext, _mime_type} = Otis.Source.audio_type(source)
+    {ext, _mime_type} = Otis.Library.Source.audio_type(source)
     ext
   end
 end

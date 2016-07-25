@@ -42,6 +42,7 @@ defmodule Peel.Mixfile do
       {:sqlite_ecto, "~> 1.0.0"},
       {:ecto, "~> 1.0"},
       {:work_queue, github: "pragdave/work_queue"},
+      {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
     ]
   end
 end

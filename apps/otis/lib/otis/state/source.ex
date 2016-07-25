@@ -56,7 +56,7 @@ defmodule Otis.State.Source do
   def source(record) do
     record
     |> type
-    |> Otis.Source.Origin.load!
+    |> Otis.Library.Source.Origin.load!
   end
 
   def type(record) do

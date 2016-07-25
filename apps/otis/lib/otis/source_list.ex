@@ -13,26 +13,26 @@ defmodule Otis.SourceList do
   end
 
   @doc "Start a new list instance from the given list of sources"
-  @spec from_list(binary, [Otis.Source.t]) :: {:ok, pid}
+  @spec from_list(binary, [Otis.Library.Source.t]) :: {:ok, pid}
   def from_list(id, sources) do
     start_link(id, Enum.map(sources, &source_with_id/1))
   end
 
   @doc "GenServer api to start an instance with the given list of sources"
-  @spec start_link(binary, [Otis.Source.t]) :: {:ok, pid}
+  @spec start_link(binary, [Otis.Library.Source.t]) :: {:ok, pid}
   def start_link(id, sources) do
     GenServer.start_link(__MODULE__, {id, sources})
   end
 
   @doc "Returns the next source in the list"
-  @spec next(pid) :: {:ok, Otis.Source.t}
+  @spec next(pid) :: {:ok, Otis.Library.Source.t}
   def next(source_list) do
     source = GenServer.call(source_list, :next_source)
     source
   end
 
   @doc "Appends the given List of Sources"
-  @spec append(pid, list(Otis.Source.t)) :: {:ok, integer}
+  @spec append(pid, list(Otis.Library.Source.t)) :: {:ok, integer}
   def append(list, []) do
     {:ok, count(list)}
   end
@@ -42,7 +42,7 @@ defmodule Otis.SourceList do
   end
 
   @doc "Appends the given Source to the list"
-  @spec append(pid, Otis.Source.t) :: :ok
+  @spec append(pid, Otis.Library.Source.t) :: :ok
   def append(list, source) do
     insert_source(list, source, -1)
   end
@@ -50,7 +50,7 @@ defmodule Otis.SourceList do
   @doc """
   Inserts the given source into the list at the given position (-1 to append)
   """
-  @spec insert_source(pid, Otis.Source.t, integer) :: :ok
+  @spec insert_source(pid, Otis.Library.Source.t, integer) :: :ok
   def insert_source(list, source, position \\ -1) do
     GenServer.call(list, {:add_source, source, position})
   end
@@ -161,7 +161,7 @@ defmodule Otis.SourceList do
 
   def handle_call(:duration, _from, state) do
     duration = Enum.reduce(state.sources, 0, fn({_id, _offset, source}, acc) ->
-      {:ok, duration} = Otis.Source.duration(source)
+      {:ok, duration} = Otis.Library.Source.duration(source)
       acc + duration
     end)
     {:reply, {:ok, duration}, state}

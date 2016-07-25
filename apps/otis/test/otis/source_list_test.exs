@@ -5,7 +5,7 @@ defmodule Otis.Source.Test do
   end
 end
 
-defimpl Otis.Source, for: Otis.Source.Test do
+defimpl Otis.Library.Source, for: Otis.Source.Test do
   def id(%{id: id}), do: id
   def type(_), do: Otis.Source.Test
   def open!(_source, _packet_size_bytes), do: []

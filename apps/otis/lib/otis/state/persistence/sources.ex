@@ -114,11 +114,11 @@ defmodule Otis.State.Persistence.Sources do
   end
 
   defp source_type(source) do
-    source |> Otis.Source.type |> to_string
+    source |> Otis.Library.Source.type |> to_string
   end
 
   defp source_id(source) do
-    Otis.Source.id(source)
+    Otis.Library.Source.id(source)
   end
 
   defp notify(source, event) do
