@@ -17,7 +17,7 @@ defmodule Elvis.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [mod: {Elvis, []},
-     applications: [:phoenix, :phoenix_html, :cowboy, :logger, :otis, :peel]]
+     applications: [:phoenix, :phoenix_html, :cowboy, :logger, :otis, :peel, :hls]]
   end
 
   # Specifies which paths to compile per environment
@@ -34,6 +34,7 @@ defmodule Elvis.Mixfile do
      {:cowboy, "~> 1.0"},
      {:otis, path: "/Users/garry/Seafile/Peep/peep/apps/otis"},
      {:peel, path: "/Users/garry/Seafile/Peep/peep/apps/peel"},
+     {:hls, path: "/Users/garry/Seafile/Peep/hls"},
    ]
   end
 end
