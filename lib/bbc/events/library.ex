@@ -10,7 +10,7 @@ defmodule BBC.Events.Library do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
-  def init do
+  def setup(state) do
     image_dir = [__DIR__, ".."] |> Path.join |> Path.expand
     Otis.Media.copy!(BBC.library_id, "bbc.svg", Path.join([image_dir, "bbc.svg"]))
     image_dir = [__DIR__, "../channels"] |> Path.join |> Path.expand
@@ -19,11 +19,11 @@ defmodule BBC.Events.Library do
         logo = Channel.logo(channel, size)
         svg = Path.join([image_dir, logo])
         if File.exists?(svg) do
-          IO.inspect svg
           Otis.Media.copy!(BBC.library_id, logo, svg)
         end
       end
     end
+    state
   end
 
   def bbc_logo do
@@ -45,7 +45,12 @@ defmodule BBC.Events.Library do
   def route_library_request(_channel_id, ["root"], _path) do
     channels = Enum.map BBC.channels, fn(channel) ->
       play = url(["channel", channel.id, "play"])
-      %{ id: "bbc:channel/#{channel.id}", title: channel.title, icon: "", actions: %{ click: play, play: play }, metadata: nil }
+      %{ id: "bbc:channel/#{channel.id}",
+        title: channel.title,
+        icon: Channel.cover_image(channel),
+        actions: %{ click: play, play: play },
+        metadata: nil
+      }
     end
     %{
       id: "bbc:root",
