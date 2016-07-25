@@ -248,17 +248,4 @@ defmodule Peel.Events.Library do
   def play_action(%Artist{id: id}) do
     url(["artist", id, "play"])
   end
-
-  def play(nil, _channel_id) do
-    nil
-  end
-  def play(tracks, channel_id) when is_list(tracks) do
-    with {:ok, channel} <- Otis.Channels.find(channel_id) do
-      Otis.Channel.append(channel, tracks)
-    end
-    nil
-  end
-  def play(track, channel_id) do
-    play([track], channel_id)
-  end
 end
