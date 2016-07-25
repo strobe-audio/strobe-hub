@@ -136,6 +136,46 @@ defmodule Otis.Source.File do
   end
 end
 
+defimpl Otis.Source, for: Otis.Source.File do
+  alias Otis.Source.File
+
+  def id(file) do
+    file.id
+  end
+
+  def type(_file) do
+    Otis.Source.File
+  end
+
+  def open!(%File{path: path}, _id, packet_size_bytes) do
+    Elixir.File.stream!(path, [], packet_size_bytes)
+  end
+
+  def pause(%File{}, _id, _stream) do
+    :ok # no-op
+  end
+
+  def resume!(%File{}, _id, stream) do
+    {:reuse, stream}
+  end
+
+  def close(%File{}, _id, stream) do
+    Elixir.File.close(stream)
+  end
+
+  def audio_type(%File{metadata: metadata}) do
+    {metadata.extension, metadata.mime_type}
+  end
+
+  def metadata(%File{metadata: metadata}) do
+    metadata
+  end
+
+  def duration(%File{metadata: metadata}) do
+    {:ok, metadata.duration_ms}
+  end
+end
+
 defimpl Otis.Source.Origin, for: Otis.Source.File do
   alias Otis.Source.File
 

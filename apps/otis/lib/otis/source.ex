@@ -40,51 +40,32 @@ defprotocol Otis.Source do
   @spec audio_type(t) :: {binary, binary}
   def audio_type(source)
 
-  @spec metadata(t) :: Otis.Source.Metadata.t
+  @spec metadata(t) :: Map.t
   def metadata(source)
 
   @spec duration(t) :: {:ok, integer} | {:ok, :infinity}
   def duration(source)
 end
 
-if Code.ensure_loaded?(Otis.Source.File) do
-  defimpl Otis.Source, for: Otis.Source.File do
-    alias Otis.Source.File
+# :(
+# This is the best I can do for the moment without working out a proper code
+# loading system. The question is, how to implement the protocol from one
+# module in another completely separate one?
+#
+# I could do it with an umbrella app, but that would limit source
+# implementations to those in that umbrella app.
+defimpl Otis.Source, for: HLS.BBC.Channel do
+  defdelegate id(source), to: HLS.BBC.Source
+  defdelegate type(source), to: HLS.BBC.Source
+  defdelegate open!(source, id, packet_size_bytes), to: HLS.BBC.Source
+  defdelegate pause(source, id, stream), to: HLS.BBC.Source
+  defdelegate resume!(source, id, stream), to: HLS.BBC.Source
+  defdelegate close(file, id, stream), to: HLS.BBC.Source
+  defdelegate audio_type(source), to: HLS.BBC.Source
+  defdelegate metadata(source), to: HLS.BBC.Source
+  defdelegate duration(source), to: HLS.BBC.Source
+end
 
-    def id(file) do
-      file.id
-    end
-
-    def type(_file) do
-      Otis.Source.File
-    end
-
-    def open!(%File{path: path}, _id, packet_size_bytes) do
-      Elixir.File.stream!(path, [], packet_size_bytes)
-    end
-
-    def pause(%File{}, _id, stream) do
-      :ok # no-op
-    end
-
-    def resume!(%File{}, _id, stream) do
-      {:reuse, stream}
-    end
-
-    def close(%File{}, id, stream) do
-      Elixir.File.close(stream)
-    end
-
-    def audio_type(%File{metadata: metadata}) do
-      {metadata.extension, metadata.mime_type}
-    end
-
-    def metadata(%File{metadata: metadata}) do
-      metadata
-    end
-
-    def duration(%File{metadata: metadata}) do
-      {:ok, metadata.duration_ms}
-    end
-  end
+defimpl Otis.Source.Origin, for: HLS.BBC.Channel do
+  defdelegate load!(source), to: HLS.BBC.Source.Origin
 end
