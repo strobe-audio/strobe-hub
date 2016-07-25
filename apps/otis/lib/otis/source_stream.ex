@@ -61,7 +61,6 @@ defmodule Otis.SourceStream do
   end
 
   def terminate(reason, state) do
-    IO.inspect [__MODULE__, :terminate, reason]
     :ok
   end
 
@@ -70,7 +69,6 @@ defmodule Otis.SourceStream do
   end
 
   def handle_call(:close, _from, state) do
-    IO.inspect [__MODULE__, :close, state]
     Otis.Source.close(state.source, state.id, state.inputstream)
     {:reply, :ok, state}
   end
@@ -97,7 +95,6 @@ defmodule Otis.SourceStream do
   end
 
   def handle_info({:EXIT, _from, _reason}, state) do
-    IO.inspect [__MODULE__, :EXIT, _from, _reason, state]
     {:noreply, state}
   end
 
