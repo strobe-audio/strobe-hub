@@ -54,18 +54,18 @@ end
 #
 # I could do it with an umbrella app, but that would limit source
 # implementations to those in that umbrella app.
-defimpl Otis.Source, for: HLS.BBC.Channel do
-  defdelegate id(source), to: HLS.BBC.Source
-  defdelegate type(source), to: HLS.BBC.Source
-  defdelegate open!(source, id, packet_size_bytes), to: HLS.BBC.Source
-  defdelegate pause(source, id, stream), to: HLS.BBC.Source
-  defdelegate resume!(source, id, stream), to: HLS.BBC.Source
-  defdelegate close(file, id, stream), to: HLS.BBC.Source
-  defdelegate audio_type(source), to: HLS.BBC.Source
-  defdelegate metadata(source), to: HLS.BBC.Source
-  defdelegate duration(source), to: HLS.BBC.Source
+defimpl Otis.Source, for: BBC.Channel do
+  defdelegate id(source), to: BBC.Source
+  defdelegate type(source), to: BBC.Source
+  defdelegate open!(source, id, packet_size_bytes), to: BBC.Source
+  defdelegate pause(source, id, stream), to: BBC.Source
+  defdelegate resume!(source, id, stream), to: BBC.Source
+  defdelegate close(file, id, stream), to: BBC.Source
+  defdelegate audio_type(source), to: BBC.Source
+  defdelegate metadata(source), to: BBC.Source
+  defdelegate duration(source), to: BBC.Source
 end
 
-defimpl Otis.Source.Origin, for: HLS.BBC.Channel do
-  defdelegate load!(source), to: HLS.BBC.Source.Origin
+defimpl Otis.Source.Origin, for: BBC.Channel do
+  defdelegate load!(source), to: BBC.Source.Origin
 end
