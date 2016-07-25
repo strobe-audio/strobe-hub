@@ -7,16 +7,19 @@
 .rendition--cover {
   flex: 0 0 100vw;
   width: 100%;
-  padding-top: 100%;
+  height: 100vw;
   overflow: hidden;
   position: relative;
   left: 0;
   top: 0;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   img {
-    position: absolute;
-    left: 0;
-    top: 0;
+    /* position: absolute; */
+    /* left: 0; */
+    /* top: 0; */
     display: block;
     width: 100%;
   }
