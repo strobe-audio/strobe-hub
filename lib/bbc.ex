@@ -1,6 +1,23 @@
 defmodule BBC do
+  use     Application
   require Logger
   alias   BBC.Channel
+
+  @library_id "bbc"
+
+  def start(_type, _args) do
+    import Supervisor.Spec, warn: false
+
+    children = [
+      supervisor(HLS.Supervisor, [], []),
+      worker(BBC.Events, []),
+    ]
+
+    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: __MODULE__]
+    Supervisor.start_link(children, opts)
+  end
 
   @channels [
     %Channel{id: "asian_network", title: "BBC Asian Network"},
@@ -25,17 +42,26 @@ defmodule BBC do
     end
   end
 
+  def channels, do: @channels
+
+  def find!(id) when id in @channel_names do
+    find(id, id)
+  end
   def find!(%Channel{id: id} = channel) do
-    @channels
-    |> Enum.find(fn(%Channel{id: cid}) -> cid ==id end)
-    |> _validate_find!(channel)
+    find(id, channel)
   end
 
-  defp _validate_find!(nil, channel), do: raise "BBC channel #{inspect channel} not found"
-  defp _validate_find!(result, _channel), do: result
+  defp find(id, key) do
+    @channels
+    |> Enum.find(fn(%Channel{id: cid}) -> cid == id end)
+    |> _validate_find!(key)
+  end
+
+  defp _validate_find!(nil, key), do: raise "BBC channel #{inspect key} not found"
+  defp _validate_find!(result, _key), do: result
 
   def playlist(%Channel{id: id}) when id in @channel_names do
-    path = Path.join([__DIR__, "bbc/playlist/#{id}.m3u8"]) |> Path.expand
+    path = Path.join([__DIR__, "bbc/channels/#{id}.m3u8"]) |> Path.expand
     file = File.read!(path)
     M3.Parser.parse!(file, "http://www.bbc.co.uk")
   end
@@ -43,4 +69,6 @@ defmodule BBC do
   def playlist(channel) do
     raise "Unknown channel #{inspect channel}"
   end
+
+  def library_id, do: "bbc"
 end

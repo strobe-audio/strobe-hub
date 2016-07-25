@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="22px" height="21px" viewBox="0 0 22 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 39.1 (31720) - http://www.bohemiancoding.com/sketch -->
+    <title>radio4.small</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="radio4.small">
+            <rect id="Rectangle-path" stroke="#FFFFFF" fill="#FFFFFF" x="5.54" y="3.278" width="11.625" height="13.75"></rect>
+            <path d="M11.258,0 C5.551,0 0.925,4.628 0.925,10.336 C0.925,16.045 5.55,20.672 11.258,20.672 C16.963,20.672 21.588,16.045 21.588,10.336 C21.588,4.628 16.963,0 11.258,0 L11.258,0 Z M16.864,14.442 L14.762,14.442 L14.768,17.104 L11.004,17.108 L10.998,14.713 C10.998,14.713 10.994,14.449 10.678,14.438 L5.295,14.442 L5.297,12.233 C5.297,11.913 5.455,11.438 5.649,11.18 L11.405,3.461 C11.598,3.203 12.018,2.992 12.341,2.993 L14.77,2.994 L14.766,11.344 L16.869,11.338 L16.864,14.442 L16.864,14.442 Z" id="Shape" fill="#002D5D"></path>
+            <path d="M11.321,9.011 C10.505,9.028 9.852,9.706 9.872,10.523 C9.891,11.232 10.421,11.815 11.113,11.939 L11.645,12.034 C11.506,12.975 11.155,13.68 10.363,14.264 C11.43,13.789 12.251,12.766 12.628,11.684 C13.006,10.599 12.792,8.981 11.321,9.011" id="Shape" fill="#002D5D"></path>
+        </g>
+    </g>
+</svg>

@@ -14,7 +14,7 @@ defmodule HLS.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :httpoison, :gen_stage, :gproc], mod: {HLS, []}]
+    [applications: [:logger, :httpoison, :gen_stage, :gproc], mod: {BBC, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -30,6 +30,8 @@ defmodule HLS.Mixfile do
     [ {:httpoison, "~> 0.9.0"},
       {:gen_stage, "~> 0.1"},
       {:gproc, "~> 0.5.0"},
+      {:poison, "~> 1.5.0"},
+      {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
     ]
   end
 end
