@@ -11,7 +11,21 @@ import Utils.Css
 player : Signal.Address () -> Rendition.Model -> Bool -> Html
 player playPauseAddress rendition playing =
   let
-      coverImage = rendition.source.cover_image
+      source = rendition.source
+      coverImage = source.cover_image
+      albumMeta = case source.album of
+        Nothing ->
+          div [] []
+
+        Just album ->
+          div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
+
+      durationMeta = case source.duration_ms of
+        Nothing ->
+          div [] []
+
+        Just duration ->
+           div [ class "rendition--meta--duration" ] [text ("(" ++ (Source.View.duration source) ++ ")")]
   in
     div
       [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ]  ]
@@ -33,8 +47,8 @@ player playPauseAddress rendition playing =
               , div
                   [ class "rendition--meta" ]
                   [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
-                  , div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
-                  , div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration rendition.source) ++ ")") ]
+                  ,  albumMeta
+                  ,  durationMeta
                   ]
               , (progress playPauseAddress rendition playing)
               ]
