@@ -4,6 +4,10 @@ defmodule Otis.Library do
       @namespace "#{unquote(namespace)}"
       @protocol "#{unquote(namespace)}:"
 
+      def handle_event({:otis_started}, state) do
+        {:ok, setup(state)}
+      end
+
       def handle_event({:controller_join, socket}, state) do
         Otis.State.Events.notify({:add_library, library(), socket})
         {:ok, state}
@@ -24,7 +28,8 @@ defmodule Otis.Library do
         {:ok, state}
       end
 
-      def init do
+      def setup(state) do
+        state
       end
 
       def library do
@@ -56,7 +61,6 @@ defmodule Otis.Library do
         "#{@protocol}#{path}"
       end
 
-
       def play(nil, _channel_id) do
         nil
       end
@@ -74,7 +78,7 @@ defmodule Otis.Library do
       def namespace, do: @namespace
 
       defoverridable [
-        init: 0,
+        setup: 1,
         library: 0,
         route_library_request: 3,
       ]
