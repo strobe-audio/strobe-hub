@@ -1,8 +1,8 @@
 defmodule Otis.Library do
   defmacro __using__([namespace: namespace]) do
     quote location: :keep do
-      @namespace IO.inspect "#{unquote(namespace)}"
-      @protocol IO.inspect "#{unquote(namespace)}:"
+      @namespace "#{unquote(namespace)}"
+      @protocol "#{unquote(namespace)}:"
 
       def handle_event({:controller_join, socket}, state) do
         Otis.State.Events.notify({:add_library, library(), socket})
