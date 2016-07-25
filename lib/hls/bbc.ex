@@ -35,50 +35,13 @@ defmodule HLS.BBC do
   defp _validate_find!(nil, channel), do: raise "BBC channel #{inspect channel} not found"
   defp _validate_find!(result, _channel), do: result
 
-  def open!(%Channel{id: id} = channel, stream_id) when id in @channel_names do
-    {:ok, stream} = open(channel, stream_id)
-    stream
-  end
-
-  def open(%Channel{id: id} = channel, stream_id) when id in @channel_names do
-    hls = stream(channel)
-    HLS.Client.open!(hls, stream_id)
-  end
-
-  def pause(_channel, stream_id, _stream) do
-    HLS.Client.stop(stream_id)
-    :ok
-  end
-
-  def resume!(channel, stream_id, stream) do
-    resume(channel, stream_id, stream, Registry.whereis_name(stream_id))
-  end
-
-  def resume(channel, stream_id, _stream, :undefined) do
-    stream = open!(channel, stream_id)
-    {:reopen, stream}
-  end
-  def resume(_channel, _stream_id, stream, pid) when is_pid(pid) do
-    {:reuse, stream}
-  end
-
-  def close(_channel, stream_id, _stream) do
-    HLS.Client.stop(stream_id)
-    :ok
-  end
-
-  defp stream(channel) do
-    reader = %HLS.Reader.Http{}
-    channel |> playlist |> HLS.Stream.new(reader)
-  end
-
-  defp playlist(%Channel{id: id}) when id in @channel_names do
-    path = Path.join([__DIR__, "bbc/#{id}.m3u8"]) |> Path.expand
+  def playlist(%Channel{id: id}) when id in @channel_names do
+    path = Path.join([__DIR__, "bbc/playlist/#{id}.m3u8"]) |> Path.expand
     file = File.read!(path)
     M3.Parser.parse!(file, "http://www.bbc.co.uk")
   end
 
-  defp playlist(channel) do
+  def playlist(channel) do
     raise "Unknown channel #{inspect channel}"
   end
 end

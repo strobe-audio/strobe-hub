@@ -60,7 +60,7 @@ defmodule HLS.ClientTest do
     ]}
     reader = HLS.Reader.Programmable.new(context.root, urls)
     hls = HLS.Stream.new(playlist, reader)
-    {:ok, stream}{:ok, stream} Client.open!(hls, "stream-3")
+    {:ok, stream} = Client.open!(hls, "stream-3")
     data = Enum.take(stream, length(files))
     assert data == files
   end
