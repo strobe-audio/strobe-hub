@@ -53,6 +53,7 @@ defmodule Otis.Media.Filesystem do
         optimized_path(@root, ns, filename, opts)
       end
 
+      def url(ns, filename, opts \\ [optimize: false])
       def url(ns, filename, opts) do
         optimized_path(@at, ns, filename, opts)
       end

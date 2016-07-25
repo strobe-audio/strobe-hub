@@ -50,6 +50,14 @@ defmodule Test.Otis.MediaTest do
     end
   end
 
+  test "you can retrieve an esured file using the id, name tuple", context do
+    id = "peel"
+    {:ok, "/media/peel/cover/placeholder.jpg"} = context.fs.copy([id, "cover"], "placeholder.jpg", Path.expand("../fixtures/placeholder.jpg", __DIR__))
+    {:ok, "/media/peel/something.svg"} = context.fs.copy(id, "something.svg", Path.expand("../fixtures/placeholder.jpg", __DIR__))
+    assert context.fs.url([id, "cover"], "placeholder.jpg") == "/media/peel/cover/placeholder.jpg"
+    assert context.fs.url(id, "something.svg") == "/media/peel/something.svg"
+  end
+
   test "path & url generation", context do
     id = "peel"
     assert context.fs.location(id, "6587689f-107b-48b7-9fc1-2f21ce6c8c7d.jpg") == {:ok, Path.join([context.root, id, "6587689f-107b-48b7-9fc1-2f21ce6c8c7d.jpg"]), "/media/peel/6587689f-107b-48b7-9fc1-2f21ce6c8c7d.jpg"}
