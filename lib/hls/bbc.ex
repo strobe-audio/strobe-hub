@@ -51,7 +51,6 @@ defmodule HLS.BBC do
   end
 
   def resume!(channel, stream_id, stream) do
-    IO.inspect [:bbc, :resume, stream_id, Registry.whereis_name(stream_id), stream]
     resume(channel, stream_id, stream, Registry.whereis_name(stream_id))
   end
 
