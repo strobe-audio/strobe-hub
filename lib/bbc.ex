@@ -1,7 +1,6 @@
-defmodule HLS.BBC do
+defmodule BBC do
   require Logger
-  alias   HLS.BBC.Channel
-  alias   HLS.Client.Registry
+  alias   BBC.Channel
 
   @channels [
     %Channel{id: "asian_network", title: "BBC Asian Network"},

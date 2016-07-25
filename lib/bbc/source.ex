@@ -1,6 +1,4 @@
-defmodule HLS.BBC.Source do
-  alias HLS.BBC
-  alias HLS.BBC.Channel
+defmodule BBC.Source do
   alias HLS.Client.Registry
 
   def id(bbc) do
@@ -11,12 +9,12 @@ defmodule HLS.BBC.Source do
     BBC.Channel
   end
 
-  def open!(%Channel{id: id} = channel, stream_id, _packet_size_bytes) do
+  def open!(channel, stream_id, _packet_size_bytes) do
     {:ok, stream} = open(channel, stream_id)
     stream
   end
 
-  def open(%Channel{id: id} = channel, stream_id) do
+  def open(channel, stream_id) do
     hls = stream(channel)
     HLS.Client.open!(hls, stream_id)
   end
@@ -60,8 +58,8 @@ defmodule HLS.BBC.Source do
   end
 end
 
-defmodule HLS.BBC.Source.Origin do
+defmodule BBC.Source.Origin do
   def load!(bbc) do
-    HLS.BBC.find!(bbc)
+    BBC.find!(bbc)
   end
 end
