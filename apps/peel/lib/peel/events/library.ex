@@ -12,8 +12,9 @@ defmodule Peel.Events.Library do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
-  def init do
+  def setup(state) do
     # Copy my placeholder here
+    state
   end
 
   def library do
@@ -177,6 +178,16 @@ defmodule Peel.Events.Library do
           icon: album.cover_image,
           children: children
         }
+    end
+  end
+
+  def route_library_request(channel_id, ["album", album_id, "artist", artist_id, "play"], path) do
+    case Album.find(album_id) do
+      nil ->
+        nil
+      album ->
+        tracks = Track.album_by_artist(album_id, artist_id)
+        play(tracks, channel_id)
     end
   end
 
