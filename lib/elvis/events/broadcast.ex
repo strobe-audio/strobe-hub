@@ -54,6 +54,9 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:source_progress, channel_id, source_id, progress_ms, :infinity}, state) do
+    {:ok, state}
+  end
   def handle_event({:source_progress, channel_id, source_id, progress_ms, duration_ms}, state) do
     count = case Map.get(state.progress_count, channel_id, 0) do
       0 ->
