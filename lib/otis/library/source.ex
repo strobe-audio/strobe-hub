@@ -27,7 +27,7 @@ defprotocol Otis.Library.Source do
   @doc """
   Resumes the current stream.
   """
-  @spec pause(t, binary, Enumerable.t) :: {:reopen, Enumerable.t} | {:reuse, Enumerable.t}
+  @spec resume!(t, binary, Enumerable.t) :: {:reopen, Enumerable.t} | {:reuse, Enumerable.t}
   def resume!(source, id, stream)
 
   @doc """
