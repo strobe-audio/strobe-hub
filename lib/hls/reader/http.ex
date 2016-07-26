@@ -55,7 +55,7 @@ defmodule HLS.Reader.Http do
     response
   end
   defp retry({:error, _}, url, tries, delay) do
-    Logger.warn "Retrying #{url} attempt #{tries}"
+    Logger.warn "Retrying #{url}; attempts remaining: #{tries}"
     read(url, tries, delay)
   end
 
