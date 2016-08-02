@@ -14,8 +14,7 @@ defmodule Otis.Library do
       end
 
       def handle_event({:library_request, channel_id, @protocol <> path, socket}, state) do
-        route = String.split(path, "/", trim: true)
-        case route_library_request(channel_id, route, path) do
+        case handle_request(channel_id, path) do
           nil ->
             nil
           response ->
@@ -42,6 +41,11 @@ defmodule Otis.Library do
           },
           metadata: nil
         }
+      end
+
+      def handle_request(channel_id, path) do
+        route = String.split(path, "/", trim: true)
+        route_library_request(channel_id, route, path)
       end
 
       def route_library_request(_channel_id, _route, _path) do
