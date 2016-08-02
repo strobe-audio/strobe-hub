@@ -22,7 +22,7 @@ defmodule Otis.ChannelTest do
     {:ok, channel} = Otis.Channels.create(channel_id, channel_record.name)
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: receiver_id, name: "Roger", volume: 1.0)
     mock = connect!(receiver_id, 1234)
-    assert_receive {:receiver_connected, ^receiver_id, _}
+    assert_receive {:receiver_connected, [^receiver_id, _]}
     {:ok, receiver} = Receivers.receiver(receiver_id)
     on_exit fn ->
       Otis.State.Receiver.delete_all
@@ -50,7 +50,7 @@ defmodule Otis.ChannelTest do
   test "allows you to add a receiver", %{channel: channel, receiver: receiver} do
     receiver_id = Otis.uuid
     _mock = connect!(receiver_id, 2298)
-    assert_receive {:receiver_connected, ^receiver_id, _}
+    assert_receive {:receiver_connected, [^receiver_id, _]}
     {:ok, receiver2} = Receivers.receiver(receiver_id)
     :ok = Otis.Channel.add_receiver(channel, receiver2)
     {:ok, receivers} = Otis.Channel.receivers(channel)
@@ -62,7 +62,7 @@ defmodule Otis.ChannelTest do
   test "allows you to remove a receiver", %{channel: channel, receiver: receiver} do
     receiver_id = Otis.uuid
     mock = connect!(receiver_id, 2298)
-    assert_receive {:receiver_connected, ^receiver_id, _}
+    assert_receive {:receiver_connected, [^receiver_id, _]}
     {:ok, receiver2} = Receivers.receiver(receiver_id)
     {:ok, receivers} = Otis.Channel.receivers(channel)
     expected = Enum.into [receiver, receiver2], HashSet.new
@@ -71,11 +71,11 @@ defmodule Otis.ChannelTest do
 
     channel2_id = Otis.uuid
     {:ok, _channel2} = Otis.Channels.create(channel2_id, "Froggy")
-    assert_receive {:channel_added, ^channel2_id, _}
+    assert_receive {:channel_added, [^channel2_id, _]}
     data_reset(mock)
     Otis.Receivers.attach receiver_id, channel2_id
 
-    assert_receive {:receiver_removed, _, ^receiver_id}
+    assert_receive {:receiver_removed, [_, ^receiver_id]}
 
     {:ok, receivers} = Otis.Channel.receivers(channel)
     expected = Enum.into [receiver], HashSet.new
@@ -88,7 +88,7 @@ defmodule Otis.ChannelTest do
   test "removes receiver from socket when removed from channel", %{channel: channel, receiver: receiver} do
     receiver_id = Otis.uuid
     _mock = connect!(receiver_id, 2298)
-    assert_receive {:receiver_connected, ^receiver_id, _}
+    assert_receive {:receiver_connected, [^receiver_id, _]}
     {:ok, receiver2} = Receivers.receiver(receiver_id)
     :ok = Otis.Channel.add_receiver(channel, receiver2)
 
@@ -96,10 +96,10 @@ defmodule Otis.ChannelTest do
 
     channel2_id = Otis.uuid
     {:ok, _channel2} = Otis.Channels.create(channel2_id, "Froggy")
-    assert_receive {:channel_added, ^channel2_id, _}
+    assert_receive {:channel_added, [^channel2_id, _]}
     Otis.Receivers.attach receiver_id, channel2_id
 
-    assert_receive {:receiver_removed, _, ^receiver_id}
+    assert_receive {:receiver_removed, [_, ^receiver_id]}
 
     {:ok, receivers} = Otis.Channel.Socket.receivers(socket)
     assert receivers == [receiver]
@@ -115,7 +115,7 @@ defmodule Otis.ChannelTest do
     mock = context.mock_receiver
     receiver_id = context.receiver.id
     :ok = :gen_tcp.close(mock.data_socket)
-    assert_receive {:receiver_disconnected, ^receiver_id, _}
+    assert_receive {:receiver_disconnected, [^receiver_id, _]}
     {:ok, receivers} = Otis.Channel.receivers(context.channel)
     assert receivers == []
   end
@@ -124,7 +124,7 @@ defmodule Otis.ChannelTest do
     mock = context.mock_receiver
     receiver_id = context.receiver.id
     :ok = :gen_tcp.close(mock.data_socket)
-    assert_receive {:receiver_disconnected, ^receiver_id, _}
+    assert_receive {:receiver_disconnected, [^receiver_id, _]}
     {:ok, socket} = Otis.Channel.socket(context.channel)
     {:ok, receivers} = Otis.Channel.Socket.receivers(socket)
     assert receivers == []
@@ -163,7 +163,7 @@ defmodule Otis.ChannelTest do
 
   test "broadcasts an event when a receiver is added", %{channel: channel, receiver: receiver} = context do
     :ok = Otis.Channel.add_receiver(channel, receiver)
-    event = {:receiver_added, context.channel_id, receiver.id}
+    event = {:receiver_added, [context.channel_id, receiver.id]}
     assert_receive ^event
   end
 
@@ -184,7 +184,7 @@ defmodule Otis.ChannelTest do
     {:ok, 1.0} = Otis.Channel.volume(context.channel)
     Otis.Channel.volume(context.channel, 0.5)
     {:ok, 0.5} = Otis.Channel.volume(context.channel)
-    event = {:channel_volume_change, context.channel_id, 0.5}
+    event = {:channel_volume_change, [context.channel_id, 0.5]}
     assert_receive ^event
   end
 
@@ -192,7 +192,7 @@ defmodule Otis.ChannelTest do
     {:ok, 1.0} = Otis.Channel.volume(context.channel)
     Otis.Channel.volume(context.channel, 0.5)
     {:ok, 0.5} = Otis.Channel.volume(context.channel)
-    event = {:channel_volume_change, context.channel_id, 0.5}
+    event = {:channel_volume_change, [context.channel_id, 0.5]}
     assert_receive ^event
     channel = Otis.State.Channel.find context.channel_id
     assert channel.volume == 0.5

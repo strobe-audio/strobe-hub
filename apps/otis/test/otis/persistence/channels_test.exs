@@ -20,7 +20,7 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, _channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, ^id, %{name: ^name}}, 200
+    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
     channels = Otis.State.Channel.all
     assert length(channels) == 1
     [%Otis.State.Channel{id: ^id, name: ^name}] = channels
@@ -31,10 +31,10 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, _channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, ^id, %{name: ^name}}, 200
+    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
 
     :ok = Otis.Channels.destroy!(id)
-    assert_receive {:channel_removed, ^id}, 200
+    assert_receive {:channel_removed, [^id]}, 200
 
     channels = Otis.State.Channel.all
     assert length(channels) == 0
@@ -45,7 +45,7 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, ^id, %{name: ^name}}, 200
+    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
 
 
     Otis.Channels.Supervisor.stop_channel(channel)
@@ -75,10 +75,10 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, ^id, %{name: ^name}}, 200
+    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
 
     Otis.Channel.volume(channel, 0.33)
-    assert_receive {:channel_volume_change, ^id, 0.33}
+    assert_receive {:channel_volume_change, [^id, 0.33]}
 
     channel = Otis.State.Channel.find(id)
 
@@ -89,9 +89,9 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, _channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, ^id, %{name: ^name}}, 200
+    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
     Otis.Channels.rename(id, "Believe in whales")
-    assert_receive {:channel_rename, ^id, "Believe in whales"}
+    assert_receive {:channel_rename, [^id, "Believe in whales"]}
 
     channel = Otis.State.Channel.find(id)
 

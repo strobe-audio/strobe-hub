@@ -9,34 +9,34 @@ defmodule Otis.State.Persistence.Sources do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
-  def handle_event({:new_source, channel_id, position, source}, state) do
+  def handle_event({:new_source, [channel_id, position, source]}, state) do
     Repo.transaction fn ->
       source |> load_source |> new_source(channel_id, position, source)
     end
     {:ok, state}
   end
-  def handle_event({:source_changed, channel_id, old_source_id, _new_source_id}, state) do
+  def handle_event({:source_changed, [channel_id, old_source_id, _new_source_id]}, state) do
     Repo.transaction fn ->
       old_source_id |> load_source |> source_changed(old_source_id, channel_id)
     end
     {:ok, state}
   end
-  def handle_event({:sources_skipped, channel_id, skipped_ids}, state) do
+  def handle_event({:sources_skipped, [channel_id, skipped_ids]}, state) do
     Repo.transaction fn ->
       skipped_ids |> Enum.map(&load_source/1) |> sources_skipped(channel_id)
     end
     {:ok, state}
   end
-  def handle_event({:source_deleted, id, channel_id}, state) do
+  def handle_event({:source_deleted, [id, channel_id]}, state) do
     Repo.transaction fn ->
       [id] |> Enum.map(&load_source/1) |> sources_deleted(channel_id)
     end
     {:ok, state}
   end
-  def handle_event({:source_progress, _channel_id, _source_id, _position, :infinity}, state) do
+  def handle_event({:source_progress, [_channel_id, _source_id, _position, :infinity]}, state) do
     {:ok, state}
   end
-  def handle_event({:source_progress, _channel_id, source_id, position, _duration}, state) do
+  def handle_event({:source_progress, [_channel_id, source_id, position, _duration]}, state) do
     Repo.transaction fn ->
       source_id |> load_source |> source_progress(source_id, position)
     end
@@ -122,7 +122,7 @@ defmodule Otis.State.Persistence.Sources do
   end
 
   defp notify(source, event) do
-    Otis.State.Events.notify({event, source})
+    Otis.State.Events.notify({event, [source]})
     source
   end
 end

@@ -158,7 +158,7 @@ defmodule Otis.Channel.Broadcaster do
   # send
   defp stop!(state) do
     Logger.info "Stopping broadcaster..."
-    Otis.State.Events.notify({:channel_stop, state.id})
+    Otis.State.Events.notify({:channel_stop, [state.id]})
     kill(state)
     rebuffer_in_flight(state)
   end
@@ -181,7 +181,7 @@ defmodule Otis.Channel.Broadcaster do
   defp finish(%S{in_flight: [], channel: channel, state: :play} = state) do
     Logger.debug "Stream finished"
     source_changed(nil, state.source_id, state)
-    Otis.State.Events.notify({:channel_finished, state.id})
+    Otis.State.Events.notify({:channel_finished, [state.id]})
     Otis.Channel.stream_finished(channel)
     %S{ state | state: :stopped }
   end
@@ -294,7 +294,7 @@ defmodule Otis.Channel.Broadcaster do
 
   defp update_progress(state, played) do
     Enum.each(played, fn(packet) ->
-      Otis.State.Events.notify({:source_progress, state.id, packet.source_id, packet.offset_ms, packet.duration_ms})
+      Otis.State.Events.notify({:source_progress, [state.id, packet.source_id, packet.offset_ms, packet.duration_ms]})
     end)
     state
   end
@@ -303,7 +303,7 @@ defmodule Otis.Channel.Broadcaster do
     Logger.info "SOURCE CHANGED #{ old_source_id } => #{ new_source_id }"
     confirmation = Enum.find(state.in_flight, &Packet.from_source?(&1, old_source_id))
     if is_nil(confirmation) do
-      Otis.State.Events.notify({:source_changed, state.id, old_source_id, new_source_id})
+      Otis.State.Events.notify({:source_changed, [state.id, old_source_id, new_source_id]})
     else
       Logger.error "Invalid source changed event"
       Logger.error inspect(Enum.map(state.in_flight, fn(packet) -> packet end), limit: 1000, width: 200)

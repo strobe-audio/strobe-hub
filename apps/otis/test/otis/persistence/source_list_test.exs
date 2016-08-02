@@ -21,10 +21,10 @@ defmodule Otis.Persistence.SourceListTest do
     Otis.SourceList.clear(context.source_list)
 
     Enum.each [entry1, entry2], fn({source_id, 0, _source}) ->
-      assert_receive {:source_deleted, ^source_id, ^list_id}
+      assert_receive {:source_deleted, [^source_id, ^list_id]}
     end
 
-    assert_receive {:source_list_cleared, ^list_id}
+    assert_receive {:source_list_cleared, [^list_id]}
   end
 
   test "deletes the matching db entries when cleared", %{id: list_id} = context do
@@ -38,10 +38,10 @@ defmodule Otis.Persistence.SourceListTest do
     Otis.SourceList.clear(context.source_list)
 
     Enum.each [id1, id2], fn(id) ->
-      assert_receive {:source_deleted, ^id, ^list_id}
+      assert_receive {:source_deleted, [^id, ^list_id]}
     end
 
-    assert_receive {:source_list_cleared, ^list_id}
+    assert_receive {:source_list_cleared, [^list_id]}
     assert Otis.State.Source.all == []
   end
 end

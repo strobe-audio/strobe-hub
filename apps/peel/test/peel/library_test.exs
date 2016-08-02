@@ -316,7 +316,7 @@ defmodule Peel.Test.LibraryTest do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     path = "track/#{track.id}/play"
     Library.handle_request(channel_id, path)
-    assert_receive {:new_source, ^channel_id, 0, {_, 0, ^track}}
+    assert_receive {:new_source, [^channel_id, 0, {_, 0, ^track}]}
   end
 
   test "peel:album/{album_id}/play", %{channel_id: channel_id} = _context do
@@ -329,7 +329,7 @@ defmodule Peel.Test.LibraryTest do
       Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df"),
     ]
 
-    assert_receive {:new_source, ^channel_id, 0, {_, 0, ^track1}}
-    assert_receive {:new_source, ^channel_id, 1, {_, 0, ^track2}}
+    assert_receive {:new_source, [^channel_id, 0, {_, 0, ^track1}]}
+    assert_receive {:new_source, [^channel_id, 1, {_, 0, ^track2}]}
   end
 end

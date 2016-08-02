@@ -10,25 +10,25 @@ defmodule Otis.State.Persistence.Channels do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
-  def handle_event({:channel_added, id, %{name: name}}, state) do
+  def handle_event({:channel_added, [id, %{name: name}]}, state) do
     Repo.transaction fn ->
       Channel.find(id) |> add_channel(id, name)
     end
     {:ok, state}
   end
-  def handle_event({:channel_removed, id}, state) do
+  def handle_event({:channel_removed, [id]}, state) do
     Repo.transaction fn ->
       Channel.find(id) |> remove_channel(id)
     end
     {:ok, state}
   end
-  def handle_event({:channel_volume_change, id, volume}, state) do
+  def handle_event({:channel_volume_change, [id, volume]}, state) do
     Repo.transaction fn ->
       id |> Channel.find |> volume_change(id, volume)
     end
     {:ok, state}
   end
-  def handle_event({:channel_rename, id, name}, state) do
+  def handle_event({:channel_rename, [id, name]}, state) do
     Repo.transaction fn ->
       id |> Channel.find |> rename(id, name)
     end

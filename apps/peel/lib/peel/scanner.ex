@@ -22,7 +22,7 @@ defmodule Peel.Scanner do
   end
 
   def scan_complete(path) do
-    Otis.State.Events.notify({:scan_finished, path})
+    Otis.State.Events.notify({:scan_finished, [path]})
   end
 
   def track(nil, path, notify) do

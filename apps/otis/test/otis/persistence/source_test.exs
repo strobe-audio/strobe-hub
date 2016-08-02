@@ -90,8 +90,8 @@ defmodule Otis.Persistence.SourceTest do
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, 0, _source1} = entry1
     {source_id2, 0, source2} = entry2
-    Otis.State.Events.notify({:source_changed, context.channel.id, source_id1, source_id2})
-    assert_receive {:old_source_removed, ^source_id1}
+    Otis.State.Events.notify({:source_changed, [context.channel.id, source_id1, source_id2]})
+    assert_receive {:old_source_removed, [^source_id1]}
     [record2] = Otis.State.Source.all
     assert record2.id == source_id2
     assert record2.source_id == source2.id
@@ -104,10 +104,10 @@ defmodule Otis.Persistence.SourceTest do
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
     {source_id1, 0, _source1} = entry1
     {source_id2, 0, _source2} = entry2
-    Otis.State.Events.notify({:source_changed, context.channel.id, source_id1, source_id2})
-    assert_receive {:old_source_removed, ^source_id1}
-    Otis.State.Events.notify({:source_changed, context.channel.id, source_id2, nil})
-    assert_receive {:old_source_removed, ^source_id2}
+    Otis.State.Events.notify({:source_changed, [context.channel.id, source_id1, source_id2]})
+    assert_receive {:old_source_removed, [^source_id1]}
+    Otis.State.Events.notify({:source_changed, [context.channel.id, source_id2, nil]})
+    assert_receive {:old_source_removed, [^source_id2]}
     [] = Otis.State.Source.all
   end
 
@@ -119,8 +119,8 @@ defmodule Otis.Persistence.SourceTest do
     ids = [id1, id2, id3, id4]
     positions = ids |> Enum.map(fn(id) -> Otis.State.Source.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1, 2, 3] == positions
-    Otis.State.Events.notify({:source_changed, context.channel.id, id1, id2})
-    assert_receive {:old_source_removed, ^id1}
+    Otis.State.Events.notify({:source_changed, [context.channel.id, id1, id2]})
+    assert_receive {:old_source_removed, [^id1]}
     ids = [id2, id3, id4]
     positions = ids |> Enum.map(fn(id) -> Otis.State.Source.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1, 2] == positions
@@ -137,7 +137,7 @@ defmodule Otis.Persistence.SourceTest do
     kept_ids = Enum.drop_while(ids, fn(id) -> id != skip_to end)
     {:ok, 2} = Otis.SourceList.skip(context.source_list, skip_to)
     channel_id = context.channel.id
-    assert_receive {:sources_skipped, ^channel_id, ^skipped_ids}
+    assert_receive {:sources_skipped, [^channel_id, ^skipped_ids]}
     assert [nil, nil, nil] = skipped_ids |> Enum.map(&Otis.State.Source.find/1)
     positions = kept_ids |> Enum.map(fn(id) -> Otis.State.Source.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1] == positions
@@ -154,13 +154,13 @@ defmodule Otis.Persistence.SourceTest do
     skipped_ids = Enum.take_while(ids, fn(id) -> id != skip_to end)
     {:ok, 2} = Otis.SourceList.skip(context.source_list, skip_to)
     channel_id = context.channel.id
-    assert_receive {:sources_skipped, ^channel_id, ^skipped_ids}
+    assert_receive {:sources_skipped, [^channel_id, ^skipped_ids]}
   end
 
   test "restores source lists from db", context do
     sources = Enum.map [TestSource.new, TestSource.new], &Otis.SourceList.source_with_id/1
     sources |> Enum.with_index |> Enum.each(fn({source, position}) ->
-      Otis.State.Events.notify {:new_source, context.channel.id, position, source}
+      Otis.State.Events.notify {:new_source, [context.channel.id, position, source]}
     end)
     assert_receive {:new_source_created, _}
     assert_receive {:new_source_created, _}
@@ -182,7 +182,7 @@ defmodule Otis.Persistence.SourceTest do
     {:ok, entries} = Otis.SourceList.list(context.source_list)
     assert [0, 0] == Enum.map entries, fn({_id, position, _source}) -> position end
     [{id1, _, _}, _] = entries
-    Otis.State.Events.sync_notify({:source_progress, context.channel.id, id1, 1000, 2000})
+    Otis.State.Events.sync_notify({:source_progress, [context.channel.id, id1, 1000, 2000]})
     source = Otis.State.Source.find(id1)
     assert source.playback_position == 1000
   end

@@ -119,9 +119,9 @@ defmodule Otis.SourceList do
 
   def handle_call(:clear, _from, %S{sources: sources} = state) do
     Enum.each(sources, fn({id, _offset, _source}) ->
-      Otis.State.Events.notify({:source_deleted, id, state.id})
+      Otis.State.Events.notify({:source_deleted, [id, state.id]})
     end)
-    Otis.State.Events.notify({:source_list_cleared, state.id})
+    Otis.State.Events.notify({:source_list_cleared, [state.id]})
     {:reply, :ok, %S{ state | sources: [] }}
   end
 
@@ -132,18 +132,18 @@ defmodule Otis.SourceList do
   def handle_call({:add_source, source, index}, _from, %S{sources: sources} = state) do
     entry = source_with_id(source)
     sources = sources |> List.insert_at(index, entry)
-    Otis.State.Events.notify({
-      :new_source,
-      state.id,
-      insert_offset_to_position(sources, index, state),
-      entry
+    Otis.State.Events.notify({:new_source,
+      [ state.id,
+        insert_offset_to_position(sources, index, state),
+        entry
+      ]
     })
     {:reply, {:ok, length(sources)}, %S{ state | sources: sources }}
   end
 
   def handle_call({:skip, id}, _from, state) do
     {drop, keep} = skip_to(id, state)
-    Otis.State.Events.notify({:sources_skipped, state.id, Enum.map(drop, &(elem(&1, 0)))})
+    Otis.State.Events.notify({:sources_skipped, [state.id, Enum.map(drop, &(elem(&1, 0)))]})
     {:reply, {:ok, length(keep)}, %S{ state | sources: keep, active: nil }}
   end
 

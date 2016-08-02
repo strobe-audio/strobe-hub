@@ -114,7 +114,7 @@ defmodule Otis.Channels do
   end
 
   def rename(id, name) when is_binary(id) do
-    Otis.State.Events.notify({:channel_rename, id, name})
+    Otis.State.Events.notify({:channel_rename, [id, name]})
   end
 
   def clear(id) when is_binary(id) do
@@ -151,7 +151,7 @@ defmodule Otis.Channels do
   end
 
   def handle_call({:create, channel, id, config}, _from, channel_list) do
-    Otis.State.Events.notify({:channel_added, id, config})
+    Otis.State.Events.notify({:channel_added, [id, config]})
     insert(channel_list, id, channel)
   end
 
@@ -160,7 +160,7 @@ defmodule Otis.Channels do
   end
 
   def handle_cast({:remove, id}, channel_list) do
-    Otis.State.Events.notify({:channel_removed, id})
+    Otis.State.Events.notify({:channel_removed, [id]})
     {:noreply, Map.delete(channel_list, id)}
   end
 

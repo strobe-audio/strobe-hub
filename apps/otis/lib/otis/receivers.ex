@@ -39,7 +39,7 @@ defmodule Otis.Receivers do
       {:ok, receiver} ->
         Otis.Receiver.volume receiver, volume
       _error ->
-        Otis.State.Events.notify({:receiver_volume_change, id, volume})
+        Otis.State.Events.notify({:receiver_volume_change, [id, volume]})
     end
     {:ok, volume}
   end
@@ -109,7 +109,7 @@ defmodule Otis.Receivers do
     end
     # In this case the event comes before the state change. Feels wrong but is
     # much simpler than any other way of moving receivers that I can think of
-    Otis.State.Events.notify({:reattach_receiver, receiver_id, channel_id, receiver})
+    Otis.State.Events.notify({:reattach_receiver, [receiver_id, channel_id, receiver]})
     {:reply, :ok, state}
   end
 
@@ -234,7 +234,7 @@ defmodule Otis.Receivers do
   end
 
   def start_valid_receiver(state, receiver, true) do
-    Otis.State.Events.notify({:receiver_connected, receiver.id, receiver})
+    Otis.State.Events.notify({:receiver_connected, [receiver.id, receiver]})
     state
   end
   def start_valid_receiver(state, _receiver, false) do
@@ -242,7 +242,7 @@ defmodule Otis.Receivers do
   end
 
   def disable_zombie_receiver(state, receiver, true) do
-    Otis.State.Events.notify({:receiver_disconnected, receiver.id, receiver})
+    Otis.State.Events.notify({:receiver_disconnected, [receiver.id, receiver]})
     state
   end
   def disable_zombie_receiver(state, _receiver, false) do
@@ -250,7 +250,7 @@ defmodule Otis.Receivers do
   end
 
   def remove_dead_receiver(state, receiver, true) do
-    Otis.State.Events.notify({:receiver_offline, receiver.id, receiver})
+    Otis.State.Events.notify({:receiver_offline, [receiver.id, receiver]})
     delete(state, receiver)
   end
   def remove_dead_receiver(state, _receiver, false) do

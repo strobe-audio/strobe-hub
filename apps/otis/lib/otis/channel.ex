@@ -232,7 +232,7 @@ defmodule Otis.Channel do
   def handle_call({:volume, volume}, _from, state) do
     volume = Otis.sanitize_volume(volume)
     Enum.each(state.receivers, &Receiver.volume_multiplier(&1, volume))
-    Otis.State.Events.notify({:channel_volume_change, state.id, volume})
+    Otis.State.Events.notify({:channel_volume_change, [state.id, volume]})
     {:reply, {:ok, volume}, %S{state | volume: volume}}
   end
 
@@ -341,7 +341,7 @@ defmodule Otis.Channel do
   end
 
   defp event!(state, name, params) do
-    Otis.State.Events.notify({name, state.id, params})
+    Otis.State.Events.notify({name, [state.id, params]})
   end
 
   defp stream_finished!(state) do
