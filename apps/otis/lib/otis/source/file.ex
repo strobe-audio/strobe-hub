@@ -151,15 +151,15 @@ defimpl Otis.Library.Source, for: Otis.Source.File do
     Elixir.File.stream!(path, [], packet_size_bytes)
   end
 
-  def pause(%File{}, _id, _stream) do
+  def pause(_file, _id, _stream) do
     :ok # no-op
   end
 
-  def resume!(%File{}, _id, stream) do
+  def resume!(_file, _id, stream) do
     {:reuse, stream}
   end
 
-  def close(%File{}, _id, stream) do
+  def close(_file, _id, stream) do
     Elixir.File.close(stream)
   end
 
