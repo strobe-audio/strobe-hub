@@ -181,7 +181,7 @@ defmodule Peel.Test.LibraryTest do
 
   test "peel:root", context do
     path = "root"
-    response = Library.route_library_request(context.channel_id, path)
+    response = Library.handle_request(context.channel_id, path)
     assert response == %{
       id: "peel:root",
       title: "Your Music",
@@ -195,7 +195,7 @@ defmodule Peel.Test.LibraryTest do
 
   test "peel:albums", context do
     path = "albums"
-    response = Library.route_library_request(context.channel_id, path)
+    response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
       id: path,
@@ -232,7 +232,7 @@ defmodule Peel.Test.LibraryTest do
   test "peel:album/{album_id}", context do
     album = Album.find("7aed1ef3-de88-4ea8-9af7-29a1327a5898")
     path = "album/#{album.id}"
-    response = Library.route_library_request(context.channel_id, path)
+    response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
       id: path,
@@ -247,7 +247,7 @@ defmodule Peel.Test.LibraryTest do
 
   test "peel:artists", context do
     path = "artists"
-    response = Library.route_library_request(context.channel_id, path)
+    response = Library.handle_request(context.channel_id, path)
     assert response == %{
       id: path,
       title: "Artists",
@@ -270,7 +270,7 @@ defmodule Peel.Test.LibraryTest do
   test "peel:artist/{artist_id}", context do
     artist = Artist.find("fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e")
     path = "artist/#{artist.id}"
-    response = Library.route_library_request(context.channel_id, path)
+    response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
       id: path,
@@ -300,7 +300,7 @@ defmodule Peel.Test.LibraryTest do
     artist = Artist.find("fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e")
     album = Album.find("1f74a72a-800d-443e-9bb2-4fc5e10ff43d")
     path = "album/#{album.id}/artist/#{artist.id}"
-    response = Library.route_library_request(context.channel_id, path)
+    response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
       id: path,
@@ -315,14 +315,14 @@ defmodule Peel.Test.LibraryTest do
   test "peel:track/{track_id}/play", %{channel_id: channel_id} = _context do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     path = "track/#{track.id}/play"
-    Library.route_library_request(channel_id, path)
+    Library.handle_request(channel_id, path)
     assert_receive {:new_source, ^channel_id, 0, {_, 0, ^track}}
   end
 
   test "peel:album/{album_id}/play", %{channel_id: channel_id} = _context do
     album = Album.find("7aed1ef3-de88-4ea8-9af7-29a1327a5898")
     path = "album/#{album.id}/play"
-    Library.route_library_request(channel_id, path)
+    Library.handle_request(channel_id, path)
 
     [track1, track2] = [
       Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428"),
