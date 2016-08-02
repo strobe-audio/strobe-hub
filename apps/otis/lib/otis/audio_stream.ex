@@ -115,7 +115,11 @@ defmodule Otis.AudioStream do
   end
 
   defp append_and_send(:done, state) do
-    Otis.SourceStream.close(state.stream)
+    try do
+      Otis.SourceStream.close(state.stream)
+    catch
+      :exit, _ -> Logger.warn "Closing already closed source stream"
+    end
     audio_frame(%S{state | stream: nil})
   end
 
