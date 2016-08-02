@@ -8,8 +8,10 @@ end
 defimpl Otis.Library.Source, for: Otis.Source.Test do
   def id(%{id: id}), do: id
   def type(_), do: Otis.Source.Test
-  def open!(_source, _packet_size_bytes), do: []
-  def close(_file, _source), do: nil
+  def open!(_source, _id, _packet_size_bytes), do: []
+  def close(_file, _id, _source), do: nil
+  def pause(_file, _id, _source), do: nil
+  def resume!(_file, _id, _source), do: nil
   def audio_type(_source), do: {"mp3", "audio/mpeg"}
   def metadata(_source), do: %Otis.Source.Metadata{}
   def duration(_source) do

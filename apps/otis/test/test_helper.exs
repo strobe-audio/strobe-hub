@@ -158,7 +158,7 @@ defmodule Otis.Test.TestSource do
   end
 end
 
-defimpl Otis.Source, for: Otis.Test.TestSource do
+defimpl Otis.Library.Source, for: Otis.Test.TestSource do
   def id(source) do
     source.id
   end
@@ -167,11 +167,19 @@ defimpl Otis.Source, for: Otis.Test.TestSource do
     Otis.Test.TestSource
   end
 
-  def open!(_source, _packet_size_bytes) do
+  def open!(_source, _id, _packet_size_bytes) do
     # noop
   end
 
-  def close(_source, _stream) do
+  def pause(_source, _id, _stream) do
+    # noop
+  end
+
+  def resume!(_source, _id, _stream) do
+    # noop
+  end
+
+  def close(_source, _id, _stream) do
     # noop
   end
 

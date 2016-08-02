@@ -118,7 +118,7 @@ defimpl Otis.Library.Source, for: Peel.Track do
     {:reuse, stream}
   end
 
-  def close(%Track{}, stream) do
+  def close(%Track{}, _id, stream) do
     Elixir.File.close(stream)
   end
 
