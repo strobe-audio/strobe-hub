@@ -68,9 +68,12 @@ defmodule Otis.SourceStream do
     next_chunk(state)
   end
 
+  def handle_call(:close, _from, %{inputstream: nil} = state) do
+    {:reply, :ok, state}
+  end
   def handle_call(:close, _from, state) do
     Otis.Library.Source.close(state.source, state.id, state.inputstream)
-    {:reply, :ok, state}
+    {:reply, :ok, %{state | inputstream: nil}}
   end
   def handle_call(:pause, _from, state) do
     Otis.Library.Source.pause(state.source, state.id, state.inputstream)
