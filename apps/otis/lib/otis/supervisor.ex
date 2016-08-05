@@ -15,6 +15,7 @@ defmodule Otis.Supervisor do
 
     children = [
       worker(Otis.DNSSD, []),
+      worker(Otis.SSDP, []),
       worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
       worker(Otis.Source.File.Cache, []),
       worker(Otis.State.Repo, []),

@@ -19,8 +19,18 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [applications: [:porcelain, :logger, :dnssd, :monotonic, :sqlite_ecto, :ecto, :ranch],
-     mod: {Otis, []}]
+    [ mod: {Otis, []},
+      applications: [
+        :porcelain,
+        :logger,
+        :dnssd,
+        :monotonic,
+        :sqlite_ecto,
+        :ecto,
+        :ranch,
+        :nerves_ssdp_server,
+      ]
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -45,6 +55,7 @@ defmodule Otis.Mixfile do
       {:faker, "~> 0.5", only: :test},
       {:logger_file_backend, "~> 0.0.7"},
       {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
+      {:nerves_ssdp_server, "~> 0.2.1"},
     ]
   end
 end
