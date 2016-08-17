@@ -56,6 +56,9 @@ defmodule Otis.AudioStream do
   end
 
   def handle_call(:flush, _from, state) do
+    if state.stream != nil do
+       Otis.SourceStream.close(state.stream)
+    end
     {:reply, :ok, %S{ state | stream: nil, state: :stopped, buffer: <<>> }}
   end
 
@@ -77,6 +80,10 @@ defmodule Otis.AudioStream do
       :flush -> %S{state | buffer: <<>>, state: :starting}
     end
     {:reply, reply, state}
+  end
+
+  def handle_cast({:skip, _id}, state) do
+    {:noreply, state}
   end
 
   defp audio_frame(%S{stream: nil, state: :starting} = state) do

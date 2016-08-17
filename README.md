@@ -54,6 +54,12 @@ So much.
 
 **BUGS**:
 
+- [ ] Unplugging a receiver blocks all others on a channel (tcp stuff I guess)
+- [X] Skipping a track leaks a `SourceStream` process
+- [ ] Crashing an `AudioStream` skips to the next track. Catch the error & tell
+  playlist to push the active source back on the list?
+- [ ] Rename `AudioStream` to `UnbufferedStream` and then `Stream` to `AudioStream`
+
 - [ ] audio pops when switching receiver between channels
 
 - [ ] Fix janis crash when connecting over vpn:

@@ -8,5 +8,8 @@ defmodule Otis.Stream do
   def resume(pid) do
     GenServer.call(pid, :resume)
   end
+  def skip(pid, id) do
+    GenServer.cast(pid, {:skip, id})
+  end
 end
 

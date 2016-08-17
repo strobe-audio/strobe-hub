@@ -86,6 +86,11 @@ defmodule Otis.Channel.BufferedStream do
     {:noreply, rebuffer_packets(packets, state)}
   end
 
+  def handle_cast({:skip, id}, state) do
+    Otis.Stream.skip(state.audio_stream, id)
+    {:noreply, state}
+  end
+
   defp _flush(state) do
     %S{ change_state(state, :waiting) | queue: :queue.new, packets: 0 }
   end

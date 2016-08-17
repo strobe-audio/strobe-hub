@@ -69,10 +69,12 @@ defmodule Otis.SourceStream do
   end
 
   def handle_call(:close, _from, %{inputstream: nil} = state) do
+    Process.send_after(self(), :stop, 1000)
     {:reply, :ok, state}
   end
   def handle_call(:close, _from, state) do
     Otis.Library.Source.close(state.source, state.id, state.inputstream)
+    Process.send_after(self(), :stop, 1000)
     {:reply, :ok, %{state | inputstream: nil}}
   end
   def handle_call(:pause, _from, state) do
@@ -99,6 +101,10 @@ defmodule Otis.SourceStream do
 
   def handle_info({:EXIT, _from, _reason}, state) do
     {:noreply, state}
+  end
+
+  def handle_info(:stop, state) do
+    {:stop, {:shutdown, :done}, %{state | inputstream: nil}}
   end
 
   defp next_chunk(%{outputstream: nil, pending_streams: nil} = state) do
