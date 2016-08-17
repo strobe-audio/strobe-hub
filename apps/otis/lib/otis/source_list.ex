@@ -110,11 +110,9 @@ defmodule Otis.SourceList do
     {:ok, state}
   end
 
-  def handle_call(:next_source, _from, %S{sources: []} = state) do
-    {:reply, :done, state}
-  end
-  def handle_call(:next_source, _from, %S{sources: [{id, playback_position, source} = active | sources]} = state) do
-    {:reply, {:ok, id, playback_position, source}, %S{ state | sources: sources, active: active }}
+  def handle_call(:next_source, _from, state) do
+    {reply, state} = iterate_source(state)
+    {:reply, reply, state}
   end
 
   def handle_call(:clear, _from, %S{sources: sources} = state) do
@@ -165,6 +163,13 @@ defmodule Otis.SourceList do
       acc + duration
     end)
     {:reply, {:ok, duration}, state}
+  end
+
+  defp iterate_source(%S{sources: []} = state) do
+    {:done, state}
+  end
+  defp iterate_source(%S{sources: [{id, playback_position, source} = active | sources]} = state) do
+    {{:ok, {id, playback_position, source}}, %S{state | sources: sources, active: active}}
   end
 
   defp skip_to(id, %S{active: active, sources: sources} = state) do
