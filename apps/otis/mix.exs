@@ -29,6 +29,7 @@ defmodule Otis.Mixfile do
         :ecto,
         :ranch,
         :nerves_ssdp_server,
+        :gproc,
       ]
     ]
   end
@@ -56,6 +57,7 @@ defmodule Otis.Mixfile do
       {:logger_file_backend, "~> 0.0.7"},
       {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
       {:nerves_ssdp_server, "~> 0.2.1"},
+      {:gproc, "~> 0.5.0"},
     ]
   end
 end

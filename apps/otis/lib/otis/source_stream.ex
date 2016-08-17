@@ -52,11 +52,11 @@ defmodule Otis.SourceStream do
       transcode_pid: nil,
       pending_streams: nil
     }
-    GenServer.start_link(__MODULE__, state)
+    GenServer.start_link(__MODULE__, state, name: Otis.SourceStreamSupervisor.name(id))
   end
 
   def init(state) do
-    Process.flag(:trap_exit, true)
+    # Process.flag(:trap_exit, true)
     {:ok, state}
   end
 

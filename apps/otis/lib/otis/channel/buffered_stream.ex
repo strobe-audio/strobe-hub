@@ -22,28 +22,31 @@ defmodule Otis.Channel.BufferedStream do
 
   alias __MODULE__, as: S
 
-  def size_for_seconds(seconds, interval_ms \\ Otis.stream_interval_ms) do
+  def size_for_seconds(seconds, interval_ms) do
     round((seconds * 1000) / interval_ms)
   end
 
-  def seconds(audio_stream, seconds) do
-    start_link(audio_stream, size_for_seconds(seconds))
+  def start_link(id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms) do
+    name = Otis.StreamSupervisor.name(id)
+    GenServer.start_link(__MODULE__, [id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms], name: name)
   end
 
-  def start_link(audio_stream, size) do
-    GenServer.start_link(__MODULE__, [audio_stream, size])
-  end
-
-  def init([audio_stream, size]) do
-    # {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, bytes_per_packet)
-    pid = start_fetcher(audio_stream)
-    {:ok, %S{audio_stream: audio_stream, fetcher: pid, size: size, packets: 0 }}
+  def init([_id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms]) do
+    {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, stream_bytes_per_step)
+    {:ok, fetcher} = start_fetcher(audio_stream)
+    # Process.flag(:trap_exit, true)
+    {:ok, %S{
+      audio_stream: audio_stream,
+      fetcher: fetcher,
+      size: size_for_seconds(buffer_seconds, interval_ms),
+      packets: 0
+    }}
   end
 
   def start_fetcher(audio_stream) do
     pid = spawn(Otis.Channel.BufferedStream.Fetcher, :init, [audio_stream])
     Process.monitor(pid)
-    pid
+    {:ok, pid}
   end
 
   def handle_call(:buffer, from, state) do
@@ -88,6 +91,15 @@ defmodule Otis.Channel.BufferedStream do
 
   def handle_cast({:skip, id}, state) do
     Otis.Stream.skip(state.audio_stream, id)
+    {:noreply, state}
+  end
+
+  def handle_info({:DOWN, _ref, process, pid, reason}, state) do
+    IO.inspect [__MODULE__, :DOWN, _ref, process, pid, reason]
+    {:noreply, state}
+  end
+  def handle_info({:EXIT, pid, reason}, state) do
+    IO.inspect [__MODULE__, :EXIT, pid, reason]
     {:noreply, state}
   end
 

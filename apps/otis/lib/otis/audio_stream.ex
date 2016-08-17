@@ -86,6 +86,13 @@ defmodule Otis.AudioStream do
     {:noreply, state}
   end
 
+  def handle_info({:DOWN, _ref, :process, _pid, {:shutdown, :done}} , state) do
+    {:noreply, state}
+  end
+  def handle_info({:DOWN, _ref, :process, _pid, reason} , state) do
+    {:noreply, state}
+  end
+
   defp audio_frame(%S{stream: nil, state: :starting} = state) do
     audio_frame(enumerate_source(state))
   end
@@ -144,8 +151,19 @@ defmodule Otis.AudioStream do
   defp open_source(:done) do
     :done
   end
-  defp open_source({:ok, id, playback_position, source}) do
-    Otis.SourceStream.new(id, playback_position, source)
+  defp open_source({:ok, {id, playback_position, source}}) do
+    Otis.SourceStream.new(id, playback_position, source) |> monitor_source
+  end
+
+  defp monitor_source({:ok, _id, _playback_position, _duration, stream} = source) do
+    monitor_stream_process(stream)
+    source
+  end
+  defp monitor_stream_process(stream) when is_tuple(stream) do
+    stream |> GenServer.whereis |> monitor_stream_process
+  end
+  defp monitor_stream_process(stream) when is_pid(stream) do
+    Process.monitor(stream)
   end
 
   # TODO: use source needs the stream & id, *and* the playback position and

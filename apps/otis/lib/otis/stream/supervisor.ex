@@ -1,15 +1,15 @@
-defmodule Otis.SourceStreamSupervisor do
+defmodule Otis.StreamSupervisor do
   use Supervisor
 
-  @supervisor Otis.SourceStreamSupervisor
-  @stream_module Otis.SourceStream
+  @supervisor __MODULE__
+  @stream_module Otis.Channel.BufferedStream
 
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: @supervisor)
   end
 
-  def start(id, source, playback_position) do
-    {:ok, _pid} = Supervisor.start_child(@supervisor, [id, source, playback_position])
+  def start_stream(id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms) do
+    Supervisor.start_child(@supervisor, [id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms])
     {:ok, name(id)}
   end
 
@@ -24,3 +24,4 @@ defmodule Otis.SourceStreamSupervisor do
     supervise(children, strategy: :simple_one_for_one)
   end
 end
+

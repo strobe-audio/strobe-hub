@@ -39,8 +39,7 @@ defmodule Otis.Channel do
   def init({id, config, source_list}) do
     Logger.info "#{__MODULE__} starting... #{ id }"
     {:ok, socket} = Otis.Channel.Socket.start_link(id)
-    {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, Otis.stream_bytes_per_step)
-    {:ok, stream} = Otis.Channel.BufferedStream.seconds(audio_stream, 1)
+    {:ok, stream} = Otis.StreamSupervisor.start_stream(id, source_list, 1, Otis.stream_bytes_per_step, Otis.stream_interval_ms)
     {:ok, %S{
         id: id,
         source_list: source_list,
