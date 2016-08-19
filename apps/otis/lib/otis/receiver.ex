@@ -196,13 +196,8 @@ defmodule Otis.Receiver do
     send_data(receiver, @stop_command)
   end
 
-  def send_data(%{data: {_pid, socket}} = receiver, data) do
-    case :gen_tcp.send(socket, data) do
-      {:error, _} = error ->
-        Logger.warn "Error #{ inspect error }sending data to receiver #{ inspect receiver } #{ inspect data }"
-        error
-      ok -> ok
-    end
+  def send_data(%{data: {pid, _socket}} = receiver, data) do
+    GenServer.cast(pid, {:data, data})
   end
 
   def extract_params(values) do

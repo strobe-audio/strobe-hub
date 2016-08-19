@@ -16,7 +16,7 @@ defmodule Otis.Receivers.Protocol do
       def init(ref, socket, transport, opts \\ []) do
         :ok = :proc_lib.init_ack({:ok, self})
         :ok = :ranch.accept_ack(ref)
-        :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once])
+        :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once, send_timeout: 2*Otis.stream_interval_ms])
         state = %S{
           socket: socket,
           transport: transport,
@@ -37,15 +37,16 @@ defmodule Otis.Receivers.Protocol do
         {:stop, :normal, state}
       end
       def handle_info({:tcp_closed, _socket}, %S{id: id} = state) do
-        GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id})
+        disconnect(state)
         {:stop, :normal, state}
       end
 
-      def handle_info({:tcp_error, _, reason}, %S{id: nil} = state) do
+      def handle_info({:tcp_error, _, reason}, state) do
+        disconnect(state)
         {:stop, reason, state}
       end
-      def handle_info({:tcp_error, _, reason}, %S{id: id} = state) do
-        GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id})
+      def handle_info({:tcp_error, _, reason}, state) do
+        disconnect(state)
         {:stop, reason, state}
       end
 
@@ -59,6 +60,10 @@ defmodule Otis.Receivers.Protocol do
       end
       def process_message(_msg, state) do
         state
+      end
+
+      def disconnect(%S{id: id} = state) do
+        GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id})
       end
 
       def decode_message(data, state) do
