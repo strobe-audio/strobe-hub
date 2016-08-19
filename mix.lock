@@ -18,6 +18,7 @@
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], []},
   "mimerl": {:hex, :mimerl, "1.0.2", "993f9b0e084083405ed8252b99460c4f0563e41729ab42d9074fd5e52439be88", [:rebar3], []},
   "monotonic": {:git, "https://github.com/magnetised/monotonic.ex.git", "577c7b645850bcb44c4c2d03014178567fad833f", []},
+  "nerves_ssdp_server": {:hex, :nerves_ssdp_server, "0.2.1", "2d010552023fc1a724e8cb5c92479a58552976e6f805b6dbf09babd31f923b8f", [:mix], []},
   "phoenix": {:hex, :phoenix, "1.1.6", "7bf19002669c8f692f5a9c8d30dab7b49f3dc56228d5bde92a12fb426b4783c2", [:mix], [{:cowboy, "~> 1.0", [hex: :cowboy, optional: true]}, {:plug, "~> 1.0", [hex: :plug, optional: false]}, {:poison, "~> 1.5 or ~> 2.0", [hex: :poison, optional: false]}]},
   "phoenix_html": {:hex, :phoenix_html, "2.6.0", "b9f7e091eb3d908586d9634596478fb9e577ee033d76f4ff327a745569bdd2d8", [:mix], [{:plug, "~> 0.13 or ~> 1.0", [hex: :plug, optional: false]}]},
   "phoenix_live_reload": {:hex, :phoenix_live_reload, "1.0.5", "829218c4152ba1e9848e2bf8e161fcde6b4ec679a516259442561d21fde68d0b", [:mix], [{:fs, "~> 0.9.1", [hex: :fs, optional: false]}, {:phoenix, "~> 1.0 or ~> 1.2-rc", [hex: :phoenix, optional: false]}]},
