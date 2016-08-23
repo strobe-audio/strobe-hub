@@ -181,11 +181,11 @@ defmodule Peel.Events.Library do
     end
   end
 
-  def route_library_request(channel_id, ["album", album_id, "artist", artist_id, "play"], path) do
+  def route_library_request(channel_id, ["album", album_id, "artist", artist_id, "play"], _path) do
     case Album.find(album_id) do
       nil ->
         nil
-      album ->
+      _album ->
         tracks = Track.album_by_artist(album_id, artist_id)
         play(tracks, channel_id)
     end

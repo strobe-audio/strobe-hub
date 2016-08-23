@@ -89,7 +89,7 @@ defmodule Otis.AudioStream do
   def handle_info({:DOWN, _ref, :process, _pid, {:shutdown, :done}} , state) do
     {:noreply, state}
   end
-  def handle_info({:DOWN, _ref, :process, _pid, reason} , state) do
+  def handle_info({:DOWN, _ref, :process, _pid, _reason} , state) do
     {:noreply, state}
   end
 

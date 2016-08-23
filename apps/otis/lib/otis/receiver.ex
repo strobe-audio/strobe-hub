@@ -196,7 +196,7 @@ defmodule Otis.Receiver do
     send_data(receiver, @stop_command)
   end
 
-  def send_data(%{data: {pid, _socket}} = receiver, data) do
+  def send_data(%{data: {pid, _socket}}, data) do
     GenServer.cast(pid, {:data, data})
   end
 
