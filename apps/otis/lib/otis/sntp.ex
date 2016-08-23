@@ -4,31 +4,25 @@ defmodule Otis.SNTP do
   use     Supervisor
 
   @name      Otis.SNTP
-  @listeners 6
 
   def start_link(port \\ 5045) do
     Supervisor.start_link(__MODULE__, port, name: @name)
   end
 
   def init(port) do
-
-    children = [
-      worker(Otis.SNTP.Listener, [port], [])
+    listener_pool_options = [
+      name: {:local, Otis.SNTPPool},
+      worker_module: Otis.SNTP.Worker,
+      size: 6,
+      max_overflow: 2
     ]
-    spawn_link(&start_listeners/0)
-    supervise(children, strategy: :simple_one_for_one)
-  end
-
-  def start_listener(_n) do
-    start_listener
-  end
-
-  def start_listener do
-    Supervisor.start_child(__MODULE__, [])
-  end
-
-  def start_listeners do
-    Enum.each 1..@listeners, &start_listener/1
+    children = [
+      :poolboy.child_spec(Otis.SNTPPool, listener_pool_options, [
+        pool: Otis.SNTPPool
+      ]),
+      worker(Otis.SNTP.Listener, [port, Otis.SNTPPool], []),
+    ]
+    supervise(children, strategy: :one_for_one)
   end
 
   defmodule Listener do
@@ -36,12 +30,11 @@ defmodule Otis.SNTP do
     use     GenServer
     require Logger
 
-    def start_link(port) do
-      GenServer.start_link(__MODULE__, [port])
-      :proc_lib.start_link(__MODULE__, :init, [port])
+    def start_link(port, pool) do
+      GenServer.start_link(__MODULE__, [port, pool])
     end
 
-    def init([port]) do
+    def init([port, pool]) do
       Logger.info "Starting SNTP socket listener on port #{ port }..."
       {:ok, socket} = :gen_udp.open port, [
         mode: :binary,
@@ -49,17 +42,47 @@ defmodule Otis.SNTP do
         active: :once,
         reuseaddr: true
       ]
-      Process.flag :priority, :high
-      {:ok, {socket}}
+      Process.flag(:priority, :high)
+      {:ok, {socket, pool}}
     end
 
-    def handle_info({:udp, _socket, address, port, packet}, {socket} = state) do
-      reply(socket, address, port, packet, monotonic_microseconds)
+    def terminate(_reason, {socket, _pool}) do
+      Logger.info "Closing SNTP socket listener..."
+      :gen_udp.close(socket)
+      :ok
+    end
+
+    def handle_info({:udp, socket, address, port, packet}, {_socket, pool} = state) do
+      now = monotonic_microseconds
+      worker = :poolboy.checkout(pool)
+      GenServer.cast(worker, {:reply, socket, address, port, packet, now})
       :inet.setopts(socket, [active: :once])
       {:noreply, state}
     end
+  end
 
-    def reply(socket, address, port, packet, receive_ts) do
+  defmodule Worker do
+    use     GenServer
+    use     Monotonic
+    require Logger
+
+    def start_link(pool: pool) do
+      GenServer.start_link(__MODULE__, [pool])
+    end
+
+    def init([pool]) do
+      Logger.info "Starting SNTP worker in pool #{pool}..."
+      Process.flag(:priority, :high)
+      {:ok, pool}
+    end
+
+    def handle_cast({:reply, socket, address, port, packet, receive_ts}, pool) do
+      reply(socket, address, port, packet, receive_ts)
+      :poolboy.checkin(pool, self())
+      {:noreply, pool}
+    end
+
+    defp reply(socket, address, port, packet, receive_ts) do
       <<
         count        ::size(64)-little-unsigned-integer,
         originate_ts ::size(64)-little-signed-integer
