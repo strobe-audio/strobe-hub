@@ -20,7 +20,7 @@ defmodule Peel.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :sqlite_ecto, :ecto],
+    [applications: [:logger, :sqlite_ecto, :ecto, :work_queue, :otis_library, :uuid],
      mod: {Peel, []}]
   end
 

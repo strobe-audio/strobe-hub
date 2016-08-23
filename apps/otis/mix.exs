@@ -30,6 +30,7 @@ defmodule Otis.Mixfile do
         :ranch,
         :nerves_ssdp_server,
         :gproc,
+        :erlsom,
       ]
     ]
   end
