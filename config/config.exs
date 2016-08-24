@@ -10,10 +10,20 @@ use Mix.Config
 
 # Sample configuration:
 #
-#     config :logger, :console,
-#       level: :info,
-#       format: "$date $time [$level] $metadata$message\n",
-#       metadata: [:user_id]
+
+# config :logger,
+#   backends: [:console, {LoggerFileBackend, :debug_log}]
+
+config :logger, :debug_log,
+  path: "log/otis.debug.log",
+  level: :debug
+
+config :logger, :console,
+  level: :info,
+  format: "$date $time $metadata [$level]$levelpad $message\n",
+  sync_threshold: 1_000_000,
+  metadata: [:module, :line],
+  colors: [info: :green]
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
@@ -21,28 +31,12 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-#     import_config "#{Mix.env}.exs"
-# This file is responsible for configuring your application
-# and its dependencies with the aid of the Mix.Config module.
-use Mix.Config
-
 import_config "#{Mix.env}.exs"
 
-# The configuration defined here will only affect the dependencies
-# in the apps directory when commands are executed from the umbrella
-# project. For this reason, it is preferred to configure each child
-# application directly and import its configuration, as done below.
-import_config "../apps/*/config/config.exs"
+config :porcelain, :driver, Porcelain.Driver.Goon
+config :porcelain, :goon_driver_path, "#{__DIR__}/../bin/goon_darwin_amd64"
 
-# Sample configuration (overrides the imported configuration above):
-#
-#     config :logger, :console,
-#       level: :info,
-#       format: "$date $time [$level] $metadata$message\n",
-#       metadata: [:user_id]
-
-# config :dogma,
-#   rule_set: Dogma.RuleSet.All,
-#   override: %{ LineLength => [ max_length: 120 ] }
-
+config :otis, Otis.Media,
+  root: "#{__DIR__}/../_state/fs",
+  at: "/fs"
 
