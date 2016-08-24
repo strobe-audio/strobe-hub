@@ -60,10 +60,6 @@ defmodule Otis.SourceStream do
     {:ok, state}
   end
 
-  def terminate(reason, state) do
-    :ok
-  end
-
   def handle_call(:chunk, _from, state) do
     next_chunk(state)
   end
@@ -138,6 +134,9 @@ defmodule Otis.SourceStream do
     inputstream = input_stream(state)
     open_transcoder(state, inputstream)
   end
+  defp open(state) do
+    state
+  end
 
   defp open_transcoder(state, inputstream) do
     { pid, outputstream } = Otis.Transcoders.Avconv.transcode(inputstream, stream_type(state), state.playback_position)
@@ -147,10 +146,6 @@ defmodule Otis.SourceStream do
   defp close_transcoder(state) do
     Otis.Transcoders.Avconv.stop(state.transcode_pid)
     %{ state | outputstream: nil, transcode_pid: nil, pending_streams: nil }
-  end
-
-  defp open(state) do
-    state
   end
 
   defp input_stream(%{ id: id, source: source }) do

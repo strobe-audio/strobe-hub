@@ -297,11 +297,11 @@ defmodule Otis.Channel do
     {:noreply, state}
   end
 
-  defp broadcaster_shutdown(pid, %S{state: :play} = state) do
+  defp broadcaster_shutdown(_pid, %S{state: :play} = state) do
     ctrl = Otis.Broadcaster.Controller.start(state.ctrl, state.broadcaster, broadcaster_latency(state), @buffer_size)
     %S{state | ctrl: ctrl}
   end
-  defp broadcaster_shutdown(pid, state) do
+  defp broadcaster_shutdown(_pid, state) do
     state
   end
 
