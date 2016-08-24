@@ -29,7 +29,7 @@ defmodule Otis.State.Persistence.Sources do
   end
   def handle_event({:source_deleted, [id, channel_id]}, state) do
     Repo.transaction fn ->
-      [id] |> Enum.map(&load_source/1) |> sources_deleted(channel_id)
+      [id] |> Enum.map(&load_source/1) |> compact_sources() |> sources_deleted(channel_id)
     end
     {:ok, state}
   end
@@ -95,6 +95,10 @@ defmodule Otis.State.Persistence.Sources do
   defp sources_skipped([source | sources], channel_id) do
     source |> Source.delete!
     sources_skipped(sources, channel_id)
+  end
+
+  defp compact_sources(sources) do
+    Enum.reject(sources, &Kernel.is_nil/1)
   end
 
   defp sources_deleted([], channel_id) do

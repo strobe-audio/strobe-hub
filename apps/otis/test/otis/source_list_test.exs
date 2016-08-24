@@ -147,8 +147,12 @@ defmodule Otis.SourceListTest do
   # test "emits a state change event when skipping sources"
 
 
-  @tag :wip
-  test "emits a state change event when cleared"
+  test "emits a state change event when cleared", %{id: list_id} = context do
+    Otis.SourceList.clear(context.source_list)
+    assert_receive {:source_list_cleared, [^list_id]}, 200
+  end
+
+
   @tag :wip
   test "emits a state change event when removing a source"
 end
