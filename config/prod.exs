@@ -72,9 +72,6 @@ config :otis, Otis.Receivers,
   data_port: 5640,
   ctrl_port: 5641
 
-config :porcelain, :driver, Porcelain.Driver.Goon
-config :porcelain, :goon_driver_path, "/Users/garry/Seafile/Peep/peep/apps/otis/bin/goon_darwin_amd64"
-
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
 # import_config "prod.secret.exs"

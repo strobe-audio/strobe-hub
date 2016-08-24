@@ -31,6 +31,9 @@ config :otis, Otis.Media,
   root: "#{__DIR__}/../_state/fs",
   at: "/fs"
 
+config :porcelain, :driver, Porcelain.Driver.Goon
+config :porcelain, :goon_driver_path, IO.inspect "#{__DIR__}/../bin/goon-#{:erlang.system_info(:system_architecture)}"
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env}.exs"
