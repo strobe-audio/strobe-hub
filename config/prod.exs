@@ -1,6 +1,5 @@
 use Mix.Config
 
-IO.inspect :PRODUCTION
 # For production, we configure the host to read the PORT
 # from the system environment. Therefore, you will need
 # to set PORT=80 before running your server.
@@ -78,4 +77,4 @@ config :porcelain, :goon_driver_path, "/Users/garry/Seafile/Peep/peep/apps/otis/
 
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
-import_config "prod.secret.exs"
+# import_config "prod.secret.exs"
