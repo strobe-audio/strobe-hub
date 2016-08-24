@@ -15,10 +15,17 @@ config :elvis, Elvis.Endpoint,
            adapter: Phoenix.PubSub.PG2]
 
 # Configures Elixir's Logger
+# config :logger, :console,
+#   level: :info,
+#   format: "$time $metadata[$level] $message\n",
+#   metadata: [:request_id]
 config :logger, :console,
   level: :info,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  format: "$date $time $metadata [$level]$levelpad $message\n",
+  sync_threshold: 1_000_000,
+  metadata: [:request_id],
+  colors: [info: :green]
+
 
 config :otis, Otis.Media,
   root: "#{__DIR__}/../_state/fs",

@@ -17,7 +17,15 @@ defmodule Elvis.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [mod: {Elvis, []},
-     applications: [:phoenix, :phoenix_html, :cowboy, :logger, :otis, :peel, :hls]]
+     applications: [
+       :phoenix,
+       :phoenix_html,
+       :cowboy,
+       :logger,
+       :otis,
+       :peel,
+       :hls
+     ]]
   end
 
   # Specifies which paths to compile per environment
@@ -32,9 +40,13 @@ defmodule Elvis.Mixfile do
      {:phoenix_html, "~> 2.1"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:cowboy, "~> 1.0"},
-     {:otis, path: "/Users/garry/Seafile/Peep/peep/apps/otis"},
-     {:peel, path: "/Users/garry/Seafile/Peep/peep/apps/peel"},
-     {:hls, path: "/Users/garry/Seafile/Peep/hls"},
+     # {:otis, path: "/Users/garry/Seafile/Peep/otis"},
+     {:otis, git: "git@gitlab.com:magnetised/otis.git"},
+     # {:peel, path: "/Users/garry/Seafile/Peep/peel"},
+     {:peel, git: "git@gitlab.com:magnetised/peel.git"},
+     # {:hls, path: "/Users/garry/Seafile/Peep/hls"},
+     {:hls, git: "git@gitlab.com:magnetised/peep_bbc.git"},
+     {:distillery, "~> 0.9", only: :dev},
    ]
   end
 end

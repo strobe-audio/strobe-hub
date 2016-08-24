@@ -22,3 +22,5 @@ elm-stuff
 priv/static/js/*
 priv/static/css/*
 
+rel
+priv/static
