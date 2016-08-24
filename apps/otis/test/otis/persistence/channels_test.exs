@@ -48,8 +48,8 @@ defmodule Otis.Persistence.ChannelsTest do
     assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
 
 
-    Otis.Channels.Supervisor.stop_channel(channel)
-    refute Process.alive?(channel)
+    Otis.Channels.stop(channel)
+    assert nil == GenServer.whereis(channel)
 
     {:ok, _channel} = Otis.Channels.create(id, name)
 

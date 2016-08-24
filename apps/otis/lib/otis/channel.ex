@@ -24,20 +24,13 @@ defmodule Otis.Channel do
   @buffer_latency     50_000
   @buffer_size        25
 
-  def start_link(id, config) do
-    start_link(id, config, Otis.SourceList.empty(id))
+  def start_link(id, config, name) do
+    GenServer.start_link(__MODULE__, [id, config], name: name)
   end
 
-  def start_link(id, config, {:ok, source_list}) do
-    start_link(id, config, source_list)
-  end
-
-  def start_link(id, config, source_list) do
-    GenServer.start_link(__MODULE__, {id, config, source_list}, name: String.to_atom("channel-#{id}"))
-  end
-
-  def init({id, config, source_list}) do
+  def init([id, config]) do
     Logger.info "#{__MODULE__} starting... #{ id }"
+    {:ok, source_list} = Otis.SourceList.empty(id)
     {:ok, socket} = Otis.Channel.Socket.start_link(id)
     stream_config = Otis.Stream.Config.seconds(1)
     {:ok, stream} = Otis.Stream.Supervisor.start_buffered_stream(id, stream_config, source_list)
@@ -49,6 +42,11 @@ defmodule Otis.Channel do
         volume: Map.get(config, :volume, 1.0)
       }
     }
+  end
+
+  def id!(channel) do
+    {:ok, id} = id(channel)
+    id
   end
 
   def id(%__MODULE__{id: id}) do
@@ -75,7 +73,7 @@ defmodule Otis.Channel do
   def add_receiver(%__MODULE__{pid: pid} = _channel, receiver) do
     add_receiver(pid, receiver)
   end
-  def add_receiver(channel, receiver) when is_pid(channel) do
+  def add_receiver(channel, receiver) do
     GenServer.call(channel, {:add_receiver, receiver})
   end
 
@@ -103,20 +101,21 @@ defmodule Otis.Channel do
   def volume(%__MODULE__{pid: pid}) do
     volume(pid)
   end
-  def volume(channel) when is_pid(channel) do
+  def volume(channel) do
     GenServer.call(channel, :volume)
   end
+
   def volume(%__MODULE__{pid: pid}, volume) do
     volume(pid, volume)
   end
-  def volume(channel, volume) when is_pid(channel) do
+  def volume(channel, volume) do
     GenServer.call(channel, {:volume, volume})
   end
 
   def playing?(%__MODULE__{pid: pid}) do
     playing?(pid)
   end
-  def playing?(channel) when is_pid(channel) do
+  def playing?(channel) do
     GenServer.call(channel, :playing)
   end
 
@@ -136,7 +135,7 @@ defmodule Otis.Channel do
   def clear(%__MODULE__{pid: pid}) do
     clear(pid)
   end
-  def clear(channel) when is_pid(channel) do
+  def clear(channel) do
     GenServer.cast(channel, :clear)
   end
 

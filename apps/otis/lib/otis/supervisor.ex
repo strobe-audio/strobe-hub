@@ -32,9 +32,8 @@ defmodule Otis.Supervisor do
       supervisor(Otis.Stream.Supervisor, []),
       supervisor(Otis.SourceStreamSupervisor, []),
       supervisor(Otis.Broadcaster, []),
-      supervisor(Otis.Channels.Supervisor, []),
       supervisor(Otis.Controllers, []),
-      worker(Otis.Channels, []),
+      supervisor(Otis.Channels, []),
       # This needs to be called by the app hosting the application
       # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)
     ]

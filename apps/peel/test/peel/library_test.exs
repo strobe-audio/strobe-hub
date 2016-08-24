@@ -131,12 +131,12 @@ defmodule Peel.Test.LibraryTest do
     Enum.each channels, &Otis.State.Repo.insert!/1
 
     Enum.each Otis.State.Channel.all, fn(channel) ->
-      Otis.Channels.start(Otis.Channels, channel.id, channel)
+      Otis.Channels.start(channel.id, channel)
     end
 
     on_exit fn ->
       Enum.each Otis.State.Channel.all, fn(channel) ->
-        Otis.Channels.destroy!(Otis.Channels, channel.id)
+        Otis.Channels.destroy!(channel.id)
       end
     end
 
