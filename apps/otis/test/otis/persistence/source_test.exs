@@ -148,7 +148,7 @@ defmodule Otis.Persistence.SourceTest do
     Otis.SourceList.append(context.source_list, sources)
     assert_receive {:new_source_created, _}, 200
     {:ok, entries} = Otis.SourceList.list(context.source_list)
-    {:ok, _id, 0, _source} = Otis.SourceList.next(context.source_list)
+    {:ok, {_id, 0, _source}} = Otis.SourceList.next(context.source_list)
     ids = Enum.map(entries, fn({id, _, _}) -> id end)
     skip_to = Enum.at(ids, -2)
     skipped_ids = Enum.take_while(ids, fn(id) -> id != skip_to end)
