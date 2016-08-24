@@ -76,14 +76,14 @@ defmodule Otis.Channel.Controller do
     {:noreply, state}
   end
   def handle_info(:tick, %S{broadcaster: broadcaster} = state) do
-    tick(Process.alive?(broadcaster), state)
+    tick(Process.alive?(GenServer.whereis(broadcaster)), state)
   end
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
     {:noreply, %S{ state | broadcaster: nil}}
   end
 
   def start(broadcaster, latency, buffer_size, %S{clock: clock} = state) do
-    Process.monitor(broadcaster)
+    Process.monitor(GenServer.whereis(broadcaster))
     try do
       call(broadcaster, {:start, clock, latency, buffer_size})
       %S{ state | broadcaster: broadcaster, next_tick_us: now } |> schedule_emit

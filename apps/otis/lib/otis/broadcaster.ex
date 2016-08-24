@@ -12,7 +12,9 @@ defmodule Otis.Broadcaster do
   end
 
   def start_broadcaster(supervisor, opts) do
-    Supervisor.start_child(supervisor, [opts])
+    name = {:via, :gproc, {:n, :l, {Otis.Channel.Broadcaster, opts.id}}}
+    Supervisor.start_child(supervisor, [opts, name])
+    {:ok, name}
   end
 
   def stop_broadcaster(broadcaster) do

@@ -54,8 +54,8 @@ defmodule Otis.Channel.Broadcaster do
     round(stream_interval / 4)
   end
 
-  def start_link(opts) do
-    GenServer.start_link(__MODULE__, opts, [])
+  def start_link(opts, name) do
+    GenServer.start_link(__MODULE__, opts, name: name)
   end
 
   def buffer_receiver(broadcaster, channel, receiver) do

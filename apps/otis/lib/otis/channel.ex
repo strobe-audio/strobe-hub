@@ -288,8 +288,21 @@ defmodule Otis.Channel do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
-    state = Receiver.matching_pid(state.receivers, pid) |> receiver_shutdown(state)
+    state = case Receiver.matching_pid(state.receivers, pid) do
+      nil ->
+        broadcaster_shutdown(pid, state)
+      receiver ->
+        receiver_shutdown(receiver, state)
+    end
     {:noreply, state}
+  end
+
+  defp broadcaster_shutdown(pid, %S{state: :play} = state) do
+    ctrl = Otis.Broadcaster.Controller.start(state.ctrl, state.broadcaster, broadcaster_latency(state), @buffer_size)
+    %S{state | ctrl: ctrl}
+  end
+  defp broadcaster_shutdown(pid, state) do
+    state
   end
 
   def receiver_shutdown(nil, state) do
@@ -377,7 +390,7 @@ defmodule Otis.Channel do
     %S{ state | ctrl: ctrl } |> change_state
   end
   defp change_state(%S{state: :play, broadcaster: nil, ctrl: ctrl} = state) do
-    {:ok, broadcaster} = start_broadcaster(state)
+    broadcaster = start_broadcaster(state)
     ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(state), @buffer_size)
     Otis.Stream.resume(state.audio_stream)
     Otis.State.Events.notify({:channel_play_pause, state.id, :play})
@@ -431,6 +444,8 @@ defmodule Otis.Channel do
       emitter: Otis.Channel.Emitter.new(socket),
       stream_interval: Otis.stream_interval_us
     }
-    Otis.Broadcaster.start_broadcaster(opts)
+    {:ok, pid} = Otis.Broadcaster.start_broadcaster(opts)
+    Process.monitor(GenServer.whereis(pid))
+    pid
   end
 end
