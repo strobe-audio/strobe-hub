@@ -1,4 +1,4 @@
-defmodule Otis.StreamSupervisor do
+defmodule Otis.Stream.Supervisor do
   use Supervisor
 
   @supervisor __MODULE__
@@ -8,10 +8,16 @@ defmodule Otis.StreamSupervisor do
     Supervisor.start_link(__MODULE__, :ok, name: @supervisor)
   end
 
-  def start_stream(id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms) do
-    Supervisor.start_child(@supervisor, [id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms])
+  def start_buffered_stream(id, config, source_list) do
+    ma = {Otis.AudioStream, [source_list, config.stream_bytes_per_step]}
+    Supervisor.start_child(@supervisor, [id, config, ma])
     {:ok, name(id)}
   end
+
+  # def start_stream(id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms) do
+  #   Supervisor.start_child(@supervisor, [id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms])
+  #   {:ok, name(id)}
+  # end
 
   def name(id) do
     {:via, :gproc, {:n, :l, {@stream_module, id}}}

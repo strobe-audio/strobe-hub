@@ -29,7 +29,7 @@ defmodule Otis.Supervisor do
         packet_size: packet_size,
         pool: Otis.EmitterPool
       ]),
-      supervisor(Otis.StreamSupervisor, []),
+      supervisor(Otis.Stream.Supervisor, []),
       supervisor(Otis.SourceStreamSupervisor, []),
       supervisor(Otis.Broadcaster, []),
       supervisor(Otis.Channels.Supervisor, []),

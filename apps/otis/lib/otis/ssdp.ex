@@ -9,7 +9,6 @@ defmodule Otis.SSDP do
   end
 
   def init(_opts) do
-    IO.inspect __MODULE__
     register_service()
     {:ok, %{}}
   end
@@ -34,7 +33,6 @@ defmodule Otis.SSDP do
       {:stream_interval, to_string(Otis.stream_interval_us)},
       {:packet_size, to_string(Otis.stream_bytes_per_step)},
     ]
-    |> IO.inspect
   end
 
   defp service_port do

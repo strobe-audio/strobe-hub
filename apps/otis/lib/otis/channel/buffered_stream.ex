@@ -22,23 +22,25 @@ defmodule Otis.Channel.BufferedStream do
 
   alias __MODULE__, as: S
 
-  def size_for_seconds(seconds, interval_ms) do
-    round((seconds * 1000) / interval_ms)
+
+
+# buffer_seconds, stream_bytes_per_step, interval_ms
+  def start_link(id, config, audio_stream) do
+    name = Otis.Stream.Supervisor.name(id)
+    GenServer.start_link(__MODULE__, [id, config, audio_stream], name: name)
   end
 
-  def start_link(id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms) do
-    name = Otis.StreamSupervisor.name(id)
-    GenServer.start_link(__MODULE__, [id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms], name: name)
+  def init([id, config, {module, args}]) do
+    {:ok, audio_stream } = apply(module, :start_link, args)
+    init([id, config, audio_stream])
   end
 
-  def init([_id, source_list, buffer_seconds, stream_bytes_per_step, interval_ms]) do
-    {:ok, audio_stream } = Otis.AudioStream.start_link(source_list, stream_bytes_per_step)
+  def init([_id, config, audio_stream]) when is_pid(audio_stream) do
     {:ok, fetcher} = start_fetcher(audio_stream)
-    # Process.flag(:trap_exit, true)
     {:ok, %S{
       audio_stream: audio_stream,
       fetcher: fetcher,
-      size: size_for_seconds(buffer_seconds, interval_ms),
+      size: config.size,
       packets: 0
     }}
   end
@@ -94,8 +96,12 @@ defmodule Otis.Channel.BufferedStream do
     {:noreply, state}
   end
 
-  def handle_info({:DOWN, _ref, process, pid, reason}, state) do
-    IO.inspect [__MODULE__, :DOWN, _ref, process, pid, reason]
+  def handle_info({:DOWN, _ref, :process, fetcher, :normal}, %S{fetcher: fetcher, audio_stream: audio_stream} = state) do
+    Logger.warn "#{__MODULE__} down, restarting..."
+    {:noreply, %S{ state | fetcher: start_fetcher(audio_stream) }}
+  end
+  def handle_info({:DOWN, ref, process, pid, reason}, state) do
+    IO.inspect [__MODULE__, :DOWN, ref, process, pid, reason]
     {:noreply, state}
   end
   def handle_info({:EXIT, pid, reason}, state) do
@@ -112,11 +118,6 @@ defmodule Otis.Channel.BufferedStream do
   end
   defp rebuffer_packets([packet | packets], state) do
     rebuffer_packets(packets, unshift(packet, state))
-  end
-
-  def handle_info({:DOWN, _ref, :process, _pid, :normal}, %S{audio_stream: audio_stream} = state) do
-    Logger.warn "#{__MODULE__} down, restarting..."
-    {:noreply, %S{ state | fetcher: start_fetcher(audio_stream) }}
   end
 
   # No need to monitor this action as it's only called by the rebuffering
