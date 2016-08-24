@@ -39,7 +39,8 @@ defmodule Peel.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [ {:uuid, "~> 1.1"},
-      {:sqlite_ecto, "~> 1.0.0"},
+      # {:sqlite_ecto, "~> 1.0.0"},
+      {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
       {:ecto, "~> 1.0"},
       {:work_queue, github: "pragdave/work_queue"},
       {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
