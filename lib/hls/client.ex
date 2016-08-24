@@ -16,7 +16,8 @@ defmodule HLS.Client do
   end
 
   defp stream(stream, id, opts) do
-    {:ok, pid} =  HLS.Client.Supervisor.start(stream, id, opts)
+    # {:ok, pid} =  HLS.Client.Supervisor.start(stream, id, opts)
+    {:ok, pid} =  HLS.Client.start_link(stream, id, opts)
     {:ok, GenStage.stream([pid])}
   end
 
