@@ -4,21 +4,21 @@ defmodule Otis.Library do
       @namespace "#{unquote(namespace)}"
       @protocol "#{unquote(namespace)}:"
 
-      def handle_event({:otis_started}, state) do
+      def handle_event({:otis_started, _args}, state) do
         {:ok, setup(state)}
       end
 
-      def handle_event({:controller_join, socket}, state) do
-        Otis.State.Events.notify({:add_library, library(), socket})
+      def handle_event({:controller_join, [socket]}, state) do
+        Otis.State.Events.notify({:add_library, [library(), socket]})
         {:ok, state}
       end
 
-      def handle_event({:library_request, channel_id, @protocol <> path, socket}, state) do
+      def handle_event({:library_request, [channel_id, @protocol <> path, socket]}, state) do
         case handle_request(channel_id, path) do
           nil ->
             nil
           response ->
-            Otis.State.Events.notify({:library_response, @namespace, response, socket})
+            Otis.State.Events.notify({:library_response, [@namespace, response, socket]})
         end
         {:ok, state}
       end
