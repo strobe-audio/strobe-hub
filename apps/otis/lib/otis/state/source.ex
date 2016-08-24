@@ -49,8 +49,22 @@ defmodule Otis.State.Source do
     restore_source(records, [list_entry(record) | sources])
   end
 
+  def reload({id, _playback_position, _source} = entry) do
+    id |> find() |> reload_entry(entry)
+  end
+
+  def reload_entry(nil, original) do
+    original
+  end
+  def reload_entry(record, {_id, _position, source}) do
+    list_entry(record, source)
+  end
+
   def list_entry(record) do
-    {record.id, record.playback_position, source(record)}
+    list_entry(record, source(record))
+  end
+  def list_entry(record, source) do
+    {record.id, record.playback_position, source}
   end
 
   def source(record) do

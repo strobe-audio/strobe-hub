@@ -180,8 +180,9 @@ defmodule Otis.SourceList do
   defp iterate_source(%S{sources: []} = state) do
     {:done, state}
   end
-  defp iterate_source(%S{sources: [{id, playback_position, source} = active | sources]} = state) do
-    {{:ok, {id, playback_position, source}}, %S{state | sources: sources, active: active}}
+  defp iterate_source(%S{sources: [active | sources]} = state) do
+    rendition = Otis.State.Source.reload(active)
+    {{:ok, rendition}, %S{state | sources: sources, active: active}}
   end
 
   defp skip_to(id, %S{active: active, sources: sources} = state) do

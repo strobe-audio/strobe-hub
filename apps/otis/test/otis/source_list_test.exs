@@ -23,6 +23,23 @@ defmodule Otis.SourceListTest do
   use   ExUnit.Case
   alias Otis.Source.Test, as: TS
 
+  def persist_list({:ok, list}) do
+    {:ok, sources} = Otis.SourceList.list(list)
+    Otis.State.Repo.transaction fn ->
+      Enum.each(Enum.with_index(sources), fn({{id, pp, s}, i}) ->
+        %Otis.State.Source{
+          id: id,
+          position: i,
+          playback_position: pp,
+          source_id: s.id,
+          source_type: to_string(Otis.Source.Test),
+        }
+        |> Otis.State.Source.create!
+      end)
+    end
+    {:ok, list}
+  end
+
   setup do
     MessagingHandler.attach
     sources = [
@@ -33,7 +50,7 @@ defmodule Otis.SourceListTest do
     ]
     id = Otis.uuid
 
-    {:ok, list} = Otis.SourceList.from_list(id, sources)
+    {:ok, list} = Otis.SourceList.from_list(id, sources) |> persist_list
 
     {:ok, id: id, sources: sources, source_list: list}
   end
@@ -44,7 +61,7 @@ defmodule Otis.SourceListTest do
     assert length(Enum.uniq(ids)) == length(ids)
   end
 
-  test "it gives new sources a unique id", %{source_list: list} do
+  test "it gives new sources a unique id", %{source_list: list} = context do
     source = TS.new("e")
     {:ok, sources} = Otis.SourceList.list(list)
     l = length(sources)
@@ -69,7 +86,7 @@ defmodule Otis.SourceListTest do
   test "#next iterates the source list" do
     {:ok, a } = Otis.Source.File.new("test/fixtures/silent.mp3")
     {:ok, b } = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
-    {:ok, source_list} = Otis.SourceList.from_list(Otis.uuid, [a, b])
+    {:ok, source_list} = Otis.SourceList.from_list(Otis.uuid, [a, b]) |> persist_list
 
     {:ok, {_uuid, 0, source}} = Otis.SourceList.next(source_list)
     %Otis.Source.File{path: path} = source
@@ -139,6 +156,28 @@ defmodule Otis.SourceListTest do
     Otis.SourceList.insert_source(context.source_list, source, -1)
     position = length(sources) + 1
     assert_receive {:new_source, [^list_id, ^position, {_, 0, %{id: "e"}}]}, 200
+  end
+
+  test "doesn't delete an active source", %{id: list_id} = context do
+    {:ok, [active | sources]} = Otis.SourceList.list(context.source_list)
+    {:ok, {_id, _position, _source}} = Otis.SourceList.next(context.source_list)
+    assert {:ok, active} == Otis.SourceList.active(context.source_list)
+    Otis.SourceList.clear(context.source_list)
+    assert_receive {:source_list_cleared, [^list_id]}, 200
+    # {:ok, active} = IO.inspect Otis.SourceList.active(context.source_list)
+    Enum.each(sources, fn({id, _, _}) ->
+      assert_receive {:source_deleted, [^id, ^list_id]}, 200
+    end)
+    {active_id, _, _} = active
+    refute_receive {:source_deleted, [^active_id, ^list_id]}, 200
+  end
+
+  test "returns updated playback position if state changes after load", context do
+    {:ok, [{id, 0, _} | _]} = Otis.SourceList.list(context.source_list)
+    rendition = Otis.State.Source.find(id)
+    Otis.State.Source.playback_position(rendition, 999)
+    {:ok, {_id, 999, %TS{id: "a"}}} = Otis.SourceList.next(context.source_list)
+    # Otis.State.Source.delete_all()
   end
 
   # actually I don't think this is necessary -- the source change event emitted
