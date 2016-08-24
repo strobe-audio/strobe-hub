@@ -71,12 +71,12 @@ defmodule Otis.SourceListTest do
     {:ok, b } = Otis.Source.File.new("test/fixtures/snake-rag.mp3")
     {:ok, source_list} = Otis.SourceList.from_list(Otis.uuid, [a, b])
 
-    {:ok, _uuid, 0, source} = Otis.SourceList.next(source_list)
+    {:ok, {_uuid, 0, source}} = Otis.SourceList.next(source_list)
     %Otis.Source.File{path: path} = source
 
     assert path == Path.expand("../fixtures/silent.mp3", __DIR__)
 
-    {:ok, _uuid, 0, source} = Otis.SourceList.next(source_list)
+    {:ok, {_uuid, 0, source}} = Otis.SourceList.next(source_list)
     %Otis.Source.File{path: path} = source
     assert path == Path.expand("../fixtures/snake-rag.mp3", __DIR__)
 
@@ -89,12 +89,12 @@ defmodule Otis.SourceListTest do
     ids = Enum.map sources, fn({id, _pos, _source}) -> id end
     {:ok, id} = Enum.fetch ids, 0
     {:ok, 4} = Otis.SourceList.skip(context.source_list, id)
-    {:ok, _id, 0, source} = Otis.SourceList.next(context.source_list)
+    {:ok, {_id, 0, source}} = Otis.SourceList.next(context.source_list)
     assert source.id == "a"
 
     {:ok, id} = Enum.fetch ids, 1
     {:ok, 3} = Otis.SourceList.skip(context.source_list, id)
-    {:ok, _id, 0, source} = Otis.SourceList.next(context.source_list)
+    {:ok, {_id, 0, source}} = Otis.SourceList.next(context.source_list)
     assert source.id == "b"
   end
 
@@ -103,7 +103,7 @@ defmodule Otis.SourceListTest do
     ids = Enum.map sources, fn({id, _pos, _source}) -> id end
     {:ok, id} = Enum.fetch ids, 3
     {:ok, 1} = Otis.SourceList.skip(context.source_list, id)
-    {:ok, _id, 0, source} = Otis.SourceList.next(context.source_list)
+    {:ok, {_id, 0, source}} = Otis.SourceList.next(context.source_list)
     assert source.id == "d"
   end
 
@@ -132,7 +132,7 @@ defmodule Otis.SourceListTest do
   test "calculates the inserted position correctly when list has active source", %{id: list_id} = context do
     {:ok, sources} = Otis.SourceList.list(context.source_list)
     source = TS.new("e")
-    {:ok, _id, _position, _source} = Otis.SourceList.next(context.source_list)
+    {:ok, {_id, _position, _source}} = Otis.SourceList.next(context.source_list)
     Otis.SourceList.insert_source(context.source_list, source, 0)
     assert_receive {:new_source, [^list_id, 1, {_, 0, %{id: "e"}}]}, 200
 
