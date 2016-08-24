@@ -20,7 +20,7 @@ defmodule Otis.AudioStream do
   end
 
   def frame(pid) do
-    GenServer.call(pid, :frame, 30_000)
+    GenServer.call(pid, :frame, 2_000)
   end
 
   def buffer(pid) do

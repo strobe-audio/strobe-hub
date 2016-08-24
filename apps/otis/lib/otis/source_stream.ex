@@ -9,7 +9,7 @@ defmodule Otis.SourceStream do
 
   @doc "Gives the next chunk of data from the source"
   def chunk(pid) do
-    GenServer.call(pid, :chunk, 30_000)
+    GenServer.call(pid, :chunk, 2_000)
   end
 
   @doc "Closes the streams"
