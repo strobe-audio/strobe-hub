@@ -31,7 +31,8 @@ defmodule HLS.Mixfile do
       {:gen_stage, "~> 0.1"},
       {:gproc, "~> 0.5.0"},
       {:poison, "~> 1.5.0"},
-      {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
+      # {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
+      {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
     ]
   end
 end
