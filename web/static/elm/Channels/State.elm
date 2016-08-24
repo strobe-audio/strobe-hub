@@ -110,7 +110,7 @@ update action model =
       let
         updatedModel =
           { model
-            | showChannelSwitcher = False
+            | showChannelSwitcher = True
             , showAddChannel = False
             , activeChannelId = Just channel.id
           }
