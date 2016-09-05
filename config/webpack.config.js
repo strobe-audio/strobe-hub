@@ -8,13 +8,13 @@ var cssnext = require('postcss-cssnext');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 function join(dest) { return path.resolve(__dirname, '..', dest); }
-function web(dest) { return join('web/static/' + dest); }
+function stat(dest) { return join('web/static/' + dest); }
+function elm(dest) { return join('web/elm/' + dest); }
 
-console.log(web(''))
 var config = [
   {
     entry: [
-      web('css/app.css'),
+      stat('css/app.css'),
     ],
 
     output: {
@@ -43,7 +43,7 @@ var config = [
   },
   {
     entry: [
-      web('js/app.js'),
+      stat('js/app.js'),
     ],
 
     output: {
@@ -54,7 +54,7 @@ var config = [
     resolve: {
       modulesDirectories: ['node_modules'],
       extensions: ['', '.js', '.elm'],
-      root: [web(''), web('js'), web('elm')],
+      root: [stat(''), stat('js'), elm('')],
     },
 
     module: {
