@@ -1,8 +1,9 @@
-module Root.View (root) where
+module Root.View exposing (root)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.App exposing (map)
 import Debug
 import Root
 import Root.State
@@ -16,24 +17,18 @@ import Source.View
 import Json.Decode as Json
 
 
-root : Signal.Address Root.Action -> Root.Model -> Html
-root address model =
+root : Root.Model -> Html Root.Msg
+root model =
   let
-    channelsAddress =
-      Signal.forwardTo address Root.Channels
-
-    receiversAddress =
-      Signal.forwardTo address Root.Receivers
-
     library =
       if Root.State.libraryVisible model then
-        Library.View.root (Signal.forwardTo address Root.Library) model.library
+        map Root.Library (Library.View.root model.library)
       else
         div [] []
 
     playlist =
       if Root.State.playlistVisible model then
-        Channels.View.playlist (Signal.forwardTo address Root.Channels) model.channels
+        map Root.Channels (Channels.View.playlist model.channels)
       else
         div [] []
 
@@ -50,22 +45,22 @@ root address model =
             [ ("root", True)
             , ("root__obscured", overlayActive)
             ]
-            {-, on "scroll" Json.value (Signal.message address << Root.Scroll) -}
+            {-, on "scroll" (Json.value Root.Scroll) -}
           ]
-          [ Channels.View.channels channelsAddress model.channels receiversAddress model.receivers
+          [ map Root.Channels (Channels.View.channels model.channels model.receivers)
           , div
               [ class "root--active-channel" ]
-              [ Channels.View.cover channelsAddress channel
-              -- , Receivers.View.receivers receiversAddress model.receivers channel
-              , libraryToggleView address model channel
+              [ map Root.Channels (Channels.View.cover channel)
+              -- , Receivers.View.receivers model.receivers channel
+              , libraryToggleView model channel
               , library
               , playlist
               ]
           ]
 
 
-libraryToggleView : Signal.Address Root.Action -> Root.Model -> Channel.Model -> Html
-libraryToggleView address model channel =
+libraryToggleView : Root.Model -> Channel.Model -> Html Root.Msg
+libraryToggleView model channel =
   let
     duration =
       Source.View.durationString (Channel.playlistDuration channel)
@@ -76,7 +71,7 @@ libraryToggleView address model channel =
               [ ( "root--mode--choice root--mode--playlist", True )
               , ( "root--mode--choice__active", model.listMode == Root.PlaylistMode )
               ]
-          , onClick address (Root.SetListMode Root.PlaylistMode)
+          , onClick (Root.SetListMode Root.PlaylistMode)
           ]
           -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
           [ div [ class "root--mode--channel-name" ] [ text channel.name ]
@@ -90,7 +85,7 @@ libraryToggleView address model channel =
               [ ( "root--mode--choice root--mode--library", True )
               , ( "root--mode--choice__active", model.listMode == Root.LibraryMode )
               ]
-          , onClick address (Root.SetListMode Root.LibraryMode)
+          , onClick (Root.SetListMode Root.LibraryMode)
           ]
           [ text "Library" ]
       ]

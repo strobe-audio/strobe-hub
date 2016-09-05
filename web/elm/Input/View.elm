@@ -1,4 +1,4 @@
-module Input.View (..) where
+module Input.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -7,8 +7,8 @@ import Json.Decode as Json
 import Input
 
 
-inputSubmitCancel : Input.Context -> Input.Model -> Html
-inputSubmitCancel context model =
+inputSubmitCancel : Input.Model -> Html Input.Msg
+inputSubmitCancel model =
   let
     valid =
       model.validator model.value
@@ -20,37 +20,36 @@ inputSubmitCancel context model =
           , type' "text"
           , placeholder "Channel name..."
           , value model.value
-          , on "input" targetValue (Signal.message context.address << Input.Update)
-          , onKeyDown context.address (Input.Submit context) (Input.Cancel context)
+          , onInput Input.Update
+          , onKeyDown Input.Submit Input.Cancel
           , autofocus True
           , attribute "autocapitalize" model.autoCapitalize
           ]
           []
       , div
           [ classList [ ( "input--submit", True ), ( "input--submit__valid", valid ) ]
-          , onClick context.address (Input.Submit context)
+          , onClick Input.Submit
           ]
           []
-      , div [ class "input--cancel", onClick context.address (Input.Cancel context) ] []
+      , div [ class "input--cancel", onClick Input.Cancel ] []
       ]
 
 
-onKeyDown : Signal.Address Input.Action -> Input.Action -> Input.Action -> Attribute
-onKeyDown address submitAction cancelAction =
+onKeyDown : Input.Msg -> Input.Msg -> Attribute Input.Msg
+onKeyDown submitMsg cancelMsg =
   on
     "keydown"
-    (Json.customDecoder keyCode (submitOrCancel submitAction cancelAction))
-    (\action -> Signal.message address action)
+    (Json.customDecoder keyCode (submitOrCancel submitMsg cancelMsg))
 
 
-submitOrCancel : Input.Action -> Input.Action -> Int -> Result String Input.Action
-submitOrCancel submitAction cancelAction code =
+submitOrCancel : Input.Msg -> Input.Msg -> Int -> Result String Input.Msg
+submitOrCancel submitMsg cancelMsg code =
   case code of
     13 ->
-      Ok submitAction
+      Ok submitMsg
 
     27 ->
-      Ok cancelAction
+      Ok cancelMsg
 
     _ ->
       Err "ignored key code"

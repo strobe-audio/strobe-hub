@@ -1,13 +1,13 @@
-module Channels.State (..) where
+module Channels.State exposing (..)
 
 import Debug
-import Effects exposing (Effects, Never)
 import List.Extra
 import Root
 import Channels
-import Channels.Effects
+import Channels.Cmd
 import Channel
 import Channel.State
+import Input
 import Input.State
 
 
@@ -43,11 +43,26 @@ activeChannel model =
       List.Extra.find (\c -> c.id == id) model.channels
 
 
-update : Channels.Action -> Channels.Model -> ( Channels.Model, Effects Channels.Action )
+processInputSignal : Maybe Input.Signal -> Channels.Model -> (Channels.Model, Channels.Msg)
+processInputSignal signal model =
+  case signal of
+    Nothing ->
+      (model, Channels.NoOp)
+
+    Just cmd ->
+      case cmd of
+        Input.Value value ->
+            (model, Channels.Add value)
+
+        Input.Close ->
+            (model, Channels.ToggleAdd)
+
+
+update : Channels.Msg -> Channels.Model -> ( Channels.Model, Cmd Channels.Msg )
 update action model =
   case action of
     Channels.NoOp ->
-      ( model, Effects.none )
+      ( model, Cmd.none )
 
     Channels.Modify channelId channelAction ->
       let
@@ -57,14 +72,14 @@ update action model =
               ( updatedChannel, effect ) =
                 (Channel.State.update channelAction channel)
             in
-              ( updatedChannel, Effects.map (Channels.Modify channelId) effect )
+              ( updatedChannel, Cmd.map (Channels.Modify channelId) effect )
           else
-            ( channel, Effects.none )
+            ( channel, Cmd.none )
 
         ( channels, effects ) =
           (List.map updateChannel model.channels) |> List.unzip
       in
-        ( { model | channels = channels }, (Effects.batch effects) )
+        ( { model | channels = channels }, (Cmd.batch effects) )
 
     Channels.VolumeChanged ( channelId, volume ) ->
       update (Channels.Modify channelId (Channel.VolumeChanged volume)) model
@@ -74,17 +89,21 @@ update action model =
 
     -- BEGIN CHANNEL STUFF
     Channels.ToggleSelector ->
-      ( { model | showChannelSwitcher = not (model.showChannelSwitcher) }, Effects.none )
+      ( { model | showChannelSwitcher = not (model.showChannelSwitcher) }, Cmd.none )
 
     Channels.ToggleAdd ->
-      ( { model | showAddChannel = not model.showAddChannel, newChannelInput = Input.State.blank }, Effects.none )
+      ( { model | showAddChannel = not model.showAddChannel, newChannelInput = Input.State.blank }, Cmd.none )
 
-    Channels.NewInput inputAction ->
+    Channels.AddInput inputAction ->
       let
-        ( input, effect ) =
+        (input, inputCmd, signal) =
           Input.State.update inputAction model.newChannelInput
+        (model', signalCmds) =
+          processInputSignal signal { model | newChannelInput = input }
+        (updatedModel, cmd) =
+          update signalCmds model'
       in
-        ( { model | newChannelInput = input }, (Effects.map Channels.NewInput effect) )
+        ( updatedModel, Cmd.batch [(Cmd.map Channels.AddInput inputCmd), cmd] )
 
     Channels.Add name ->
       let
@@ -94,7 +113,7 @@ update action model =
         model' =
           { model | newChannelInput = Input.State.blank, showAddChannel = False, showChannelSwitcher = False }
       in
-        ( model', Channels.Effects.addChannel name )
+        ( model', Channels.Cmd.addChannel name )
 
     Channels.Added channelState ->
       let
@@ -115,4 +134,4 @@ update action model =
             , activeChannelId = Just channel.id
           }
       in
-        ( updatedModel, Effects.none )
+        ( updatedModel, Cmd.none )

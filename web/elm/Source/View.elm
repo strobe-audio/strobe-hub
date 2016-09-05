@@ -1,4 +1,4 @@
-module Source.View (..) where
+module Source.View exposing (..)
 
 import String
 import Rendition

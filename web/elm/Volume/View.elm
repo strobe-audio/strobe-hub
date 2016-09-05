@@ -1,13 +1,14 @@
-module Volume.View (..) where
+module Volume.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode exposing ((:=))
+import Volume
 
 
-control : Signal.Address (Maybe Float) -> Float -> Html -> Html
-control address volume label =
+control : Float -> Html Volume.Msg -> Html Volume.Msg
+control volume label =
   let
     handler buttons offset width =
       let
@@ -19,7 +20,7 @@ control address volume label =
             _ ->
               Nothing
       in
-        (Signal.message address maybeVolume)
+        (Volume.Change maybeVolume)
 
     options =
       { stopPropagation = False, preventDefault = False }
@@ -29,64 +30,59 @@ control address volume label =
         "mousemove"
         options
         (Json.Decode.object3
-          (,,)
+          handler
           ("buttons" := Json.Decode.int)
           ("offsetX" := Json.Decode.int)
           (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
         )
-        (\( m, x, w ) -> handler m x w)
 
     mousedown =
       onWithOptions
         "mousedown"
         options
         (Json.Decode.object2
-          (,)
+          (\x w -> handler 1 x w)
           ("offsetX" := Json.Decode.int)
           (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
         )
-        (\( x, w ) -> handler 1 x w)
 
     touchstart =
       onWithOptions
         "touchstart"
         { options | preventDefault = False }
         (Json.Decode.object2
-          (,)
+          (\x w -> handler 1 (Debug.log "start" x) w)
           ("offsetX" := Json.Decode.int)
           (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
         )
-        (\( x, w ) -> handler 1 (Debug.log "start" x) w)
 
     touchend =
       onWithOptions
         "touchend"
         { options | preventDefault = False }
         (Json.Decode.object2
-          (,)
+          (\x w -> handler 1 (Debug.log "end" x) w)
           ("offsetX" := Json.Decode.int)
           (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
         )
-        (\( x, w ) -> handler 1 (Debug.log "end" x) w)
 
     touchmove =
       onWithOptions
         "touchmove"
         { options | preventDefault = False }
         (Json.Decode.object2
-          (,)
+          (\x w -> handler 1 (Debug.log "move" x) w)
           ("offsetX" := Json.Decode.int)
           (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
         )
-        (\( x, w ) -> handler 1 (Debug.log "move" x) w)
   in
     div
       [ class "volume-control" ]
-      [ div [ class "volume-mute-btn fa fa-volume-off", onClick address (Just 0.0) ] []
+      [ div [ class "volume-mute-btn fa fa-volume-off", onClick (Volume.Change (Just 0.0)) ] []
       , div
           [ class "volume", mousemove, touchmove, mousedown, touchstart, touchend ]
           [ div [ class "volume-level", style [ ( "width", (toString (volume * 100)) ++ "%" ) ] ] []
           , div [ class "volume-label" ] [ label ]
           ]
-      , div [ class "volume-full-btn fa fa-volume-up", onClick address (Just 1.0) ] []
+      , div [ class "volume-full-btn fa fa-volume-up", onClick (Volume.Change (Just 1.0)) ] []
       ]

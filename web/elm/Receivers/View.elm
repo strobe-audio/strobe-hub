@@ -1,8 +1,9 @@
-module Receivers.View (..) where
+module Receivers.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.App exposing (map)
 import Receivers
 import Receivers.State
 import Channel
@@ -10,8 +11,8 @@ import Receiver.View
 import Debug
 
 
-receivers : Signal.Address Receivers.Action -> Receivers.Model -> Channel.Model -> Html
-receivers address model channel =
+receivers : Receivers.Model -> Channel.Model -> Html Receivers.Msg
+receivers model channel =
   let
     attached = Receivers.attachedReceivers model channel
 
@@ -34,16 +35,12 @@ receivers address model channel =
       (Receivers.onlineReceivers model)
 
     receiverEntry receiver =
-      let
-        receiverAddress =
-          Signal.forwardTo address (Receivers.Receiver receiver.id)
-      in
-        case receiver.channelId == channel.id of
-          True ->
-            Receiver.View.attached receiverAddress receiver channel
+      case receiver.channelId == channel.id of
+        True ->
+          map (Receivers.Receiver receiver.id) (Receiver.View.attached receiver channel)
 
-          False ->
-            Receiver.View.detached receiverAddress receiver channel
+        False ->
+          map (Receivers.Receiver receiver.id) (Receiver.View.detached receiver channel)
 
     receiverList =
       List.map receiverEntry receivers
@@ -71,7 +68,7 @@ receivers address model channel =
     div
       [ class "receivers" ]
       [ div
-          [ class "receivers--head", onClick address action ]
+          [ class "receivers--head", onClick action ]
           ((div [ class "receivers--title" ] [ text (count ++ "/" ++ (toString (List.length model.receivers)) ++ " Receivers") ]) :: addButton)
       , div [ class "receivers--list" ] receiverList
       ]

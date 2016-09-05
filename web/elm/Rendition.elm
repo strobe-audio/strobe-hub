@@ -1,4 +1,4 @@
-module Rendition (..) where
+module Rendition exposing (..)
 
 import ID
 
@@ -37,8 +37,9 @@ type alias Model =
   }
 
 
-type Action
+type Msg
   = NoOp
+  | PlayPause
   | SkipTo
   | Progress ProgressEvent
 

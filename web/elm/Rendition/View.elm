@@ -1,15 +1,16 @@
-module Rendition.View (..) where
+module Rendition.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed
 import Rendition
 import Source.View
 import Utils.Css
 
 
-player : Signal.Address () -> Rendition.Model -> Bool -> Html
-player playPauseAddress rendition playing =
+player : Rendition.Model -> Bool -> Html Rendition.Msg
+player rendition playing =
   let
       source = rendition.source
       coverImage = source.cover_image
@@ -30,7 +31,7 @@ player playPauseAddress rendition playing =
     div
       [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ]  ]
       [ div
-          [ class "rendition--control", onClick playPauseAddress () ]
+          [ class "rendition--control", onClick Rendition.PlayPause ]
           [ div
               [ class "rendition--play-pause-btn", style [("backgroundImage", (Utils.Css.url coverImage))] ]
               []
@@ -50,14 +51,14 @@ player playPauseAddress rendition playing =
                   ,  albumMeta
                   ,  durationMeta
                   ]
-              , (progress playPauseAddress rendition playing)
+              , (progress rendition playing)
               ]
           ]
       ]
 
 
-cover : Signal.Address () -> Rendition.Model -> Bool -> Html
-cover playPauseAddress rendition playing =
+cover : Rendition.Model -> Bool -> Html Rendition.Msg
+cover rendition playing =
   let
       coverImage = rendition.source.cover_image
   in
@@ -65,12 +66,12 @@ cover playPauseAddress rendition playing =
         [ id rendition.id, class "rendition" ]
         [ div
             [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
-            [ img [ src coverImage, alt "", onClick playPauseAddress () ] []
+            [ img [ src coverImage, alt "", onClick Rendition.PlayPause ] []
             ]
         ]
 
 
-empty : Html
+empty : Html Rendition.Msg
 empty =
   div
     [ class "rendition" ]
@@ -80,8 +81,8 @@ empty =
     ]
 
 
-progress : Signal.Address () -> Rendition.Model -> Bool -> Html
-progress address rendition playing =
+progress : Rendition.Model -> Bool -> Html Rendition.Msg
+progress rendition playing =
   case rendition.source.duration_ms of
     Nothing ->
       div [] []
@@ -100,12 +101,11 @@ progress address rendition playing =
           ]
 
 
-playlist : Signal.Address Rendition.Action -> Rendition.Model -> Html
-playlist address rendition =
+playlist : Rendition.Model -> Html Rendition.Msg
+playlist rendition =
   div
-    [ key rendition.id
-    , class "block playlist--entry"
-    , onDoubleClick address Rendition.SkipTo
+    [ class "block playlist--entry"
+    , onDoubleClick Rendition.SkipTo
     ]
     [ div
         [ class "playlist--entry--inner" ]

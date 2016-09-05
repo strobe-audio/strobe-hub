@@ -1,8 +1,9 @@
-module Channel.View (..) where
+module Channel.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.App exposing (map)
 import Debug
 import Root
 import Channel
@@ -13,37 +14,32 @@ import Receiver
 import Receiver.View
 
 
-cover : Signal.Address Channel.Action -> Channel.Model -> Html
-cover address channel =
+cover : Channel.Model -> Html Channel.Msg
+cover channel =
   let
     maybeRendition =
       List.head channel.playlist
 
-    playPauseAddress =
-      Signal.forwardTo address (always Channel.PlayPause)
   in
     case maybeRendition of
       Nothing ->
         div
           [ class "channel--rendition" ]
-          [ (Rendition.View.empty)
+          [ map (always Channel.NoOp) (Rendition.View.empty)
           ]
 
       Just rendition ->
         div
           [ class "channel--rendition" ]
-          [ (Rendition.View.cover playPauseAddress rendition channel.playing)
+          [ map (always Channel.PlayPause) (Rendition.View.cover rendition channel.playing)
           ]
 
 
-player : Signal.Address Channel.Action -> Channel.Model -> Html
-player address channel =
+player : Channel.Model -> Html Channel.Msg
+player channel =
   let
     maybeRendition =
       List.head channel.playlist
-
-    playPauseAddress =
-      Signal.forwardTo address (always Channel.PlayPause)
 
   in
     case maybeRendition of
@@ -53,19 +49,15 @@ player address channel =
       Just rendition ->
         div
           [ class "channel--rendition" ]
-          [ (Rendition.View.player playPauseAddress rendition channel.playing)
+          [ map (always Channel.PlayPause) (Rendition.View.player rendition channel.playing)
           ]
 
 
-playlist : Signal.Address Channel.Action -> Channel.Model -> Html
-playlist address channel =
+playlist : Channel.Model -> Html Channel.Msg
+playlist channel =
   let
     entry rendition =
-      let
-        renditionAddress =
-          Signal.forwardTo address (Channel.ModifyRendition rendition.id)
-      in
-        Rendition.View.playlist renditionAddress rendition
+      map (Channel.ModifyRendition rendition.id) (Rendition.View.playlist rendition)
 
     playlist =
       Maybe.withDefault [] (List.tail channel.playlist)
@@ -87,7 +79,7 @@ playlist address channel =
           [ div [ class "channel--playlist-actions--space" ] []
           , div
             [ class "channel--playlist-actions--clear"
-            , onClick address (Channel.ClearPlaylist)
+            , onClick (Channel.ClearPlaylist)
             ]
             []
           ]

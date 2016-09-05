@@ -1,11 +1,13 @@
-module Channel (..) where
+module Channel exposing (..)
 
+import Maybe.Extra
+
+import ID
+import Input
 import Receiver
 import Receivers
 import Rendition
-import ID
-import Maybe.Extra
-import Input
+import Volume as V
 
 
 type alias Model =
@@ -40,18 +42,18 @@ summary receivers channel =
     , playlistDuration = (playlistDuration channel)
     }
 
-type Action
-  = Volume (Maybe Float)
+type Msg
+  = Volume V.Msg
   | VolumeChanged Float
   | PlayPause
   | Status ( String, String )
-  | ModifyRendition String Rendition.Action
+  | ModifyRendition String Rendition.Msg
   | ShowAddReceiver Bool
   | RenditionProgress Rendition.ProgressEvent
   | RenditionChange Rendition.ChangeEvent
   | AddRendition Rendition.Model
   | ShowEditName Bool
-  | EditName Input.Action
+  | EditName Input.Msg
   | Rename String
   | Renamed String
   | ClearPlaylist

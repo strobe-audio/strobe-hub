@@ -1,8 +1,9 @@
-module Channels.View (channels, cover, playlist) where
+module Channels.View exposing (channels, cover, playlist)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.App exposing (map)
 import Debug
 import Json.Decode as Json
 import Root
@@ -21,57 +22,51 @@ import Input.View
 import Source.View
 
 
-channels : Signal.Address Channels.Action -> Channels.Model -> Signal.Address Receivers.Action -> Receivers.Model -> Html
-channels address channels receiversAddress receivers =
+channels : Channels.Model -> Receivers.Model -> Html Channels.Msg
+channels channels receivers =
   case Channels.State.activeChannel channels of
     Nothing ->
       div [] []
 
     Just activeChannel ->
-      channelsBar address channels receiversAddress receivers activeChannel
+      channelsBar channels receivers activeChannel
 
 
-channelsBar : Signal.Address Channels.Action -> Channels.Model -> Signal.Address Receivers.Action -> Receivers.Model -> Channel.Model -> Html
-channelsBar address channels receiversAddress receivers activeChannel =
+channelsBar : Channels.Model -> Receivers.Model -> Channel.Model -> Html Channels.Msg
+channelsBar channels receivers activeChannel =
   let
-    channelAddress =
-      Signal.forwardTo address (Channels.Modify activeChannel.id)
 
     options =
       { defaultOptions | preventDefault = True }
 
     -- onTouch =
-    --   onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.ToggleSelector))
+    --   onWithOptions "touchend" options Json.value (\_ -> (Channels.ToggleSelector))
   in
     div
       [ classList [ ( "channels", True ), ( "channels__select-channel", channels.showChannelSwitcher ) ] ]
       [ div
           [ class "channels--bar" ]
-          [ (channelSettingsButton address)
-          , (currentChannelPlayer address activeChannel)
+          [ (channelSettingsButton)
+          , (currentChannelPlayer activeChannel)
           ]
-      , (channelSelectorPanel address channels receiversAddress receivers activeChannel)
+      , (channelSelectorPanel channels receivers activeChannel)
       ]
 
 
-channelSettingsButton : Signal.Address Channels.Action -> Html
-channelSettingsButton address =
+channelSettingsButton : Html Channels.Msg
+channelSettingsButton =
   div
-    [ class "channels--channel-select", onClick address (Channels.ToggleSelector) {- , onTouch -} ]
+    [ class "channels--channel-select", onClick (Channels.ToggleSelector) {- , onTouch -} ]
     [ i [ class "fa fa-bullseye" ] [] ]
 
 
-currentChannelPlayer : Signal.Address Channels.Action -> Channel.Model -> Html
-currentChannelPlayer address channel =
-  let
-    playerAddress =
-      Signal.forwardTo address (Channels.Modify channel.id)
-  in
-    Channel.View.player playerAddress channel
+currentChannelPlayer :  Channel.Model -> Html Channels.Msg
+currentChannelPlayer channel =
+    map (Channels.Modify channel.id) (Channel.View.player channel)
 
 
-channelSelectorPanel : Signal.Address Channels.Action -> Channels.Model -> Signal.Address Receivers.Action -> Receivers.Model -> Channel.Model -> Html
-channelSelectorPanel address channels receiversAddress receivers activeChannel =
+channelSelectorPanel : Channels.Model -> Receivers.Model -> Channel.Model -> Html Channels.Msg
+channelSelectorPanel channels receivers activeChannel =
   let
     -- unselectedChannels =
     --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
@@ -84,12 +79,6 @@ channelSelectorPanel address channels receiversAddress receivers activeChannel =
     orderChannels summaries =
       List.sortBy (\c -> c.channel.originalName) summaries
 
-    channelAddress =
-      Signal.forwardTo address (Channels.Modify activeChannel.id)
-
-    volumeAddress =
-      Signal.forwardTo channelAddress Channel.Volume
-
   in
     case channels.showChannelSwitcher of
       False ->
@@ -100,8 +89,12 @@ channelSelectorPanel address channels receiversAddress receivers activeChannel =
           [ class "channels--overlay" ]
           [ div
               [ class "channels--channel-control" ]
-              [ (Volume.View.control volumeAddress activeChannel.volume (div [ class "channel--name" ] [ text activeChannel.name ]))
-              , Receivers.View.receivers receiversAddress receivers activeChannel
+              [ map
+                  (\m -> (Channels.Modify activeChannel.id) (Channel.Volume m))
+                  (Volume.View.control activeChannel.volume
+                    (div [ class "channel--name" ] [ text activeChannel.name ])
+                  )
+              , map Channels.ModifyReceivers (Receivers.View.receivers receivers activeChannel)
               ]
           , div
               [ class "channels--header" ]
@@ -113,46 +106,36 @@ channelSelectorPanel address channels receiversAddress receivers activeChannel =
                     [ ("channels--add-btn", True)
                     , ("channels--add-btn__active", channels.showAddChannel)
                     ]
-                  , onClick address Channels.ToggleAdd
+                  , onClick Channels.ToggleAdd
                   ]
                   []
               ]
-          , addChannelPanel address channels
+          , addChannelPanel channels
           , div
               [ class "channels-selector" ]
               [ div
                   [ class "channels-selector--list" ]
                   [ div [ class "channels-selector--separator" ] [ text "Active" ]
-                  , div [ class "channels-selector--group" ] (List.map (channelChoice address receivers activeChannel) (orderChannels activeChannels))
+                  , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
                   , div [ class "channels-selector--separator" ] [ text "Inactive" ]
-                  , div [ class "channels-selector--group" ] (List.map (channelChoice address receivers activeChannel) (orderChannels inactiveChannels))
+                  , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
                   ]
               ]
           ]
 
-addChannelPanel : Signal.Address Channels.Action -> Channels.Model -> Html
-addChannelPanel address model =
-  let
-    context =
-      { address = Signal.forwardTo address Channels.NewInput
-      , cancelAddress = Signal.forwardTo address (always Channels.ToggleAdd)
-      , submitAddress = Signal.forwardTo address Channels.Add
-      }
-  in
+addChannelPanel : Channels.Model -> Html Channels.Msg
+addChannelPanel model =
     case model.showAddChannel of
       False ->
         div [] []
-        -- div
-        --   [ class "channel-selector--add", onClick address (Channels.ToggleAdd) ]
-        --   [ text "Add new channel..." ]
 
       True ->
-        Input.View.inputSubmitCancel context model.newChannelInput
+        map Channels.AddInput ( Input.View.inputSubmitCancel model.newChannelInput )
 
 
 
-channelChoice : Signal.Address Channels.Action -> Receivers.Model -> Channel.Model -> Channel.Summary -> Html
-channelChoice address receivers activeChannel channelSummary =
+channelChoice : Receivers.Model -> Channel.Model -> Channel.Summary -> Html Channels.Msg
+channelChoice receivers activeChannel channelSummary =
   let
     channel = channelSummary.channel
 
@@ -168,38 +151,26 @@ channelChoice address receivers activeChannel channelSummary =
           Source.View.durationString time
 
     onClickChoose =
-      onClick address (Channels.Choose channel)
+      onClick (Channels.Choose channel)
 
     onClickEdit =
       onWithOptions
         "click"
         { defaultOptions | stopPropagation = True }
-        Json.value
-        (\_ ->
-          Signal.message address (Channels.Modify channelSummary.id (Channel.ShowEditName True))
-        )
+        (Json.succeed (Channels.Modify channelSummary.id (Channel.ShowEditName True)))
 
     -- options = { defaultOptions | preventDefault = True }
     -- this kinda works, but it triggered even after a scroll...
     -- onTouchChoose =
-    --   onWithOptions "touchend" options Json.value (\_ -> Signal.message address (Channels.Choose channel))
-    channelAddress =
-      Signal.forwardTo address (Channels.Modify channelSummary.id)
+    --   onWithOptions "touchend" options Json.value (\_ -> (Channels.Choose channel))
 
     editNameInput =
       case channel.editName of
         False ->
-          div [] []
+          map Channel.EditName (div [] [])
 
         True ->
-          let
-            context =
-              { address = Signal.forwardTo channelAddress Channel.EditName
-              , cancelAddress = Signal.forwardTo channelAddress (always (Channel.ShowEditName False))
-              , submitAddress = Signal.forwardTo channelAddress Channel.Rename
-              }
-          in
-            Input.View.inputSubmitCancel context channel.editNameInput
+          map Channel.EditName (Input.View.inputSubmitCancel channel.editNameInput)
   in
     div
       [ classList
@@ -227,7 +198,6 @@ channelChoice address receivers activeChannel channelSummary =
               ]
               [ text (toString channelSummary.receiverCount) ]
           , div [ class "channels-selector--channel--edit", onClickEdit ] []
-            -- , div [ class "channels-selector--channel--edit", onClick address (Channels.Modify channel.id (Channel.ShowEditName True)) ] []
           ]
       , div
           [ classList
@@ -235,21 +205,17 @@ channelChoice address receivers activeChannel channelSummary =
               , ( "channels-selector--edit__active", channel.editName )
               ]
           ]
-          [ editNameInput ]
+          [ map (Channels.Modify channel.id) editNameInput ]
       ]
 
 
-cover : Signal.Address Channels.Action -> Channel.Model -> Html
-cover address channel =
-  let
-    playerAddress =
-      Signal.forwardTo address (Channels.Modify channel.id)
-  in
-    Channel.View.cover playerAddress channel
+cover : Channel.Model -> Html Channels.Msg
+cover channel =
+  map (Channels.Modify channel.id) (Channel.View.cover channel)
 
 
-playlist : Signal.Address Channels.Action -> Channels.Model -> Html
-playlist address model =
+playlist : Channels.Model -> Html Channels.Msg
+playlist model =
   let
     playlist =
       case Channels.State.activeChannel model of
@@ -257,6 +223,6 @@ playlist address model =
           div [] []
 
         Just channel ->
-          Channel.View.playlist (Signal.forwardTo address (Channels.Modify channel.id)) channel
+          map (Channels.Modify channel.id) (Channel.View.playlist channel)
   in
     playlist

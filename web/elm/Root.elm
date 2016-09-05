@@ -1,4 +1,4 @@
-module Root (..) where
+module Root exposing (..)
 
 import Library
 import Channel
@@ -11,15 +11,15 @@ import Input
 import Json.Decode as Json
 
 
-type Action
+type Msg
   = InitialState BroadcasterState
   | VolumeChange VolumeChangeEvent
   | NewRendition Rendition.Model
   | LibraryRegistration Library.Node
-  | Library Library.Action
+  | Library Library.Msg
   | SetListMode ChannelListMode
-  | Channels Channels.Action
-  | Receivers Receivers.Action
+  | Channels Channels.Msg
+  | Receivers Receivers.Msg
   | Viewport Int
   | Scroll Int
   | NoOp
@@ -62,12 +62,4 @@ type alias VolumeChangeEvent =
   { id : String
   , target : String
   , volume : Float
-  }
-
-
-type alias ChannelContext =
-  { receiverAddress : Receiver.Model -> Signal.Address Receiver.Action
-  , channelAddress : Signal.Address Channel.Action
-  , attached : List Receiver.Model
-  , detached : List Receiver.Model
   }

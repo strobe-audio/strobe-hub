@@ -1,6 +1,7 @@
-module Receiver (..) where
+module Receiver exposing (..)
 
 import ID
+import Volume
 
 
 type alias Model =
@@ -13,9 +14,9 @@ type alias Model =
   }
 
 
-type Action
+type Msg
   = NoOp
-  | Volume (Maybe Float)
+  | Volume Volume.Msg
   | VolumeChanged Float
   | Attach ID.Channel
   | Attached ID.Channel

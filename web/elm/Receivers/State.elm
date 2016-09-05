@@ -1,6 +1,5 @@
-module Receivers.State (..) where
+module Receivers.State exposing (..)
 
-import Effects exposing (Effects, Never)
 import Root
 import Receivers
 import Receiver
@@ -25,11 +24,11 @@ loadReceivers state model =
     { model | receivers = receivers }
 
 
-update : Receivers.Action -> Receivers.Model -> ( Receivers.Model, Effects Receivers.Action )
+update : Receivers.Msg -> Receivers.Model -> ( Receivers.Model, Cmd Receivers.Msg )
 update action model =
   case action of
     Receivers.ShowAttach show ->
-      ( { model | showAttach = show }, Effects.none )
+      ( { model | showAttach = show }, Cmd.none )
 
     Receivers.Receiver receiverId receiverAction ->
       let
@@ -39,14 +38,14 @@ update action model =
               ( receiver', effect ) =
                 (Receiver.State.update receiverAction receiver)
             in
-              ( receiver', Effects.map (Receivers.Receiver receiverId) effect )
+              ( receiver', Cmd.map (Receivers.Receiver receiverId) effect )
           else
-            ( receiver, Effects.none )
+            ( receiver, Cmd.none )
 
         ( receivers, effects ) =
           (List.map updateReceiver model.receivers) |> List.unzip
       in
-        ( { model | receivers = receivers }, Effects.batch effects )
+        ( { model | receivers = receivers }, Cmd.batch effects )
 
     Receivers.Status status receiverId channelId ->
       case status of
@@ -81,12 +80,12 @@ update action model =
             ( model', effect )
 
         _ ->
-          ( model, Effects.none )
+          ( model, Cmd.none )
 
     Receivers.VolumeChanged ( receiverId, volume ) ->
       update (Receivers.Receiver receiverId (Receiver.VolumeChanged volume)) model
 
     _ ->
-      ( model, Effects.none )
+      ( model, Cmd.none )
 
 

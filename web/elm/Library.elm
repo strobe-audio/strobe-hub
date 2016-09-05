@@ -1,4 +1,4 @@
-module Library (..) where
+module Library exposing (..)
 
 -- import Html exposing (..)
 -- import Html.Attributes exposing (..)
@@ -7,7 +7,7 @@ module Library (..) where
 -- import String
 
 
-type Action
+type Msg
   = NoOp
   | ExecuteAction String
   | MaybeExecuteAction (Maybe String)

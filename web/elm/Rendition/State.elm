@@ -1,19 +1,21 @@
-module Rendition.State (update) where
+module Rendition.State exposing (update)
 
-import Effects exposing (Effects, Never)
 import Debug
 import Rendition
-import Rendition.Effects
+import Rendition.Cmd
 
 
-update : Rendition.Action -> Rendition.Model -> ( Rendition.Model, Effects Rendition.Action )
+update : Rendition.Msg -> Rendition.Model -> ( Rendition.Model, Cmd Rendition.Msg )
 update action rendition =
   case action of
     Rendition.NoOp ->
-      ( rendition, Effects.none )
+      ( rendition, Cmd.none )
 
     Rendition.SkipTo ->
-      ( rendition, Rendition.Effects.skip rendition )
+      ( rendition, Rendition.Cmd.skip rendition )
 
     Rendition.Progress event ->
-      ( { rendition | playbackPosition = event.progress }, Effects.none )
+      ( { rendition | playbackPosition = event.progress }, Cmd.none )
+
+    Rendition.PlayPause ->
+      ( rendition, Cmd.none )

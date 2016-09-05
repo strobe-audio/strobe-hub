@@ -1,8 +1,8 @@
-module Receiver.State (initialState, update) where
+module Receiver.State exposing (initialState, update)
 
-import Effects exposing (Effects, Never)
 import Receiver
-import Receiver.Effects
+import Receiver.Cmd
+import Volume
 
 
 initialState : Receiver.State -> Receiver.Model
@@ -16,36 +16,43 @@ initialState state =
   }
 
 
-update : Receiver.Action -> Receiver.Model -> ( Receiver.Model, Effects Receiver.Action )
-update action model =
-  case action of
-    Receiver.Volume maybeVolume ->
-      case maybeVolume of
+updateVolume : Volume.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Receiver.Msg )
+updateVolume volumeMsg receiver =
+  case volumeMsg of
+    Volume.Change maybeVol ->
+      case maybeVol of
+        Nothing ->
+          (receiver, Cmd.none)
+
         Just volume ->
           let
             updated =
-              { model | volume = volume }
+              { receiver | volume = volume }
           in
-            ( updated, Receiver.Effects.volume updated )
+            ( updated, Receiver.Cmd.volume updated )
 
-        Nothing ->
-          ( model, Effects.none )
+
+update : Receiver.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Receiver.Msg )
+update action model =
+  case action of
+    Receiver.Volume volumeMsg ->
+      updateVolume volumeMsg model
 
     -- The volume has been changed by someone else
     Receiver.VolumeChanged volume ->
-      ( { model | volume = volume }, Effects.none )
+      ( { model | volume = volume }, Cmd.none )
 
     Receiver.Attach channelId ->
-      ( model, (Receiver.Effects.attach channelId model.id) )
+      ( model, (Receiver.Cmd.attach channelId model.id) )
 
     Receiver.Attached channelId ->
-      ( { model | channelId = channelId }, Effects.none )
+      ( { model | channelId = channelId }, Cmd.none )
 
     Receiver.Online channelId ->
-      ( { model | online = True, channelId = channelId }, Effects.none )
+      ( { model | online = True, channelId = channelId }, Cmd.none )
 
     Receiver.Offline ->
-      ( { model | online = False }, Effects.none )
+      ( { model | online = False }, Cmd.none )
 
     _ ->
-      ( model, Effects.none )
+      ( model, Cmd.none )

@@ -1,9 +1,10 @@
-module Channels (..) where
+module Channels exposing (..)
 
 import Channel
 import ID
 import Input
 import Rendition
+import Receivers
 
 
 type alias Model =
@@ -15,23 +16,19 @@ type alias Model =
   }
 
 
-type Action
+type Msg
   = NoOp
   | VolumeChanged ( ID.Channel, Float )
   | AddRendition ( ID.Channel, Rendition.Model )
-  | Modify ID.Channel Channel.Action
+  | Modify ID.Channel Channel.Msg
   | ToggleSelector
   | ToggleAdd
   | Add String
-  | NewInput Input.Action
+  | AddInput Input.Msg
   | Added Channel.State
   | Choose Channel.Model
+  | ModifyReceivers Receivers.Msg
 
-
-type alias Context =
-  { address : Signal.Address Action
-  , modeAddress : Signal.Address ()
-  }
 
 overlayActive : Model -> Bool
 overlayActive channels =

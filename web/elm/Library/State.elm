@@ -1,9 +1,8 @@
-module Library.State (..) where
+module Library.State exposing (..)
 
-import Effects exposing (Effects, Never)
 import ID
 import Library
-import Library.Effects
+import Library.Cmd
 import Time exposing (millisecond)
 
 
@@ -18,36 +17,36 @@ initialState =
     }
 
 
-update : Library.Action -> Library.Model -> Maybe ID.Channel -> ( Library.Model, Effects Library.Action )
+update : Library.Msg -> Library.Model -> Maybe ID.Channel -> ( Library.Model, Cmd Library.Msg )
 update action model maybeChannelId =
   case action of
     Library.NoOp ->
-      ( model, Effects.none )
+      ( model, Cmd.none )
 
     Library.ActionComplete ->
       let
         _ =
           Debug.log "action complete" model.currentRequest
       in
-        ( { model | currentRequest = Nothing }, Effects.none )
+        ( { model | currentRequest = Nothing }, Cmd.none )
 
     Library.ExecuteAction a ->
       case maybeChannelId of
         Just channelId ->
           ( { model | currentRequest = Just a }
-          , Effects.batch
-              [ (Library.Effects.sendAction channelId a)
-              , (Library.Effects.requestComplete (300 * millisecond))
+          , Cmd.batch
+              [ (Library.Cmd.sendAction channelId a)
+              , (Library.Cmd.requestComplete (300 * millisecond))
               ]
           )
 
         Nothing ->
-          ( model, Effects.none )
+          ( model, Cmd.none )
 
     Library.MaybeExecuteAction a ->
       case a of
         Nothing ->
-          ( model, Effects.none )
+          ( model, Cmd.none )
 
         Just libraryAction ->
           update (Library.ExecuteAction libraryAction) model maybeChannelId
@@ -62,10 +61,10 @@ update action model maybeChannelId =
         model' =
           pushLevel model folder
       in
-        ( { model' | currentRequest = Nothing }, Effects.none )
+        ( { model' | currentRequest = Nothing }, Cmd.none )
 
     Library.PopLevel index ->
-      ( { model | levels = List.drop index model.levels }, Effects.none )
+      ( { model | levels = List.drop index model.levels }, Cmd.none )
 
 
 currentLevel : Library.Model -> Library.Folder

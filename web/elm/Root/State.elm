@@ -1,11 +1,10 @@
-module Root.State (initialState, update, activeChannel, libraryVisible, playlistVisible) where
+module Root.State exposing (initialState, update, activeChannel, libraryVisible, playlistVisible)
 
-import Effects exposing (Effects, Never)
 import Debug
 import Window
 import List.Extra
 import Root
-import Root.Effects
+import Root.Cmd
 import Channel
 import Channel.State
 import Channels
@@ -38,11 +37,11 @@ activeChannel model =
   Channels.State.activeChannel model.channels
 
 
-update : Root.Action -> Root.Model -> ( Root.Model, Effects Root.Action )
+update : Root.Msg -> Root.Model -> ( Root.Model, Cmd Root.Msg )
 update action model =
   case action of
     Root.NoOp ->
-      ( model, Effects.none )
+      ( model, Cmd.none )
 
     Root.InitialState state ->
       let
@@ -59,21 +58,21 @@ update action model =
             , receivers = receivers
           }
       in
-        ( updatedModel, Effects.none )
+        ( updatedModel, Cmd.none )
 
     Root.Receivers receiversAction ->
       let
         ( receiversModel, effect ) =
           Receivers.State.update receiversAction model.receivers
       in
-        ( { model | receivers = receiversModel }, Effects.map Root.Receivers effect )
+        ( { model | receivers = receiversModel }, Cmd.map Root.Receivers effect )
 
     Root.Channels channelsAction ->
       let
         ( channelsModel, effect ) =
           Channels.State.update channelsAction model.channels
       in
-        ( { model | channels = channelsModel }, Effects.map Root.Channels effect )
+        ( { model | channels = channelsModel }, Cmd.map Root.Channels effect )
 
     Root.VolumeChange event ->
       case event.target of
@@ -84,21 +83,21 @@ update action model =
           update (Root.Channels (Channels.VolumeChanged ( event.id, event.volume ))) model
 
         _ ->
-          ( model, Effects.none )
+          ( model, Cmd.none )
 
     Root.SetListMode mode ->
-      ( { model | listMode = mode }, Effects.none )
+      ( { model | listMode = mode }, Cmd.none )
 
     Root.Viewport width ->
       let
         showPlaylistAndLibrary =
           width > 800
       in
-        ( { model | showPlaylistAndLibrary = showPlaylistAndLibrary }, Effects.none )
+        ( { model | showPlaylistAndLibrary = showPlaylistAndLibrary }, Cmd.none )
 
     Root.LibraryRegistration node ->
       ( { model | library = Library.State.add model.library node }
-      , Effects.none
+      , Cmd.none
       )
 
     Root.Library libraryAction ->
@@ -107,7 +106,7 @@ update action model =
           Library.State.update libraryAction model.library model.channels.activeChannelId
       in
         ( { model | library = library }
-        , (Effects.map Root.Library effect)
+        , (Cmd.map Root.Library effect)
         )
 
     Root.NewRendition rendition ->
@@ -117,7 +116,7 @@ update action model =
       -- let
           -- _ = Debug.log "scroll" value
       -- in
-        ( model, Effects.none )
+        ( model, Cmd.none )
 
 
 libraryVisible : Root.Model -> Bool

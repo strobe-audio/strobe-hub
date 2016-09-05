@@ -1,4 +1,4 @@
-module Input (..) where
+module Input exposing (..)
 
 
 type alias Model =
@@ -9,15 +9,12 @@ type alias Model =
   }
 
 
-type alias Context =
-  { address : Signal.Address Action
-  , cancelAddress : Signal.Address ()
-  , submitAddress : Signal.Address String
-  }
-
-
-type Action
+type Msg
   = NoOp
   | Update String
-  | Cancel Context
-  | Submit Context
+  | Cancel
+  | Submit
+
+type Signal
+  = Value String
+  | Close

@@ -1,6 +1,5 @@
-module Input.State (..) where
+module Input.State exposing (..)
 
-import Effects exposing (Effects, Never)
 import Debug
 import Input
 
@@ -35,16 +34,16 @@ notBlankValidator value =
   value /= ""
 
 
-update : Input.Action -> Input.Model -> ( Input.Model, Effects Input.Action )
+update : Input.Msg -> Input.Model -> ( Input.Model, Cmd Input.Msg, Maybe Input.Signal )
 update action model =
   case action of
     Input.Update value ->
-      ( { model | value = value }, Effects.none )
+      ( { model | value = value }, Cmd.none, Nothing )
 
-    Input.Cancel context ->
-      ( model, sendCancel context )
+    Input.Cancel ->
+      ( model, Cmd.none, Just Input.Close )
 
-    Input.Submit context ->
+    Input.Submit ->
       let
         valid =
           model.validator model.value
@@ -52,26 +51,14 @@ update action model =
         effect =
           case valid of
             True ->
-              sendSubmit context model.value
+              Just (Input.Value model.value)
 
             False ->
-              Effects.none
+              Nothing
       in
-        ( model, effect )
+        ( model, Cmd.none, effect )
 
     _ ->
-      ( model, Effects.none )
+      ( model, Cmd.none, Nothing )
 
 
-sendCancel : Input.Context -> Effects Input.Action
-sendCancel context =
-  Signal.send context.cancelAddress ()
-    |> Effects.task
-    |> Effects.map (always Input.NoOp)
-
-
-sendSubmit : Input.Context -> String -> Effects Input.Action
-sendSubmit context value =
-  Signal.send context.submitAddress value
-    |> Effects.task
-    |> Effects.map (always Input.NoOp)

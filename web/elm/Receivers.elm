@@ -1,4 +1,4 @@
-module Receivers (..) where
+module Receivers exposing (..)
 
 import Receiver
 import ID
@@ -10,12 +10,12 @@ type alias Model =
   }
 
 
-type Action
+type Msg
   = NoOp
   | VolumeChanged ( ID.Receiver, Float )
   | Status String ID.Receiver ID.Channel
   | ShowAttach Bool
-  | Receiver ID.Receiver Receiver.Action
+  | Receiver ID.Receiver Receiver.Msg
 
 
 attachedReceivers : Model -> { a | id : ID.Channel } -> List Receiver.Model

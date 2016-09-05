@@ -1,4 +1,4 @@
-module ID (..) where
+module ID exposing (..)
 
 
 type alias Channel =

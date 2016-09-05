@@ -1,8 +1,9 @@
-module Receiver.View (..) where
+module Receiver.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.App exposing (map)
 import Root
 import Receiver
 import Channel
@@ -18,28 +19,24 @@ receiverClasses receiver attached =
   ]
 
 
-attached : Signal.Address Receiver.Action -> Receiver.Model -> Channel.Model -> Html
-attached address receiver channel =
-  let
-    volumeAddress =
-      (Signal.forwardTo address Receiver.Volume)
-  in
-    div
-      [ id ("receiver-" ++ receiver.id), classList (receiverClasses receiver True) ]
-      [ div [ class "receiver--state" ] []
-      , div
-          [ class "receiver--volume" ]
-          [ Volume.View.control volumeAddress receiver.volume (text receiver.name)
-          ]
-      , div [ class "receiver--action" ] []
+attached : Receiver.Model -> Channel.Model -> Html Receiver.Msg
+attached receiver channel =
+  div
+    [ id ("receiver-" ++ receiver.id), classList (receiverClasses receiver True) ]
+    [ div [ class "receiver--state" ] []
+    , div
+      [ class "receiver--volume" ]
+      [ map Receiver.Volume (Volume.View.control receiver.volume (text receiver.name))
       ]
+    , div [ class "receiver--action" ] []
+    ]
 
 
-detached : Signal.Address Receiver.Action -> Receiver.Model -> Channel.Model -> Html
-detached address receiver channel =
+detached : Receiver.Model -> Channel.Model -> Html Receiver.Msg
+detached receiver channel =
   div
     [ classList (receiverClasses receiver False)
-    , onClick address (Receiver.Attach channel.id)
+    , onClick (Receiver.Attach channel.id)
     ]
     [ div [ class "receiver--state receiver--state__detached" ] []
     , div [ class "receiver--name" ] [ text receiver.name ]
@@ -47,13 +44,13 @@ detached address receiver channel =
     ]
 
 
-attach : Signal.Address Receiver.Action -> Channel.Model -> Receiver.Model -> Html
-attach address channel receiver =
+attach : Channel.Model -> Receiver.Model -> Html Receiver.Msg
+attach channel receiver =
   div
     [ class "channel-receivers--available-receiver" ]
     [ div
         [ class "channel-receivers--add-receiver"
-        , onClick address (Receiver.Attach channel.id)
+        , onClick (Receiver.Attach channel.id)
         ]
         [ text receiver.name ]
     , div

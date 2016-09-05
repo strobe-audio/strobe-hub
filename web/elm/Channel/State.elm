@@ -1,15 +1,16 @@
-module Channel.State (initialState, update, newChannel) where
+module Channel.State exposing (initialState, update, newChannel)
 
-import Effects exposing (Effects, Never)
 import Debug
 import Root exposing (BroadcasterState)
 import Channel
-import Channel.Effects
+import Channel.Cmd
 import Receiver
 import Receiver.State
 import Rendition
 import Rendition.State
+import Input
 import Input.State
+import Volume
 
 
 forChannel : String -> List { a | channelId : String } -> List { a | channelId : String }
@@ -44,30 +45,31 @@ newChannel channelState =
   }
 
 
-update : Channel.Action -> Channel.Model -> ( Channel.Model, Effects Channel.Action )
+update : Channel.Msg -> Channel.Model -> ( Channel.Model, Cmd Channel.Msg )
 update action channel =
   case action of
     Channel.NoOp ->
-      ( channel, Effects.none )
+      ( channel, Cmd.none )
 
     Channel.ShowAddReceiver show ->
-      ( { channel | showAddReceiver = show }, Effects.none )
+      ( { channel | showAddReceiver = show }, Cmd.none )
 
-    Channel.Volume maybeVolume ->
-      case maybeVolume of
-        Just volume ->
-          let
-            updatedChannel =
-              { channel | volume = volume }
-          in
-            ( updatedChannel, Channel.Effects.volume updatedChannel )
-
-        Nothing ->
-          ( channel, Effects.none )
+    Channel.Volume volumeMsg ->
+      updateVolume volumeMsg channel
+      -- case maybeVolume of
+      --   Just volume ->
+      --     let
+      --       updatedChannel =
+      --         { channel | volume = volume }
+      --     in
+      --       ( updatedChannel, Channel.Cmd.volume updatedChannel )
+      --
+      --   Nothing ->
+      --     ( channel, Cmd.none )
 
     -- The volume has been changed by someone else
     Channel.VolumeChanged volume ->
-      ( { channel | volume = volume }, Effects.none )
+      ( { channel | volume = volume }, Cmd.none )
 
     Channel.Status ( event, status ) ->
       let
@@ -84,14 +86,14 @@ update action channel =
             _ ->
               channel
       in
-        ( channel', Effects.none )
+        ( channel', Cmd.none )
 
     Channel.PlayPause ->
       let
         updatedChannel =
           channelPlayPause channel
       in
-        ( updatedChannel, Channel.Effects.playPause updatedChannel )
+        ( updatedChannel, Channel.Cmd.playPause updatedChannel )
 
     Channel.ModifyRendition renditionId renditionAction ->
       let
@@ -101,15 +103,15 @@ update action channel =
               ( updatedRendition, effect ) =
                 Rendition.State.update renditionAction rendition
             in
-              ( updatedRendition, Effects.map (Channel.ModifyRendition rendition.id) effect )
+              ( updatedRendition, Cmd.map (Channel.ModifyRendition rendition.id) effect )
           else
-            ( rendition, Effects.none )
+            ( rendition, Cmd.none )
 
         ( renditions, effects ) =
           (List.map updateRendition channel.playlist)
             |> List.unzip
       in
-        ( { channel | playlist = renditions }, Effects.batch effects )
+        ( { channel | playlist = renditions }, Cmd.batch effects )
 
     Channel.RenditionProgress event ->
       update
@@ -127,7 +129,7 @@ update action channel =
         updatedChannel =
           { channel | playlist = playlist }
       in
-        ( updatedChannel, Effects.none )
+        ( updatedChannel, Cmd.none )
 
     Channel.AddRendition rendition ->
       let
@@ -140,7 +142,7 @@ update action channel =
         playlist =
           List.concat [ before, after ]
       in
-        ( { channel | playlist = playlist }, Effects.none )
+        ( { channel | playlist = playlist }, Cmd.none )
 
     Channel.ShowEditName state ->
       let
@@ -152,33 +154,70 @@ update action channel =
             False ->
               Input.State.clear channel.editNameInput
       in
-        ( { channel | editName = state, editNameInput = editNameInput }, Effects.none )
+        ( { channel | editName = state, editNameInput = editNameInput }, Cmd.none )
 
     Channel.EditName inputAction ->
       let
-        ( input, effect ) =
+        ( input, inputCmd, signal ) =
           Input.State.update inputAction channel.editNameInput
+
+        (channel', signalCmd) =
+          (processInputSignal signal { channel | editNameInput = input })
+        (updatedChannel, cmd) =
+          update signalCmd channel'
+
       in
-        ( { channel | editNameInput = input }, Effects.map Channel.EditName effect )
+        ( updatedChannel, Cmd.batch [(Cmd.map Channel.EditName inputCmd), cmd] )
 
     Channel.Rename name ->
       let
         channel' =
           { channel | name = name, editName = False }
       in
-        ( channel', Channel.Effects.rename channel' )
+        ( channel', Channel.Cmd.rename channel' )
 
     Channel.Renamed name ->
       let
         channel' =
           { channel | name = name, originalName = name }
       in
-        ( channel', Effects.none )
+        ( channel', Cmd.none )
+
     Channel.ClearPlaylist ->
         let
             channel' = { channel | playlist = [] }
         in
-            ( channel', Channel.Effects.clearPlaylist channel' )
+            ( channel', Channel.Cmd.clearPlaylist channel' )
+
+
+updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Channel.Msg )
+updateVolume volumeMsg channel =
+  case volumeMsg of
+    Volume.Change maybeVolume ->
+      case maybeVolume of
+        Just volume ->
+          let
+            updatedChannel =
+              { channel | volume = volume }
+          in
+            ( updatedChannel, Channel.Cmd.volume updatedChannel )
+
+        Nothing ->
+          ( channel, Cmd.none )
+
+processInputSignal : Maybe Input.Signal -> Channel.Model -> (Channel.Model, Channel.Msg)
+processInputSignal signal model =
+  case signal of
+    Nothing ->
+      (model, Channel.NoOp)
+
+    Just cmd ->
+      case cmd of
+        Input.Value value ->
+            (model, Channel.Rename value)
+
+        Input.Close ->
+            (model, Channel.ShowEditName False)
 
 
 channelPlayPause : Channel.Model -> Channel.Model
