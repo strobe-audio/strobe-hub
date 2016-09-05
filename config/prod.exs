@@ -59,11 +59,11 @@ config :elvis, Elvis.Endpoint, server: true
 
 config :otis, Otis.State.Repo,
   adapter: Sqlite.Ecto,
-  database: "_state/otis.dev.sqlite3"
+  database: "/var/db/peep/otis.dev.sqlite3"
 
 config :peel, Peel.Repo,
   adapter: Sqlite.Ecto,
-  database: "_state/peel.dev.sqlite3"
+  database: "/var/db/peep/peel.dev.sqlite3"
 
 config :otis, Otis.SNTP,
   port: 5145
@@ -71,6 +71,10 @@ config :otis, Otis.SNTP,
 config :otis, Otis.Receivers,
   data_port: 5640,
   ctrl_port: 5641
+
+config :otis, Otis.Media,
+  root: "/var/db/peep/fs",
+  at: "/fs"
 
 # Finally import the config/prod.secret.exs
 # which should be versioned separately.
