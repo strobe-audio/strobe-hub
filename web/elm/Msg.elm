@@ -5,6 +5,7 @@ import Channels
 import Receivers
 import Rendition
 import Root
+import ID
 
 type Msg
   = InitialState Root.BroadcasterState
@@ -14,6 +15,7 @@ type Msg
   | Library Library.Msg
   | SetListMode Root.ChannelListMode
   | Channels Channels.Msg
+  | Channel ID.Channel Channels.Msg
   | Receivers Receivers.Msg
   | Viewport Int
   | Scroll Int

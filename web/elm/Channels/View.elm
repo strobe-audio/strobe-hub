@@ -6,6 +6,7 @@ import Html.Events exposing (..)
 import Html.App exposing (map)
 import Debug
 import Json.Decode as Json
+
 import Root
 import Root.State
 import Channels
@@ -20,9 +21,10 @@ import Library.View
 import Input
 import Input.View
 import Source.View
+import Msg exposing (Msg)
 
 
-channels : Channels.Model -> Receivers.Model -> Html Channels.Msg
+channels : Channels.Model -> Receivers.Model -> Html Msg
 channels channels receivers =
   case Channels.State.activeChannel channels of
     Nothing ->
@@ -32,7 +34,7 @@ channels channels receivers =
       channelsBar channels receivers activeChannel
 
 
-channelsBar : Channels.Model -> Receivers.Model -> Channel.Model -> Html Channels.Msg
+channelsBar : Channels.Model -> Receivers.Model -> Channel.Model -> Html Msg
 channelsBar channels receivers activeChannel =
   let
 
@@ -53,19 +55,19 @@ channelsBar channels receivers activeChannel =
       ]
 
 
-channelSettingsButton : Html Channels.Msg
+channelSettingsButton : Html Msg
 channelSettingsButton =
   div
     [ class "channels--channel-select", onClick (Channels.ToggleSelector) {- , onTouch -} ]
     [ i [ class "fa fa-bullseye" ] [] ]
 
 
-currentChannelPlayer :  Channel.Model -> Html Channels.Msg
+currentChannelPlayer :  Channel.Model -> Html Msg
 currentChannelPlayer channel =
-    map (Channels.Modify channel.id) (Channel.View.player channel)
+    map (Msg.Channels (Channels.Modify channel.id)) (Channel.View.player channel)
 
 
-channelSelectorPanel : Channels.Model -> Receivers.Model -> Channel.Model -> Html Channels.Msg
+channelSelectorPanel : Channels.Model -> Receivers.Model -> Channel.Model -> Html Msg
 channelSelectorPanel channels receivers activeChannel =
   let
     -- unselectedChannels =
@@ -123,7 +125,7 @@ channelSelectorPanel channels receivers activeChannel =
               ]
           ]
 
-addChannelPanel : Channels.Model -> Html Channels.Msg
+addChannelPanel : Channels.Model -> Html Msg
 addChannelPanel model =
     case model.showAddChannel of
       False ->
@@ -134,7 +136,7 @@ addChannelPanel model =
 
 
 
-channelChoice : Receivers.Model -> Channel.Model -> Channel.Summary -> Html Channels.Msg
+channelChoice : Receivers.Model -> Channel.Model -> Channel.Summary -> Html Msg
 channelChoice receivers activeChannel channelSummary =
   let
     channel = channelSummary.channel
@@ -209,12 +211,12 @@ channelChoice receivers activeChannel channelSummary =
       ]
 
 
-cover : Channel.Model -> Html Channels.Msg
+cover : Channel.Model -> Html Msg
 cover channel =
   map (Channels.Modify channel.id) (Channel.View.cover channel)
 
 
-playlist : Channels.Model -> Html Channels.Msg
+playlist : Channels.Model -> Html Msg
 playlist model =
   let
     playlist =
@@ -224,5 +226,6 @@ playlist model =
 
         Just channel ->
           map (Channels.Modify channel.id) (Channel.View.playlist channel)
+
   in
     playlist
