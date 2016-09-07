@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Html.App as Html
 import Task exposing (Task)
+import Msg exposing (Msg)
 import Window
 import Channel
 import Channels
@@ -26,11 +27,11 @@ main =
     }
 
 
-init : (Root.Model, Cmd Root.Msg)
+init : (Root.Model, Cmd Msg)
 init =
     ( Root.State.initialState, Cmd.none )
 
-subscriptions : Root.Model -> Sub Root.Msg
+subscriptions : Root.Model -> Sub Msg
 subscriptions model =
   Sub.batch
     [ Ports.broadcasterStateActions
@@ -50,8 +51,8 @@ subscriptions model =
     ]
 
 
-viewportWidth : Sub Root.Msg
+viewportWidth : Sub Msg
 viewportWidth =
-  Window.resizes (\size -> Root.Viewport size.width)
+  Window.resizes (\size -> Msg.Viewport size.width)
 
 

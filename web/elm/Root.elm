@@ -11,19 +11,6 @@ import Input
 import Json.Decode as Json
 
 
-type Msg
-  = InitialState BroadcasterState
-  | VolumeChange VolumeChangeEvent
-  | NewRendition Rendition.Model
-  | LibraryRegistration Library.Node
-  | Library Library.Msg
-  | SetListMode ChannelListMode
-  | Channels Channels.Msg
-  | Receivers Receivers.Msg
-  | Viewport Int
-  | Scroll Int
-  | NoOp
-
 
 type alias Model =
   { channels : Channels.Model

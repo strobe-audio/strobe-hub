@@ -15,6 +15,7 @@ import Receivers
 import Receivers.State
 import Library.State
 import Input.State
+import Msg exposing (Msg)
 
 
 initialState : Root.Model
@@ -37,13 +38,13 @@ activeChannel model =
   Channels.State.activeChannel model.channels
 
 
-update : Root.Msg -> Root.Model -> ( Root.Model, Cmd Root.Msg )
+update : Msg -> Root.Model -> ( Root.Model, Cmd Msg )
 update action model =
   case action of
-    Root.NoOp ->
+    Msg.NoOp ->
       ( model, Cmd.none )
 
-    Root.InitialState state ->
+    Msg.InitialState state ->
       let
         channels =
           Channels.State.loadChannels state model.channels
@@ -60,59 +61,59 @@ update action model =
       in
         ( updatedModel, Cmd.none )
 
-    Root.Receivers receiversAction ->
+    Msg.Receivers receiversAction ->
       let
         ( receiversModel, effect ) =
           Receivers.State.update receiversAction model.receivers
       in
-        ( { model | receivers = receiversModel }, Cmd.map Root.Receivers effect )
+        ( { model | receivers = receiversModel }, Cmd.map Msg.Receivers effect )
 
-    Root.Channels channelsAction ->
+    Msg.Channels channelsAction ->
       let
         ( channelsModel, effect ) =
           Channels.State.update channelsAction model.channels
       in
-        ( { model | channels = channelsModel }, Cmd.map Root.Channels effect )
+        ( { model | channels = channelsModel }, Cmd.map Msg.Channels effect )
 
-    Root.VolumeChange event ->
+    Msg.VolumeChange event ->
       case event.target of
         "receiver" ->
-          update (Root.Receivers (Receivers.VolumeChanged ( event.id, event.volume ))) model
+          update (Msg.Receivers (Receivers.VolumeChanged ( event.id, event.volume ))) model
 
         "channel" ->
-          update (Root.Channels (Channels.VolumeChanged ( event.id, event.volume ))) model
+          update (Msg.Channels (Channels.VolumeChanged ( event.id, event.volume ))) model
 
         _ ->
           ( model, Cmd.none )
 
-    Root.SetListMode mode ->
+    Msg.SetListMode mode ->
       ( { model | listMode = mode }, Cmd.none )
 
-    Root.Viewport width ->
+    Msg.Viewport width ->
       let
         showPlaylistAndLibrary =
           width > 800
       in
         ( { model | showPlaylistAndLibrary = showPlaylistAndLibrary }, Cmd.none )
 
-    Root.LibraryRegistration node ->
+    Msg.LibraryRegistration node ->
       ( { model | library = Library.State.add model.library node }
       , Cmd.none
       )
 
-    Root.Library libraryAction ->
+    Msg.Library libraryAction ->
       let
         ( library, effect ) =
           Library.State.update libraryAction model.library model.channels.activeChannelId
       in
         ( { model | library = library }
-        , (Cmd.map Root.Library effect)
+        , (Cmd.map Msg.Library effect)
         )
 
-    Root.NewRendition rendition ->
-      update (Root.Channels (Channels.AddRendition ( rendition.channelId, rendition ))) model
+    Msg.NewRendition rendition ->
+      update (Msg.Channels (Channels.AddRendition ( rendition.channelId, rendition ))) model
 
-    Root.Scroll value ->
+    Msg.Scroll value ->
       -- let
           -- _ = Debug.log "scroll" value
       -- in

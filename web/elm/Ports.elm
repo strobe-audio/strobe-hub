@@ -7,25 +7,26 @@ import ID
 import Library
 import Receivers
 import Rendition
-import Root exposing (Msg)
+import Msg exposing (Msg)
+import Root
 
  -- Incoming JS -> Elm
 
 port windowWidth : (Int -> m) -> Sub m
 windowStartupActions =
-  windowWidth Root.Viewport
+  windowWidth Msg.Viewport
 
 
 port scrollTop : (Int -> m) -> Sub m
 scrollTopActions =
-  scrollTop Root.Scroll
+  scrollTop Msg.Scroll
 
 
 port broadcasterState : (Root.BroadcasterState -> m) -> Sub m
 
 broadcasterStateActions : Sub Msg
 broadcasterStateActions =
-  broadcasterState Root.InitialState
+  broadcasterState Msg.InitialState
 
 
 port receiverStatus : (( String, Root.ReceiverStatusEvent ) -> m) -> Sub m
@@ -34,7 +35,7 @@ receiverStatusActions : Sub Msg
 receiverStatusActions =
   let
       forward ( event, status ) =
-        Root.Receivers (Receivers.Status event status.receiverId status.channelId)
+        Msg.Receivers (Receivers.Status event status.receiverId status.channelId)
   in
       receiverStatus forward
 
@@ -45,7 +46,7 @@ channelStatusActions : Sub Msg
 channelStatusActions =
   let
       forward ( eventName, event ) =
-        Root.Channels ((Channels.Modify event.channelId) (Channel.Status ( eventName, event.status )))
+        Msg.Channels ((Channels.Modify event.channelId) (Channel.Status ( eventName, event.status )))
   in
       channelStatus forward
 
@@ -56,7 +57,7 @@ sourceProgressActions : Sub Msg
 sourceProgressActions =
   let
       forward event =
-        Root.Channels ((Channels.Modify event.channelId) (Channel.RenditionProgress event))
+        Msg.Channels ((Channels.Modify event.channelId) (Channel.RenditionProgress event))
   in
       sourceProgress forward
 
@@ -67,7 +68,7 @@ sourceChangeActions : Sub Msg
 sourceChangeActions =
   let
       forward event =
-        Root.Channels ((Channels.Modify event.channelId) (Channel.RenditionChange event))
+        Msg.Channels ((Channels.Modify event.channelId) (Channel.RenditionChange event))
   in
       sourceChange forward
 
@@ -76,21 +77,21 @@ port volumeChange : (Root.VolumeChangeEvent -> m) -> Sub m
 
 volumeChangeActions : Sub Msg
 volumeChangeActions =
-  volumeChange Root.VolumeChange
+  volumeChange Msg.VolumeChange
 
 
 port playlistAddition : (Rendition.Model -> m) -> Sub m
 
 playListAdditionActions : Sub Msg
 playListAdditionActions =
-  playlistAddition Root.NewRendition
+  playlistAddition Msg.NewRendition
 
 
 port libraryRegistration : (Library.Node -> m) -> Sub m
 
 libraryRegistrationActions : Sub Msg
 libraryRegistrationActions =
-  libraryRegistration Root.LibraryRegistration
+  libraryRegistration Msg.LibraryRegistration
 
 
 port libraryResponse : (Library.FolderResponse -> m) -> Sub m
@@ -99,7 +100,7 @@ libraryResponseActions : Sub Msg
 libraryResponseActions =
   let
       translate response =
-        Root.Library (Library.Response response.folder)
+        Msg.Library (Library.Response response.folder)
   in
       libraryResponse translate
 
@@ -109,7 +110,7 @@ channelAdditionActions : Sub Msg
 channelAdditionActions =
   let
       translate state =
-        Root.Channels (Channels.Added state)
+        Msg.Channels (Channels.Added state)
   in
       channelAdditions translate
 
@@ -119,7 +120,7 @@ channelRenameActions : Sub Msg
 channelRenameActions =
   let
       translate ( channelId, name ) =
-        Root.Channels ((Channels.Modify channelId) (Channel.Renamed name))
+        Msg.Channels ((Channels.Modify channelId) (Channel.Renamed name))
   in
       channelRenames translate
 

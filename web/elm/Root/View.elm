@@ -15,20 +15,21 @@ import Library.View
 import Receivers.View
 import Source.View
 import Json.Decode as Json
+import Msg exposing (Msg)
 
 
-root : Root.Model -> Html Root.Msg
+root : Root.Model -> Html Msg
 root model =
   let
     library =
       if Root.State.libraryVisible model then
-        map Root.Library (Library.View.root model.library)
+        map Msg.Library (Library.View.root model.library)
       else
         div [] []
 
     playlist =
       if Root.State.playlistVisible model then
-        map Root.Channels (Channels.View.playlist model.channels)
+        map Msg.Channels (Channels.View.playlist model.channels)
       else
         div [] []
 
@@ -45,12 +46,12 @@ root model =
             [ ("root", True)
             , ("root__obscured", overlayActive)
             ]
-            {-, on "scroll" (Json.value Root.Scroll) -}
+            {-, on "scroll" (Json.value Msg.Scroll) -}
           ]
-          [ map Root.Channels (Channels.View.channels model.channels model.receivers)
+          [ map Msg.Channels (Channels.View.channels model.channels model.receivers)
           , div
               [ class "root--active-channel" ]
-              [ map Root.Channels (Channels.View.cover channel)
+              [ map Msg.Channels (Channels.View.cover channel)
               -- , Receivers.View.receivers model.receivers channel
               , libraryToggleView model channel
               , library
@@ -59,7 +60,7 @@ root model =
           ]
 
 
-libraryToggleView : Root.Model -> Channel.Model -> Html Root.Msg
+libraryToggleView : Root.Model -> Channel.Model -> Html Msg
 libraryToggleView model channel =
   let
     duration =
@@ -71,7 +72,7 @@ libraryToggleView model channel =
               [ ( "root--mode--choice root--mode--playlist", True )
               , ( "root--mode--choice__active", model.listMode == Root.PlaylistMode )
               ]
-          , onClick (Root.SetListMode Root.PlaylistMode)
+          , onClick (Msg.SetListMode Root.PlaylistMode)
           ]
           -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
           [ div [ class "root--mode--channel-name" ] [ text channel.name ]
@@ -85,7 +86,7 @@ libraryToggleView model channel =
               [ ( "root--mode--choice root--mode--library", True )
               , ( "root--mode--choice__active", model.listMode == Root.LibraryMode )
               ]
-          , onClick (Root.SetListMode Root.LibraryMode)
+          , onClick (Msg.SetListMode Root.LibraryMode)
           ]
           [ text "Library" ]
       ]
