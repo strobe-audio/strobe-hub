@@ -1,4 +1,5 @@
 module Volume exposing (..)
 
-type Msg =
-  Change (Maybe Float)
+
+type Msg
+    = Change (Maybe Float)

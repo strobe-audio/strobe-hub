@@ -7,15 +7,15 @@ import Rendition.Cmd
 
 update : Rendition.Msg -> Rendition.Model -> ( Rendition.Model, Cmd Rendition.Msg )
 update action rendition =
-  case action of
-    Rendition.NoOp ->
-      ( rendition, Cmd.none )
+    case action of
+        Rendition.NoOp ->
+            ( rendition, Cmd.none )
 
-    Rendition.SkipTo ->
-      ( rendition, Rendition.Cmd.skip rendition )
+        Rendition.SkipTo ->
+            ( rendition, Rendition.Cmd.skip rendition )
 
-    Rendition.Progress event ->
-      ( { rendition | playbackPosition = event.progress }, Cmd.none )
+        Rendition.Progress event ->
+            ( { rendition | playbackPosition = event.progress }, Cmd.none )
 
-    Rendition.PlayPause ->
-      ( rendition, Cmd.none )
+        Rendition.PlayPause ->
+            ( rendition, Cmd.none )

@@ -15,211 +15,212 @@ import Volume
 
 forChannel : String -> List { a | channelId : String } -> List { a | channelId : String }
 forChannel channelId list =
-  List.filter (\r -> r.channelId == channelId) list
+    List.filter (\r -> r.channelId == channelId) list
 
 
 initialState : BroadcasterState -> Channel.State -> Channel.Model
 initialState broadcasterState channelState =
-  let
-    renditions =
-      forChannel channelState.id broadcasterState.sources
+    let
+        renditions =
+            forChannel channelState.id broadcasterState.sources
 
-    model =
-      newChannel channelState
-  in
-    { model | playlist = renditions }
+        model =
+            newChannel channelState
+    in
+        { model | playlist = renditions }
 
 
 newChannel : Channel.State -> Channel.Model
 newChannel channelState =
-  { id = channelState.id
-  , name = channelState.name
-  , originalName = channelState.name
-  , position = channelState.position
-  , volume = channelState.volume
-  , playing = channelState.playing
-  , playlist = []
-  , showAddReceiver = False
-  , editName = False
-  , editNameInput = Input.State.blank
-  }
+    { id = channelState.id
+    , name = channelState.name
+    , originalName = channelState.name
+    , position = channelState.position
+    , volume = channelState.volume
+    , playing = channelState.playing
+    , playlist = []
+    , showAddReceiver = False
+    , editName = False
+    , editNameInput = Input.State.blank
+    }
 
 
 update : Channel.Msg -> Channel.Model -> ( Channel.Model, Cmd Channel.Msg )
 update action channel =
-  case action of
-    Channel.NoOp ->
-      ( channel, Cmd.none )
+    case action of
+        Channel.NoOp ->
+            ( channel, Cmd.none )
 
-    Channel.ShowAddReceiver show ->
-      ( { channel | showAddReceiver = show }, Cmd.none )
+        Channel.ShowAddReceiver show ->
+            ( { channel | showAddReceiver = show }, Cmd.none )
 
-    Channel.Volume volumeMsg ->
-      updateVolume volumeMsg channel
-      -- case maybeVolume of
-      --   Just volume ->
-      --     let
-      --       updatedChannel =
-      --         { channel | volume = volume }
-      --     in
-      --       ( updatedChannel, Channel.Cmd.volume updatedChannel )
-      --
-      --   Nothing ->
-      --     ( channel, Cmd.none )
+        Channel.Volume volumeMsg ->
+            updateVolume volumeMsg channel
 
-    -- The volume has been changed by someone else
-    Channel.VolumeChanged volume ->
-      ( { channel | volume = volume }, Cmd.none )
+        -- case maybeVolume of
+        --   Just volume ->
+        --     let
+        --       updatedChannel =
+        --         { channel | volume = volume }
+        --     in
+        --       ( updatedChannel, Channel.Cmd.volume updatedChannel )
+        --
+        --   Nothing ->
+        --     ( channel, Cmd.none )
+        -- The volume has been changed by someone else
+        Channel.VolumeChanged volume ->
+            ( { channel | volume = volume }, Cmd.none )
 
-    Channel.Status ( event, status ) ->
-      let
-        channel' =
-          case event of
-            "channel_play_pause" ->
-              case status of
-                "play" ->
-                  { channel | playing = True }
-
-                _ ->
-                  { channel | playing = False }
-
-            _ ->
-              channel
-      in
-        ( channel', Cmd.none )
-
-    Channel.PlayPause ->
-      let
-        updatedChannel =
-          channelPlayPause channel
-      in
-        ( updatedChannel, Channel.Cmd.playPause updatedChannel )
-
-    Channel.ModifyRendition renditionId renditionAction ->
-      let
-        updateRendition rendition =
-          if rendition.id == renditionId then
+        Channel.Status ( event, status ) ->
             let
-              ( updatedRendition, effect ) =
-                Rendition.State.update renditionAction rendition
+                channel' =
+                    case event of
+                        "channel_play_pause" ->
+                            case status of
+                                "play" ->
+                                    { channel | playing = True }
+
+                                _ ->
+                                    { channel | playing = False }
+
+                        _ ->
+                            channel
             in
-              ( updatedRendition, Cmd.map (Channel.ModifyRendition rendition.id) effect )
-          else
-            ( rendition, Cmd.none )
+                ( channel', Cmd.none )
 
-        ( renditions, effects ) =
-          (List.map updateRendition channel.playlist)
-            |> List.unzip
-      in
-        ( { channel | playlist = renditions }, Cmd.batch effects )
+        Channel.PlayPause ->
+            let
+                updatedChannel =
+                    channelPlayPause channel
+            in
+                ( updatedChannel, Channel.Cmd.playPause updatedChannel )
 
-    Channel.RenditionProgress event ->
-      update
-        (Channel.ModifyRendition event.sourceId (Rendition.Progress event))
-        channel
+        Channel.ModifyRendition renditionId renditionAction ->
+            let
+                updateRendition rendition =
+                    if rendition.id == renditionId then
+                        let
+                            ( updatedRendition, effect ) =
+                                Rendition.State.update renditionAction rendition
+                        in
+                            ( updatedRendition, Cmd.map (Channel.ModifyRendition rendition.id) effect )
+                    else
+                        ( rendition, Cmd.none )
 
-    Channel.RenditionChange event ->
-      let
-        isMember =
-          (\r -> (List.member r.id event.removeSourceIds))
+                ( renditions, effects ) =
+                    (List.map updateRendition channel.playlist)
+                        |> List.unzip
+            in
+                ( { channel | playlist = renditions }, Cmd.batch effects )
 
-        playlist =
-          List.filter (isMember >> not) channel.playlist
+        Channel.RenditionProgress event ->
+            update (Channel.ModifyRendition event.sourceId (Rendition.Progress event))
+                channel
 
-        updatedChannel =
-          { channel | playlist = playlist }
-      in
-        ( updatedChannel, Cmd.none )
+        Channel.RenditionChange event ->
+            let
+                isMember =
+                    (\r -> (List.member r.id event.removeSourceIds))
 
-    Channel.AddRendition rendition ->
-      let
-        before =
-          List.take rendition.position channel.playlist
+                playlist =
+                    List.filter (isMember >> not) channel.playlist
 
-        after =
-          rendition :: (List.drop rendition.position channel.playlist)
+                updatedChannel =
+                    { channel | playlist = playlist }
+            in
+                ( updatedChannel, Cmd.none )
 
-        playlist =
-          List.concat [ before, after ]
-      in
-        ( { channel | playlist = playlist }, Cmd.none )
+        Channel.AddRendition rendition ->
+            let
+                before =
+                    List.take rendition.position channel.playlist
 
-    Channel.ShowEditName state ->
-      let
-        editNameInput =
-          case state of
-            True ->
-              Input.State.withValue channel.editNameInput channel.name
+                after =
+                    rendition :: (List.drop rendition.position channel.playlist)
 
-            False ->
-              Input.State.clear channel.editNameInput
-      in
-        ( { channel | editName = state, editNameInput = editNameInput }, Cmd.none )
+                playlist =
+                    List.concat [ before, after ]
+            in
+                ( { channel | playlist = playlist }, Cmd.none )
 
-    Channel.EditName inputAction ->
-      let
-        ( input, inputCmd, signal ) =
-          Input.State.update inputAction channel.editNameInput
+        Channel.ShowEditName state ->
+            let
+                editNameInput =
+                    case state of
+                        True ->
+                            Input.State.withValue channel.editNameInput channel.name
 
-        (channel', signalCmd) =
-          (processInputSignal signal { channel | editNameInput = input })
-        (updatedChannel, cmd) =
-          update signalCmd channel'
+                        False ->
+                            Input.State.clear channel.editNameInput
+            in
+                ( { channel | editName = state, editNameInput = editNameInput }, Cmd.none )
 
-      in
-        ( updatedChannel, Cmd.batch [(Cmd.map Channel.EditName inputCmd), cmd] )
+        Channel.EditName inputAction ->
+            let
+                ( input, inputCmd, signal ) =
+                    Input.State.update inputAction channel.editNameInput
 
-    Channel.Rename name ->
-      let
-        channel' =
-          { channel | name = name, editName = False }
-      in
-        ( channel', Channel.Cmd.rename channel' )
+                ( channel', signalCmd ) =
+                    (processInputSignal signal { channel | editNameInput = input })
 
-    Channel.Renamed name ->
-      let
-        channel' =
-          { channel | name = name, originalName = name }
-      in
-        ( channel', Cmd.none )
+                ( updatedChannel, cmd ) =
+                    update signalCmd channel'
+            in
+                ( updatedChannel, Cmd.batch [ (Cmd.map Channel.EditName inputCmd), cmd ] )
 
-    Channel.ClearPlaylist ->
-        let
-            channel' = { channel | playlist = [] }
-        in
-            ( channel', Channel.Cmd.clearPlaylist channel' )
+        Channel.Rename name ->
+            let
+                channel' =
+                    { channel | name = name, editName = False }
+            in
+                ( channel', Channel.Cmd.rename channel' )
+
+        Channel.Renamed name ->
+            let
+                channel' =
+                    { channel | name = name, originalName = name }
+            in
+                ( channel', Cmd.none )
+
+        Channel.ClearPlaylist ->
+            let
+                channel' =
+                    { channel | playlist = [] }
+            in
+                ( channel', Channel.Cmd.clearPlaylist channel' )
 
 
 updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Channel.Msg )
 updateVolume volumeMsg channel =
-  case volumeMsg of
-    Volume.Change maybeVolume ->
-      case maybeVolume of
-        Just volume ->
-          let
-            updatedChannel =
-              { channel | volume = volume }
-          in
-            ( updatedChannel, Channel.Cmd.volume updatedChannel )
+    case volumeMsg of
+        Volume.Change maybeVolume ->
+            case maybeVolume of
+                Just volume ->
+                    let
+                        updatedChannel =
+                            { channel | volume = volume }
+                    in
+                        ( updatedChannel, Channel.Cmd.volume updatedChannel )
 
-        Nothing ->
-          ( channel, Cmd.none )
+                Nothing ->
+                    ( channel, Cmd.none )
 
-processInputSignal : Maybe Input.Signal -> Channel.Model -> (Channel.Model, Channel.Msg)
+
+processInputSignal : Maybe Input.Signal -> Channel.Model -> ( Channel.Model, Channel.Msg )
 processInputSignal signal model =
-  case signal of
-    Nothing ->
-      (model, Channel.NoOp)
+    case signal of
+        Nothing ->
+            ( model, Channel.NoOp )
 
-    Just cmd ->
-      case cmd of
-        Input.Value value ->
-            (model, Channel.Rename value)
+        Just cmd ->
+            case cmd of
+                Input.Value value ->
+                    ( model, Channel.Rename value )
 
-        Input.Close ->
-            (model, Channel.ShowEditName False)
+                Input.Close ->
+                    ( model, Channel.ShowEditName False )
 
 
 channelPlayPause : Channel.Model -> Channel.Model
 channelPlayPause channel =
-  { channel | playing = (not channel.playing) }
+    { channel | playing = (not channel.playing) }

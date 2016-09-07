@@ -6,5 +6,5 @@ import Ports
 
 addChannel : String -> Cmd Channels.Msg
 addChannel channelName =
-  Ports.addChannelRequests channelName
-    |> Cmd.map (always Channels.NoOp)
+    Ports.addChannelRequests channelName
+        |> Cmd.map (always Channels.NoOp)

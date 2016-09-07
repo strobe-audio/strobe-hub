@@ -16,43 +16,40 @@ import Root.View
 import Ports
 
 
-
-
 main =
-  Html.program
-    { init = init
-    , update = Root.State.update
-    , view = Root.View.root
-    , subscriptions = subscriptions
-    }
+    Html.program
+        { init = init
+        , update = Root.State.update
+        , view = Root.View.root
+        , subscriptions = subscriptions
+        }
 
 
-init : (Root.Model, Cmd Msg)
+init : ( Root.Model, Cmd Msg )
 init =
     ( Root.State.initialState, Cmd.none )
 
+
 subscriptions : Root.Model -> Sub Msg
 subscriptions model =
-  Sub.batch
-    [ Ports.broadcasterStateActions
-    , Ports.receiverStatusActions
-    , Ports.channelStatusActions
-    , Ports.sourceProgressActions
-    , Ports.sourceChangeActions
-    , Ports.volumeChangeActions
-    , Ports.playListAdditionActions
-    , Ports.libraryRegistrationActions
-    , Ports.libraryResponseActions
-    , Ports.windowStartupActions
-    , Ports.channelAdditionActions
-    , Ports.channelRenameActions
-    , Ports.scrollTopActions
-    , viewportWidth
-    ]
+    Sub.batch
+        [ Ports.broadcasterStateActions
+        , Ports.receiverStatusActions
+        , Ports.channelStatusActions
+        , Ports.sourceProgressActions
+        , Ports.sourceChangeActions
+        , Ports.volumeChangeActions
+        , Ports.playListAdditionActions
+        , Ports.libraryRegistrationActions
+        , Ports.libraryResponseActions
+        , Ports.windowStartupActions
+        , Ports.channelAdditionActions
+        , Ports.channelRenameActions
+        , Ports.scrollTopActions
+        , viewportWidth
+        ]
 
 
 viewportWidth : Sub Msg
 viewportWidth =
-  Window.resizes (\size -> Msg.Viewport size.width)
-
-
+    Window.resizes (\size -> Msg.Viewport size.width)

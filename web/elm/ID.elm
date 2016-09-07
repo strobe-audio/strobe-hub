@@ -1,15 +1,17 @@
 module ID exposing (..)
 
+
 type alias ID =
-  String
+    String
+
 
 type alias Channel =
-  ID
+    ID
 
 
 type alias Receiver =
-  ID
+    ID
 
 
 type alias Rendition =
-  ID
+    ID
