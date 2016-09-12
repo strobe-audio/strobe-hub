@@ -8,10 +8,11 @@ import Debug
 import Json.Decode as Json
 import Root
 import Root.State
-import Channels
-import Channels.State
-import Receivers
-import Receivers.State
+-- import Channels
+-- import Channels.State
+-- import Receivers
+-- import Receivers.State
+import Receiver
 import Receivers.View
 import Channel
 import Channel.View
@@ -23,18 +24,18 @@ import Source.View
 import Msg exposing (Msg)
 
 
-channels : Channels.Model -> Receivers.Model -> Html Msg
-channels channels receivers =
-    case Channels.State.activeChannel channels of
+channels : Root.Model -> Html Msg
+channels model =
+    case Root.activeChannel model of
         Nothing ->
             div [] []
 
-        Just activeChannel ->
-            channelsBar channels receivers activeChannel
+        Just channel ->
+            channelsBar model channel
 
 
-channelsBar : Channels.Model -> Receivers.Model -> Channel.Model -> Html Msg
-channelsBar channels receivers activeChannel =
+channelsBar : Root.Model -> Channel.Model -> Html Msg
+channelsBar model activeChannel =
     let
         options =
             { defaultOptions | preventDefault = True }
@@ -42,66 +43,74 @@ channelsBar channels receivers activeChannel =
         -- onTouch =
         --   onWithOptions "touchend" options Json.value (\_ -> (Channels.ToggleSelector))
     in
-        div [ classList [ ( "channels", True ), ( "channels__select-channel", channels.showChannelSwitcher ) ] ]
+        div [ classList [ ( "channels", True ), ( "channels__select-channel", model.showChannelSwitcher ) ] ]
             [ div [ class "channels--bar" ]
-                [ (channelSettingsButton)
+                [ (channelSettingsButton model)
                 , (currentChannelPlayer activeChannel)
                 ]
-            , (channelSelectorPanel channels receivers activeChannel)
+            , (channelSelectorPanel model activeChannel)
             ]
 
 
-channelSettingsButton : Html Msg
-channelSettingsButton =
-    div [ class "channels--channel-select", onClick (Channels.ToggleSelector) {- , onTouch -} ]
+channelSettingsButton : Root.Model -> Html Msg
+channelSettingsButton model =
+    div [ class "channels--channel-select", onClick Msg.ToggleChannelSelector {- , onTouch -} ]
         [ i [ class "fa fa-bullseye" ] [] ]
 
 
 currentChannelPlayer : Channel.Model -> Html Msg
 currentChannelPlayer channel =
-    map (Msg.Channels (Channels.Modify channel.id)) (Channel.View.player channel)
+    map (Msg.Channel channel.id) (Channel.View.player channel)
 
 
-channelSelectorPanel : Channels.Model -> Receivers.Model -> Channel.Model -> Html Msg
-channelSelectorPanel channels receivers activeChannel =
+channelSelectorPanel : Root.Model -> Channel.Model -> Html Msg
+channelSelectorPanel model activeChannel =
     let
+        channels =
+            model.channels
+
+        receivers =
+            model.receivers
+
         -- unselectedChannels =
         --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
         channelSummaries =
-            List.map (Channel.summary receivers.receivers) channels.channels
+            List.map (Channel.summary receivers) channels
 
         ( activeChannels, inactiveChannels ) =
             List.partition Channel.isActive channelSummaries
 
         orderChannels summaries =
             List.sortBy (\c -> c.channel.originalName) summaries
+
+        volumeCtrl =
+            (Volume.View.control activeChannel.volume
+                (div [ class "channel--name" ] [ text activeChannel.name ])
+            )
     in
-        case channels.showChannelSwitcher of
+        case model.showChannelSwitcher of
             False ->
                 div [] []
 
             True ->
                 div [ class "channels--overlay" ]
                     [ div [ class "channels--channel-control" ]
-                        [ map (\m -> (Channels.Modify activeChannel.id) (Channel.Volume m))
-                            (Volume.View.control activeChannel.volume
-                                (div [ class "channel--name" ] [ text activeChannel.name ])
-                            )
-                        , map Channels.ModifyReceivers (Receivers.View.receivers receivers activeChannel)
+                        [ map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
+                        , (Receivers.View.receivers model activeChannel)
                         ]
                     , div [ class "channels--header" ]
                         [ div [ class "channels--title" ]
-                            [ text (((toString (List.length channels.channels)) ++ " Channels")) ]
+                            [ text (((toString (List.length channels)) ++ " Channels")) ]
                         , div
                             [ classList
                                 [ ( "channels--add-btn", True )
-                                , ( "channels--add-btn__active", channels.showAddChannel )
+                                , ( "channels--add-btn__active", model.showAddChannel )
                                 ]
-                            , onClick Channels.ToggleAdd
+                            , onClick Msg.ToggleAddChannel
                             ]
                             []
                         ]
-                    , addChannelPanel channels
+                    , addChannelPanel model
                     , div [ class "channels-selector" ]
                         [ div [ class "channels-selector--list" ]
                             [ div [ class "channels-selector--separator" ] [ text "Active" ]
@@ -113,17 +122,17 @@ channelSelectorPanel channels receivers activeChannel =
                     ]
 
 
-addChannelPanel : Channels.Model -> Html Msg
+addChannelPanel : Root.Model -> Html Msg
 addChannelPanel model =
     case model.showAddChannel of
         False ->
             div [] []
 
         True ->
-            map Channels.AddInput (Input.View.inputSubmitCancel model.newChannelInput)
+            map Msg.AddChannelInput (Input.View.inputSubmitCancel model.newChannelInput)
 
 
-channelChoice : Receivers.Model -> Channel.Model -> Channel.Summary -> Html Msg
+channelChoice : List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
 channelChoice receivers activeChannel channelSummary =
     let
         channel =
@@ -141,12 +150,12 @@ channelChoice receivers activeChannel channelSummary =
                     Source.View.durationString time
 
         onClickChoose =
-            onClick (Channels.Choose channel)
+            onClick (Msg.ActivateChannel channel)
 
         onClickEdit =
             onWithOptions "click"
                 { defaultOptions | stopPropagation = True }
-                (Json.succeed (Channels.Modify channelSummary.id (Channel.ShowEditName True)))
+                (Json.succeed (Msg.Channel channelSummary.id (Channel.ShowEditName True)))
 
         -- options = { defaultOptions | preventDefault = True }
         -- this kinda works, but it triggered even after a scroll...
@@ -155,10 +164,10 @@ channelChoice receivers activeChannel channelSummary =
         editNameInput =
             case channel.editName of
                 False ->
-                    map Channel.EditName (div [] [])
+                    div [] []
 
                 True ->
-                    map Channel.EditName (Input.View.inputSubmitCancel channel.editNameInput)
+                    Input.View.inputSubmitCancel channel.editNameInput
     in
         div
             [ classList
@@ -193,24 +202,15 @@ channelChoice receivers activeChannel channelSummary =
                     , ( "channels-selector--edit__active", channel.editName )
                     ]
                 ]
-                [ map (Channels.Modify channel.id) editNameInput ]
+                [ map (\e -> Msg.Channel channel.id (Channel.EditName e)) editNameInput ]
             ]
 
 
 cover : Channel.Model -> Html Msg
 cover channel =
-    map (Channels.Modify channel.id) (Channel.View.cover channel)
+    map (Msg.Channel channel.id) (Channel.View.cover channel)
 
 
-playlist : Channels.Model -> Html Msg
-playlist model =
-    let
-        playlist =
-            case Channels.State.activeChannel model of
-                Nothing ->
-                    div [] []
-
-                Just channel ->
-                    map (Channels.Modify channel.id) (Channel.View.playlist channel)
-    in
-        playlist
+playlist : Channel.Model -> Html Msg
+playlist channel =
+    map (Msg.Channel channel.id) (Channel.View.playlist channel)

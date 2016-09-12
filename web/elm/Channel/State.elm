@@ -2,6 +2,7 @@ module Channel.State exposing (initialState, update, newChannel)
 
 import Debug
 import Root exposing (BroadcasterState)
+import Msg exposing (Msg)
 import Channel
 import Channel.Cmd
 import Receiver
@@ -45,7 +46,7 @@ newChannel channelState =
     }
 
 
-update : Channel.Msg -> Channel.Model -> ( Channel.Model, Cmd Channel.Msg )
+update : Channel.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )
 update action channel =
     case action of
         Channel.NoOp ->
@@ -103,7 +104,7 @@ update action channel =
                             ( updatedRendition, effect ) =
                                 Rendition.State.update renditionAction rendition
                         in
-                            ( updatedRendition, Cmd.map (Channel.ModifyRendition rendition.id) effect )
+                            ( updatedRendition, Cmd.map (\m -> (Msg.Channel channel.id) (Channel.ModifyRendition rendition.id m)) effect )
                     else
                         ( rendition, Cmd.none )
 
@@ -155,18 +156,18 @@ update action channel =
             in
                 ( { channel | editName = state, editNameInput = editNameInput }, Cmd.none )
 
-        Channel.EditName inputAction ->
+        Channel.EditName inputMsg ->
             let
-                ( input, inputCmd, signal ) =
-                    Input.State.update inputAction channel.editNameInput
+                ( input, inputCmd, action ) =
+                    Input.State.update inputMsg channel.editNameInput
 
-                ( channel', signalCmd ) =
-                    (processInputSignal signal { channel | editNameInput = input })
+                ( channel', actionMsg ) =
+                    (processInputAction action { channel | editNameInput = input })
 
                 ( updatedChannel, cmd ) =
-                    update signalCmd channel'
+                    update actionMsg channel'
             in
-                ( updatedChannel, Cmd.batch [ (Cmd.map Channel.EditName inputCmd), cmd ] )
+                ( updatedChannel, Cmd.batch [ (Cmd.map (\m -> (Msg.Channel channel.id) (Channel.EditName m)) inputCmd), cmd ] )
 
         Channel.Rename name ->
             let
@@ -190,7 +191,7 @@ update action channel =
                 ( channel', Channel.Cmd.clearPlaylist channel' )
 
 
-updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Channel.Msg )
+updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )
 updateVolume volumeMsg channel =
     case volumeMsg of
         Volume.Change maybeVolume ->
@@ -203,17 +204,17 @@ updateVolume volumeMsg channel =
                         ( updatedChannel, Channel.Cmd.volume updatedChannel )
 
                 Nothing ->
-                    ( channel, Cmd.none )
+                  channel ! []
 
 
-processInputSignal : Maybe Input.Signal -> Channel.Model -> ( Channel.Model, Channel.Msg )
-processInputSignal signal model =
-    case signal of
+processInputAction : Maybe Input.Action -> Channel.Model -> ( Channel.Model, Channel.Msg )
+processInputAction action model =
+    case action of
         Nothing ->
             ( model, Channel.NoOp )
 
-        Just cmd ->
-            case cmd of
+        Just msg ->
+            case msg of
                 Input.Value value ->
                     ( model, Channel.Rename value )
 

@@ -1,23 +1,38 @@
 module Msg exposing (..)
 
 import Library
-import Channels
-import Receivers
+import Channel
+import Receiver
 import Rendition
 import Root
 import ID
+import Input
 
 
 type Msg
-    = InitialState Root.BroadcasterState
-    | VolumeChange Root.VolumeChangeEvent
-    | NewRendition Rendition.Model
-    | LibraryRegistration Library.Node
-    | Library Library.Msg
+    = NoOp
+    | InitialState Root.BroadcasterState
+    | ToggleChannelSelector
+    -- | ChannelVolumeChange ( ID.Channel, Float )
+    -- | RenditionVolumeChange ( ID.Channel, Float )
     | SetListMode Root.ChannelListMode
-    | Channels Channels.Msg
-    | Channel ID.Channel Channels.Msg
-    | Receivers Receivers.Msg
-    | Viewport Int
-    | Scroll Int
-    | NoOp
+      -- | Channels Channels.Msg
+    | ActivateChannel Channel.Model
+    | ToggleAddChannel
+    | AddChannelInput Input.Msg
+    | AddChannel String
+    | BroadcasterChannelAdded Channel.State
+    | BroadcasterChannelRenamed (ID.Channel, String)
+    | Channel ID.Channel Channel.Msg
+
+    | ShowAttachReceiver Bool
+    | Receiver ID.Receiver Receiver.Msg
+    | Library Library.Msg
+      -- | Receivers Receivers.Msg
+      -- events from broadcaster
+    | BroadcasterLibraryRegistration Library.Node
+    | BroadcasterVolumeChange Root.VolumeChangeEvent
+    | BroadcasterRenditionAdded Rendition.Model
+      -- events from browser
+    | BrowserViewport Int
+    | BrowserScroll Int

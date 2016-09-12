@@ -3,6 +3,7 @@ module Receiver.State exposing (initialState, update)
 import Receiver
 import Receiver.Cmd
 import Volume
+import Msg exposing (Msg)
 
 
 initialState : Receiver.State -> Receiver.Model
@@ -16,7 +17,7 @@ initialState state =
     }
 
 
-updateVolume : Volume.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Receiver.Msg )
+updateVolume : Volume.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Msg )
 updateVolume volumeMsg receiver =
     case volumeMsg of
         Volume.Change maybeVol ->
@@ -32,9 +33,12 @@ updateVolume volumeMsg receiver =
                         ( updated, Receiver.Cmd.volume updated )
 
 
-update : Receiver.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Receiver.Msg )
+update : Receiver.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Msg )
 update action model =
     case action of
+        Receiver.NoOp ->
+          model ! []
+
         Receiver.Volume volumeMsg ->
             updateVolume volumeMsg model
 
@@ -54,5 +58,8 @@ update action model =
         Receiver.Offline ->
             ( { model | online = False }, Cmd.none )
 
-        _ ->
-            ( model, Cmd.none )
+        Receiver.Status name channelId ->
+          let
+              _ = Debug.log "receiver.status" (model.id, name, channelId)
+          in
+              model ! []

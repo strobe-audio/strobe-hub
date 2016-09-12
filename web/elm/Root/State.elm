@@ -1,30 +1,32 @@
-module Root.State exposing (initialState, update, activeChannel, libraryVisible, playlistVisible)
+module Root.State exposing (..)
 
 import Debug
 import Window
-import List.Extra
 import Root
 import Root.Cmd
 import Channel
 import Channel.State
-import Channels
-import Channels.State
 import Receiver
 import Receiver.State
-import Receivers
-import Receivers.State
 import Library.State
+import ID
+import Input
 import Input.State
 import Msg exposing (Msg)
 
 
 initialState : Root.Model
 initialState =
-    { channels = Channels.State.initialState
-    , receivers = Receivers.State.initialState
+    { channels = []
+    , receivers = []
     , listMode = Root.PlaylistMode
     , showPlaylistAndLibrary = False
     , library = Library.State.initialState
+    , showAddChannel = False
+    , newChannelInput = Input.State.blank
+    , showChannelSwitcher = False
+    , activeChannelId = Nothing
+    , showAttachReceiver = False
     }
 
 
@@ -35,85 +37,143 @@ broadcasterState state =
 
 activeChannel : Root.Model -> Maybe Channel.Model
 activeChannel model =
-    Channels.State.activeChannel model.channels
+    Root.activeChannel model
+
+
+updateIn : (ID.T a -> ( ID.T a, Cmd Msg )) -> ID.ID -> List (ID.T a) -> ( List (ID.T a), Cmd Msg )
+updateIn update id elements =
+    let
+        updateElement e =
+            if e.id == id then
+                update e
+            else
+                ( e, Cmd.none )
+
+        ( updated, cmds ) =
+            (List.map updateElement elements) |> List.unzip
+    in
+        ( updated, Cmd.batch cmds )
 
 
 update : Msg -> Root.Model -> ( Root.Model, Cmd Msg )
 update action model =
     case action of
         Msg.NoOp ->
-            ( model, Cmd.none )
+            model ! []
 
         Msg.InitialState state ->
             let
                 channels =
-                    Channels.State.loadChannels state model.channels
+                    loadChannels model state
 
                 receivers =
-                    Receivers.State.loadReceivers state model.receivers
+                    loadReceivers model state
+
+                activeChannelId =
+                    Maybe.map (\channel -> channel.id) (List.head channels)
 
                 -- List.map Receiver.State.initialState state.receivers
                 updatedModel =
                     { model
                         | channels = channels
                         , receivers = receivers
+                        , activeChannelId = activeChannelId
                     }
             in
-                ( updatedModel, Cmd.none )
+                updatedModel ! []
 
-        Msg.Receivers receiversAction ->
+        Msg.Receiver receiverId receiverAction ->
             let
-                ( receiversModel, effect ) =
-                    Receivers.State.update receiversAction model.receivers
+                ( receivers, cmd ) =
+                    updateIn (Receiver.State.update receiverAction) receiverId model.receivers
             in
-                ( { model | receivers = receiversModel }, Cmd.map Msg.Receivers effect )
+                { model | receivers = receivers } ! [ cmd ]
 
-        Msg.Channels channelsAction ->
+        Msg.ShowAttachReceiver show ->
+            { model | showAttachReceiver = show } ! []
+
+        Msg.Channel channelId channelAction ->
             let
-                ( channelsModel, effect ) =
-                    Channels.State.update channelsAction model.channels
+                ( channels, cmd ) =
+                    updateIn (Channel.State.update channelAction) channelId model.channels
             in
-                ( { model | channels = channelsModel }, Cmd.map Msg.Channels effect )
+                { model | channels = channels } ! [ cmd ]
 
-        Msg.VolumeChange event ->
-            case event.target of
-                "receiver" ->
-                    update (Msg.Receivers (Receivers.VolumeChanged ( event.id, event.volume ))) model
+        Msg.ActivateChannel channel ->
+            { model | showAddChannel = False, activeChannelId = Just channel.id } ! []
 
-                "channel" ->
-                    update (Msg.Channels (Channels.VolumeChanged ( event.id, event.volume ))) model
-
-                _ ->
-                    ( model, Cmd.none )
+        Msg.AddChannel channelName ->
+            model ! [ Root.Cmd.addChannel channelName ]
 
         Msg.SetListMode mode ->
-            ( { model | listMode = mode }, Cmd.none )
+            { model | listMode = mode } ! []
 
-        Msg.Viewport width ->
+        Msg.ToggleChannelSelector ->
+            { model | showChannelSwitcher = not model.showChannelSwitcher } ! []
+
+        Msg.ToggleAddChannel ->
+            { model | showAddChannel = not model.showAddChannel } ! []
+
+        Msg.AddChannelInput inputMsg ->
+            let
+                ( input, inputCmd, action ) =
+                    Input.State.update inputMsg model.newChannelInput
+
+                ( model', outputMsg ) =
+                    processAddChannelInputAction action { model | newChannelInput = input }
+
+                ( updatedModel, cmd ) =
+                    update outputMsg model'
+            in
+                ( updatedModel, Cmd.batch [ (Cmd.map Msg.AddChannelInput inputCmd), cmd ] )
+
+        Msg.BroadcasterChannelAdded channelState ->
+            let
+                channel =
+                    Channel.State.newChannel channelState
+
+                model' =
+                    { model | channels = channel :: model.channels }
+            in
+                update (Msg.ActivateChannel channel) model'
+
+        Msg.BroadcasterChannelRenamed ( channelId, newName ) ->
+            update ((Msg.Channel channelId) (Channel.Renamed newName)) model
+
+        Msg.Library libraryAction ->
+            let
+                ( library, effect ) =
+                    Library.State.update libraryAction model.library model.activeChannelId
+            in
+                ( { model | library = library }
+                , (Cmd.map Msg.Library effect)
+                )
+
+        Msg.BroadcasterLibraryRegistration node ->
+            { model | library = Library.State.add model.library node } ! []
+
+        Msg.BroadcasterVolumeChange event ->
+            case event.target of
+                "receiver" ->
+                    update (Msg.Receiver event.id (Receiver.VolumeChanged event.volume)) model
+
+                "channel" ->
+                    update (Msg.Channel event.id (Channel.VolumeChanged event.volume)) model
+
+                _ ->
+                    model ! []
+
+        Msg.BroadcasterRenditionAdded rendition ->
+            update (Msg.Channel rendition.channelId (Channel.AddRendition rendition)) model
+
+        Msg.BrowserViewport width ->
             let
                 showPlaylistAndLibrary =
                     width > 800
             in
                 ( { model | showPlaylistAndLibrary = showPlaylistAndLibrary }, Cmd.none )
 
-        Msg.LibraryRegistration node ->
-            ( { model | library = Library.State.add model.library node }
-            , Cmd.none
-            )
-
-        Msg.Library libraryAction ->
-            let
-                ( library, effect ) =
-                    Library.State.update libraryAction model.library model.channels.activeChannelId
-            in
-                ( { model | library = library }
-                , (Cmd.map Msg.Library effect)
-                )
-
-        Msg.NewRendition rendition ->
-            update (Msg.Channels (Channels.AddRendition ( rendition.channelId, rendition ))) model
-
-        Msg.Scroll value ->
+        Msg.BrowserScroll value ->
             -- let
             -- _ = Debug.log "scroll" value
             -- in
@@ -135,16 +195,33 @@ libraryVisible model =
                     False
 
 
-playlistVisible : Root.Model -> Bool
-playlistVisible model =
-    case model.showPlaylistAndLibrary of
-        True ->
-            True
+loadChannels : Root.Model -> Root.BroadcasterState -> List Channel.Model
+loadChannels model state =
+    let
+        channels =
+            List.map (Channel.State.initialState state) state.channels
 
-        False ->
-            case model.listMode of
-                Root.LibraryMode ->
-                    False
+        activeChannelId =
+            Maybe.map (\channel -> channel.id) (List.head channels)
+    in
+        channels
 
-                Root.PlaylistMode ->
-                    True
+
+loadReceivers : Root.Model -> Root.BroadcasterState -> List Receiver.Model
+loadReceivers model state =
+    List.map Receiver.State.initialState state.receivers
+
+
+processAddChannelInputAction : Maybe Input.Action -> Root.Model -> ( Root.Model, Msg )
+processAddChannelInputAction action model =
+    case action of
+        Nothing ->
+            ( model, Msg.NoOp )
+
+        Just msg ->
+            case msg of
+                Input.Value name ->
+                    ( model, Msg.AddChannel name )
+
+                Input.Close ->
+                    ( model, Msg.ToggleAddChannel )

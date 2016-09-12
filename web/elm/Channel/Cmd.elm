@@ -4,26 +4,27 @@ import Root
 import Channel
 import Ports
 import Volume.Cmd
+import Msg exposing (Msg)
 
 
-playPause : Channel.Model -> Cmd Channel.Msg
+playPause : Channel.Model -> Cmd Msg
 playPause channel =
     Ports.playPauseChanges ( channel.id, channel.playing )
-        |> Cmd.map (always Channel.NoOp)
+        |> Cmd.map (always Msg.NoOp)
 
 
-volume : Channel.Model -> Cmd Channel.Msg
+volume : Channel.Model -> Cmd Msg
 volume channel =
-    Volume.Cmd.channelVolumeChange channel |> Cmd.map (always Channel.NoOp)
+    Volume.Cmd.channelVolumeChange channel |> Cmd.map (always Msg.NoOp)
 
 
-rename : Channel.Model -> Cmd Channel.Msg
+rename : Channel.Model -> Cmd Msg
 rename channel =
     Ports.channelNameChanges ( channel.id, channel.name )
-        |> Cmd.map (always Channel.NoOp)
+        |> Cmd.map (always Msg.NoOp)
 
 
-clearPlaylist : Channel.Model -> Cmd Channel.Msg
+clearPlaylist : Channel.Model -> Cmd Msg
 clearPlaylist channel =
     Ports.channelClearPlaylist channel.id
-        |> Cmd.map (always Channel.NoOp)
+        |> Cmd.map (always Msg.NoOp)

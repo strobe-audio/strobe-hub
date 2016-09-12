@@ -20,6 +20,7 @@ type Msg
     | VolumeChanged Float
     | Attach ID.Channel
     | Attached ID.Channel
+    | Status String ID.Channel
     | Online ID.Channel
     | Offline
 

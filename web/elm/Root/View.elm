@@ -8,7 +8,7 @@ import Debug
 import Root
 import Root.State
 import Channel
-import Channels
+-- import Channels
 import Channel.View
 import Channels.View
 import Library.View
@@ -27,14 +27,12 @@ root model =
             else
                 div [] []
 
-        playlist =
-            if Root.State.playlistVisible model then
-                Channels.View.playlist model.channels
+        playlist channel =
+            if Root.playlistVisible model then
+                Channels.View.playlist channel
             else
                 div [] []
 
-        overlayActive =
-            Channels.overlayActive model.channels
     in
         case (Root.State.activeChannel model) of
             Nothing ->
@@ -44,17 +42,17 @@ root model =
                 div
                     [ classList
                         [ ( "root", True )
-                        , ( "root__obscured", overlayActive )
+                        , ( "root__obscured", (Root.overlayActive model) )
                         ]
-                      {- , on "scroll" (Json.value Msg.Scroll) -}
+                      {- , on "scroll" (Json.value Msg.BrowserScroll) -}
                     ]
-                    [ map Msg.Channels (Channels.View.channels model.channels model.receivers)
+                    [ (Channels.View.channels model)
                     , div [ class "root--active-channel" ]
-                        [ map Msg.Channels (Channels.View.cover channel)
+                        [ (Channels.View.cover channel)
                           -- , Receivers.View.receivers model.receivers channel
                         , libraryToggleView model channel
                         , library
-                        , playlist
+                        , playlist channel
                         ]
                     ]
 

@@ -5,20 +5,22 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.App exposing (map)
 import Receivers
-import Receivers.State
+-- import Receivers.State
 import Channel
 import Receiver.View
 import Debug
+import Root
+import Msg exposing (Msg)
 
 
-receivers : Receivers.Model -> Channel.Model -> Html Receivers.Msg
+receivers : Root.Model -> Channel.Model -> Html Msg
 receivers model channel =
     let
         attached =
-            Receivers.attachedReceivers model channel
+            Receivers.attachedReceivers model.receivers channel
 
         receivers =
-            case model.showAttach of
+            case model.showAttachReceiver of
                 True ->
                     model.receivers
 
@@ -29,18 +31,18 @@ receivers model channel =
             toString (List.length attached)
 
         detached =
-            Receivers.detachedReceivers model channel
+            Receivers.detachedReceivers model.receivers channel
 
         online =
-            (Receivers.onlineReceivers model)
+            (Receivers.onlineReceivers model.receivers)
 
         receiverEntry receiver =
             case receiver.channelId == channel.id of
                 True ->
-                    map (Receivers.Receiver receiver.id) (Receiver.View.attached receiver channel)
+                    map (Msg.Receiver receiver.id) (Receiver.View.attached receiver channel)
 
                 False ->
-                    map (Receivers.Receiver receiver.id) (Receiver.View.detached receiver channel)
+                    map (Msg.Receiver receiver.id) (Receiver.View.detached receiver channel)
 
         receiverList =
             List.map receiverEntry receivers
@@ -48,20 +50,20 @@ receivers model channel =
         ( action, addButton ) =
             case List.length detached of
                 0 ->
-                    ( Receivers.NoOp, [] )
+                    ( Msg.NoOp, [] )
 
                 _ ->
                     case (List.length online) of
                         0 ->
-                            ( Receivers.NoOp, [] )
+                            ( Msg.NoOp, [] )
 
                         _ ->
-                            if model.showAttach then
-                                ( (Receivers.ShowAttach False)
+                            if model.showAttachReceiver then
+                                ( (Msg.ShowAttachReceiver False)
                                 , [ div [ class "receivers--add" ] [ i [ class "fa fa-caret-up" ] [] ] ]
                                 )
                             else
-                                ( (Receivers.ShowAttach True)
+                                ( (Msg.ShowAttachReceiver True)
                                 , [ div [ class "receivers--add" ] [ i [ class "fa fa-plus" ] [] ] ]
                                 )
     in

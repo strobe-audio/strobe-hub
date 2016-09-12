@@ -16,6 +16,6 @@ type Msg
     | Submit
 
 
-type Signal
+type Action
     = Value String
     | Close

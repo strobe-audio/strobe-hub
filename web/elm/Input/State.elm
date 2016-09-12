@@ -34,7 +34,7 @@ notBlankValidator value =
     value /= ""
 
 
-update : Input.Msg -> Input.Model -> ( Input.Model, Cmd Input.Msg, Maybe Input.Signal )
+update : Input.Msg -> Input.Model -> ( Input.Model, Cmd Input.Msg, Maybe Input.Action )
 update action model =
     case action of
         Input.Update value ->

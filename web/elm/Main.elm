@@ -1,15 +1,8 @@
 module Main exposing (main)
 
 import Html.App as Html
-import Task exposing (Task)
 import Msg exposing (Msg)
 import Window
-import Channel
-import Channels
-import ID
-import Library
-import Receivers
-import Rendition
 import Root
 import Root.State
 import Root.View
@@ -52,4 +45,4 @@ subscriptions model =
 
 viewportWidth : Sub Msg
 viewportWidth =
-    Window.resizes (\size -> Msg.Viewport size.width)
+    Window.resizes (\size -> Msg.BrowserViewport size.width)
