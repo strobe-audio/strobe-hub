@@ -231,7 +231,7 @@ defmodule Otis.Channel do
   def handle_call({:volume, volume}, _from, state) do
     volume = Otis.sanitize_volume(volume)
     Enum.each(state.receivers, &Receiver.volume_multiplier(&1, volume))
-    Otis.State.Events.notify({:channel_volume_change, [state.id, volume]})
+    event!(state, :channel_volume_change, volume)
     {:reply, {:ok, volume}, %S{state | volume: volume}}
   end
 
@@ -393,7 +393,7 @@ defmodule Otis.Channel do
     broadcaster = start_broadcaster(state)
     ctrl = Otis.Broadcaster.Controller.start(ctrl, broadcaster, broadcaster_latency(state), @buffer_size)
     Otis.Stream.resume(state.audio_stream)
-    Otis.State.Events.notify({:channel_play_pause, state.id, :play})
+    event!(state, :channel_play_pause, :play)
     %S{ state | broadcaster: broadcaster, ctrl: ctrl }
   end
   defp change_state(%S{state: :play} = state) do
@@ -405,7 +405,7 @@ defmodule Otis.Channel do
   defp change_state(%S{state: :stop, broadcaster: broadcaster} = state) do
     ctrl = Otis.Broadcaster.Controller.stop(state.ctrl, broadcaster)
     # TODO: change :stop state to :pause
-    Otis.State.Events.notify({:channel_play_pause, state.id, :pause})
+    event!(state, :channel_play_pause, :pause)
     change_state(%S{ state | broadcaster: nil, ctrl: ctrl })
   end
   defp change_state(%S{state: :skip, broadcaster: nil} = state) do
