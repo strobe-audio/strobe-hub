@@ -13,23 +13,18 @@ type Msg
     = NoOp
     | InitialState Root.BroadcasterState
     | ToggleChannelSelector
-    -- | ChannelVolumeChange ( ID.Channel, Float )
-    -- | RenditionVolumeChange ( ID.Channel, Float )
     | SetListMode Root.ChannelListMode
-      -- | Channels Channels.Msg
     | ActivateChannel Channel.Model
     | ToggleAddChannel
     | AddChannelInput Input.Msg
     | AddChannel String
-    | BroadcasterChannelAdded Channel.State
-    | BroadcasterChannelRenamed (ID.Channel, String)
     | Channel ID.Channel Channel.Msg
-
     | ShowAttachReceiver Bool
     | Receiver ID.Receiver Receiver.Msg
     | Library Library.Msg
-      -- | Receivers Receivers.Msg
       -- events from broadcaster
+    | BroadcasterChannelAdded Channel.State
+    | BroadcasterChannelRenamed ( ID.Channel, String )
     | BroadcasterLibraryRegistration Library.Node
     | BroadcasterVolumeChange Root.VolumeChangeEvent
     | BroadcasterRenditionAdded Rendition.Model

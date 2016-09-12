@@ -1,6 +1,5 @@
 module Channels.Cmd exposing (..)
 
--- import Channels
 import Ports
 import Msg exposing (Msg)
 

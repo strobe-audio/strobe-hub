@@ -4,7 +4,6 @@ import Maybe.Extra
 import ID
 import Input
 import Receiver
-import Receivers
 import Rendition
 import Volume as V
 
@@ -35,7 +34,7 @@ summary : List Receiver.Model -> Model -> Summary
 summary receivers channel =
     let
         receiverCount =
-            (Receivers.attachedToChannel receivers channel) |> List.length
+            (Receiver.attachedToChannel receivers channel) |> List.length
     in
         { channel = channel
         , id = channel.id

@@ -8,7 +8,6 @@ import Debug
 import Root
 import Root.State
 import Channel
--- import Channels
 import Channel.View
 import Channels.View
 import Library.View

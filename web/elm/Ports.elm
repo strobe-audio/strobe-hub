@@ -1,10 +1,8 @@
 port module Ports exposing (..)
 
 import Channel
--- import Channels
 import ID
 import Library
--- import Receivers
 import Rendition
 import Msg exposing (Msg)
 import Root
@@ -125,7 +123,7 @@ port channelAdditions : (Channel.State -> m) -> Sub m
 
 channelAdditionActions : Sub Msg
 channelAdditionActions =
-        channelAdditions Msg.BroadcasterChannelAdded
+    channelAdditions Msg.BroadcasterChannelAdded
 
 
 port channelRenames : (( ID.Channel, String ) -> m) -> Sub m
@@ -133,7 +131,7 @@ port channelRenames : (( ID.Channel, String ) -> m) -> Sub m
 
 channelRenameActions : Sub Msg
 channelRenameActions =
-        channelRenames Msg.BroadcasterChannelRenamed
+    channelRenames Msg.BroadcasterChannelRenamed
 
 
 

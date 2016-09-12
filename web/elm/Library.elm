@@ -1,11 +1,5 @@
 module Library exposing (..)
 
--- import Html exposing (..)
--- import Html.Attributes exposing (..)
--- import Html.Events exposing (..)
--- import Debug
--- import String
-
 
 type Msg
     = NoOp
@@ -163,12 +157,3 @@ type alias Actions =
     }
 
 
-
--- rootLevel : Model -> Folder
--- rootLevel library =
---   { id = library.id
---   , title = library.name
---   , icon = ""
---   , action = library.action
---   , children = []
---   }

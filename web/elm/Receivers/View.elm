@@ -4,11 +4,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.App exposing (map)
-import Receivers
--- import Receivers.State
-import Channel
-import Receiver.View
 import Debug
+
+
+--
+
+import Channel
+import Receiver
+import Receiver.View
 import Root
 import Msg exposing (Msg)
 
@@ -17,7 +20,7 @@ receivers : Root.Model -> Channel.Model -> Html Msg
 receivers model channel =
     let
         attached =
-            Receivers.attachedReceivers model.receivers channel
+            Receiver.attachedReceivers model.receivers channel
 
         receivers =
             case model.showAttachReceiver of
@@ -31,10 +34,10 @@ receivers model channel =
             toString (List.length attached)
 
         detached =
-            Receivers.detachedReceivers model.receivers channel
+            Receiver.detachedReceivers model.receivers channel
 
         online =
-            (Receivers.onlineReceivers model.receivers)
+            (Receiver.onlineReceivers model.receivers)
 
         receiverEntry receiver =
             case receiver.channelId == channel.id of

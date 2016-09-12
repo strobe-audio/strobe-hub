@@ -1,14 +1,18 @@
 module Root exposing (..)
 
 import List.Extra
+import Json.Decode as Json
+
+
+--
+
 import Library
 import Channel
 import Receiver
--- import Receivers
 import Rendition
 import ID
 import Input
-import Json.Decode as Json
+
 
 type alias Model =
     { channels : List Channel.Model
@@ -24,7 +28,8 @@ type alias Model =
     }
 
 
-type ChannelListMode = LibraryMode
+type ChannelListMode
+    = LibraryMode
     | PlaylistMode
 
 
@@ -77,6 +82,7 @@ playlistVisible model =
 
                 PlaylistMode ->
                     True
+
 
 overlayActive : Model -> Bool
 overlayActive model =

@@ -58,16 +58,6 @@ update action channel =
         Channel.Volume volumeMsg ->
             updateVolume volumeMsg channel
 
-        -- case maybeVolume of
-        --   Just volume ->
-        --     let
-        --       updatedChannel =
-        --         { channel | volume = volume }
-        --     in
-        --       ( updatedChannel, Channel.Cmd.volume updatedChannel )
-        --
-        --   Nothing ->
-        --     ( channel, Cmd.none )
         -- The volume has been changed by someone else
         Channel.VolumeChanged volume ->
             ( { channel | volume = volume }, Cmd.none )

@@ -37,3 +37,23 @@ type alias State =
 sort : List Model -> List Model
 sort receivers =
     List.sortBy (\r -> r.name) receivers
+
+
+attachedReceivers : List Model -> { a | id : ID.Channel } -> List Model
+attachedReceivers receivers channel =
+    attachedToChannel receivers channel
+
+
+attachedToChannel : List Model -> { a | id : ID.Channel } -> List Model
+attachedToChannel receivers channel =
+    List.filter (\r -> r.channelId == channel.id) receivers
+
+
+detachedReceivers : List Model -> { a | id : ID.Channel } -> List Model
+detachedReceivers receivers channel =
+    List.filter (\r -> r.channelId /= channel.id) receivers
+
+
+onlineReceivers : List Model -> List Model
+onlineReceivers receivers =
+    List.filter .online receivers
