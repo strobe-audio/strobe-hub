@@ -24,6 +24,11 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("rename_receiver", [id, name], socket) do
+    Otis.Receivers.rename id, name
+    {:noreply, socket}
+  end
+
   def handle_in("clear_playlist", id, socket) do
     Otis.Channels.clear id
     {:noreply, socket}

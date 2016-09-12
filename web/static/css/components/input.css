@@ -8,11 +8,14 @@
   flex: 1;
   font-size: 2rem;
   padding: 0 $padding;
+  outline: none;
+  border: none;
 }
 
 
 .input--submit {
   flex: 0 0 $button-size;
+  cursor: pointer !important;
   &::before {
     @mixin fa;
     content: "\f00c";
@@ -26,18 +29,27 @@
 
 .input--submit__valid {
   background-color: green;
+  &:hover {
+    background-color: #00c853 !important;
+    color: #fff !important;
+  }
 }
 
 
 .input--cancel {
   flex: 0 0 $button-size;
+  cursor: pointer !important;
   &::before {
     @mixin fa;
+    color: #fff !important;
     content: "\f00d";
     width: $button-size;
     height: $button-size;
     line-height: $button-size;
     text-align: center;
+  }
+  &:hover {
+    color: #d50000 !important;
   }
 }
 

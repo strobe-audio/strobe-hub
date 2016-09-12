@@ -38,6 +38,7 @@ subscriptions model =
         , Ports.windowStartupActions
         , Ports.channelAdditionActions
         , Ports.channelRenameActions
+        , Ports.receiverRenameActions
         , Ports.scrollTopActions
         , viewportWidth
         ]

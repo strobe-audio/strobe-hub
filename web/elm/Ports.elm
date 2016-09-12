@@ -134,6 +134,14 @@ channelRenameActions =
     channelRenames Msg.BroadcasterChannelRenamed
 
 
+port receiverRenames : (( ID.Receiver, String ) -> m) -> Sub m
+
+receiverRenameActions : Sub Msg
+receiverRenameActions =
+    receiverRenames Msg.BroadcasterReceiverRenamed
+
+
+
 
 -- Outgoing Elm -> JS
 
@@ -145,6 +153,8 @@ port playPauseChanges : ( String, Bool ) -> Cmd msg
 
 
 port channelNameChanges : ( ID.Channel, String ) -> Cmd msg
+
+port receiverNameChanges : ( ID.Receiver, String ) -> Cmd msg
 
 
 port channelClearPlaylist : ID.Channel -> Cmd msg

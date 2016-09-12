@@ -25,6 +25,7 @@ type Msg
       -- events from broadcaster
     | BroadcasterChannelAdded Channel.State
     | BroadcasterChannelRenamed ( ID.Channel, String )
+    | BroadcasterReceiverRenamed ( ID.Receiver, String )
     | BroadcasterLibraryRegistration Library.Node
     | BroadcasterVolumeChange Root.VolumeChangeEvent
     | BroadcasterRenditionAdded Rendition.Model

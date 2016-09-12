@@ -74,6 +74,10 @@ channel.on('channel_rename', payload => {
   console.log('channel_rename', payload)
   app.ports.channelRenames.send([payload.channelId, payload.name])
 })
+channel.on('receiver_rename', payload => {
+  console.log('receiver_rename', payload)
+  app.ports.receiverRenames.send([payload.receiverId, payload.name])
+})
 
 channel.join()
 .receive('ok', resp => { console.log('joined!', resp); })
@@ -95,6 +99,10 @@ app.ports.playPauseChanges.subscribe(event => {
 
 app.ports.channelNameChanges.subscribe(event => {
   channel.push("rename_channel", event)
+  .receive("error", payload => console.log(payload.message))
+})
+app.ports.receiverNameChanges.subscribe(event => {
+  channel.push("rename_receiver", event)
   .receive("error", payload => console.log(payload.message))
 })
 

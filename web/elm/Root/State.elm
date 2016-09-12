@@ -140,6 +140,9 @@ update action model =
         Msg.BroadcasterChannelRenamed ( channelId, newName ) ->
             update ((Msg.Channel channelId) (Channel.Renamed newName)) model
 
+        Msg.BroadcasterReceiverRenamed ( receiverId, newName ) ->
+            update ((Msg.Receiver receiverId) (Receiver.Renamed newName)) model
+
         Msg.Library libraryAction ->
             let
                 ( library, effect ) =

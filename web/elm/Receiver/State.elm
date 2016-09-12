@@ -1,9 +1,16 @@
 module Receiver.State exposing (initialState, update)
 
+import Debug
+
+
+--
+
 import Receiver
 import Receiver.Cmd
 import Volume
 import Msg exposing (Msg)
+import Input
+import Input.State
 
 
 initialState : Receiver.State -> Receiver.Model
@@ -13,7 +20,8 @@ initialState state =
     , online = state.online
     , volume = state.volume
     , channelId = state.channelId
-    , editingName = False
+    , editName = False
+    , editNameInput = Input.State.blank
     }
 
 
@@ -58,6 +66,40 @@ update action model =
         Receiver.Offline ->
             { model | online = False } ! []
 
+        Receiver.ShowEditName state ->
+            let
+                editNameInput =
+                    case state of
+                        True ->
+                            Input.State.withValue model.editNameInput model.name
+
+                        False ->
+                            Input.State.clear model.editNameInput
+            in
+                { model | editName = state, editNameInput = editNameInput } ! []
+
+        Receiver.EditName inputMsg ->
+            let
+                ( input, inputCmd, action ) =
+                    Input.State.update inputMsg model.editNameInput
+
+                ( model', actionMsg ) =
+                    (processInputAction action { model | editNameInput = input })
+
+                ( updatedModel, cmd ) =
+                    update actionMsg model'
+            in
+                ( updatedModel, Cmd.batch [ (Cmd.map (\m -> (Msg.Receiver model.id) (Receiver.EditName m)) inputCmd), cmd ] )
+
+        Receiver.Renamed newName ->
+          { model | name = newName, editName = False } ! []
+
+        Receiver.Rename newName ->
+          let
+              model' = { model | name = newName }
+          in
+              model' ! [Receiver.Cmd.rename model']
+
         Receiver.Status event channelId ->
             case event of
                 "receiver_added" ->
@@ -71,3 +113,18 @@ update action model =
 
                 _ ->
                     model ! []
+
+
+processInputAction : Maybe Input.Action -> Receiver.Model -> ( Receiver.Model, Receiver.Msg )
+processInputAction action model =
+    case action of
+        Nothing ->
+            ( model, Receiver.NoOp )
+
+        Just msg ->
+            case msg of
+                Input.Value value ->
+                    ( model, Receiver.Rename value )
+
+                Input.Close ->
+                    ( model, Receiver.ShowEditName False )

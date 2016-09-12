@@ -56,9 +56,6 @@
   text-align: center;
   line-height: $button-size;
   cursor: pointer;
-  &:hover {
-    color: red;
-  }
 }
 .channels--channel-volume {
   flex: 1;
@@ -216,6 +213,9 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 }
 .channels-selector--channel--name {
   flex: 1;
+  &:hover {
+    color: red;
+  }
 }
 .channels-selector--channel--duration {
   padding: 0 $padding;

@@ -2,6 +2,7 @@ module Receiver exposing (..)
 
 import ID
 import Volume
+import Input
 
 
 type alias Model =
@@ -10,7 +11,8 @@ type alias Model =
     , online : Bool
     , volume : Float
     , channelId : ID.Channel
-    , editingName : Bool
+    , editName : Bool
+    , editNameInput : Input.Model
     }
 
 
@@ -23,6 +25,10 @@ type Msg
     | Status String ID.Channel
     | Online ID.Channel
     | Offline
+    | ShowEditName Bool
+    | EditName Input.Msg
+    | Rename String
+    | Renamed String
 
 
 type alias State =
