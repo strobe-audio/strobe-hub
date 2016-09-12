@@ -5,6 +5,7 @@ defmodule Otis.State.Persistence.Receivers do
 
   alias Otis.State.Receiver
   alias Otis.State.Channel
+  alias Otis.State.Repo
 
   def register do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
@@ -28,25 +29,31 @@ defmodule Otis.State.Persistence.Receivers do
   #   and allows us to persist any changes
   # def handle_event({:receiver_connected, [id, channel, connection_info]}, state) do
   def handle_event({:receiver_connected, [id, recv]}, state) do
-    Otis.State.Repo.transaction(fn ->
+    Repo.transaction(fn ->
       id |> receiver |> receiver_connected(id, recv)
     end)
     {:ok, state}
   end
   def handle_event({:receiver_volume_change, [id, volume]}, state) do
-    Otis.State.Repo.transaction(fn ->
+    Repo.transaction(fn ->
       id |> receiver |> volume_change(id, volume)
     end)
     {:ok, state}
   end
   def handle_event({:reattach_receiver, [id, channel_id, receiver]}, state) do
-    Otis.State.Repo.transaction(fn ->
+    Repo.transaction(fn ->
       id |> receiver |> channel_change(id, channel_id)
     end)
     # Now we've set up the receiver to join the given channel, release it from
     # whatever channels/sockets it currently belongs to and allow Receivers to
     # re-latch it and send it through the :receiver_connected mechanism
     Otis.Receiver.release_latch(receiver)
+    {:ok, state}
+  end
+  def handle_event({:receiver_rename, [id, name]}, state) do
+    Repo.transaction fn ->
+      id |> receiver |> rename(id, name)
+    end
     {:ok, state}
   end
   def handle_event(_evt, state) do
@@ -89,6 +96,13 @@ defmodule Otis.State.Persistence.Receivers do
   end
   defp channel_change(receiver, _id, channel_id) do
     Receiver.channel(receiver, channel_id)
+  end
+
+  defp rename(nil, id, _name) do
+    Logger.warn "Rename of unknown receiver #{ id }"
+  end
+  defp rename(receiver, _id, name) do
+    Receiver.rename(receiver, name)
   end
 
   defp create_receiver(nil, id) do

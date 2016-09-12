@@ -51,4 +51,8 @@ defmodule Otis.State.Receiver do
   def channel(receiver, channel_id) do
     Changeset.change(receiver, channel_id: channel_id) |> Repo.update!
   end
+
+  def rename(receiver, name) do
+    Changeset.change(receiver, name: name) |> Repo.update!
+  end
 end

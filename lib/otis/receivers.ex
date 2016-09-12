@@ -54,6 +54,10 @@ defmodule Otis.Receivers do
     GenServer.call(pid, {:attach, receiver_id, channel_id})
   end
 
+  def rename(id, name) when is_binary(id) do
+    Otis.State.Events.notify({:receiver_rename, [id, name]})
+  end
+
   def connected?(id) do
     connected?(@name, id)
   end
