@@ -12,6 +12,16 @@ inputSubmitCancel model =
     let
         valid =
             model.validator model.value
+        submit =
+          onWithOptions
+            "click"
+              { defaultOptions | stopPropagation = True }
+              (Json.succeed Input.Submit)
+        cancel =
+          onWithOptions
+            "click"
+              { defaultOptions | stopPropagation = True }
+              (Json.succeed Input.Cancel)
     in
         div [ class "input" ]
             [ input
@@ -27,10 +37,10 @@ inputSubmitCancel model =
                 []
             , div
                 [ classList [ ( "input--submit", True ), ( "input--submit__valid", valid ) ]
-                , onClick Input.Submit
+                , submit
                 ]
                 []
-            , div [ class "input--cancel", onClick Input.Cancel ] []
+            , div [ class "input--cancel", cancel ] []
             ]
 
 
