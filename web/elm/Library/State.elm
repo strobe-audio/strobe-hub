@@ -56,10 +56,10 @@ update action model maybeChannelId =
                 _ =
                     Debug.log "current action" model.currentRequest
 
-                model' =
+                model_ =
                     pushLevel model folder
             in
-                ( { model' | currentRequest = Nothing }, Cmd.none )
+                ( { model_ | currentRequest = Nothing }, Cmd.none )
 
         Library.PopLevel index ->
             ( { model | levels = List.drop index model.levels }, Cmd.none )
@@ -112,7 +112,7 @@ addUniqueLibrary library libraries =
         duplicate =
             Debug.log "Duplicate library?" (List.any (\l -> l.id == library.id) libraries)
 
-        libraries' =
+        libraries_ =
             case duplicate of
                 True ->
                     libraries
@@ -120,4 +120,4 @@ addUniqueLibrary library libraries =
                 False ->
                     library :: libraries
     in
-        libraries'
+        libraries_

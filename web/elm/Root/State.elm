@@ -119,11 +119,11 @@ update action model =
                 ( input, inputCmd, action ) =
                     Input.State.update inputMsg model.newChannelInput
 
-                ( model', outputMsg ) =
+                ( model_, outputMsg ) =
                     processAddChannelInputAction action { model | newChannelInput = input }
 
                 ( updatedModel, cmd ) =
-                    update outputMsg model'
+                    update outputMsg model_
             in
                 ( updatedModel, Cmd.batch [ (Cmd.map Msg.AddChannelInput inputCmd), cmd ] )
 
@@ -132,10 +132,10 @@ update action model =
                 channel =
                     Channel.State.newChannel channelState
 
-                model' =
+                model_ =
                     { model | channels = channel :: model.channels }
             in
-                update (Msg.ActivateChannel channel) model'
+                update (Msg.ActivateChannel channel) model_
 
         Msg.BroadcasterChannelRenamed ( channelId, newName ) ->
             update ((Msg.Channel channelId) (Channel.Renamed newName)) model

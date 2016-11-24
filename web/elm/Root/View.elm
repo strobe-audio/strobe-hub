@@ -3,7 +3,7 @@ module Root.View exposing (root)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App exposing (map)
+import Html
 import Debug
 import Root
 import Root.State
@@ -22,7 +22,7 @@ root model =
     let
         library =
             if Root.State.libraryVisible model then
-                map Msg.Library (Library.View.root model.library)
+                Html.map Msg.Library (Library.View.root model.library)
             else
                 div [] []
 
@@ -31,7 +31,6 @@ root model =
                 Channels.View.playlist channel
             else
                 div [] []
-
     in
         case (Root.State.activeChannel model) of
             Nothing ->

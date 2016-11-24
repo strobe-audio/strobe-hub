@@ -155,5 +155,3 @@ type alias Actions =
     { click : String
     , play : Maybe String
     }
-
-

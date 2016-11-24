@@ -13,5 +13,14 @@
     "precss": "^1.4.0",
     "style-loader": "^0.13.1",
     "webpack": "^1.12.14"
-  }
+  },
+  "name": "elvis",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": {
+    "url": "git@gitlab.com:magnetised/elvis.git",
+    "type": "git"
+  },
+  "author": "Garry Hill <garry@magnetised.net>",
+  "license": "MIT"
 }

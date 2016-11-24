@@ -3,7 +3,7 @@ module Channel.View exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App exposing (map)
+import Html
 import Debug
 
 
@@ -27,12 +27,12 @@ cover channel =
         case maybeRendition of
             Nothing ->
                 div [ class "channel--rendition" ]
-                    [ map (always Channel.NoOp) (Rendition.View.empty)
+                    [ Html.map (always Channel.NoOp) (Rendition.View.empty)
                     ]
 
             Just rendition ->
                 div [ class "channel--rendition" ]
-                    [ map (always Channel.PlayPause) (Rendition.View.cover rendition channel.playing)
+                    [ Html.map (always Channel.PlayPause) (Rendition.View.cover rendition channel.playing)
                     ]
 
 
@@ -48,7 +48,7 @@ player channel =
 
             Just rendition ->
                 div [ class "channel--rendition" ]
-                    [ map (always Channel.PlayPause) (Rendition.View.player rendition channel.playing)
+                    [ Html.map (always Channel.PlayPause) (Rendition.View.player rendition channel.playing)
                     ]
 
 
@@ -56,7 +56,7 @@ playlist : Channel.Model -> Html Channel.Msg
 playlist channel =
     let
         entry rendition =
-            map (Channel.ModifyRendition rendition.id) (Rendition.View.playlist rendition)
+            Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlist rendition)
 
         playlist =
             Maybe.withDefault [] (List.tail channel.playlist)

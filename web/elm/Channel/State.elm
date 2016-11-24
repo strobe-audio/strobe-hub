@@ -64,7 +64,7 @@ update action channel =
 
         Channel.Status ( event, status ) ->
             let
-                channel' =
+                channel_ =
                     case event of
                         "channel_play_pause" ->
                             case status of
@@ -77,7 +77,7 @@ update action channel =
                         _ ->
                             channel
             in
-                ( channel', Cmd.none )
+                ( channel_, Cmd.none )
 
         Channel.PlayPause ->
             let
@@ -151,34 +151,34 @@ update action channel =
                 ( input, inputCmd, action ) =
                     Input.State.update inputMsg channel.editNameInput
 
-                ( channel', actionMsg ) =
+                ( channel_, actionMsg ) =
                     (processInputAction action { channel | editNameInput = input })
 
                 ( updatedChannel, cmd ) =
-                    update actionMsg channel'
+                    update actionMsg channel_
             in
                 ( updatedChannel, Cmd.batch [ (Cmd.map (\m -> (Msg.Channel channel.id) (Channel.EditName m)) inputCmd), cmd ] )
 
         Channel.Rename name ->
             let
-                channel' =
+                channel_ =
                     { channel | name = name, editName = False }
             in
-                ( channel', Channel.Cmd.rename channel' )
+                ( channel_, Channel.Cmd.rename channel_ )
 
         Channel.Renamed name ->
             let
-                channel' =
+                channel_ =
                     { channel | name = name, originalName = name }
             in
-                ( channel', Cmd.none )
+                ( channel_, Cmd.none )
 
         Channel.ClearPlaylist ->
             let
-                channel' =
+                channel_ =
                     { channel | playlist = [] }
             in
-                ( channel', Channel.Cmd.clearPlaylist channel' )
+                ( channel_, Channel.Cmd.clearPlaylist channel_ )
 
 
 updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )
@@ -194,7 +194,7 @@ updateVolume volumeMsg channel =
                         ( updatedChannel, Channel.Cmd.volume updatedChannel )
 
                 Nothing ->
-                  channel ! []
+                    channel ! []
 
 
 processInputAction : Maybe Input.Action -> Channel.Model -> ( Channel.Model, Channel.Msg )

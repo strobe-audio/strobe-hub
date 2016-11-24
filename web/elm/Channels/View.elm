@@ -3,7 +3,7 @@ module Channels.View exposing (channels, cover, playlist)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App exposing (map)
+import Html
 import Json.Decode as Json
 import Debug
 
@@ -60,7 +60,7 @@ channelSettingsButton model =
 
 currentChannelPlayer : Channel.Model -> Html Msg
 currentChannelPlayer channel =
-    map (Msg.Channel channel.id) (Channel.View.player channel)
+    Html.map (Msg.Channel channel.id) (Channel.View.player channel)
 
 
 channelSelectorPanel : Root.Model -> Channel.Model -> Html Msg
@@ -95,7 +95,7 @@ channelSelectorPanel model activeChannel =
             True ->
                 div [ class "channels--overlay" ]
                     [ div [ class "channels--channel-control" ]
-                        [ map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
+                        [ Html.map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
                         , (Receivers.View.receivers model activeChannel)
                         ]
                     , div [ class "channels--header" ]
@@ -129,7 +129,7 @@ addChannelPanel model =
             div [] []
 
         True ->
-            map Msg.AddChannelInput (Input.View.inputSubmitCancel model.newChannelInput)
+            Html.map Msg.AddChannelInput (Input.View.inputSubmitCancel model.newChannelInput)
 
 
 channelChoice : List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
@@ -202,15 +202,15 @@ channelChoice receivers activeChannel channelSummary =
                     , ( "channels-selector--edit__active", channel.editName )
                     ]
                 ]
-                [ map (\e -> Msg.Channel channel.id (Channel.EditName e)) editNameInput ]
+                [ Html.map (\e -> Msg.Channel channel.id (Channel.EditName e)) editNameInput ]
             ]
 
 
 cover : Channel.Model -> Html Msg
 cover channel =
-    map (Msg.Channel channel.id) (Channel.View.cover channel)
+    Html.map (Msg.Channel channel.id) (Channel.View.cover channel)
 
 
 playlist : Channel.Model -> Html Msg
 playlist channel =
-    map (Msg.Channel channel.id) (Channel.View.playlist channel)
+    Html.map (Msg.Channel channel.id) (Channel.View.playlist channel)

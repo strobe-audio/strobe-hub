@@ -83,22 +83,23 @@ update action model =
                 ( input, inputCmd, action ) =
                     Input.State.update inputMsg model.editNameInput
 
-                ( model', actionMsg ) =
+                ( model_, actionMsg ) =
                     (processInputAction action { model | editNameInput = input })
 
                 ( updatedModel, cmd ) =
-                    update actionMsg model'
+                    update actionMsg model_
             in
                 ( updatedModel, Cmd.batch [ (Cmd.map (\m -> (Msg.Receiver model.id) (Receiver.EditName m)) inputCmd), cmd ] )
 
         Receiver.Renamed newName ->
-          { model | name = newName, editName = False } ! []
+            { model | name = newName, editName = False } ! []
 
         Receiver.Rename newName ->
-          let
-              model' = { model | name = newName }
-          in
-              model' ! [Receiver.Cmd.rename model']
+            let
+                model_ =
+                    { model | name = newName }
+            in
+                model_ ! [ Receiver.Cmd.rename model_ ]
 
         Receiver.Status event channelId ->
             case event of

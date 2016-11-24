@@ -17,6 +17,7 @@ attach channelId receiverId =
     Ports.attachReceiverRequests ( channelId, receiverId )
         |> Cmd.map (always Msg.NoOp)
 
+
 rename : Receiver.Model -> Cmd Msg
 rename receiver =
     Ports.receiverNameChanges ( receiver.id, receiver.name )

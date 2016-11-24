@@ -36,10 +36,9 @@ player rendition playing =
     in
         div [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ] ]
             [ div [ class "rendition--control", onClick Rendition.PlayPause ]
-                [
-                  -- div [ class "rendition--play-pause-btn", style [ ( "backgroundImage", (Utils.Css.url coverImage) ) ] ]
+                [ -- div [ class "rendition--play-pause-btn", style [ ( "backgroundImage", (Utils.Css.url coverImage) ) ] ]
                   --   []
-                 div [ class "rendition--details" ]
+                  div [ class "rendition--details" ]
                     [ div [ class "rendition--details--top" ]
                         [ div [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
                             [ text (renditionTitle rendition)

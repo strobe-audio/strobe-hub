@@ -3,7 +3,7 @@ module Receivers.View exposing (..)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html.App exposing (map)
+import Html
 import Debug
 
 
@@ -42,10 +42,10 @@ receivers model channel =
         receiverEntry receiver =
             case receiver.channelId == channel.id of
                 True ->
-                    map (Msg.Receiver receiver.id) (Receiver.View.attached receiver channel)
+                    Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver channel)
 
                 False ->
-                    map (Msg.Receiver receiver.id) (Receiver.View.detached receiver channel)
+                    Html.map (Msg.Receiver receiver.id) (Receiver.View.detached receiver channel)
 
         receiverList =
             List.map receiverEntry receivers

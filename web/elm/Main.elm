@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Html.App as Html
+import Html
 import Msg exposing (Msg)
 import Window
 import Root

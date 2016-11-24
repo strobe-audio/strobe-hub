@@ -136,10 +136,10 @@ channelRenameActions =
 
 port receiverRenames : (( ID.Receiver, String ) -> m) -> Sub m
 
+
 receiverRenameActions : Sub Msg
 receiverRenameActions =
     receiverRenames Msg.BroadcasterReceiverRenamed
-
 
 
 
@@ -153,6 +153,7 @@ port playPauseChanges : ( String, Bool ) -> Cmd msg
 
 
 port channelNameChanges : ( ID.Channel, String ) -> Cmd msg
+
 
 port receiverNameChanges : ( ID.Receiver, String ) -> Cmd msg
 

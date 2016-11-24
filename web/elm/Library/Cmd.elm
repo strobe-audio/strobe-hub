@@ -21,6 +21,6 @@ sendAction channelId action =
 
 requestComplete : Time -> Cmd Library.Msg
 requestComplete delay =
-    Task.perform (always Library.ActionComplete)
+    Task.perform
         (always Library.ActionComplete)
         (Process.sleep delay)

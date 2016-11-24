@@ -119,17 +119,17 @@ breadcrumb model folder =
             (model.levels)
                 |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
 
-        ( list', dropdown' ) =
+        ( list_, dropdown_ ) =
             List.Extra.splitAt 2 (sections)
 
         dividers list =
             List.intersperse (span [ class "library--breadcrumb--divider" ] []) list
 
         dropdown =
-            dividers (List.reverse dropdown')
+            dividers (List.reverse dropdown_)
 
         list =
-            dividers (List.reverse list')
+            dividers (List.reverse list_)
     in
         div [ class "library--breadcrumb" ]
             [ div [ class "library--breadcrumb--dropdown" ] dropdown
