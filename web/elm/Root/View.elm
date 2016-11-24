@@ -44,16 +44,46 @@ root model =
                         ]
                       {- , on "scroll" (Json.value Msg.BrowserScroll) -}
                     ]
-                    [ (Channels.View.channels model)
-                    , div [ class "root--active-channel" ]
-                        [ (Channels.View.cover channel)
-                          -- , Receivers.View.receivers model.receivers channel
-                        , libraryToggleView model channel
-                        , library
-                        , playlist channel
+                    [ (controlBar model)
+                    , div [ class "root--wrapper" ]
+                        [ (Channels.View.channels model)
+                        , div
+                            [ classList
+                                [ ( "root--active-channel", True )
+                                , ( "root--active-channel__inactive", model.showChannelSwitcher )
+                                ]
+                            ]
+                            [ (Channels.View.cover channel)
+                              -- , Receivers.View.receivers model.receivers channel
+                            , libraryToggleView model channel
+                            , library
+                            , playlist channel
+                            ]
                         ]
                     ]
 
+
+controlBar : Root.Model -> Html Msg
+controlBar model =
+    case Root.activeChannel model of
+        Nothing ->
+            div [] []
+
+        Just channel ->
+            div [ class "root--bar" ]
+                [ (channelSettingsButton model)
+                , (currentChannelPlayer channel)
+                ]
+
+
+channelSettingsButton : Root.Model -> Html Msg
+channelSettingsButton model =
+    div [ class "root--channel-select", onClick Msg.ToggleChannelSelector {- , onTouch -} ]
+        [ i [ class "fa fa-bullseye" ] [] ]
+
+currentChannelPlayer : Channel.Model -> Html Msg
+currentChannelPlayer channel =
+    Html.map (Msg.Channel channel.id) (Channel.View.player channel)
 
 libraryToggleView : Root.Model -> Channel.Model -> Html Msg
 libraryToggleView model channel =

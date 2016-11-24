@@ -1,12 +1,29 @@
 
+.root {
+  /* padding-top: $button-size; */
+}
 .root__obscured {
   max-height: 100vh;
   overflow: hidden;
 }
 
+.root--wrapper {
+
+}
 .root--active-channel {
   @mixin overflowScroll;
+  background: #fff;
   height: 100vh;
+  width: 100vw;
+  left: 0;
+  position: relative;
+  transition: left $channels-view-animation-duration;
+}
+
+.root--active-channel__inactive {
+  left: $channels-view-width;
+  transition: left $channels-view-animation-duration;
+  pointer-events: none;
 }
 
 .root--mode {
@@ -79,4 +96,18 @@
   font-size: 0.8em;
   color: rgba(0, 0, 0, 0.6);
   display: block;
+}
+
+.root--bar {
+  color: #fff;
+  background: #000;
+  display: flex;
+  flex: 0 0 $button-size;
+}
+
+.root--channel-select {
+  flex: 0 0 $button-size;
+  text-align: center;
+  line-height: $button-size;
+  cursor: pointer;
 }

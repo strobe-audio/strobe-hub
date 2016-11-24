@@ -1,4 +1,4 @@
-module Channels.View exposing (channels, cover, playlist)
+module Channels.View exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -44,23 +44,10 @@ channelsBar model activeChannel =
         --   onWithOptions "touchend" options Json.value (\_ -> (Channels.ToggleSelector))
     in
         div [ classList [ ( "channels", True ), ( "channels__select-channel", model.showChannelSwitcher ) ] ]
-            [ div [ class "channels--bar" ]
-                [ (channelSettingsButton model)
-                , (currentChannelPlayer activeChannel)
-                ]
-            , (channelSelectorPanel model activeChannel)
+            [ (channelSelectorPanel model activeChannel)
             ]
 
 
-channelSettingsButton : Root.Model -> Html Msg
-channelSettingsButton model =
-    div [ class "channels--channel-select", onClick Msg.ToggleChannelSelector {- , onTouch -} ]
-        [ i [ class "fa fa-bullseye" ] [] ]
-
-
-currentChannelPlayer : Channel.Model -> Html Msg
-currentChannelPlayer channel =
-    Html.map (Msg.Channel channel.id) (Channel.View.player channel)
 
 
 channelSelectorPanel : Root.Model -> Channel.Model -> Html Msg
@@ -94,6 +81,8 @@ channelSelectorPanel model activeChannel =
 
             True ->
                 div [ class "channels--overlay" ]
+                    [ div
+                        [class "channels--view"]
                     [ div [ class "channels--channel-control" ]
                         [ Html.map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
                         , (Receivers.View.receivers model activeChannel)
@@ -119,6 +108,8 @@ channelSelectorPanel model activeChannel =
                             , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
                             ]
                         ]
+                    ]
+                    , div [ class "channels--toggle", onMouseDown Msg.ToggleChannelSelector ] []
                     ]
 
 
