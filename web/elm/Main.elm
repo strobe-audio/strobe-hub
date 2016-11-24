@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Debug
 import Html
 import Msg exposing (Msg)
 import Window
@@ -7,20 +8,37 @@ import Root
 import Root.State
 import Root.View
 import Ports
+import Navigation
+import Routing
 
 
 main =
-    Html.program
+    Navigation.program Msg.UrlChange
         { init = init
-        , update = Root.State.update
         , view = Root.View.root
+        , update = Root.State.update
         , subscriptions = subscriptions
         }
 
 
-init : ( Root.Model, Cmd Msg )
-init =
-    ( Root.State.initialState, Cmd.none )
+init : Navigation.Location -> ( Root.Model, Cmd Msg )
+init location =
+    let
+        currentRoute =
+            (Routing.parseLocation location)
+
+        initialState =
+            Root.State.initialState
+
+        state =
+            case currentRoute of
+                Routing.ChannelRoute channelId ->
+                    { initialState | activeChannelId = Just channelId }
+
+                _ ->
+                    initialState
+    in
+        ( state, Cmd.none )
 
 
 subscriptions : Root.Model -> Sub Msg

@@ -13,6 +13,8 @@ import ID
 import Input
 import Input.State
 import Msg exposing (Msg)
+import Navigation
+import Routing
 
 
 initialState : Root.Model
@@ -61,6 +63,18 @@ update action model =
         Msg.NoOp ->
             model ! []
 
+        Msg.UrlChange location ->
+            let
+                updatedModel =
+                    case (Routing.parseLocation location) of
+                        Routing.ChannelRoute channelId ->
+                            { model | activeChannelId = Just channelId }
+
+                        _ ->
+                            model
+            in
+                updatedModel ! []
+
         Msg.InitialState state ->
             let
                 channels =
@@ -69,18 +83,29 @@ update action model =
                 receivers =
                     loadReceivers model state
 
-                activeChannelId =
+                defaultChannelId =
                     Maybe.map (\channel -> channel.id) (List.head channels)
 
-                -- List.map Receiver.State.initialState state.receivers
+                cmd =
+                    case model.activeChannelId of
+                        Just id ->
+                            Cmd.none
+
+                        Nothing ->
+                            case defaultChannelId of
+                                Nothing ->
+                                    Cmd.none
+
+                                Just id ->
+                                    Navigation.newUrl (Routing.channelLocation id)
+
                 updatedModel =
                     { model
                         | channels = channels
                         , receivers = receivers
-                        , activeChannelId = activeChannelId
                     }
             in
-                updatedModel ! []
+                updatedModel ! [ cmd ]
 
         Msg.Receiver receiverId receiverAction ->
             let
@@ -100,7 +125,8 @@ update action model =
                 { model | channels = channels } ! [ cmd ]
 
         Msg.ActivateChannel channel ->
-            { model | showAddChannel = False, activeChannelId = Just channel.id } ! []
+            -- { model | showAddChannel = False, activeChannelId = Just channel.id } ! []
+            { model | showAddChannel = False } ! [ Navigation.newUrl (Routing.channelLocation channel.id) ]
 
         Msg.AddChannel channelName ->
             model ! [ Root.Cmd.addChannel channelName ]

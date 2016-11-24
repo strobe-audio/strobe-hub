@@ -7,10 +7,12 @@ import Rendition
 import Root
 import ID
 import Input
+import Navigation
 
 
 type Msg
     = NoOp
+    | UrlChange Navigation.Location
     | InitialState Root.BroadcasterState
     | ToggleChannelSelector
     | SetListMode Root.ChannelListMode
