@@ -22,6 +22,7 @@
 
 .receiver--volume {
   flex: 1;
+  max-width: calc(100vw - (2 * $button-size));
 }
 
 .receiver__attached {
