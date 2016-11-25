@@ -11,3 +11,23 @@ $progress-height: 4px;
 }
 
 
+.progress-circular  {
+  position: relative;
+  display: block;
+}
+
+svg.progress-circular--root {
+  /* transform: rotate(270deg); */
+}
+svg.progress-circular--root circle {
+  /* stroke-width: 8px; */
+  /* transform-origin: 50% 50% 0; */
+  /* transform: rotate(0.1deg); */
+}
+.progress-circular--cover {
+  /* stroke: rgba(255, 255, 255,1.1); */
+}
+.progress-circular--progress {
+  /* stroke: red; */
+  /* stroke-width: 4px; */
+}

@@ -7,6 +7,7 @@ import Html.Keyed
 import Rendition
 import Source.View
 import Utils.Css
+import Progress
 
 
 player : Rendition.Model -> Bool -> Html Rendition.Msg
@@ -24,7 +25,7 @@ player rendition playing =
                     div [] []
 
                 Just album ->
-                    div [ class "rendition--meta--album" ] [ text (renditionAlbum rendition) ]
+                    div [ class "rendition--meta--detail rendition--meta--album" ] [ text (renditionAlbum rendition) ]
 
         durationMeta =
             case source.duration_ms of
@@ -32,7 +33,7 @@ player rendition playing =
                     div [] []
 
                 Just duration ->
-                    div [ class "rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration source) ++ ")") ]
+                    div [ class "rendition--meta--detail rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration source) ++ ")") ]
     in
         div [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ] ]
             [ div [ class "rendition--control", onClick Rendition.PlayPause ]
@@ -43,15 +44,15 @@ player rendition playing =
                         [ div [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
                             [ text (renditionTitle rendition)
                             ]
-                        , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
+                        -- , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
                         ]
                     , div [ class "rendition--meta" ]
-                        [ div [ class "rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
+                        [ div [ class "rendition--meta--detail rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
                         , albumMeta
                         , durationMeta
                         ]
-                    , (progress rendition playing)
                     ]
+                      , (progress rendition playing)
                 ]
             ]
 
@@ -91,8 +92,9 @@ progress rendition playing =
                 progressStyle =
                     [ ( "width", (toString percent) ++ "%" ) ]
             in
-                div [ class "progress" ]
-                    [ div [ class "progress--complete", style progressStyle ] []
+                div [ classList [ ("rendition--progress", True), ("rendition--progress__playing", playing) ] ]
+                    [ Html.map (always Rendition.NoOp) (Progress.circular 50 percent)
+                      -- div [ class "progress--complete", style progressStyle ] []
                     ]
 
 

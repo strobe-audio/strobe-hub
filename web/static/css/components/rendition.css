@@ -42,13 +42,21 @@
 }
 
 .rendition--meta {
-  text-overflow: ellipsis;
+  /* text-overflow: ellipsis; */
+  max-width: calc(100vw - 2 * ($button-size + $padding));
   overflow: hidden;
   white-space: nowrap;
+  font-size: 1.4rem;
+  font-weight: 100;
+  /* flex: 1; */
+  /* min-width: 0; */
+  text-overflow: ellipsis; overflow: hidden;
 }
 
-.rendition--details {
-  flex: 1;
+.rendition--meta--detail  {
+  display: inline;
+  white-space: nowrap;
+  min-width: 0;
 }
 .rendition--title {
   /* @mixin h2; */
@@ -59,20 +67,13 @@
   align-items: center;
   /* padding: $padding 0; */
   &:before {
-    @mixin fa;
-    content: "\f04b";
-    text-align: center;
-    cursor: pointer;
     /* @mixin fa; */
-    /* fa-play */
     /* content: "\f04b"; */
+    /* text-align: center; */
+    /* cursor: pointer; */
+    /* display: inline-block; */
+    /* padding-right: calc($padding/2); */
     /* width: calc($button-size / 2); */
-    /* text-align: left; */
-    /* color: rgba(255, 255, 255, 1); */
-    display: inline-block;
-    padding-right: calc($padding/2);
-    /* line-height: normal; */
-    width: calc($button-size / 2);
   }
 }
 
@@ -85,7 +86,7 @@
   &:before {
     /* @mixin fa; */
     /*    fa-pause */
-    content: "\f04c";
+    /* content: "\f04c"; */
   }
 }
 
@@ -93,23 +94,19 @@
   /* @mixin block-group; */
   /* margin-left: $channel-player-height; */
   /* padding: 0 $padding; */
-  padding-left: $padding;
-  font-size: 1.6rem;
-  font-weight: 400;
-  flex: 1;
+  /* padding-left: $padding; */
 }
 
 .rendition--meta--artist,
 .rendition--meta--duration,
 .rendition--meta--album {
   /* @mixin block; */
-  display: inline-block;
+  /* display: inline-block; */
 }
 
 .rendition--meta--artist,
 .rendition--meta--duration,
 .rendition--meta--album {
-  font-size: 1.4rem;
 }
 .rendition--meta--duration {
   margin-left: $padding;
@@ -134,6 +131,7 @@
   flex: 1;
   cursor: pointer;
   align-items: stretch;
+  flex-direction: row;
 }
 .rendition--play-pause-btn {
   /* @mixin fa-btn "\f04b"; */
@@ -157,17 +155,49 @@
 }
 
 .rendition--details {
+  flex: 1;
   /* white-space: nowrap; */
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  padding-left: $padding;
 }
 
 .rendition--details--top {
   @mixin h2;
-  padding-left: $padding;
-  display: flex;
-  align-items: baseline;
-  flex: 1;
+  /* padding-left: $padding; */
+  /* display: flex; */
+  /* align-items: baseline; */
+  /* flex: 1; */
 
 }
+
+.rendition--progress {
+  flex: 0 0 $button-size;
+  position: relative;
+  &:before {
+    @mixin fa;
+    content: "\f04b";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    line-height: $button-size;
+    text-align: center;
+    font-size: calc($button-size / 3);
+  }
+}
+.rendition--progress__playing {
+  &:before {
+    content: "\f04c";
+
+  }
+}
+.rendition--progress svg.progress-circular--root {
+  width: calc($button-size - 6);
+  height: calc($button-size - 6);
+  margin: 3px;
+  display: block;
+}
+
