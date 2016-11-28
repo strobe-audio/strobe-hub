@@ -20,7 +20,7 @@ defmodule Peel.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :sqlite_ecto, :ecto, :work_queue, :otis_library, :uuid],
+    [applications: [:logger, :sqlite_ecto, :ecto, :work_queue, :otis_library, :uuid, :httpoison, :floki, :poison],
      mod: {Peel, []}]
   end
 
@@ -45,6 +45,9 @@ defmodule Peel.Mixfile do
       {:work_queue, github: "pragdave/work_queue"},
       # {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
       {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
+      {:httpoison, "~> 0.9.0"},
+      {:floki, "~> 0.11.0"},
+      {:poison, "~> 1.0"},
     ]
   end
 end

@@ -16,6 +16,7 @@ defmodule Peel do
       worker(Peel.Events, []),
       worker(Peel.CoverArt, []),
       worker(Peel.CoverArt.Importer, []),
+      worker(MusicBrainz.Client, []),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

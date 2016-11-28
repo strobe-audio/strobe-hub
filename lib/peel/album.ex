@@ -38,7 +38,7 @@ defmodule Peel.Album do
 
   def without_cover_image do
     from(a in Album,
-      where: is_nil(a.cover_image)
+      where: (is_nil(a.cover_image) or (a.cover_image == ""))
     ) |> Repo.all
   end
 
