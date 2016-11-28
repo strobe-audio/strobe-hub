@@ -51,8 +51,8 @@ defmodule Otis.Startup do
   defp restore_source_list([channel | channels]) do
     {:ok, channel_id} = Otis.Channel.id(channel)
     {:ok, source_list} = Otis.Channel.source_list(channel)
-    sources = Otis.State.Source.restore(channel_id)
-    Otis.SourceList.replace(source_list, sources)
+    renditions = Otis.State.Rendition.restore(channel_id)
+    Otis.SourceList.replace(source_list, renditions)
     restore_source_list(channels)
   end
 

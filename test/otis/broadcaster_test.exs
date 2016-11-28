@@ -326,7 +326,7 @@ defmodule Otis.BroadcasterTest do
     assert_receive {:emit, _, _}, 200
 
 
-    assert_receive {:source_changed, [^channel_id, nil, ^source_id1]}, 200
+    assert_receive {:rendition_changed, [^channel_id, nil, ^source_id1]}, 200
 
 
     Enum.each 2..10, fn(n) ->
@@ -334,7 +334,7 @@ defmodule Otis.BroadcasterTest do
       assert_receive {:emit, _, _}, 200
     end
 
-    assert_receive {:source_changed, [^channel_id, ^source_id1, ^source_id2]}, 200
+    assert_receive {:rendition_changed, [^channel_id, ^source_id1, ^source_id2]}, 200
 
     Enum.each 10..19, fn(n) ->
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
@@ -387,7 +387,7 @@ defmodule Otis.BroadcasterTest do
 
     [source_id2, _] = source2
 
-    assert_receive {:source_changed, [^channel_id, ^source_id2, nil]}, 200
+    assert_receive {:rendition_changed, [^channel_id, ^source_id2, nil]}, 200
   end
 
   test "it broadcasts a stream stop event", %{ channel_id: channel_id } = context do
@@ -447,7 +447,7 @@ defmodule Otis.BroadcasterTest do
       Otis.Test.SteppingController.step(clock, time + (n * poll_interval), poll_interval)
       assert_receive {:emit, _, _}, 200, "Not received #{n}"
       %{ offset_ms: position } = packet
-      assert_receive {:source_progress, [^channel_id, ^source_id1, ^position, 60_000]}
+      assert_receive {:rendition_progress, [^channel_id, ^source_id1, ^position, 60_000]}
       Otis.Packet.step(packet)
     end
   end

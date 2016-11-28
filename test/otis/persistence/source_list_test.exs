@@ -13,15 +13,15 @@ defmodule Otis.Persistence.SourceListTest do
 
   test "emits events  when cleared", %{id: list_id} = context do
     {:ok, 1} = Otis.SourceList.append(context.source_list, TestSource.new)
-    assert_receive {:new_source_created, _}
+    assert_receive {:new_rendition_created, _}
     {:ok, 2} = Otis.SourceList.append(context.source_list, TestSource.new)
-    assert_receive {:new_source_created, _}
+    assert_receive {:new_rendition_created, _}
     {:ok, [entry1, entry2]} = Otis.SourceList.list(context.source_list)
 
     Otis.SourceList.clear(context.source_list)
 
-    Enum.each [entry1, entry2], fn({source_id, 0, _source}) ->
-      assert_receive {:source_deleted, [^source_id, ^list_id]}
+    Enum.each [entry1, entry2], fn({rendition_id, 0, _rendition}) ->
+      assert_receive {:rendition_deleted, [^rendition_id, ^list_id]}
     end
 
     assert_receive {:source_list_cleared, [^list_id]}
@@ -29,19 +29,19 @@ defmodule Otis.Persistence.SourceListTest do
 
   test "deletes the matching db entries when cleared", %{id: list_id} = context do
     {:ok, 1} = Otis.SourceList.append(context.source_list, TestSource.new)
-    assert_receive {:new_source_created, _}
+    assert_receive {:new_rendition_created, _}
     {:ok, 2} = Otis.SourceList.append(context.source_list, TestSource.new)
-    assert_receive {:new_source_created, _}
+    assert_receive {:new_rendition_created, _}
     {:ok, [{id1, _, _}, {id2, _, _}]} = Otis.SourceList.list(context.source_list)
-    assert Enum.map(Otis.State.Source.all, fn(s) -> s.id end) == [id1, id2]
+    assert Enum.map(Otis.State.Rendition.all, fn(s) -> s.id end) == [id1, id2]
 
     Otis.SourceList.clear(context.source_list)
 
     Enum.each [id1, id2], fn(id) ->
-      assert_receive {:source_deleted, [^id, ^list_id]}
+      assert_receive {:rendition_deleted, [^id, ^list_id]}
     end
 
     assert_receive {:source_list_cleared, [^list_id]}
-    assert Otis.State.Source.all == []
+    assert Otis.State.Rendition.all == []
   end
 end

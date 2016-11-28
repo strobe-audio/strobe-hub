@@ -1,8 +1,8 @@
-defmodule Otis.State.Source do
+defmodule Otis.State.Rendition do
   use    Ecto.Schema
   import Ecto.Query
 
-  alias Otis.State.Source
+  alias Otis.State.Rendition
   alias Otis.State.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -17,47 +17,47 @@ defmodule Otis.State.Source do
   end
 
   def delete_all do
-    Source |> Repo.delete_all
+    Rendition |> Repo.delete_all
   end
 
-  def delete!(source) do
-    source |> Repo.delete!
+  def delete!(rendition) do
+    rendition |> Repo.delete!
   end
 
   def all do
-    Source |> order_by([:channel_id, :position]) |> Repo.all
+    Rendition |> order_by([:channel_id, :position]) |> Repo.all
   end
 
   def for_channel(%Otis.Channel{id: id}) do
     for_channel(id)
   end
   def for_channel(channel_id) do
-    Source |> where(channel_id: ^channel_id) |> order_by(:position) |> Repo.all
+    Rendition |> where(channel_id: ^channel_id) |> order_by(:position) |> Repo.all
   end
 
   def restore(%Otis.Channel{id: id}) do
     restore(id)
   end
   def restore(channel_id) when is_binary(channel_id) do
-    channel_id |> for_channel |> restore_source([])
+    channel_id |> for_channel |> restore_rendition([])
   end
 
-  defp restore_source([], sources) do
-    Enum.reverse(sources)
+  defp restore_rendition([], renditions) do
+    Enum.reverse(renditions)
   end
-  defp restore_source([record | records], sources) do
-    restore_source(records, [list_entry(record) | sources])
+  defp restore_rendition([record | records], renditions) do
+    restore_rendition(records, [list_entry(record) | renditions])
   end
 
-  def reload({id, _playback_position, _source} = entry) do
+  def reload({id, _playback_position, _rendition} = entry) do
     id |> find() |> reload_entry(entry)
   end
 
   def reload_entry(nil, original) do
     original
   end
-  def reload_entry(record, {_id, _position, source}) do
-    list_entry(record, source)
+  def reload_entry(record, {_id, _position, rendition}) do
+    list_entry(record, rendition)
   end
 
   def list_entry(record) do
@@ -80,15 +80,15 @@ defmodule Otis.State.Source do
   end
 
   def find(id) do
-    Source |> where(id: ^id) |> limit(1) |> Repo.one
+    Rendition |> where(id: ^id) |> limit(1) |> Repo.one
   end
 
-  def create!(source) do
-    source |> Repo.insert!
+  def create!(rendition) do
+    rendition |> Repo.insert!
   end
 
-  def played!(source, channel_id) do
-    source |> delete!
+  def played!(rendition, channel_id) do
+    rendition |> delete!
     renumber(channel_id)
   end
 
@@ -100,8 +100,8 @@ defmodule Otis.State.Source do
     |> Enum.each(&Repo.update!/1)
   end
 
-  def playback_position(source, position) do
-    source
+  def playback_position(rendition, position) do
+    rendition
     |> Ecto.Changeset.change(playback_position: position)
     |> Repo.update!
   end

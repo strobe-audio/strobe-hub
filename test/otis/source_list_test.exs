@@ -24,17 +24,17 @@ defmodule Otis.SourceListTest do
   alias Otis.Source.Test, as: TS
 
   def persist_list({:ok, list}) do
-    {:ok, sources} = Otis.SourceList.list(list)
+    {:ok, renditions} = Otis.SourceList.list(list)
     Otis.State.Repo.transaction fn ->
-      Enum.each(Enum.with_index(sources), fn({{id, pp, s}, i}) ->
-        %Otis.State.Source{
+      Enum.each(Enum.with_index(renditions), fn({{id, pp, s}, i}) ->
+        %Otis.State.Rendition{
           id: id,
           position: i,
           playback_position: pp,
           source_id: s.id,
           source_type: to_string(Otis.Source.Test),
         }
-        |> Otis.State.Source.create!
+        |> Otis.State.Rendition.create!
       end)
     end
     {:ok, list}
@@ -56,29 +56,29 @@ defmodule Otis.SourceListTest do
   end
 
   test "it gives each source a unique id", %{source_list: list} do
-    {:ok, sources} = Otis.SourceList.list(list)
-    ids = Enum.map sources, fn({id, 0, _source}) -> id end
+    {:ok, renditions} = Otis.SourceList.list(list)
+    ids = Enum.map renditions, fn({id, 0, _source}) -> id end
     assert length(Enum.uniq(ids)) == length(ids)
   end
 
-  test "it gives new sources a unique id", %{source_list: list} = context do
+  test "it gives new renditions a unique id", %{source_list: list} = _context do
     source = TS.new("e")
-    {:ok, sources} = Otis.SourceList.list(list)
-    l = length(sources)
+    {:ok, renditions} = Otis.SourceList.list(list)
+    l = length(renditions)
     Otis.SourceList.append(list, source)
-    {:ok, sources} = Otis.SourceList.list(list)
-    ids = Enum.map sources, fn({id, 0, _source}) -> id end
+    {:ok, renditions} = Otis.SourceList.list(list)
+    ids = Enum.map renditions, fn({id, 0, _source}) -> id end
     assert length(Enum.uniq(ids)) == length(ids)
     assert length(ids) == l + 1
   end
 
-  test "it gives new multiple sources unique ids", %{source_list: list} do
+  test "it gives new multiple renditions unique ids", %{source_list: list} do
     new_sources = [TS.new("e"), TS.new("f")]
-    {:ok, sources} = Otis.SourceList.list(list)
-    l = length(sources)
+    {:ok, renditions} = Otis.SourceList.list(list)
+    l = length(renditions)
     Otis.SourceList.append(list, new_sources)
-    {:ok, sources} = Otis.SourceList.list(list)
-    ids = Enum.map sources, fn({id, 0, _source}) -> id end
+    {:ok, renditions} = Otis.SourceList.list(list)
+    ids = Enum.map renditions, fn({id, 0, _source}) -> id end
     assert length(Enum.uniq(ids)) == length(ids)
     assert length(ids) == l + 2
   end
@@ -102,8 +102,8 @@ defmodule Otis.SourceListTest do
   end
 
   test "skips to next track", context do
-    {:ok, sources} = Otis.SourceList.list(context.source_list)
-    ids = Enum.map sources, fn({id, _pos, _source}) -> id end
+    {:ok, renditions} = Otis.SourceList.list(context.source_list)
+    ids = Enum.map renditions, fn({id, _pos, _source}) -> id end
     {:ok, id} = Enum.fetch ids, 0
     {:ok, 4} = Otis.SourceList.skip(context.source_list, id)
     {:ok, {_id, 0, source}} = Otis.SourceList.next(context.source_list)
@@ -116,8 +116,8 @@ defmodule Otis.SourceListTest do
   end
 
   test "can skip to a source id", context do
-    {:ok, sources} = Otis.SourceList.list(context.source_list)
-    ids = Enum.map sources, fn({id, _pos, _source}) -> id end
+    {:ok, renditions} = Otis.SourceList.list(context.source_list)
+    ids = Enum.map renditions, fn({id, _pos, _source}) -> id end
     {:ok, id} = Enum.fetch ids, 3
     {:ok, 1} = Otis.SourceList.skip(context.source_list, id)
     {:ok, {_id, 0, source}} = Otis.SourceList.next(context.source_list)
@@ -127,55 +127,55 @@ defmodule Otis.SourceListTest do
   test "emits a state change event when appending a source", %{id: list_id} = context do
     source = TS.new("e")
     Otis.SourceList.append(context.source_list, source)
-    {:ok, sources} = Otis.SourceList.list(context.source_list)
-    {source_id, 0, _} = List.last(sources)
-    assert_receive {:new_source, [^list_id, 4, {^source_id, 0, %{id: "e"}}]}, 200
+    {:ok, renditions} = Otis.SourceList.list(context.source_list)
+    {source_id, 0, _} = List.last(renditions)
+    assert_receive {:new_rendition, [^list_id, 4, {^source_id, 0, %{id: "e"}}]}, 200
   end
 
   test "emits a state change event when inserting a source", %{id: list_id} = context do
     source = TS.new("e")
     Otis.SourceList.insert_source(context.source_list, source, 0)
-    {:ok, sources} = Otis.SourceList.list(context.source_list)
-    {source_id, 0, _} = List.first(sources)
-    assert_receive {:new_source, [^list_id, 0, {^source_id, 0, %{id: "e"}}]}, 2000
+    {:ok, renditions} = Otis.SourceList.list(context.source_list)
+    {source_id, 0, _} = List.first(renditions)
+    assert_receive {:new_rendition, [^list_id, 0, {^source_id, 0, %{id: "e"}}]}, 2000
 
     source = TS.new("f")
     Otis.SourceList.insert_source(context.source_list, source, -3)
-    {:ok, sources} = Otis.SourceList.list(context.source_list)
-    {source_id, 0, _} = Enum.at(sources, -3)
-    assert_receive {:new_source, [^list_id, 3, {^source_id, 0, %{id: "f"}}]}, 200
+    {:ok, renditions} = Otis.SourceList.list(context.source_list)
+    {source_id, 0, _} = Enum.at(renditions, -3)
+    assert_receive {:new_rendition, [^list_id, 3, {^source_id, 0, %{id: "f"}}]}, 200
   end
 
   test "calculates the inserted position correctly when list has active source", %{id: list_id} = context do
-    {:ok, sources} = Otis.SourceList.list(context.source_list)
+    {:ok, renditions} = Otis.SourceList.list(context.source_list)
     source = TS.new("e")
     {:ok, {_id, _position, _source}} = Otis.SourceList.next(context.source_list)
     Otis.SourceList.insert_source(context.source_list, source, 0)
-    assert_receive {:new_source, [^list_id, 1, {_, 0, %{id: "e"}}]}, 200
+    assert_receive {:new_rendition, [^list_id, 1, {_, 0, %{id: "e"}}]}, 200
 
     Otis.SourceList.insert_source(context.source_list, source, -1)
-    position = length(sources) + 1
-    assert_receive {:new_source, [^list_id, ^position, {_, 0, %{id: "e"}}]}, 200
+    position = length(renditions) + 1
+    assert_receive {:new_rendition, [^list_id, ^position, {_, 0, %{id: "e"}}]}, 200
   end
 
   test "doesn't delete an active source", %{id: list_id} = context do
-    {:ok, [active | sources]} = Otis.SourceList.list(context.source_list)
+    {:ok, [active | renditions]} = Otis.SourceList.list(context.source_list)
     {:ok, {_id, _position, _source}} = Otis.SourceList.next(context.source_list)
     assert {:ok, active} == Otis.SourceList.active(context.source_list)
     Otis.SourceList.clear(context.source_list)
     assert_receive {:source_list_cleared, [^list_id]}, 200
     # {:ok, active} = IO.inspect Otis.SourceList.active(context.source_list)
-    Enum.each(sources, fn({id, _, _}) ->
-      assert_receive {:source_deleted, [^id, ^list_id]}, 200
+    Enum.each(renditions, fn({id, _, _}) ->
+      assert_receive {:rendition_deleted, [^id, ^list_id]}, 200
     end)
     {active_id, _, _} = active
-    refute_receive {:source_deleted, [^active_id, ^list_id]}, 200
+    refute_receive {:rendition_deleted, [^active_id, ^list_id]}, 200
   end
 
   test "returns updated playback position if state changes after load", context do
     {:ok, [{id, 0, _} | _]} = Otis.SourceList.list(context.source_list)
-    rendition = Otis.State.Source.find(id)
-    Otis.State.Source.playback_position(rendition, 999)
+    rendition = Otis.State.Rendition.find(id)
+    Otis.State.Rendition.playback_position(rendition, 999)
     {:ok, {_id, 999, %TS{id: "a"}}} = Otis.SourceList.next(context.source_list)
     # Otis.State.Source.delete_all()
   end
