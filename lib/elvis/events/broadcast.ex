@@ -25,9 +25,9 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:new_source_created, [rendition]}, state) do
-    source = Otis.State.source(rendition)
-    broadcast!("new_source_created", source)
+  def handle_event({:new_rendition_created, [rendition]}, state) do
+    rendition = Otis.State.rendition(rendition)
+    broadcast!("new_rendition_created", rendition)
     {:ok, state}
   end
 
@@ -41,27 +41,27 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:sources_skipped, [channel_id, source_ids]}, state) do
-    broadcast!("source_changed", %{channelId: channel_id, removeSourceIds: source_ids})
+  def handle_event({:renditions_skipped, [channel_id, rendition_ids]}, state) do
+    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: rendition_ids})
     {:ok, state}
   end
 
-  def handle_event({:source_changed, [_channel_id, nil, _new_source_id]}, state) do
+  def handle_event({:rendition_changed, [_channel_id, nil, _new_rendition_id]}, state) do
     {:ok, state}
   end
-  def handle_event({:source_changed, [channel_id, old_source_id, _new_source_id]}, state) do
-    broadcast!("source_changed", %{channelId: channel_id, removeSourceIds: [old_source_id]})
+  def handle_event({:rendition_changed, [channel_id, old_rendition_id, _new_rendition_id]}, state) do
+    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [old_rendition_id]})
     {:ok, state}
   end
 
-  def handle_event({:source_progress, [_channel_id, _source_id, _progress_ms, :infinity]}, state) do
+  def handle_event({:rendition_progress, [_channel_id, _rendition_id, _progress_ms, :infinity]}, state) do
     {:ok, state}
   end
-  def handle_event({:source_progress, [channel_id, source_id, progress_ms, duration_ms]}, state) do
+  def handle_event({:rendition_progress, [channel_id, rendition_id, progress_ms, duration_ms]}, state) do
     count = case Map.get(state.progress_count, channel_id, 0) do
       0 ->
-        broadcast!("source_progress", %{
-          channelId: channel_id, sourceId: source_id,
+        broadcast!("rendition_progress", %{
+          channelId: channel_id, renditionId: rendition_id,
           progress: progress_ms, duration: duration_ms
         })
         @progress_interval

@@ -47,8 +47,8 @@ subscriptions model =
         [ Ports.broadcasterStateActions
         , Ports.receiverStatusActions
         , Ports.channelStatusActions
-        , Ports.sourceProgressActions
-        , Ports.sourceChangeActions
+        , Ports.renditionProgressActions
+        , Ports.renditionChangeActions
         , Ports.volumeChangeActions
         , Ports.playListAdditionActions
         , Ports.libraryRegistrationActions

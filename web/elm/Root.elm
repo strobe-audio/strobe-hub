@@ -36,7 +36,7 @@ type ChannelListMode
 type alias BroadcasterState =
     { channels : List Channel.State
     , receivers : List Receiver.State
-    , sources : List Rendition.Model
+    , renditions : List Rendition.Model
     }
 
 

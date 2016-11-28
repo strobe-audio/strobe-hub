@@ -44,19 +44,19 @@ channel.on('channel_play_pause', payload => {
   app.ports.channelStatus.send(['channel_play_pause', payload])
 })
 
-channel.on('source_progress', payload => {
-  app.ports.sourceProgress.send(payload)
+channel.on('rendition_progress', payload => {
+  app.ports.renditionProgress.send(payload)
 })
 
-channel.on('source_changed', payload => {
-  app.ports.sourceChange.send(payload)
+channel.on('rendition_changed', payload => {
+  app.ports.renditionChange.send(payload)
 })
 
 channel.on('volume_change', payload => {
   app.ports.volumeChange.send(payload)
 })
 
-channel.on('new_source_created', payload => {
+channel.on('new_rendition_created', payload => {
   app.ports.playlistAddition.send(payload)
 })
 

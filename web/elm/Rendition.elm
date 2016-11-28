@@ -46,7 +46,7 @@ type Msg
 
 type alias ProgressEvent =
     { channelId : String
-    , sourceId : String
+    , renditionId : String
     , progress : Int
     , duration : Int
     }
@@ -54,7 +54,7 @@ type alias ProgressEvent =
 
 type alias ChangeEvent =
     { channelId : String
-    , removeSourceIds : List String
+    , removeRenditionIds : List String
     }
 
 

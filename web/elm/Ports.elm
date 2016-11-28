@@ -58,28 +58,28 @@ channelStatusActions =
         channelStatus forward
 
 
-port sourceProgress : (Rendition.ProgressEvent -> m) -> Sub m
+port renditionProgress : (Rendition.ProgressEvent -> m) -> Sub m
 
 
-sourceProgressActions : Sub Msg
-sourceProgressActions =
+renditionProgressActions : Sub Msg
+renditionProgressActions =
     let
         forward event =
             ((Msg.Channel event.channelId) (Channel.RenditionProgress event))
     in
-        sourceProgress forward
+        renditionProgress forward
 
 
-port sourceChange : (Rendition.ChangeEvent -> m) -> Sub m
+port renditionChange : (Rendition.ChangeEvent -> m) -> Sub m
 
 
-sourceChangeActions : Sub Msg
-sourceChangeActions =
+renditionChangeActions : Sub Msg
+renditionChangeActions =
     let
         forward event =
             ((Msg.Channel event.channelId) (Channel.RenditionChange event))
     in
-        sourceChange forward
+        renditionChange forward
 
 
 port volumeChange : (Root.VolumeChangeEvent -> m) -> Sub m

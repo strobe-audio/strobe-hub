@@ -23,7 +23,7 @@ initialState : BroadcasterState -> Channel.State -> Channel.Model
 initialState broadcasterState channelState =
     let
         renditions =
-            forChannel channelState.id broadcasterState.sources
+            forChannel channelState.id broadcasterState.renditions
 
         model =
             newChannel channelState
@@ -105,13 +105,13 @@ update action channel =
                 ( { channel | playlist = renditions }, Cmd.batch effects )
 
         Channel.RenditionProgress event ->
-            update (Channel.ModifyRendition event.sourceId (Rendition.Progress event))
+            update (Channel.ModifyRendition event.renditionId (Rendition.Progress event))
                 channel
 
         Channel.RenditionChange event ->
             let
                 isMember =
-                    (\r -> (List.member r.id event.removeSourceIds))
+                    (\r -> (List.member r.id event.removeRenditionIds))
 
                 playlist =
                     List.filter (isMember >> not) channel.playlist
