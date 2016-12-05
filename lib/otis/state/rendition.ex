@@ -12,6 +12,7 @@ defmodule Otis.State.Rendition do
     field :source_type,       :string
     field :source_id,         :string
     field :playback_position, :integer
+    field :playback_duration, :integer
 
     belongs_to :channel, Otis.State.Channel, type: Ecto.UUID
   end
@@ -104,5 +105,9 @@ defmodule Otis.State.Rendition do
     rendition
     |> Ecto.Changeset.change(playback_position: position)
     |> Repo.update!
+  end
+
+  def duration(rendition) do
+    rendition.playback_duration - rendition.playback_position
   end
 end
