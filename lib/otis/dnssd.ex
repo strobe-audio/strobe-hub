@@ -36,6 +36,7 @@ defmodule Otis.DNSSD do
     receivers = config(Otis.Receivers)
     [ {:data_port, to_string(receivers[:data_port])},
       {:ctrl_port, to_string(receivers[:ctrl_port])},
+      {:sntp_port, to_string(service_port)},
       {:stream_interval, to_string(Otis.stream_interval_us)},
       {:packet_size, to_string(Otis.stream_bytes_per_step)},
     ]
