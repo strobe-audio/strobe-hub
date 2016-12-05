@@ -7,7 +7,7 @@ defmodule Otis.State.Rendition do
 
   @primary_key {:id, :binary_id, autogenerate: true}
 
-  schema "sources" do
+  schema "renditions" do
     field :position,          :integer
     field :source_type,       :string
     field :source_id,         :string
