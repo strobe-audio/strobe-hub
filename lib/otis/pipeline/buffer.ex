@@ -1,6 +1,9 @@
 defmodule Otis.Pipeline.Buffer do
   use GenServer
 
+  alias Otis.State.Rendition
+  alias Otis.Library.Source
+
   alias Otis.Pipeline.Producer
   alias Otis.Packet
 
@@ -18,38 +21,35 @@ defmodule Otis.Pipeline.Buffer do
     ]
   end
 
-  defstruct [:pid]
-
-  def new(id, stream, packet_size, packet_duration_ms, buffer_size) do
-    {:ok, pid} = start_link(id, stream, packet_size, packet_duration_ms, buffer_size)
-    %__MODULE__{pid: pid}
+  def start_link(name, rendition, config, transcoder_module) do
+    GenServer.start_link(__MODULE__, [rendition, config, transcoder_module], [name: name])
   end
 
-  def next(pid) do
-    GenServer.call(pid, :next)
-  end
-
-  def start_link(id, stream, packet_size, packet_duration_ms, buffer_size) do
-    GenServer.start_link(__MODULE__, [id, stream, packet_size, packet_duration_ms, buffer_size])
-  end
-
-  def init([id, stream, packet_size, packet_duration_ms, buffer_size]) do
+  def init([rendition, config, transcoder_module]) do
+    source = Rendition.source(rendition)
+    stream = Source.open!(source, rendition.id, config.packet_size)
+    {:ok, transcoder} = transcoder(transcoder_module, rendition, source, stream)
     {:ok, %S{
-      id: id,
-      packet_size: packet_size,
-      buffer_size: (buffer_size * packet_size),
-      packet_duration_ms: packet_duration_ms,
-      stream: stream,
+      id: rendition.id,
+      packet_size: config.packet_size,
+      buffer_size: (config.buffer_packets * config.packet_size),
+      packet_duration_ms: config.packet_duration_ms,
+      stream: transcoder,
     }}
   end
 
+  defp transcoder(transcoder_module, rendition, source, stream) do
+    Kernel.apply(transcoder_module, :start_link, [source, stream, rendition.playback_position])
+  end
+
+  def handle_call(:stream, _from, state) do
+    {:reply, {:ok, state.stream}, state}
+  end
   def handle_call(:next, _from, state) do
-    {reply, state} =
-      case next_packet(state) do
-        {:done,  state} -> {:done, state}
-        {packet, state} -> {{state.status, packet}, state}
-      end
-    {:reply, reply, state}
+    case next_packet(state) do
+      {:done,  state} -> {:stop, {:shutdown, :normal}, :done, state}
+      {packet, state} -> {:reply, {state.status, packet}, state}
+    end
   end
 
   def next_packet(%S{status: :ok, buffer: buffer, buffer_size: s} = state) when byte_size(buffer) < s do
@@ -70,7 +70,7 @@ defmodule Otis.Pipeline.Buffer do
   defp packet(%S{status: :done, empty: true, packet_size: packet_size, buffer: buffer} = state) when byte_size(buffer) < packet_size do
     {:done, state}
   end
-  defp packet(%S{status: :done, packet_size: packet_size, buffer: buffer} = state) when byte_size(buffer) == 0 do
+  defp packet(%S{status: :done, buffer: buffer} = state) when byte_size(buffer) == 0 do
     {:done, state}
   end
   defp packet(%S{status: :done, packet_size: packet_size, buffer: buffer} = state) when byte_size(buffer) < packet_size do
@@ -91,13 +91,5 @@ defmodule Otis.Pipeline.Buffer do
 
   def pad(required_size, size) do
     :binary.copy(<<0>>, required_size - size)
-  end
-end
-
-defimpl Otis.Pipeline.Producer, for: Otis.Pipeline.Buffer do
-  alias Otis.Pipeline.Buffer
-
-  def next(buffer) do
-    Buffer.next(buffer.pid)
   end
 end

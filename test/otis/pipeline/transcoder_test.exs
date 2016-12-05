@@ -14,8 +14,8 @@ defmodule Test.Otis.Pipeline.Transcoder do
     id = Otis.uuid()
     source = Otis.Source.File.new!(test_file("silent.mp3"))
     stream = Source.open!(source, id, 64)
-    transcoder = Transcoder.new(id, source, stream, 0)
-    stream = Producer.Stream.new(transcoder)# Stream.resource(start, next, stop)
+    {:ok, transcoder} = Transcoder.start_link(source, stream, 0)
+    stream = Producer.stream(transcoder)# Stream.resource(start, next, stop)
     hash = :crypto.hash_init(:md5)
     {data, hash} = Enum.reduce(stream, { <<>>, hash }, fn(data, {acc, md5}) ->
       md5 = :crypto.hash_update(md5, data)
@@ -31,8 +31,8 @@ defmodule Test.Otis.Pipeline.Transcoder do
     id = Otis.uuid()
     source = Otis.Source.File.new!(test_file("snake-rag.mp3"))
     stream = Source.open!(source, id, 64)
-    transcoder = Transcoder.new(id, source, stream, 0)
-    stream = Producer.Stream.new(transcoder)# Stream.resource(start, next, stop)
+    {:ok, transcoder} = Transcoder.start_link(source, stream, 0)
+    stream = Producer.stream(transcoder)# Stream.resource(start, next, stop)
     hash = :crypto.hash_init(:md5)
     {data, hash} = Enum.reduce(stream, { <<>>, hash }, fn(data, {acc, md5}) ->
       md5 = :crypto.hash_update(md5, data)

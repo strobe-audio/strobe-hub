@@ -19,7 +19,7 @@ defmodule Test.Otis.Pipeline.Hub do
 
   def rendition(source, table) do
     id = Otis.uuid()
-    :ets.insert(table, {id, source.pid})
+    :ets.insert(table, {id, source})
     %Rendition{id: Otis.uuid(), channel_id: @channel_id, source_type: Source.type(source) |> to_string, source_id: {table, id}, playback_duration: 1000, playback_position: 0, position: 0}
 
   end
@@ -28,6 +28,7 @@ defmodule Test.Otis.Pipeline.Hub do
     source = CycleSource.new([1, 2, 3], -1)
     r1 = rendition(source, context.table)
     s = Rendition.source(r1)
+    %CycleSource{} = s
     assert {:ok, 1} == Producer.next(s)
     assert {:ok, 2} == Producer.next(s)
     assert {:ok, 3} == Producer.next(s)
@@ -46,7 +47,12 @@ defmodule Test.Otis.Pipeline.Hub do
     {:ok, _} = Playlist.list(pl) # make sure the playlist is synced
 
 
-    hub = Hub.new("hub", pl, 64, 20, Test.PassthroughTranscoder)
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+    }
+    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
     IO.inspect Producer.next(hub)
     IO.inspect Producer.next(hub)
     IO.inspect Producer.next(hub)

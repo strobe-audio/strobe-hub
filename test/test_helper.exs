@@ -121,7 +121,7 @@ defmodule MessagingHandler do
   use GenEvent
 
   def attach do
-    :ok = Otis.State.Events.add_mon_handler(__MODULE__, self)
+    :ok = Otis.State.Events.add_mon_handler(__MODULE__, self())
   end
 
   def init(parent) do
@@ -136,7 +136,7 @@ defmodule MessagingHandler do
   # Allows tests to wait for successful removal of the handler
   #
   #    on_exit fn ->
-  #      Otis.State.Events.remove_handler(MessagingHandler, self)
+  #      Otis.State.Events.remove_handler(MessagingHandler, self())
   #      assert_receive :remove_messaging_handler, 200
   #    end
 
@@ -212,13 +212,12 @@ defmodule Test.CycleSource do
     {:ok, pid} = GenServer.start_link(__MODULE__, [source, cycles])
     %__MODULE__{pid: pid}
   end
+  def start_link(source, cycles \\ 1) do
+    GenServer.start_link(__MODULE__, [source, cycles])
+  end
 
   def init([source, cycles]) do
     {:ok, {source, [], cycles}}
-  end
-
-  def next(pid) do
-    GenServer.call(pid, :next)
   end
 
   def handle_call(:next, _from, {source, sink, cycles}) when cycles == 0 do
@@ -236,43 +235,24 @@ end
 defmodule Test.PassthroughTranscoder do
   use GenServer
 
-  defstruct [:pid]
-
-  def new(_id, _source, inputstream, _playback_position) do
-    {:ok, pid} = start_link(inputstream)
-    %__MODULE__{pid: pid}
+  def start_link(_source, inputstream, _playback_position) do
+    GenServer.start_link(__MODULE__, inputstream)
   end
 
-  def next(pid) do
-    GenServer.call(pid, :next)
+  def init(stream) do
+    {:ok, stream}
   end
 
-  def start_link(source) do
-    GenServer.start_link(__MODULE__, source)
-  end
-
-  def init(source) do
-    {:ok, source}
-  end
-
-  def handle_call(:next, _from, source) do
-    resp = case Enum.take(source, 1) do
+  def handle_call(:next, _from, stream) do
+    resp = case Enum.take(stream, 1) do
       [] -> :done
       [v] -> {:ok, v}
     end
-    {:reply, resp, source}
-  end
-end
-
-defimpl Otis.Pipeline.Producer, for: Test.CycleSource do
-  alias Test.CycleSource
-  def next(%CycleSource{pid: pid}) do
-    CycleSource.next(pid)
+    {:reply, resp, stream}
   end
 end
 
 defimpl Otis.Library.Source, for: Test.CycleSource do
-  alias Test.Otis.Pipeline.CycleSource
   def id(_source) do
     ""
   end
@@ -280,7 +260,7 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
     Test.CycleSource
   end
   def open!(source, _id, _packet_size_bytes) do
-    Otis.Pipeline.Producer.Stream.new(source)
+    Otis.Pipeline.Producer.stream(source.pid)
   end
   def pause(_source, _id, _stream) do
     :ok
@@ -303,16 +283,9 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
 end
 
 defimpl Otis.Library.Source.Origin, for: Test.CycleSource do
-  def load!(%Test.CycleSource{id: {table, id}} = source) do
-    [{_, pid}] = :ets.lookup(table, id)
-    %Test.CycleSource{ source | pid: pid }
-  end
-end
-
-defimpl Otis.Pipeline.Producer, for: Test.PassthroughTranscoder do
-  alias Test.PassthroughTranscoder
-  def next(%PassthroughTranscoder{pid: pid}) do
-    PassthroughTranscoder.next(pid)
+  def load!(%Test.CycleSource{id: {table, id}} = _source) do
+    [{_, source}] = IO.inspect :ets.lookup(table, id)
+    source
   end
 end
 

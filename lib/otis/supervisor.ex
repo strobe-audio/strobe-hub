@@ -21,6 +21,10 @@ defmodule Otis.Supervisor do
       worker(Otis.State.Repo, []),
       worker(Otis.State.Events, []),
       worker(Otis.State.Persistence, []),
+
+      supervisor(Registry, [:unique, Otis.Pipeline.Streams.namespace()]),
+      supervisor(Otis.Pipeline.Streams, []),
+
       worker(Otis.Receivers.Database, []),
       worker(Otis.Receivers, []),
 
