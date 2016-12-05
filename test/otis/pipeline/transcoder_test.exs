@@ -6,7 +6,6 @@ defmodule Test.Otis.Pipeline.Transcoder do
   alias Otis.Pipeline.Producer
 
   @dir Path.expand("../../fixtures", __DIR__)
-  @channel_id Otis.uuid()
 
   def test_file(filename), do: Path.join(@dir, filename)
 

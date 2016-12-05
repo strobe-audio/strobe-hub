@@ -7,6 +7,8 @@ defmodule Otis.Pipeline.Buffer do
   alias Otis.Pipeline.Producer
   alias Otis.Packet
 
+  require Logger
+
   defmodule S do
     defstruct [
       :id,
@@ -14,6 +16,7 @@ defmodule Otis.Pipeline.Buffer do
       :buffer_size,
       :packet_duration_ms,
       :stream,
+      :transcoder_module,
       n: 0,
       status: :ok,
       empty: false,
@@ -26,20 +29,20 @@ defmodule Otis.Pipeline.Buffer do
   end
 
   def init([rendition, config, transcoder_module]) do
-    source = Rendition.source(rendition)
-    stream = Source.open!(source, rendition.id, config.packet_size)
-    {:ok, transcoder} = transcoder(transcoder_module, rendition, source, stream)
+    # Start our stream after returning from this init call so that our parent
+    # isn't tied up waiting for sources to open
+    GenServer.cast(self(), {:init, rendition.id, transcoder_module})
     {:ok, %S{
       id: rendition.id,
       packet_size: config.packet_size,
       buffer_size: (config.buffer_packets * config.packet_size),
       packet_duration_ms: config.packet_duration_ms,
-      stream: transcoder,
     }}
   end
 
-  defp transcoder(transcoder_module, rendition, source, stream) do
-    Kernel.apply(transcoder_module, :start_link, [source, stream, rendition.playback_position])
+  def handle_cast({:init, rendition_id, transcoder_module}, state) do
+    state = rendition_id |> Rendition.find() |> start_stream(rendition_id, transcoder_module, state)
+    {:noreply, state}
   end
 
   def handle_call(:stream, _from, state) do
@@ -52,6 +55,24 @@ defmodule Otis.Pipeline.Buffer do
     end
   end
 
+  def start_stream(nil, rendition_id, _transcoder_module, state) do
+    Logger.warn("Rendition #{rendition_id} not found")
+    state
+  end
+  def start_stream(rendition, rendition_id, transcoder_module, state) do
+    source = Rendition.source(rendition)
+    stream = Source.open!(source, rendition_id, state.packet_size)
+    {:ok, transcoder} = transcoder(transcoder_module, rendition, source, stream)
+    %S{ state | stream: transcoder }
+  end
+
+  defp transcoder(transcoder_module, rendition, source, stream) do
+    Kernel.apply(transcoder_module, :start_link, [source, stream, rendition.playback_position])
+  end
+
+  def next_packet(%S{stream: nil} = state) do
+    {:done, state}
+  end
   def next_packet(%S{status: :ok, buffer: buffer, buffer_size: s} = state) when byte_size(buffer) < s do
     state = append(Producer.next(state.stream), state)
     next_packet(state)

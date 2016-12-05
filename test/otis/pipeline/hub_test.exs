@@ -10,8 +10,10 @@ defmodule Test.Otis.Pipeline.Hub do
 
   @dir Path.expand("../../fixtures", __DIR__)
   @channel_id Otis.uuid()
+  @table :cycle_sources
+
   setup do
-    table = :ets.new(:cycle_sources, [:set, :public])
+    table = :ets.new(@table, [:set, :public, :named_table])
     {:ok, table: table}
   end
 
@@ -20,8 +22,7 @@ defmodule Test.Otis.Pipeline.Hub do
   def rendition(source, table) do
     id = Otis.uuid()
     :ets.insert(table, {id, source})
-    %Rendition{id: Otis.uuid(), channel_id: @channel_id, source_type: Source.type(source) |> to_string, source_id: {table, id}, playback_duration: 1000, playback_position: 0, position: 0}
-
+    %Rendition{id: Otis.uuid(), channel_id: @channel_id, source_type: Source.type(source) |> to_string, source_id: Enum.join([@table, id], ":"), playback_duration: 1000, playback_position: 0, position: 0} |> Rendition.create!
   end
 
   test "source lookup", context do

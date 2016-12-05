@@ -6,14 +6,16 @@ defmodule Test.Otis.Pipeline.Buffer do
   alias Test.CycleSource
   alias Otis.Pipeline.Producer
 
+  @table :cycle_sources
+
   setup do
-    table = :ets.new(:cycle_sources, [:set, :public])
+    table = :ets.new(@table, [:set, :public, :named_table])
     {:ok, table: table}
   end
 
   def rendition(id, source, table) do
     :ets.insert(table, {id, source})
-    %Rendition{id: id, channel_id: @channel_id, source_type: Source.type(source) |> to_string, source_id: {table, id}, playback_duration: 1000, playback_position: 0, position: 0}
+    %Rendition{id: id, source_type: Source.type(source) |> to_string, source_id: Enum.join([@table, id], ":"), playback_duration: 1000, playback_position: 0, position: 0} |> Rendition.create!
   end
 
   test "streaming from source", context do
