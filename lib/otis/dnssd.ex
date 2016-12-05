@@ -15,8 +15,8 @@ defmodule Otis.DNSSD do
     {:ok, %{ref: ref}}
   end
 
-  def handle_info({:dnssd, _ref, msg}, state) do
-    IO.inspect [__MODULE__, msg]
+  def handle_info({:dnssd, _ref, _msg}, state) do
+    # IO.inspect [__MODULE__, msg]
     {:noreply, state}
   end
 
