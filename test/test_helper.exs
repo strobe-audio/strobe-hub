@@ -203,6 +203,119 @@ defimpl Otis.Library.Source.Origin, for: Otis.Test.TestSource do
 end
 
 
+defmodule Test.CycleSource do
+  use GenServer
+
+  defstruct [:id, :pid]
+
+  def new(source, cycles \\ 1) do
+    {:ok, pid} = GenServer.start_link(__MODULE__, [source, cycles])
+    %__MODULE__{pid: pid}
+  end
+
+  def init([source, cycles]) do
+    {:ok, {source, [], cycles}}
+  end
+
+  def next(pid) do
+    GenServer.call(pid, :next)
+  end
+
+  def handle_call(:next, _from, {source, sink, cycles}) when cycles == 0 do
+    {:reply, :done, {source, sink, cycles}}
+  end
+  def handle_call(:next, from, {[], sink, cycles}) do
+    source = Enum.reverse(sink)
+    handle_call(:next, from, {source, [], cycles - 1})
+  end
+  def handle_call(:next, _from, {[h | t], sink, cycles}) do
+    {:reply, {:ok, h}, {t, [h | sink], cycles}}
+  end
+end
+
+defmodule Test.PassthroughTranscoder do
+  use GenServer
+
+  defstruct [:pid]
+
+  def new(_id, _source, inputstream, _playback_position) do
+    {:ok, pid} = start_link(inputstream)
+    %__MODULE__{pid: pid}
+  end
+
+  def next(pid) do
+    GenServer.call(pid, :next)
+  end
+
+  def start_link(source) do
+    GenServer.start_link(__MODULE__, source)
+  end
+
+  def init(source) do
+    {:ok, source}
+  end
+
+  def handle_call(:next, _from, source) do
+    resp = case Enum.take(source, 1) do
+      [] -> :done
+      [v] -> {:ok, v}
+    end
+    {:reply, resp, source}
+  end
+end
+
+defimpl Otis.Pipeline.Producer, for: Test.CycleSource do
+  alias Test.CycleSource
+  def next(%CycleSource{pid: pid}) do
+    CycleSource.next(pid)
+  end
+end
+
+defimpl Otis.Library.Source, for: Test.CycleSource do
+  alias Test.Otis.Pipeline.CycleSource
+  def id(_source) do
+    ""
+  end
+  def type(_source) do
+    Test.CycleSource
+  end
+  def open!(source, _id, _packet_size_bytes) do
+    Otis.Pipeline.Producer.Stream.new(source)
+  end
+  def pause(_source, _id, _stream) do
+    :ok
+  end
+  def resume!(_source, _id, stream) do
+    {:reuse, stream}
+  end
+  def close(_file, _id, _stream) do
+    :ok
+  end
+  def audio_type(_source) do
+    {".raw", "audio/raw"}
+  end
+  def metadata(_source) do
+    %{}
+  end
+  def duration(_source) do
+    0
+  end
+end
+
+defimpl Otis.Library.Source.Origin, for: Test.CycleSource do
+  def load!(%Test.CycleSource{id: {table, id}} = source) do
+    [{_, pid}] = :ets.lookup(table, id)
+    %Test.CycleSource{ source | pid: pid }
+  end
+end
+
+defimpl Otis.Pipeline.Producer, for: Test.PassthroughTranscoder do
+  alias Test.PassthroughTranscoder
+  def next(%PassthroughTranscoder{pid: pid}) do
+    PassthroughTranscoder.next(pid)
+  end
+end
+
 Faker.start
 Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
