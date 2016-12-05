@@ -34,7 +34,7 @@ defmodule Test.Otis.Pipeline.Hub do
     assert {:ok, 3} == Producer.next(s)
   end
 
-  test "stream", context do
+  test "streaming", context do
     s1 = CycleSource.new([<<"1">>], 1024)
     s2 = CycleSource.new([<<"2">>], 1024)
     s3 = CycleSource.new([<<"3">>], 1024)
@@ -53,22 +53,52 @@ defmodule Test.Otis.Pipeline.Hub do
       buffer_packets: 10,
     }
     {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
-    IO.inspect Producer.next(hub)
+    Enum.each 0..15, fn(_) ->
+      {:ok, p} = Producer.next(hub)
+      assert p.data == String.duplicate("1", 64)
+      assert p.source_id == r1.id
+    end
+    Enum.each 0..15, fn(_) ->
+      {:ok, p} = Producer.next(hub)
+      assert p.data == String.duplicate("2", 64)
+      assert p.source_id == r2.id
+    end
+    Enum.each 0..15, fn(_) ->
+      {:ok, p} = Producer.next(hub)
+      assert p.data == String.duplicate("3", 64)
+      assert p.source_id == r3.id
+    end
+    assert :done == Producer.next(hub)
+    assert :done == Producer.next(hub)
+
+    # Now make sure that the hub starts playing again if we add a source
+    s4 = CycleSource.new([<<"4">>], 1024)
+    r4 = rendition(s4, context.table)
+    Playlist.replace(pl, [r4])
+    Enum.each 0..15, fn(_) ->
+      {:ok, p} = Producer.next(hub)
+      assert p.data == String.duplicate("4", 64)
+      assert p.source_id == r4.id
+    end
+
+    assert :done == Producer.next(hub)
+
+    # Now make sure that the hub starts playing again if we add a source
+    s5 = CycleSource.new([<<"5">>], 1024)
+    r5 = rendition(s5, context.table)
+    s6 = CycleSource.new([<<"6">>], 1024)
+    r6 = rendition(s6, context.table)
+    Playlist.replace(pl, [r5, r6])
+    Enum.each 0..15, fn(_) ->
+      {:ok, p} = Producer.next(hub)
+      assert p.data == String.duplicate("5", 64)
+      assert p.source_id == r5.id
+    end
+    Enum.each 0..15, fn(_) ->
+      {:ok, p} = Producer.next(hub)
+      assert p.data == String.duplicate("6", 64)
+      assert p.source_id == r6.id
+    end
+    assert :done == Producer.next(hub)
   end
 end

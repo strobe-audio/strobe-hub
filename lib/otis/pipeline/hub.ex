@@ -26,7 +26,8 @@ defmodule Otis.Pipeline.Hub do
       :playlist,
       :config,
       :transcoder_module,
-      streams: [],
+      :stream,
+      pending: :queue.new(),
     ]
   end
 
@@ -43,19 +44,65 @@ defmodule Otis.Pipeline.Hub do
     {:ok, state}
   end
 
-  def handle_call(:next, _from, %S{streams: [stream | _]} = state) do
-    IO.inspect Producer.next(stream)
-    {:reply, {:ok, :packet}, state}
+  def handle_call(:next, _from, state) do
+    {reply, state} = next_packet(state)
+    {:reply, reply, state}
   end
 
   defp initialize(state) do
     # TODO: replace :next with :current which returns either :active or the first
     {:ok, rendition} = Playlist.next(state.playlist)
     {:ok, stream} = start_stream(rendition, state)
-    %S{ state | streams: [stream | state.streams] }
+    %S{ state | stream: stream }
+  end
+
+  defp load_pending_stream(state) do
+    case Playlist.next(state.playlist) do
+      {:ok, rendition} ->
+        {:ok, stream} = start_stream(rendition, state)
+        append_stream(stream, state)
+      :done ->
+        state
+    end
+  end
+
+  defp append_stream(stream, %S{stream: nil} = state) do
+    %S{ state | stream: stream }
+  end
+  defp append_stream(stream, state) do
+    %S{ state | pending: :queue.in(stream, state.pending) }
   end
 
   defp start_stream(rendition, state) do
     Otis.Pipeline.Streams.start_stream(rendition, state.config, state.transcoder_module)
+  end
+
+  defp next_packet(%S{stream: nil} = state) do
+    state |> load_pending_stream() |> next_packet(:done)
+  end
+  defp next_packet(state) do
+    next_packet(state, :ok)
+  end
+  # Prevent infinite loops when coming from an expired stream + playlist
+  defp next_packet(%S{stream: nil} = state, :done) do
+    {:done, state}
+  end
+  defp next_packet(%S{stream: stream} = state, _) do
+    stream |> Producer.next() |> handle_data(state)
+  end
+
+  defp handle_data({:ok, data}, state) do
+    {{:ok, data}, state}
+  end
+  defp handle_data({:done, data}, state) do
+    {{:ok, data}, load_pending_stream(state)}
+  end
+  defp handle_data(:done, %S{pending: pending} = state) do
+    case :queue.out(pending) do
+      {{:value, stream}, pending} ->
+        %S{ state | stream: stream, pending: pending } |> next_packet()
+      {:empty, pending} ->
+        {:done, %S{ state | stream: nil, pending: pending }}
+    end
   end
 end

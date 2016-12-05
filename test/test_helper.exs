@@ -284,7 +284,7 @@ end
 
 defimpl Otis.Library.Source.Origin, for: Test.CycleSource do
   def load!(%Test.CycleSource{id: {table, id}} = _source) do
-    [{_, source}] = IO.inspect :ets.lookup(table, id)
+    [{_, source}] = :ets.lookup(table, id)
     source
   end
 end
