@@ -44,7 +44,7 @@ defmodule Otis.Channels do
   end
 
   def ids do
-    list! |> Enum.map(&Otis.Channel.id!/1)
+    list!() |> Enum.map(&Otis.Channel.id!/1)
   end
 
   def list! do

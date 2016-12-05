@@ -66,11 +66,11 @@ defmodule Otis.Receivers do
   end
 
   defp config do
-    Application.get_env :otis, __MODULE__
+    Application.get_env(:otis, __MODULE__)
   end
 
-  def data_port, do: config[:data_port]
-  def ctrl_port, do: config[:ctrl_port]
+  def data_port, do: config()[:data_port]
+  def ctrl_port, do: config()[:ctrl_port]
 
   # At the receiver end:
   # {:ok, s} = Socket.TCP.connect "192.168.1.117", 5540, [mode: :active]
@@ -78,8 +78,8 @@ defmodule Otis.Receivers do
   # :gen_tcp.close s
   def init([]) do
     Logger.info "Starting Receivers registry..."
-    start_listener(@name.DataListener, data_port, DataConnection)
-    start_listener(@name.ControlListener, ctrl_port, ControlConnection)
+    start_listener(@name.DataListener, data_port(), DataConnection)
+    start_listener(@name.ControlListener, ctrl_port(), ControlConnection)
     Otis.Receivers.Database.attach(self())
     {:ok, %S{}}
   end

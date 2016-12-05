@@ -216,7 +216,7 @@ defmodule Otis.Channel.BufferedStream do
 
   defp fetch_async(%{fetcher: fetcher} = state) do
     try do
-      Kernel.send(fetcher, {:fetch, self})
+      Kernel.send(fetcher, {:fetch, self()})
     rescue
       error -> Logger.warn "Error triggering fetcher process #{ inspect error }"
     end

@@ -14,7 +14,7 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def init(ref, socket, transport, opts \\ []) do
-        :ok = :proc_lib.init_ack({:ok, self})
+        :ok = :proc_lib.init_ack({:ok, self()})
         :ok = :ranch.accept_ack(ref)
         :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once, send_timeout: 2*Otis.stream_interval_ms])
         state = %S{
@@ -55,7 +55,7 @@ defmodule Otis.Receivers.Protocol do
       end
       def process_message({id, params}, state) do
         Logger.info "Receiver connection #{unquote(opts[:type])} #{id} => #{ inspect params }"
-        GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self, state.socket}, params})
+        GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self(), state.socket}, params})
         %S{ state | id: id }
       end
       def process_message(_msg, state) do

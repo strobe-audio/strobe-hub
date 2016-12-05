@@ -90,7 +90,7 @@ defmodule Otis.Receivers.ControlConnection do
   end
 
   defp monitor_connection(state) do
-    Process.send_after(self, :ping, @monitor_interval)
+    Process.send_after(self(), :ping, @monitor_interval)
     state
   end
 end

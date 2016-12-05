@@ -12,7 +12,7 @@ defmodule Otis.Pipeline.Streams do
 
   def start_stream(rendition, config, transcoder_module) do
     name = name(rendition)
-    {:ok, pid} = Supervisor.start_child(@supervisor_name, [name, rendition, config, transcoder_module])
+    {:ok, _pid} = Supervisor.start_child(@supervisor_name, [name, rendition, config, transcoder_module])
     {:ok, name}
   end
 

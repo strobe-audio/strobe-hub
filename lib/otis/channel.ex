@@ -330,7 +330,7 @@ defmodule Otis.Channel do
 
   defp add_receiver_to_channel(receiver, %S{state: :play, broadcaster: broadcaster} = state) do
     adopt_receiver(receiver, state)
-    Otis.Channel.Broadcaster.buffer_receiver(broadcaster, self, receiver)
+    Otis.Channel.Broadcaster.buffer_receiver(broadcaster, self(), receiver)
     state
   end
 
@@ -439,7 +439,7 @@ defmodule Otis.Channel do
   defp start_broadcaster(%S{id: id, audio_stream: audio_stream, socket: socket}) do
     opts = %{
       id: id,
-      channel: self,
+      channel: self(),
       audio_stream: audio_stream,
       emitter: Otis.Channel.Emitter.new(socket),
       stream_interval: Otis.stream_interval_us

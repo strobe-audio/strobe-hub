@@ -9,10 +9,6 @@ defmodule Otis.Channel.Broadcaster do
   require Logger
   alias   Otis.Packet
 
-  # initial packets are sent out with this interval
-  @fast_emit_interval 10_000
-
-
   defmodule S do
     @moduledoc "State for the broadcaster genserver"
     defstruct [
@@ -65,7 +61,7 @@ defmodule Otis.Channel.Broadcaster do
 
   def init(opts) do
     Logger.info "Starting broadcaster #{inspect opts}"
-    # Logger.disable(self)
+    # Logger.disable(self())
     state = struct(%S{}, opts)
     {:ok, state}
   end

@@ -119,7 +119,7 @@ defmodule Otis.Source.File do
   end
 
   defp read_metadata(path) do
-    System.cmd mediainfo, args(path), parallelism: true
+    System.cmd mediainfo(), args(path), parallelism: true
   end
 
   defp args(path) do

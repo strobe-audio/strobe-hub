@@ -86,7 +86,7 @@ defmodule Otis.Channel.Controller do
     Process.monitor(GenServer.whereis(broadcaster))
     try do
       call(broadcaster, {:start, clock, latency, buffer_size})
-      %S{ state | broadcaster: broadcaster, next_tick_us: now } |> schedule_emit
+      %S{ state | broadcaster: broadcaster, next_tick_us: now() } |> schedule_emit
     catch
       :exit, _reason -> %S{ state | broadcaster: nil }
     end
@@ -105,19 +105,19 @@ defmodule Otis.Channel.Controller do
   end
 
   defp do_schedule_emit(state) do
-    ref = Process.send_after(self, :tick, interval_duration(state))
+    ref = Process.send_after(self(), :tick, interval_duration(state))
     %S{state | timer: ref}
   end
 
   defp interval_duration(state) do
-    max(round((state.next_tick_us - now) / 1000), 0)
+    max(round((state.next_tick_us - now()) / 1000), 0)
   end
 
   defp increment_tick(state) do
     %S{ state | next_tick_us: state.next_tick_us + state.poll_interval }
   end
 
-  defp now, do: Monotonic.microseconds
+  defp now, do: Monotonic.microseconds()
 end
 
 defimpl Otis.Broadcaster.Controller, for: Otis.Channel.Controller do

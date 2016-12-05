@@ -76,7 +76,7 @@ defmodule Otis.State.Persistence.Receivers do
   defp receiver_connected(:error, _id, _recv) do
   end
   defp receiver_connected(nil, id, receiver) do
-    receiver_state = create_receiver(channel, id)
+    receiver_state = create_receiver(channel(), id)
     receiver_connected(receiver_state, id, receiver)
   end
   defp receiver_connected(receiver_state, _id, receiver) do

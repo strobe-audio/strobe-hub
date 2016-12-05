@@ -10,7 +10,7 @@ defmodule Otis.Transcoders.Avconv do
   """
   def transcode(inputstream, type, offset_ms \\ 0) do
     opts = [out: :stream, in: inputstream]
-    proc = %Porcelain.Process{out: outstream } = Porcelain.spawn(executable, params(type, offset_ms), opts)
+    proc = %Porcelain.Process{out: outstream } = Porcelain.spawn(executable(), params(type, offset_ms), opts)
     {proc, outstream}
   end
 
@@ -19,7 +19,7 @@ defmodule Otis.Transcoders.Avconv do
   end
 
   defp params(input_type, offset_ms) do
-    ["-f", strip_leading_dot(input_type), "-i", "-", "-ss", ms_to_s(offset_ms) | params]
+    ["-f", strip_leading_dot(input_type), "-i", "-", "-ss", ms_to_s(offset_ms) | params()]
   end
 
   defp params do

@@ -32,7 +32,7 @@ defmodule Otis.Channel.Emitter do
   @blank_emit {nil, nil, nil} # timestamp, packet, socket
 
   def init([interval: packet_interval, packet_size: packet_size, pool: pool]) do
-    :proc_lib.init_ack({:ok, self})
+    :proc_lib.init_ack({:ok, self()})
 
     state = {
       {0, 0, 3000},                        # timing information
@@ -58,9 +58,9 @@ defmodule Otis.Channel.Emitter do
   end
 
   defp start(time, packet, socket, {{_t, n, d}, _emit, config} = _state) do
-    now = monotonic_microseconds
+    now = monotonic_microseconds()
     monitor_emit_time(time, now, packet)
-    state = {{monotonic_microseconds, n, d}, {time, packet, socket}, config}
+    state = {{monotonic_microseconds(), n, d}, {time, packet, socket}, config}
     test_packet state
   end
 
@@ -69,7 +69,7 @@ defmodule Otis.Channel.Emitter do
       {:discard, timestamp} ->
         # Check that we're not actually waiting to send a different packet
         if discard_packet?(timestamp, state) do
-          Logger.info "Discarding packet #{timestamp - monotonic_microseconds}"
+          Logger.info "Discarding packet #{timestamp - monotonic_microseconds()}"
           start_waiting(state)
         else
           test_packet(new_state(state))
@@ -97,7 +97,7 @@ defmodule Otis.Channel.Emitter do
   @jitter 500
 
   defp loop_tight({{_t, n, d}, {time, _packet, _socket} = emit, config}) do
-    now   = monotonic_microseconds
+    now   = monotonic_microseconds()
     state = {{now, n, d}, emit, config}
     case time - now do
       x when x <= @jitter ->
@@ -107,10 +107,10 @@ defmodule Otis.Channel.Emitter do
   end
 
   defp emit_frame({_loop, {_time, packet, socket}, {_pi, _ps, pool} = _config} = state) do
-    # now = monotonic_microseconds
+    # now = monotonic_microseconds()
     # Logger.debug "At #{_time - now}: emit #{timestamp - now} on socket #{inspect socket}"
     Otis.Channel.Socket.send(socket, packet.timestamp, packet.data)
-    :poolboy.checkin(pool, self)
+    :poolboy.checkin(pool, self())
     start_waiting(state)
   end
 
@@ -124,7 +124,7 @@ defmodule Otis.Channel.Emitter do
 
   defp new_state({{t, n, d}, emit, config}) do
     m   = n+1
-    now = monotonic_microseconds
+    now = monotonic_microseconds()
     delay = case d do
       0 -> now - t
       _ -> (((n * d) + (now - t)) / m)

@@ -10,13 +10,18 @@ defmodule Otis.DNSSD do
 
   def init(:ok) do
     Process.flag(:trap_exit, true)
-    Logger.info "Registering #{inspect service_name} on port #{service_port} #{ inspect service_texts }"
-    {:ok, ref} = register_service
+    Logger.info "Registering #{inspect service_name()} on port #{service_port()} #{ inspect service_texts() }"
+    {:ok, ref} = register_service()
     {:ok, %{ref: ref}}
   end
 
+  def handle_info({:dnssd, _ref, msg}, state) do
+    IO.inspect [__MODULE__, msg]
+    {:noreply, state}
+  end
+
   defp register_service do
-    :dnssd.register(service_name, service_port, service_texts)
+    :dnssd.register(service_name(), service_port(), service_texts())
   end
 
   def terminate(_reason, %{ref: ref}) do
@@ -36,9 +41,9 @@ defmodule Otis.DNSSD do
     receivers = config(Otis.Receivers)
     [ {:data_port, to_string(receivers[:data_port])},
       {:ctrl_port, to_string(receivers[:ctrl_port])},
-      {:sntp_port, to_string(service_port)},
-      {:stream_interval, to_string(Otis.stream_interval_us)},
-      {:packet_size, to_string(Otis.stream_bytes_per_step)},
+      {:sntp_port, to_string(service_port())},
+      {:stream_interval, to_string(Otis.stream_interval_us())},
+      {:packet_size, to_string(Otis.stream_bytes_per_step())},
     ]
   end
 

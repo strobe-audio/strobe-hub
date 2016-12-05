@@ -53,7 +53,7 @@ defmodule Otis.SNTP do
     end
 
     def handle_info({:udp, socket, address, port, packet}, {_socket, pool} = state) do
-      now = monotonic_microseconds
+      now = monotonic_microseconds()
       worker = :poolboy.checkout(pool)
       GenServer.cast(worker, {:reply, socket, address, port, packet, now})
       :inet.setopts(socket, [active: :once])
@@ -92,7 +92,7 @@ defmodule Otis.SNTP do
         count        ::size(64)-little-unsigned-integer,
         originate_ts ::size(64)-little-signed-integer,
         receive_ts   ::size(64)-little-signed-integer,
-        monotonic_microseconds::size(64)-little-signed-integer
+        monotonic_microseconds()::size(64)-little-signed-integer
       >>
 
       :gen_udp.send socket, address, port, reply
