@@ -80,7 +80,7 @@ defmodule Otis.State.Persistence.Receivers do
     receiver_connected(receiver_state, id, receiver)
   end
   defp receiver_connected(receiver_state, _id, receiver) do
-    channel = channel(receiver_state) |> channel_process
+    channel = channel(receiver_state)
     Otis.Receiver.configure_and_join_channel(receiver, receiver_state, channel)
   end
 
@@ -118,11 +118,6 @@ defmodule Otis.State.Persistence.Receivers do
   end
   defp channel(receiver) do
     receiver.channel
-  end
-
-  defp channel_process(channel) do
-    pid = channel.id |> Otis.Channels.find!
-    %Otis.Channel{id: channel.id, pid: pid}
   end
 
   defp invented_name(id) do

@@ -22,8 +22,12 @@ defmodule Otis.Supervisor do
       worker(Otis.State.Events, []),
       worker(Otis.State.Persistence, []),
 
-      supervisor(Registry, [:unique, Otis.Pipeline.Streams.namespace()]),
+      supervisor(Registry, [:unique, Otis.Pipeline.Streams.namespace()], id: Otis.Pipeline.Streams.namespace()),
       supervisor(Otis.Pipeline.Streams, []),
+
+      supervisor(Registry, [:duplicate, Otis.Receivers.Sets.set_namespace()], id: Otis.Receivers.Sets.set_namespace()),
+      supervisor(Registry, [:duplicate, Otis.Receivers.Sets.subscriber_namespace()], id: Otis.Receivers.Sets.subscriber_namespace()),
+      supervisor(Otis.Receivers.Sets, []),
 
       worker(Otis.Receivers.Database, []),
       worker(Otis.Receivers, []),
