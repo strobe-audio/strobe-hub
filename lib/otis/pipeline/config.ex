@@ -1,12 +1,13 @@
 defmodule Otis.Pipeline.Config do
 
-  @sample_freq       44_100
-  @sample_bits       16
-  @sample_bytes      round(@sample_bits / 8)
-  @sample_channels   2
-  @buffer_packets    10
-  @receiver_buffer_s 2_000
-  @base_latency_ms   50
+  # Defaults
+  @sample_freq        44_100
+  @sample_bits        16
+  @sample_bytes       round(@sample_bits / 8)
+  @sample_channels    2
+  @buffer_packets     10
+  @receiver_buffer_ms 2_000
+  @base_latency_ms    50
 
   defstruct [
     :packet_size,
