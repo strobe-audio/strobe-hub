@@ -175,8 +175,10 @@ defmodule Otis.ReceiverTest do
     {:ok, msg} = ctrl_recv(mock)
     assert msg == %{ "volume" => 1.0 }
     Receiver.stop(receiver)
-    {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "command" => "stop" }
+    {:ok, data} = data_recv_raw(mock)
+    assert data == <<"STOP">>
+    # {:ok, msg} = ctrl_recv(mock)
+    # assert msg == %{ "command" => "stop" }
   end
 
   test "receiver gets added to correct channel set", _context do
@@ -291,10 +293,14 @@ defmodule Otis.ReceiverTest do
     {:ok, msg} = ctrl_recv(mock2)
     assert msg == %{ "volume" => 1.0 }
     Otis.Receivers.Sets.stop(channel_id)
-    {:ok, msg} = ctrl_recv(mock1)
-    assert msg == %{ "command" => "stop" }
-    {:ok, msg} = ctrl_recv(mock2)
-    assert msg == %{ "command" => "stop" }
+    # {:ok, msg} = ctrl_recv(mock1)
+    # assert msg == %{ "command" => "stop" }
+    {:ok, data} = data_recv_raw(mock1)
+    assert data == <<"STOP">>
+    # {:ok, msg} = ctrl_recv(mock2)
+    # assert msg == %{ "command" => "stop" }
+    {:ok, data} = data_recv_raw(mock2)
+    assert data == <<"STOP">>
   end
 
   test "we can get a receiver set latency", _context do

@@ -26,6 +26,7 @@ defmodule Otis.Pipeline.Hub do
       :playlist,
       :config,
       :transcoder_module,
+      :rendition,
       :stream,
       pending: :queue.new(),
     ]
@@ -33,6 +34,14 @@ defmodule Otis.Pipeline.Hub do
 
   def start_link(playlist, config, transcoder_module \\ Transcoder) do
     GenServer.start_link(__MODULE__, [playlist, config, transcoder_module])
+  end
+
+  def skip(hub, rendition_id) do
+    GenServer.call(hub, {:skip, rendition_id})
+  end
+
+  def pause(hub) do
+    Producer.pause(hub)
   end
 
   def init([playlist, config, transcoder_module]) do
@@ -49,28 +58,82 @@ defmodule Otis.Pipeline.Hub do
     {:reply, reply, state}
   end
 
+  def handle_call({:skip, rendition_id}, _from, state) do
+    Playlist.skip(state.playlist, rendition_id)
+    {:reply, :ok, shutdown(state)}
+  end
+
+  def handle_call(:pause, _from, state) do
+    case state.stream do
+      nil -> nil
+      stream -> Producer.pause(stream)
+    end
+    {:reply, :ok, state}
+  end
+  def handle_call(:resume, _from, state) do
+    {state, reply} = resume(state)
+    {:reply, reply, state}
+  end
+
+  defp resume(%S{stream: nil} = state) do
+    state |> load_pending_stream() |> resume(:missing)
+  end
+  defp resume(state) do
+    resume(state, :ok)
+  end
+
+  defp resume(%S{stream: nil} = state, :missing) do
+    {state, :done}
+  end
+  defp resume(%S{stream: stream} = state, _) do
+    action = Producer.resume(stream)
+    state = case action do
+      :reopen ->
+        :ok = Producer.stop(stream)
+        {:ok, new_stream} = start_stream(state.rendition, state)
+        %S{ state | stream: new_stream }
+      :reuse -> state
+    end
+    {state, action}
+  end
+
+  defp shutdown(state) do
+    shutdown_producer(state.stream)
+    Enum.each(:queue.to_list(state.pending), &shutdown_producer/1)
+    %S{state | stream: nil, rendition: nil, pending: :queue.new()}
+  end
+
+  defp shutdown_producer({stream, _rendition}) do
+    shutdown_producer(stream)
+  end
+  defp shutdown_producer(nil) do
+  end
+  defp shutdown_producer(stream) do
+    Producer.stop(stream)
+  end
+
   defp initialize(state) do
     # TODO: replace :next with :current which returns either :active or the first
     {:ok, rendition} = Playlist.next(state.playlist)
     {:ok, stream} = start_stream(rendition, state)
-    %S{ state | stream: stream }
+    %S{ state | stream: stream, rendition: rendition }
   end
 
   defp load_pending_stream(state) do
     case Playlist.next(state.playlist) do
       {:ok, rendition} ->
         {:ok, stream} = start_stream(rendition, state)
-        append_stream(stream, state)
+        append_stream(stream, rendition, state)
       :done ->
         state
     end
   end
 
-  defp append_stream(stream, %S{stream: nil} = state) do
-    %S{ state | stream: stream }
+  defp append_stream(stream, rendition, %S{stream: nil} = state) do
+    %S{ state | stream: stream, rendition: rendition }
   end
-  defp append_stream(stream, state) do
-    %S{ state | pending: :queue.in(stream, state.pending) }
+  defp append_stream(stream, rendition, state) do
+    %S{ state | pending: :queue.in({stream, rendition}, state.pending) }
   end
 
   defp start_stream(rendition, state) do
@@ -99,8 +162,8 @@ defmodule Otis.Pipeline.Hub do
   end
   defp handle_data(:done, %S{pending: pending} = state) do
     case :queue.out(pending) do
-      {{:value, stream}, pending} ->
-        %S{ state | stream: stream, pending: pending } |> next_packet()
+      {{:value, {stream, rendition}}, pending} ->
+        %S{ state | stream: stream, rendition: rendition, pending: pending } |> next_packet()
       {:empty, pending} ->
         {:done, %S{ state | stream: nil, pending: pending }}
     end

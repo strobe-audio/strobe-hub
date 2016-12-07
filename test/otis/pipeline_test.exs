@@ -80,6 +80,24 @@ defmodule Test.Otis.Pipeline do
     assert :done == Otis.Pipeline.Producer.next(source)
   end
 
+  test "Cyclesource pause with parent process" do
+    source = CycleSource.new(Enum.to_list(1..10), 100, self())
+    Otis.Library.Source.pause(source, nil, nil)
+    assert_receive {:source, :pause}
+  end
+
+  test "Cyclesource file resume" do
+    source = CycleSource.new(Enum.to_list(1..10), 100, self())
+    assert {:reuse, :stream} == Otis.Library.Source.resume!(source, nil, :stream)
+    assert_receive {:source, :resume}
+  end
+
+  test "Cyclesource live resume" do
+    source = CycleSource.new(Enum.to_list(1..10), 100, self(), :live)
+    {:reopen, nil} = Otis.Library.Source.resume!(source, nil, :stream)
+    assert_receive {:source, :resume}
+  end
+
 
   test "PassthroughTranscoder" do
     array = CycleSource.new(Enum.to_list(0..4))

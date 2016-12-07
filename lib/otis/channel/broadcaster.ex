@@ -275,14 +275,14 @@ defmodule Otis.Channel.Broadcaster do
   defp monitor_source(state, []) do
     state
   end
-  defp monitor_source(%S{source_id: nil} = state, [%Packet{source_id: source_id} | packets]) do
-    source_changed(source_id, nil, state)
-    monitor_source(%S{ state | source_id:  source_id }, packets)
+  defp monitor_source(%S{source_id: nil} = state, [%Packet{rendition_id: rendition_id} | packets]) do
+    source_changed(rendition_id, nil, state)
+    monitor_source(%S{ state | source_id:  rendition_id }, packets)
   end
-  defp monitor_source(%S{source_id: source_id} = state, [%Packet{source_id: source_id} | packets]) do
+  defp monitor_source(%S{source_id: rendition_id} = state, [%Packet{rendition_id: rendition_id} | packets]) do
     monitor_source(state, packets)
   end
-  defp monitor_source(%S{source_id: old_source_id} = state, [%Packet{source_id: new_source_id} | packets])
+  defp monitor_source(%S{source_id: old_source_id} = state, [%Packet{rendition_id: new_source_id} | packets])
   when new_source_id != old_source_id do
     source_changed(new_source_id, old_source_id, state)
     monitor_source(%S{ state | source_id:  new_source_id }, packets)
@@ -290,7 +290,7 @@ defmodule Otis.Channel.Broadcaster do
 
   defp update_progress(state, played) do
     Enum.each(played, fn(packet) ->
-      Otis.State.Events.notify({:rendition_progress, [state.id, packet.source_id, packet.offset_ms, packet.duration_ms]})
+      Otis.State.Events.notify({:rendition_progress, [state.id, packet.rendition_id, packet.offset_ms, packet.duration_ms]})
     end)
     state
   end

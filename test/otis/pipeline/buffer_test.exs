@@ -37,7 +37,7 @@ defmodule Test.Otis.Pipeline.Buffer do
 
     {:ok, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
-    assert packet.source_id == id
+    assert packet.rendition_id == id
     assert packet.source_index == 0
     assert packet.offset_ms == 0
     assert packet.duration_ms == 20
@@ -45,7 +45,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert byte_size(packet.data) == 100
     assert packet.data == <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97fb813a98e8f69a76420fe0e880b2aacfae50a">>
     {:ok, packet} = Producer.next(buffer)
-    assert packet.source_id == id
+    assert packet.rendition_id == id
     assert packet.source_index == 1
     assert packet.offset_ms == 20
     assert packet.duration_ms == 20
@@ -53,7 +53,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert byte_size(packet.data) == 100
     assert packet.data == <<"c20c0f7e5a74b8c36d2544bc6f82a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf640043650ab93fd">>
     {:ok, packet} = Producer.next(buffer)
-    assert packet.source_id == id
+    assert packet.rendition_id == id
     assert packet.source_index == 2
     assert packet.offset_ms == 40
     assert byte_size(packet.data) == 100
@@ -78,7 +78,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config, Test.PassthroughTranscoder)
     {:done, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
-    assert packet.source_id == id
+    assert packet.rendition_id == id
     assert packet.source_index == 0
     assert packet.offset_ms == 0
     assert packet.duration_ms == 20
@@ -86,7 +86,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert byte_size(packet.data) == 100
     assert packet.data == <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97fb813a98e8f69a76420fe0e880b2aacfae50a">>
     {:done, packet} = Producer.next(buffer)
-    assert packet.source_id == id
+    assert packet.rendition_id == id
     assert packet.source_index == 1
     assert packet.offset_ms == 20
     assert packet.duration_ms == 20
@@ -114,7 +114,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config, Test.PassthroughTranscoder)
     {:done, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
-    assert packet.source_id == id
+    assert packet.rendition_id == id
     assert packet.source_index == 0
     assert packet.offset_ms == 0
     assert packet.duration_ms == 20
@@ -122,7 +122,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert byte_size(packet.data) == 64
     assert packet.data == <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>
     {:done, packet} = Producer.next(buffer)
-    assert packet.source_id == id
+    assert packet.rendition_id == id
     assert packet.source_index == 1
     assert packet.offset_ms == 20
     assert packet.duration_ms == 20
@@ -132,5 +132,26 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert :done == Producer.next(buffer)
     pid = GenServer.whereis(buffer)
     assert nil == pid
+  end
+
+  test "stopping buffer", context do
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+    }
+    id = Otis.uuid()
+    d = [
+      <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
+      <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
+    ]
+    stream = CycleSource.new(d, 1)
+    rendition = rendition(id, stream, context.table)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config, Test.PassthroughTranscoder)
+    pid = GenServer.whereis(buffer)
+    assert is_pid(pid) == true
+    Producer.stop(buffer)
+    pid = GenServer.whereis(buffer)
+    assert is_nil(pid) == true
   end
 end

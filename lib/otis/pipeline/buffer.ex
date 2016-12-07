@@ -16,6 +16,7 @@ defmodule Otis.Pipeline.Buffer do
       :buffer_size,
       :packet_duration_ms,
       :stream,
+      :source,
       :transcoder_module,
       n: 0,
       status: :ok,
@@ -45,6 +46,9 @@ defmodule Otis.Pipeline.Buffer do
     {:noreply, state}
   end
 
+  def handle_call(:stop, _from, state) do
+    {:stop, {:shutdown, :normal}, :ok, state}
+  end
   def handle_call(:stream, _from, state) do
     {:reply, {:ok, state.stream}, state}
   end
@@ -53,6 +57,14 @@ defmodule Otis.Pipeline.Buffer do
       {:done,  state} -> {:stop, {:shutdown, :normal}, :done, state}
       {packet, state} -> {:reply, {state.status, packet}, state}
     end
+  end
+  def handle_call(:pause, _from, state) do
+    :ok = Source.pause(state.source, state.id, state.stream)
+    {:reply, :ok, state}
+  end
+  def handle_call(:resume, _from, state) do
+    {action, _} = Source.resume!(state.source, state.id, state.stream)
+    {:reply, action, state}
   end
 
   def start_stream(nil, rendition_id, _transcoder_module, state) do
@@ -63,7 +75,7 @@ defmodule Otis.Pipeline.Buffer do
     source = Rendition.source(rendition)
     stream = Source.open!(source, rendition_id, state.packet_size)
     {:ok, transcoder} = transcoder(transcoder_module, rendition, source, stream)
-    %S{ state | stream: transcoder }
+    %S{ state | source: source, stream: transcoder }
   end
 
   defp transcoder(transcoder_module, rendition, source, stream) do
@@ -100,7 +112,7 @@ defmodule Otis.Pipeline.Buffer do
   defp packet(%S{packet_size: packet_size} = state) do
     <<data::binary-size(packet_size), buffer::binary>> = state.buffer
     packet = %Packet{
-      source_id: state.id,
+      rendition_id: state.id,
       source_index: state.n,
       offset_ms: state.n * state.packet_duration_ms,
       duration_ms: state.packet_duration_ms,

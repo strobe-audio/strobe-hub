@@ -192,9 +192,11 @@ defmodule Otis.Receiver do
 
   @stop_command <<"STOP">>
 
+  def stop_command, do: @stop_command
+
   def stop(receiver) do
-    # send_data(receiver, @stop_command)
-    send_command(receiver, "stop")
+    send_data(receiver, @stop_command)
+    # send_command(receiver, "stop")
   end
 
   def send_data(%{data: {pid, _socket}}, data) do

@@ -1,10 +1,12 @@
 defmodule Otis.Pipeline.Config do
 
-  @sample_freq     44100
-  @sample_bits     16
-  @sample_bytes    round(@sample_bits / 8)
-  @sample_channels 2
-  @buffer_packets  10
+  @sample_freq       44_100
+  @sample_bits       16
+  @sample_bytes      round(@sample_bits / 8)
+  @sample_channels   2
+  @buffer_packets    10
+  @receiver_buffer_s 2_000
+  @base_latency_ms   50
 
   defstruct [
     :packet_size,
@@ -13,6 +15,8 @@ defmodule Otis.Pipeline.Config do
     sample_freq: @sample_freq,
     sample_bits: @sample_bits,
     buffer_packets: @buffer_packets,
+    receiver_buffer_ms: @receiver_buffer_ms,
+    base_latency_ms: @base_latency_ms,
   ]
 
   def new(packet_duration_ms) do
@@ -22,5 +26,9 @@ defmodule Otis.Pipeline.Config do
       packet_size: packet_size,
       packet_duration_ms: packet_duration_ms,
     }
+  end
+
+  def receiver_buffer_packets(config) do
+    div(config.receiver_buffer_ms, config.packet_duration_ms)
   end
 end

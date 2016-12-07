@@ -208,27 +208,54 @@ defmodule Test.CycleSource do
 
   defstruct [:id, :pid]
 
-  def new(source, cycles \\ 1) do
-    {:ok, pid} = GenServer.start_link(__MODULE__, [source, cycles])
-    %__MODULE__{pid: pid}
+  def source_id(table, id) do
+    Enum.join([table, id], ":")
   end
-  def start_link(source, cycles \\ 1) do
-    GenServer.start_link(__MODULE__, [source, cycles])
-  end
-
-  def init([source, cycles]) do
-    {:ok, {source, [], cycles}}
+  def source_id(id) when is_binary(id) do
+    String.split(id, ":")
   end
 
-  def handle_call(:next, _from, {source, sink, cycles}) when cycles == 0 do
-    {:reply, :done, {source, sink, cycles}}
+  def new(source, cycles \\ 1, parent \\ nil, type \\ :file) do
+    {:ok, pid} = start_link(source, cycles, parent, type)
+    %__MODULE__{id: Otis.uuid(), pid: pid}
   end
-  def handle_call(:next, from, {[], sink, cycles}) do
+  def start_link(source, cycles \\ 1, parent \\ nil, type \\ :file) do
+    GenServer.start_link(__MODULE__, [source, cycles, parent, type])
+  end
+
+  def init([source, cycles, parent, type]) do
+    state = %{ source: source, sink: [], cycles: cycles, parent: parent, type: type }
+    {:ok, state}
+  end
+
+  def handle_call(:next, _from, %{cycles: cycles} = state) when cycles == 0 do
+    {:reply, :done, state}
+  end
+  def handle_call(:next, from, %{source: [], sink: sink, cycles: cycles} = state) do
     source = Enum.reverse(sink)
-    handle_call(:next, from, {source, [], cycles - 1})
+    handle_call(:next, from, %{state | source: source, sink: [], cycles: cycles - 1})
   end
-  def handle_call(:next, _from, {[h | t], sink, cycles}) do
-    {:reply, {:ok, h}, {t, [h | sink], cycles}}
+  def handle_call(:next, _from, %{source: [h | t], sink: sink} = state) do
+    {:reply, {:ok, h}, %{state | source: t, sink: [h | sink]}}
+  end
+
+  def handle_call(:pause, _from, state) do
+    notify_parent(state.parent, :pause)
+    {:reply, :ok, state}
+  end
+  def handle_call({:resume, stream}, _from, %{type: :file} = state) do
+    notify_parent(state.parent, :resume)
+    {:reply, {:reuse, stream}, state}
+  end
+  def handle_call({:resume, _stream}, _from, %{type: :live} = state) do
+    notify_parent(state.parent, :resume)
+    {:reply, {:reopen, nil}, state}
+  end
+
+  defp notify_parent(nil, _event) do
+  end
+  defp notify_parent(parent, event) do
+    send(parent, {:source, event})
   end
 end
 
@@ -253,6 +280,8 @@ defmodule Test.PassthroughTranscoder do
 end
 
 defimpl Otis.Library.Source, for: Test.CycleSource do
+  alias Test.CycleSource, as: S
+
   def id(_source) do
     ""
   end
@@ -262,11 +291,11 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
   def open!(source, _id, _packet_size_bytes) do
     Otis.Pipeline.Producer.stream(source.pid)
   end
-  def pause(_source, _id, _stream) do
-    :ok
+  def pause(%S{pid: pid}, _id, _stream) do
+    GenServer.call(pid, :pause)
   end
-  def resume!(_source, _id, stream) do
-    {:reuse, stream}
+  def resume!(%S{pid: pid}, _id, stream) do
+    GenServer.call(pid, {:resume, stream})
   end
   def close(_file, _id, _stream) do
     :ok
@@ -284,7 +313,7 @@ end
 
 defimpl Otis.Library.Source.Origin, for: Test.CycleSource do
   def load!(%Test.CycleSource{id: id} = _source) do
-    [table, id] = String.split(id, ":")
+    [table, id] = Test.CycleSource.source_id(id)
     [{_, source}] = :ets.lookup(String.to_atom(table), id)
     source
   end
