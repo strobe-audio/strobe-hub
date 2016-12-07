@@ -31,12 +31,14 @@ defmodule Otis.Receivers.Sets do
   end
 
   def notify_add_receiver(receiver, channel) do
+    Otis.State.Events.notify({:receiver_added, [channel.id, receiver.id]})
     Enum.each(subscribers(channel.id), fn({pid, _name}) ->
       send pid, {:receiver_joined, [receiver.id, receiver]}
     end)
   end
 
   def notify_remove_receiver(receiver, channel) do
+    Otis.State.Events.notify({:receiver_removed, [channel.id, receiver.id]})
     Enum.each(subscribers(channel.id), fn({pid, _name}) ->
       send pid, {:receiver_left, [receiver.id, receiver]}
     end)
