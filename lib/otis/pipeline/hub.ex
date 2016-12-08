@@ -114,9 +114,13 @@ defmodule Otis.Pipeline.Hub do
 
   defp initialize(state) do
     # TODO: replace :next with :current which returns either :active or the first
-    {:ok, rendition} = Playlist.next(state.playlist)
-    {:ok, stream} = start_stream(rendition, state)
-    %S{ state | stream: stream, rendition: rendition }
+    case Playlist.next(state.playlist) do
+      {:ok, rendition} ->
+        {:ok, stream} = start_stream(rendition, state)
+        %S{ state | stream: stream, rendition: rendition }
+      :done ->
+        state
+    end
   end
 
   defp load_pending_stream(state) do

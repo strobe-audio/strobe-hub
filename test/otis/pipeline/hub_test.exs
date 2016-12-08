@@ -34,6 +34,26 @@ defmodule Test.Otis.Pipeline.Hub do
     assert {:ok, 3} == Producer.next(s)
   end
 
+  test "initialize with empty playlist", context do
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+    }
+    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+
+    s1 = CycleSource.new([<<"1">>], 1024)
+    r1 = rendition(s1, context.table)
+    renditions = [r1]
+    Playlist.replace(pl, renditions)
+    Enum.each 0..15, fn(_) ->
+      {:ok, p} = Producer.next(hub)
+      assert p.data == String.duplicate("1", 64)
+      assert p.rendition_id == r1.id
+    end
+  end
+
   test "streaming", context do
     s1 = CycleSource.new([<<"1">>], 1024)
     s2 = CycleSource.new([<<"2">>], 1024)
