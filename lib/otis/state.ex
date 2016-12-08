@@ -25,16 +25,16 @@ defmodule Otis.State do
     # TODO:
     # - playlist
     # - current song
-    Enum.map Otis.State.Channel.all, &status/1
+    Enum.map Otis.State.Channel.all(), &status/1
   end
 
   def receivers do
     # TODO: find live state
-    Enum.map Otis.State.Receiver.all, &status/1
+    Enum.map Otis.State.Receiver.all(), &status/1
   end
 
   def renditions do
-    Enum.map Otis.State.Rendition.all, &rendition/1
+    Enum.map Otis.State.Rendition.all(), &rendition/1
   end
 
   def status(%Otis.State.Channel{} = channel) do
