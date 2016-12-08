@@ -70,7 +70,7 @@ defmodule Otis.Pipeline.Playlist do
   end
 
   def handle_cast({:append, sources}, state) do
-    renditions = make_renditions(sources, state)
+    renditions = make_renditions(List.wrap(sources), state)
     Events.notify({:new_renditions, [state.id, renditions]})
     {:noreply, %S{ state | renditions: Enum.concat(state.renditions, renditions) }}
   end
@@ -80,6 +80,7 @@ defmodule Otis.Pipeline.Playlist do
   def handle_cast({:skip, id}, state) do
     renditions = all_renditions(state)
     {drop, keep} = Enum.split_while(renditions, fn(r) -> r.id != id end)
+    notify_skip(drop, state)
     notify_deletions(drop, state)
     {:noreply, %S{ state | renditions: keep, active: nil }}
   end
@@ -88,6 +89,10 @@ defmodule Otis.Pipeline.Playlist do
     Enum.each(renditions, fn(r) ->
       Events.notify({:rendition_deleted, [r.id, state.id]})
     end)
+  end
+  defp notify_skip(renditions, state) do
+    ids = Enum.map(renditions, fn(r) -> r.id end)
+    Events.notify({:renditions_skipped, [state.id, ids]})
   end
 
   defp all_renditions(state) do
@@ -105,7 +110,7 @@ defmodule Otis.Pipeline.Playlist do
     make_renditions(rest, n + 1, [r | renditions], id)
   end
 
-  defp make_rendition(source, n, channel_id) do
+  def make_rendition(source, n, channel_id) do
     id = next_rendition_id()
     source_id = Otis.Library.Source.id(source)
     source_type = source |> Otis.Library.Source.type() |> to_string
@@ -118,7 +123,7 @@ defmodule Otis.Pipeline.Playlist do
       channel_id: channel_id,
       source_id: source_id,
       source_type: source_type,
-    }
+    } |> Rendition.sanitize_playback_duration()
   end
   def next_rendition_id() do
     Otis.uuid()

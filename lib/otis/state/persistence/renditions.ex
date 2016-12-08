@@ -9,9 +9,11 @@ defmodule Otis.State.Persistence.Renditions do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
-  def handle_event({:new_rendition, [channel_id, position, rendition]}, state) do
+  def handle_event({:new_renditions, [channel_id, renditions]}, state) do
     Repo.transaction fn ->
-      rendition |> load_rendition |> new_rendition(channel_id, position, rendition)
+      Enum.each(renditions, fn(rendition) ->
+        new_rendition(rendition)
+      end)
     end
     {:ok, state}
   end
@@ -56,15 +58,8 @@ defmodule Otis.State.Persistence.Renditions do
     Rendition.find(id)
   end
 
-  defp new_rendition(nil, channel_id, position, {id, playback_position, source}) do
-    %Rendition{
-      id: id,
-      position: position,
-      playback_position: playback_position,
-      channel_id: channel_id,
-      source_id: source_id(source),
-      source_type: source_type(source),
-    }
+  defp new_rendition(rendition) do
+    rendition
     |> Rendition.create!
     |> notify(:new_rendition_created)
   end

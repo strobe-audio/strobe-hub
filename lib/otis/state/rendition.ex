@@ -85,7 +85,14 @@ defmodule Otis.State.Rendition do
   end
 
   def create!(rendition) do
-    rendition |> Repo.insert!
+    rendition |> sanitize_playback_duration() |> Repo.insert!
+  end
+
+  def sanitize_playback_duration(%Rendition{playback_duration: duration} = rendition) when is_atom(duration) do
+    %Rendition{ rendition | playback_duration: nil }
+  end
+  def sanitize_playback_duration(rendition) do
+    rendition
   end
 
   def played!(rendition, channel_id) do
