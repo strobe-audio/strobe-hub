@@ -12,12 +12,12 @@ defmodule Otis.Pipeline.Buffer do
   defmodule S do
     defstruct [
       :id,
+      :config,
       :packet_size,
       :buffer_size,
       :packet_duration_ms,
       :stream,
       :source,
-      :transcoder_module,
       n: 0,
       status: :ok,
       empty: false,
@@ -25,24 +25,25 @@ defmodule Otis.Pipeline.Buffer do
     ]
   end
 
-  def start_link(name, rendition, config, transcoder_module) do
-    GenServer.start_link(__MODULE__, [rendition, config, transcoder_module], [name: name])
+  def start_link(name, rendition, config) do
+    GenServer.start_link(__MODULE__, [rendition, config], [name: name])
   end
 
-  def init([rendition, config, transcoder_module]) do
+  def init([rendition, config]) do
     # Start our stream after returning from this init call so that our parent
     # isn't tied up waiting for sources to open
-    GenServer.cast(self(), {:init, rendition.id, transcoder_module})
+    GenServer.cast(self(), {:init, rendition.id})
     {:ok, %S{
       id: rendition.id,
+      config: config,
       packet_size: config.packet_size,
       buffer_size: (config.buffer_packets * config.packet_size),
       packet_duration_ms: config.packet_duration_ms,
     }}
   end
 
-  def handle_cast({:init, rendition_id, transcoder_module}, state) do
-    state = rendition_id |> Rendition.find() |> start_stream(rendition_id, transcoder_module, state)
+  def handle_cast({:init, rendition_id}, state) do
+    state = rendition_id |> Rendition.find() |> start_stream(rendition_id, state)
     {:noreply, state}
   end
 
@@ -67,14 +68,14 @@ defmodule Otis.Pipeline.Buffer do
     {:reply, action, state}
   end
 
-  def start_stream(nil, rendition_id, _transcoder_module, state) do
+  def start_stream(nil, rendition_id, state) do
     Logger.warn("Rendition #{rendition_id} not found")
     state
   end
-  def start_stream(rendition, rendition_id, transcoder_module, state) do
+  def start_stream(rendition, rendition_id, state) do
     source = Rendition.source(rendition)
     stream = Source.open!(source, rendition_id, state.packet_size)
-    {:ok, transcoder} = transcoder(transcoder_module, rendition, source, stream)
+    {:ok, transcoder} = transcoder(state.config.transcoder, rendition, source, stream)
     %S{ state | source: source, stream: transcoder }
   end
 

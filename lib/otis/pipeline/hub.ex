@@ -17,7 +17,6 @@ defmodule Otis.Pipeline.Hub do
   """
 
   alias Otis.Pipeline.Playlist
-  alias Otis.Pipeline.Transcoder
   alias Otis.Pipeline.Producer
 
   defmodule S do
@@ -32,8 +31,8 @@ defmodule Otis.Pipeline.Hub do
     ]
   end
 
-  def start_link(playlist, config, transcoder_module \\ Transcoder) do
-    GenServer.start_link(__MODULE__, [playlist, config, transcoder_module])
+  def start_link(playlist, config) do
+    GenServer.start_link(__MODULE__, [playlist, config])
   end
 
   def skip(hub, rendition_id) do
@@ -44,11 +43,10 @@ defmodule Otis.Pipeline.Hub do
     Producer.pause(hub)
   end
 
-  def init([playlist, config, transcoder_module]) do
+  def init([playlist, config]) do
     state = %S{
       playlist: playlist,
       config: config,
-      transcoder_module: transcoder_module,
     } |> initialize()
     {:ok, state}
   end
@@ -141,7 +139,7 @@ defmodule Otis.Pipeline.Hub do
   end
 
   defp start_stream(rendition, state) do
-    Otis.Pipeline.Streams.start_stream(rendition, state.config, state.transcoder_module)
+    Otis.Pipeline.Streams.start_stream(rendition, state.config)
   end
 
   defp next_packet(%S{stream: nil} = state) do

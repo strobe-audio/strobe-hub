@@ -103,8 +103,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
     packet_time = fn(n) ->
@@ -145,8 +146,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 
@@ -220,8 +222,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 
@@ -285,8 +288,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 
@@ -361,8 +365,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 
@@ -441,8 +446,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 
@@ -523,8 +529,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 
@@ -588,8 +595,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 
@@ -674,8 +682,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       buffer_packets: 10,
       receiver_buffer_ms: 100,
       base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     time = 1_000_000
 

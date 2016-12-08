@@ -23,6 +23,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       packet_size: 100,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
 
     id = Otis.uuid()
@@ -33,7 +34,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     ]
     stream = CycleSource.new(d, -1)
     rendition = rendition(id, stream, context.table)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config, Test.PassthroughTranscoder)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config)
 
     {:ok, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
@@ -65,6 +66,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       packet_size: 100,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
     id = Otis.uuid()
     d = [
@@ -75,7 +77,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     stream = CycleSource.new(d, 1)
     # {:ok, buffer} = Buffer.start_link(id, stream, 100, 20, 10)
     rendition = rendition(id, stream, context.table)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config, Test.PassthroughTranscoder)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config)
     {:done, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
     assert packet.rendition_id == id
@@ -103,6 +105,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
     id = Otis.uuid()
     d = [
@@ -111,7 +114,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     ]
     stream = CycleSource.new(d, 1)
     rendition = rendition(id, stream, context.table)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config, Test.PassthroughTranscoder)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config)
     {:done, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
     assert packet.rendition_id == id
@@ -139,6 +142,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
     id = Otis.uuid()
     d = [
@@ -147,7 +151,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     ]
     stream = CycleSource.new(d, 1)
     rendition = rendition(id, stream, context.table)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config, Test.PassthroughTranscoder)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config)
     pid = GenServer.whereis(buffer)
     assert is_pid(pid) == true
     Producer.stop(buffer)

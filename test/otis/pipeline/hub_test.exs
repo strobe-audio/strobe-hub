@@ -40,8 +40,9 @@ defmodule Test.Otis.Pipeline.Hub do
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
 
     s1 = CycleSource.new([<<"1">>], 1024)
     r1 = rendition(s1, context.table)
@@ -71,8 +72,9 @@ defmodule Test.Otis.Pipeline.Hub do
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
     Enum.each 0..15, fn(_) ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("1", 64)
@@ -139,8 +141,9 @@ defmodule Test.Otis.Pipeline.Hub do
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
     {:ok, p} = Producer.next(hub)
     assert p.data == String.duplicate("1", 64)
     assert p.rendition_id == r1.id
@@ -177,8 +180,9 @@ defmodule Test.Otis.Pipeline.Hub do
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
     {:ok, p} = Producer.next(hub)
     assert p.data == String.duplicate("1", 64)
 
@@ -200,8 +204,9 @@ defmodule Test.Otis.Pipeline.Hub do
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, hub} = Hub.start_link(pl, config, Test.PassthroughTranscoder)
+    {:ok, hub} = Hub.start_link(pl, config)
     {:ok, p} = Producer.next(hub)
     assert p.data == String.duplicate("1", 64)
 

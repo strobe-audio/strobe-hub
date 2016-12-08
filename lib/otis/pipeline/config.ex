@@ -18,6 +18,7 @@ defmodule Otis.Pipeline.Config do
     buffer_packets: @buffer_packets,
     receiver_buffer_ms: @receiver_buffer_ms,
     base_latency_ms: @base_latency_ms,
+    transcoder: Otis.Pipeline.Transcoder,
   ]
 
   def new(packet_duration_ms) do
