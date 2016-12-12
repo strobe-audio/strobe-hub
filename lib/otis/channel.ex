@@ -1,7 +1,6 @@
 defmodule Otis.Channel do
   use     GenServer
   require Logger
-  alias   Otis.Receiver, as: Receiver
 
   defmodule S do
     @moduledoc "The state struct for Channel processes"
@@ -179,12 +178,6 @@ defmodule Otis.Channel do
 
   def handle_cast(:clear, state) do
     # state = state |> set_state(:stop) |> flush |> clear_playlist()
-    {:noreply, state}
-  end
-
-  # Called by the broadcaster when it has finished sending in-flight packets.
-  def handle_cast({:receiver_buffered, receiver}, state) do
-    # state = receiver_ready(receiver, state)
     {:noreply, state}
   end
 
