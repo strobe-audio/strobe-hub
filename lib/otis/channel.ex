@@ -176,7 +176,6 @@ defmodule Otis.Channel do
   end
 
   def handle_cast(:clear, state) do
-    # state = state |> set_state(:stop) |> flush |> clear_playlist()
     {:noreply, state}
   end
 
@@ -189,16 +188,6 @@ defmodule Otis.Channel do
   def handle_info(:broadcaster_stop, state) do
     state = state |> set_state(:pause)
     {:noreply, state}
-  end
-
-  defp skip_to(state, id) do
-    :ok = Playlist.skip(state.playlist, id)
-    state
-  end
-
-  defp clear_playlist(state) do
-    :ok = Playlist.clear(state.playlist)
-    state
   end
 
   defp event!(state, name, params) do
