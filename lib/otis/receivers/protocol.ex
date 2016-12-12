@@ -14,9 +14,10 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def init(ref, socket, transport, opts \\ []) do
+        pipeline_config = opts[:pipeline_config]
         :ok = :proc_lib.init_ack({:ok, self()})
         :ok = :ranch.accept_ack(ref)
-        :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once, send_timeout: 2*Otis.stream_interval_ms])
+        :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once, send_timeout: 2_000*pipeline_config.packet_duration_ms])
         state = %S{
           socket: socket,
           transport: transport,

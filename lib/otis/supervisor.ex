@@ -1,14 +1,14 @@
 defmodule Otis.Supervisor do
   use Supervisor
 
-  def start_link(opts) do
-    Supervisor.start_link(__MODULE__, opts, [])
+  def start_link(pipeline_config) do
+    Supervisor.start_link(__MODULE__, pipeline_config, [])
   end
 
-  def init([packet_interval: packet_interval, packet_size: packet_size]) do
+  def init(pipeline_config) do
     children = [
-      worker(Otis.DNSSD, []),
-      worker(Otis.SSDP, []),
+      worker(Otis.DNSSD, [pipeline_config]),
+      worker(Otis.SSDP, [pipeline_config]),
       worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
       worker(Otis.Source.File.Cache, []),
       worker(Otis.State.Repo, []),
@@ -23,7 +23,7 @@ defmodule Otis.Supervisor do
       supervisor(Otis.Receivers.Channels, []),
 
       worker(Otis.Receivers.Database, []),
-      worker(Otis.Receivers, []),
+      worker(Otis.Receivers, [pipeline_config]),
 
       supervisor(Otis.Channels, []),
       # This needs to be called by the app hosting the application

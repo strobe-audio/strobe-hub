@@ -75,12 +75,12 @@ defmodule Otis.Pipeline.Buffer do
   def start_stream(rendition, rendition_id, state) do
     source = Rendition.source(rendition)
     stream = Source.open!(source, rendition_id, state.packet_size)
-    {:ok, transcoder} = transcoder(state.config.transcoder, rendition, source, stream)
+    {:ok, transcoder} = transcoder(state, rendition, source, stream)
     %S{ state | source: source, stream: transcoder }
   end
 
-  defp transcoder(transcoder_module, rendition, source, stream) do
-    Kernel.apply(transcoder_module, :start_link, [source, stream, rendition.playback_position])
+  defp transcoder(state, rendition, source, stream) do
+    Kernel.apply(state.config.transcoder, :start_link, [source, stream, rendition.playback_position, state.config])
   end
 
   def next_packet(%S{stream: nil} = state) do

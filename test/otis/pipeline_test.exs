@@ -102,7 +102,7 @@ defmodule Test.Otis.Pipeline do
   test "PassthroughTranscoder" do
     array = CycleSource.new(Enum.to_list(0..4))
     source = Otis.Library.Source.open!(array, "", 1)
-    {:ok, trans} = PassthroughTranscoder.start_link(nil, source, 0)
+    {:ok, trans} = PassthroughTranscoder.start_link(nil, source, 0, nil)
 
     assert {:ok, 0} == Otis.Pipeline.Producer.next(trans)
     assert {:ok, 1} == Otis.Pipeline.Producer.next(trans)

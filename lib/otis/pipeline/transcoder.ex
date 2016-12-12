@@ -13,16 +13,16 @@ defmodule Otis.Pipeline.Transcoder do
     ]
   end
 
-  def start_link(source, inputstream, playback_position) do
-    GenServer.start_link(__MODULE__, [source, inputstream, playback_position])
+  def start_link(source, inputstream, playback_position, config) do
+    GenServer.start_link(__MODULE__, [source, inputstream, playback_position, config])
   end
 
-  def init([source, inputstream, playback_position]) do
+  def init([source, inputstream, playback_position, config]) do
     state = %S{
       source: source,
       inputstream: inputstream,
       playback_position: playback_position,
-    } |> start()
+    } |> start(config)
     {:ok, state}
   end
 
@@ -35,9 +35,9 @@ defmodule Otis.Pipeline.Transcoder do
     {:reply, resp, state}
   end
 
-  defp start(state) do
+  defp start(state, config) do
     {ext, _type} = Source.audio_type(state.source)
-    {pid, outputstream} = Otis.Transcoders.Avconv.transcode(state.inputstream, ext, state.playback_position)
+    {pid, outputstream} = Otis.Transcoders.Avconv.transcode(state.inputstream, ext, state.playback_position, config)
     %S{ state | transcoder_pid: pid, outputstream: outputstream }
   end
 end

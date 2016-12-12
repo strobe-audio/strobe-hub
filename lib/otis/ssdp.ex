@@ -4,34 +4,34 @@ defmodule Otis.SSDP do
 
   @service_uuid "ba31231a-5aee-11e6-8407-002500f418fc"
 
-  def start_link() do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(pipeline_config) do
+    GenServer.start_link(__MODULE__, pipeline_config, name: __MODULE__)
   end
 
-  def init(_opts) do
-    register_service()
+  def init(pipeline_config) do
+    register_service(pipeline_config)
     {:ok, %{}}
   end
 
-  defp register_service do
-    SSDPServer.publish(service_name(), service_type(), service_texts())
+  defp register_service(pipeline_config) do
+    SSDPServer.publish(service_name(pipeline_config), service_type(pipeline_config), service_texts(pipeline_config))
   end
 
-  defp service_name do
+  defp service_name(_pipeline_config) do
     "uuid:#{@service_uuid}::urn:com.peepaudio:broadcaster"
   end
 
-  defp service_type do
+  defp service_type(_pipeline_config) do
     "urn:com.peepaudio:broadcaster"
   end
 
-  defp service_texts do
+  defp service_texts(pipeline_config) do
     receivers = config(Otis.Receivers)
     [ {:data_port, to_string(receivers[:data_port])},
       {:port, service_port()},
       {:ctrl_port, to_string(receivers[:ctrl_port])},
-      {:stream_interval, to_string(Otis.stream_interval_us)},
-      {:packet_size, to_string(Otis.stream_bytes_per_step)},
+      {:stream_interval, to_string(pipeline_config.packet_duration_ms * 1000)},
+      {:packet_size, to_string(pipeline_config.packet_size)},
     ]
   end
 
@@ -40,6 +40,6 @@ defmodule Otis.SSDP do
   end
 
   defp config(mod) do
-    Application.get_env :otis, mod
+    Application.get_env(:otis, mod)
   end
 end

@@ -22,28 +22,6 @@ defmodule Otis.Packet do
   end
 
   @doc ~S"""
-  Updates a packet's offset_ms by one audio frame:
-
-      iex> packet = Otis.Packet.new("1234", 0, 100, 3528)
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0 }
-      iex> packet = Otis.Packet.step(packet)
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 20, duration_ms: 100, packet_size: 3528, source_index: 1 }
-      iex> _packet = Otis.Packet.step(packet)
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 40, duration_ms: 100, packet_size: 3528, source_index: 2 }
-
-      iex> packet = Otis.Packet.new("1234", 0, 10000, 17640)
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 10000, packet_size: 17640, source_index: 0 }
-      iex> packet = Otis.Packet.step(packet)
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 100, duration_ms: 10000, packet_size: 17640, source_index: 1 }
-      iex> _packet = Otis.Packet.step(packet)
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 200, duration_ms: 10000, packet_size: 17640, source_index: 2 }
-
-  """
-  def step(packet) do
-    %P{ packet | source_index: packet.source_index + 1, offset_ms: step_offset_ms(packet) }
-  end
-
-  @doc ~S"""
   Attaches the given data to the packet.
 
       iex> packet = Otis.Packet.new("1234", 0, 100, 3528)
@@ -175,13 +153,5 @@ defmodule Otis.Packet do
 
   def percent_complete(packet) do
     packet.offset_ms / packet.duration_ms
-  end
-
-  def step_offset_ms(packet) do
-    packet.offset_ms + packet_size_to_step_duration_ms(packet.packet_size)
-  end
-
-  def packet_size_to_step_duration_ms(packet_size) do
-    round(packet_size / Otis.stream_bytes_per_ms)
   end
 end

@@ -262,7 +262,7 @@ end
 defmodule Test.PassthroughTranscoder do
   use GenServer
 
-  def start_link(_source, inputstream, _playback_position) do
+  def start_link(_source, inputstream, _playback_position, _config) do
     GenServer.start_link(__MODULE__, inputstream)
   end
 
