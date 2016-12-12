@@ -158,4 +158,24 @@ defmodule Test.Otis.Pipeline.Buffer do
     pid = GenServer.whereis(buffer)
     assert is_nil(pid) == true
   end
+
+  test "partially played renditions", context do
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    id = Otis.uuid()
+    d = [
+      <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
+      <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
+    ]
+    stream = CycleSource.new(d, 1)
+    rendition = rendition(id, stream, context.table)
+    rendition = rendition |> Rendition.update(playback_duration: 2000, playback_position: 1000)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config)
+    {:done, packet} = Producer.next(buffer)
+    assert packet.offset_ms == 1000
+  end
 end

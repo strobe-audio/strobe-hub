@@ -88,6 +88,10 @@ defmodule Otis.State.Rendition do
     rendition |> sanitize_playback_duration() |> Repo.insert!
   end
 
+  def update(rendition, fields) do
+    rendition |> Ecto.Changeset.change(fields) |> Repo.update!
+  end
+
   def sanitize_playback_duration(%Rendition{playback_duration: duration} = rendition) when is_atom(duration) do
     %Rendition{ rendition | playback_duration: nil }
   end
