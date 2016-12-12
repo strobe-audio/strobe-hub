@@ -9,7 +9,7 @@ defmodule Otis.State.Persistence.Renditions do
     Otis.State.Events.add_mon_handler(__MODULE__, [])
   end
 
-  def handle_event({:new_renditions, [channel_id, renditions]}, state) do
+  def handle_event({:new_renditions, [_channel_id, renditions]}, state) do
     Repo.transaction fn ->
       Enum.each(renditions, fn(rendition) ->
         new_rendition(rendition)
@@ -63,9 +63,6 @@ defmodule Otis.State.Persistence.Renditions do
     |> Rendition.create!
     |> notify(:new_rendition_created)
   end
-  defp new_rendition(_record, channel_id, _position, {id, _playback_position, _source}) do
-    Logger.warn "Adding source with duplicate id #{id} channel:#{channel_id}"
-  end
 
   # Happens when a channel starts playing
   defp rendition_changed(nil, nil, _channel_id) do
@@ -110,14 +107,6 @@ defmodule Otis.State.Persistence.Renditions do
   end
   defp rendition_progress(rendition, _id, position) do
     Rendition.playback_position(rendition, position)
-  end
-
-  defp source_type(source) do
-    source |> Otis.Library.Source.type |> to_string
-  end
-
-  defp source_id(source) do
-    Otis.Library.Source.id(source)
   end
 
   defp notify(rendition, event) do
