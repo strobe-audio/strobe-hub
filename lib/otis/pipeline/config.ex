@@ -19,6 +19,7 @@ defmodule Otis.Pipeline.Config do
     receiver_buffer_ms: @receiver_buffer_ms,
     base_latency_ms: @base_latency_ms,
     transcoder: Otis.Pipeline.Transcoder,
+    clock: {Otis.Pipeline.Clock, :start_link, []},
   ]
 
   def new(packet_duration_ms) do
@@ -28,6 +29,10 @@ defmodule Otis.Pipeline.Config do
       packet_size: packet_size,
       packet_duration_ms: packet_duration_ms,
     }
+  end
+
+  def start_clock(%__MODULE__{clock: {m, f, a}}, args \\ []) do
+    apply(m, f, Enum.concat(a, args))
   end
 
   def receiver_buffer_packets(config) do

@@ -9,19 +9,22 @@ defmodule Otis.Channels do
   def create(id, name) do
     create(@supervisor, id, name)
   end
-  def create(registry, id, name) do
-    add(:create, registry, id, %Otis.State.Channel{id: id, name: name})
+  def create(id, name, %Otis.Pipeline.Config{} = config) do
+    create(@supervisor, id, name, config)
+  end
+  def create(registry, id, name) when is_binary(id) and is_binary(name) do
+    create(registry, id, name, Otis.Pipeline.config())
+  end
+  def create(registry, id, name, config) do
+    add(:create, registry, %Otis.State.Channel{id: id, name: name}, config)
   end
 
   @doc "Start an existing channel"
-  def start(%Otis.State.Channel{} = channel) do
-    start(@supervisor, channel.id, channel)
+  def start(%Otis.State.Channel{} = channel, config \\ Otis.Pipeline.config()) do
+    start(@supervisor, channel, config)
   end
-  def start(id, config) do
-    start(@supervisor, id, config)
-  end
-  def start(registry, id, config) do
-    add(:start, registry, id, config)
+  def start(registry, channel, config) do
+    add(:start, registry, channel, config)
   end
 
 
@@ -106,21 +109,21 @@ defmodule Otis.Channels do
     Otis.Channel.clear(whereis_name(id))
   end
 
-  defp add(action, registry, id, config) do
-    start_channel(registry, id, config) |> notify(action, id, config)
+  defp add(action, registry, channel, config) do
+    start_channel(registry, channel, config) |> notify(action, channel)
   end
 
-  defp notify(channel, :start, _id, _config) do
-    channel
+  defp notify(pid, :start, _channel) do
+    pid
   end
-  defp notify(channel, :create, id, config) do
-    Otis.State.Events.notify({:channel_added, [id, config]})
-    channel
+  defp notify(pid, :create, channel) do
+    Otis.State.Events.notify({:channel_added, [channel.id, channel]})
+    pid
   end
 
-  defp start_channel(supervisor, id, config) do
-    process_name = via(id)
-    Supervisor.start_child(supervisor, [id, config, process_name])
+  defp start_channel(supervisor, channel, config) do
+    process_name = via(channel.id)
+    Supervisor.start_child(supervisor, [channel, config, process_name])
     {:ok, process_name}
   end
 

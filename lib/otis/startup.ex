@@ -31,7 +31,7 @@ defmodule Otis.Startup do
 
   defp start_channel([channel | rest], channels_supervisor) do
     Logger.info "===> Starting channel #{ channel.id } #{ inspect channel.name }"
-    Otis.Channels.start(channels_supervisor, channel.id, channel)
+    Otis.Channels.start(channels_supervisor, channel, Otis.Pipeline.config())
     start_channel(rest, channels_supervisor)
   end
 
@@ -50,9 +50,9 @@ defmodule Otis.Startup do
   end
   defp restore_source_list([channel | channels]) do
     {:ok, channel_id} = Otis.Channel.id(channel)
-    {:ok, source_list} = Otis.Channel.source_list(channel)
-    renditions = Otis.State.Rendition.restore(channel_id)
-    Otis.SourceList.replace(source_list, renditions)
+    {:ok, playlist} = Otis.Channel.playlist(channel)
+    renditions = Otis.State.Rendition.for_channel(channel_id)
+    Otis.Pipeline.Playlist.replace(playlist, renditions)
     restore_source_list(channels)
   end
 

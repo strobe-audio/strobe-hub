@@ -1,39 +1,3 @@
-defmodule Test.Otis.Pipeline.Clock do
-  use GenServer
-
-  def start_link(time) do
-    GenServer.start_link(__MODULE__, [self(), time])
-  end
-
-  def init([parent, time]) do
-    {:ok, {parent, time, nil}}
-  end
-
-  def handle_call({:start, broadcaster, interval_ms}, _from, {parent, time, _}) do
-    Kernel.send(parent, {:clock, {:start, broadcaster, interval_ms}})
-    {:reply, {:ok, time}, {parent, time, broadcaster}}
-  end
-
-  def handle_call({:tick, _}, _from, {_parent, _time, nil} = state) do
-    {:reply, {:error, :no_broadcaster}, state}
-  end
-  def handle_call({:tick, time}, _from, {parent, _time, broadcaster}) do
-    Otis.Pipeline.Clock.tick(broadcaster, time)
-    {:reply, :ok, {parent, time, broadcaster}}
-  end
-  def handle_call({:set_time, time}, _from, {parent, _time, broadcaster}) do
-    {:reply, :ok, {parent, time, broadcaster}}
-  end
-  def handle_call(:time, _from, {parent, time, broadcaster}) do
-    {:reply, {:ok, time}, {parent, time, broadcaster}}
-  end
-
-  def handle_call(:stop, _from, {parent, time, _broadcaster}) do
-    Kernel.send(parent, {:clock, {:stop}})
-    {:reply, {:ok, time}, {parent, time, nil}}
-  end
-end
-
 defmodule Test.Otis.Pipeline.Broadcaster do
   use ExUnit.Case
 
@@ -201,6 +165,73 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         assert packet.timestamp == packet_time.(n)
         assert packet.packet_number == n
       end)
+    end)
+  end
+
+  test "late clock ticks send enought packets to catch up receiver", context do
+    s1 = CycleSource.new([<<"1">>], 1024)
+    s2 = CycleSource.new([<<"2">>], 1024)
+    s3 = CycleSource.new([<<"3">>], 1024)
+    r1 = rendition(s1)
+    r2 = rendition(s2)
+    r3 = rendition(s3)
+
+    renditions = [r1, r2, r3]
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    Playlist.replace(pl, renditions)
+
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      receiver_buffer_ms: 100,
+      base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    {:ok, hub} = Hub.start_link(pl, config)
+
+    time = 1_000_000
+
+    packet_time = fn(n) ->
+      time + @receiver_latency  + (config.base_latency_ms * 1000) + (n * config.packet_duration_ms * 1_000)
+    end
+    tick_time = fn(n) ->
+      time + (n * config.packet_duration_ms * 1_000)
+    end
+
+    {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
+    {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
+    Broadcaster.start(bc)
+    assert_receive {:clock, {:start, _, 20}}
+    [m1, m2] = context.mocks
+    :pong = GenServer.call(bc, :ping)
+    Enum.each(0..4, fn(n) ->
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, data} = data_recv_raw(m)
+        packet = Packet.unmarshal(data)
+        assert packet.data == String.duplicate("1", 64)
+        assert packet.timestamp == packet_time.(n)
+        assert packet.packet_number == n
+      end)
+    end)
+
+    GenServer.call(clock, {:tick, tick_time.(10)})
+
+    Enum.each(5..14, fn(n) ->
+      IO.inspect [:test, n]
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, data} = data_recv_raw(m)
+        packet = Packet.unmarshal(data)
+        assert packet.data == String.duplicate("1", 64)
+        assert packet.timestamp == packet_time.(n)
+        assert packet.packet_number == n
+      end)
+    end)
+
+    GenServer.call(clock, {:tick, tick_time.(10)})
+    :pong = GenServer.call(bc, :ping)
+    Enum.each([m1, m2], fn(m) ->
+      {:error, :timeout} = data_recv_raw(m)
     end)
   end
 
@@ -720,5 +751,45 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         assert packet.data == d
       end)
     end)
+  end
+
+  test "receiver events", context do
+    s1 = CycleSource.new([<<"1">>], 1024)
+    s2 = CycleSource.new([<<"2">>], 1024)
+    s3 = CycleSource.new([<<"3">>], 1024)
+    r1 = rendition(s1)
+    r2 = rendition(s2)
+    r3 = rendition(s3)
+
+    renditions = [r1, r2, r3]
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    Playlist.replace(pl, renditions)
+
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      receiver_buffer_ms: 100,
+      base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    {:ok, hub} = Hub.start_link(pl, config)
+
+    time = 1_000_000
+
+    {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
+    {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
+
+    receiver_id = Otis.uuid()
+    channel_id = context.channel_id
+    _receiver_record = Otis.State.Receiver.create!(context.channel, id: receiver_id)
+
+    Otis.Receivers.Sets.subscribe(:test, channel_id)
+    mock = connect!(receiver_id, 1234)
+    assert_receive {:receiver_joined, [^receiver_id, _]}
+    :ok = :gen_tcp.close(mock.data_socket)
+    assert_receive {:receiver_left, [^receiver_id, _]}
+    # make sure the broadcaster has processed its message q
+    :pong = GenServer.call(bc, :ping)
   end
 end

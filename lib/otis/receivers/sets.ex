@@ -63,7 +63,14 @@ defmodule Otis.Receivers.Sets do
   end
 
   def latency(channel_id) do
-    channel_id |> lookup() |> Enum.map(&Receiver.latency!/1) |> Enum.max()
+    channel_id |> lookup() |> Enum.map(&Receiver.latency!/1) |> max_latency()
+  end
+
+  defp max_latency([]) do
+    0
+  end
+  defp max_latency(r) do
+    Enum.max(r)
   end
 
   def start_link do

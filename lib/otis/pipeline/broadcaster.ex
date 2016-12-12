@@ -20,6 +20,9 @@ defmodule Otis.Pipeline.Broadcaster do
       :clock,
       :config,
       :t0,
+      :offset_us,
+      :offset_n,
+      :packet_duration_us,
       n: 0,
       c: 0,
       inflight: [],
@@ -53,9 +56,13 @@ defmodule Otis.Pipeline.Broadcaster do
       hub: hub,
       clock: clock,
       config: config,
+      packet_duration_us: config.packet_duration_ms * 1000,
     }}
   end
 
+  def handle_info({:receiver_left, _}, state) do
+    {:noreply, state}
+  end
   def handle_info({:receiver_joined, [_id, receiver]}, state) do
     {:ok, time} = Clock.time(state.clock)
     playable = playable_packets(time, state)
@@ -84,7 +91,8 @@ defmodule Otis.Pipeline.Broadcaster do
     {:noreply, %S{state | n: 0, buffer: buffer, inflight: []}}
   end
   def handle_cast({:tick, time}, state) do
-    state = send_packets(state, time, 1)
+    packets = packet_count_at_time(time, state) - state.n
+    state = send_packets(state, time, packets)
     {:noreply, state}
   end
   def handle_cast({:skip, rendition_id}, state) do
@@ -94,10 +102,16 @@ defmodule Otis.Pipeline.Broadcaster do
     {:noreply, state}
   end
 
+  defp packet_count_at_time(time, state) do
+    duration = time - state.t0
+    round(Float.floor(state.offset_n + (duration / state.packet_duration_us)))
+  end
+
   defp start(time, state) do
-    t0 = play_time(time, state)
+    offset_us = (state.config.base_latency_ms * 1000) + Otis.Receivers.Sets.latency(state.id)
+    offset_n = Config.receiver_buffer_packets(state.config)
     state = resume(state)
-    buffer_receivers(%S{state | t0: t0, n: 0, inflight: []}, time)
+    buffer_receivers(%S{state | t0: time, offset_us: offset_us, offset_n: offset_n, n: 0, inflight: []}, time)
   end
 
   defp resume(%S{started: false} = state) do
@@ -105,8 +119,8 @@ defmodule Otis.Pipeline.Broadcaster do
   end
   defp resume(%S{started: true} = state) do
     case Producer.resume(state.hub) do
-      :reuse -> state
       :reopen -> %S{ state | buffer: [] }
+      _ -> state
     end
   end
 
@@ -115,10 +129,12 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp buffer_receivers(state, time) do
-    n = Config.receiver_buffer_packets(state.config)
-    send_packets(state, time, n)
+    send_packets(state, time, state.offset_n)
   end
 
+  defp send_packets(state, _time, n) when n <= 0 do
+    state
+  end
   defp send_packets(state, time, n) do
     state |> build_packets(n, []) |> broadcast_packets() |> monitor_packets(time)
   end
@@ -193,7 +209,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp timestamp(state) do
-    (state.config.packet_duration_ms * 1000 * state.n) + state.t0
+    (state.packet_duration_us * state.n) + state.t0 + state.offset_us
   end
 
   defp notify_channel(state, event) do

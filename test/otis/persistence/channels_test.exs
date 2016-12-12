@@ -65,7 +65,7 @@ defmodule Otis.Persistence.ChannelsTest do
     channel = Otis.State.Channel.find(id)
     assert channel.volume == 0.11
 
-    {:ok, pid} = Otis.Channels.start(id, channel)
+    {:ok, pid} = Otis.Channels.start(channel)
 
     {:ok, 0.11} = Otis.Channel.volume(pid)
   end

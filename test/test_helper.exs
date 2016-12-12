@@ -319,6 +319,46 @@ defimpl Otis.Library.Source.Origin, for: Test.CycleSource do
   end
 end
 
+defmodule Test.Otis.Pipeline.Clock do
+  use GenServer
+
+  def start_link(time) do
+    start_link(self(), time)
+  end
+  def start_link(parent, time) do
+    GenServer.start_link(__MODULE__, [parent, time])
+  end
+
+  def init([parent, time]) do
+    {:ok, {parent, time, nil}}
+  end
+
+  def handle_call({:start, broadcaster, interval_ms}, _from, {parent, time, _}) do
+    Kernel.send(parent, {:clock, {:start, broadcaster, interval_ms}})
+    {:reply, {:ok, time}, {parent, time, broadcaster}}
+  end
+
+  def handle_call({:tick, _}, _from, {_parent, _time, nil} = state) do
+    {:reply, {:error, :no_broadcaster}, state}
+  end
+  def handle_call({:tick, time}, _from, {parent, _time, broadcaster}) do
+    Otis.Pipeline.Clock.tick(broadcaster, time)
+    {:reply, :ok, {parent, time, broadcaster}}
+  end
+  def handle_call({:set_time, time}, _from, {parent, _time, broadcaster}) do
+    {:reply, :ok, {parent, time, broadcaster}}
+  end
+  def handle_call(:time, _from, {parent, time, broadcaster}) do
+    {:reply, {:ok, time}, {parent, time, broadcaster}}
+  end
+
+  def handle_call(:stop, _from, {parent, time, _broadcaster}) do
+    Kernel.send(parent, {:clock, {:stop}})
+    {:reply, {:ok, time}, {parent, time, nil}}
+  end
+end
+
+
 Faker.start
 Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)

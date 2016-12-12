@@ -143,7 +143,7 @@ defmodule Otis.Persistence.RenditionTest do
     Playlist.append(context.playlist, sources)
     assert_receive {:new_rendition_created, _}, 200
     {:ok, renditions} = Playlist.list(context.playlist)
-    {:ok, rendition} = Playlist.next(context.playlist)
+    {:ok, _rendition} = Playlist.next(context.playlist)
     ids = Enum.map(renditions, fn(r) -> r.id end)
     skip_to = Enum.at(ids, -2)
     skipped_ids = Enum.take_while(ids, fn(id) -> id != skip_to end)
