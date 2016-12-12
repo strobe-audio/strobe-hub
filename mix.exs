@@ -4,10 +4,6 @@ defmodule Otis.Mixfile do
   def project do
     [app: :otis,
      version: "0.0.1",
-     build_path: "../../_build",
-     # config_path: "../../config/config.exs",
-     deps_path: "../../deps",
-     lockfile: "../../mix.lock",
      elixir: "~> 1.4.0-rc.1",
      consolidate_protocols: Mix.env != :test,
      build_embedded: Mix.env == :prod,
