@@ -97,6 +97,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
   def handle_cast({:skip, rendition_id}, state) do
     {:ok, time} = Clock.time(state.clock)
+    Otis.Receivers.Channels.stop(state.id)
     Hub.skip(state.hub, rendition_id)
     state = start(time, %S{ state | buffer: [] })
     {:noreply, state}

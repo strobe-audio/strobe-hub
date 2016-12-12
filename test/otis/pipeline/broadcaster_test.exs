@@ -600,6 +600,10 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     GenServer.call(clock, {:set_time, time})
     Broadcaster.skip(bc, r3.id)
 
+    Enum.each([m1, m2], fn(m) ->
+      {:ok, data} = data_recv_raw(m)
+      assert data == Receiver.stop_command()
+    end)
     Enum.each(Enum.slice(c3, 0..4), fn(d) ->
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)

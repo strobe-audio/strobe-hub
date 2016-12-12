@@ -171,8 +171,7 @@ defmodule Otis.Channel do
 
   # TODO: handle the case where we skip past the end of the source list...
   def handle_cast({:skip, id}, state) do
-    # state = state |> set_state(:skip) |> flush |> skip_to(id) |> set_state(:play)
-    # Otis.Stream.skip(state.audio_stream, id)
+    Broadcaster.skip(state.broadcaster, id)
     {:noreply, state}
   end
 
