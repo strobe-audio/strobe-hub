@@ -1,7 +1,10 @@
 defmodule Otis.ChannelTest do
   use    ExUnit.Case
-  alias  Otis.Receivers
+
   import MockReceiver
+
+  alias Otis.Receivers
+  alias Otis.Test.TestSource
 
   @moduletag :channel
 
@@ -18,8 +21,7 @@ defmodule Otis.ChannelTest do
       end
     end)
 
-    config = %Otis.Pipeline.Config{
-      packet_duration_ms: 20,
+    config = %Otis.Pipeline.Config{ Otis.Pipeline.Config.new(20) |
       clock: {Test.Otis.Pipeline.Clock, :start_link, [self(), 1_000_000]},
     }
     channel_record = Otis.State.Channel.create!(channel_id, "Something")
@@ -98,7 +100,9 @@ defmodule Otis.ChannelTest do
   end
 
   test "broadcasting event when play state changes", context do
-    # Need to add something to the playlist
+    # Need to add something to the playlist or the channel stops as soon as it starts
+    {:ok, pl} = Otis.Channel.playlist(context.channel)
+    :ok = Otis.Pipeline.Playlist.append(pl, TestSource.new)
     channel_id = context.channel_id
     {:ok, :play} = Otis.Channel.play_pause(context.channel)
     assert_receive {:channel_play_pause, [^channel_id, :play]}
@@ -111,9 +115,9 @@ defmodule Otis.ChannelTest do
     assert_receive {:channel_play_pause, [^channel_id, :play]}
     assert_receive {:channel_play_pause, [^channel_id, :pause]}
   end
-  test "skipping renditions", context do
 
-  end
+  test "skipping renditions"
+
   test "playback completion sets state & sends message", context do
     channel_id = context.channel_id
     {:ok, :play} = Otis.Channel.play_pause(context.channel)

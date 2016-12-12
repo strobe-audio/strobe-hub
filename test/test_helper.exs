@@ -154,7 +154,7 @@ defmodule Otis.Test.TestSource do
     loaded: false,
   ]
   def new(duration \\ 60000) do
-    %__MODULE__{id: Otis.uuid, duration: duration}
+    %__MODULE__{id: Otis.uuid(), duration: duration}
   end
 end
 
