@@ -9,7 +9,6 @@ defmodule Otis.Packet do
     offset_ms:     0,
     duration_ms:   0,
     packet_size:   0, # the size of each packet in bytes
-    emitter:       nil,
     packet_number: 0,
     timestamp:     0,
     data:          nil,
@@ -70,13 +69,6 @@ defmodule Otis.Packet do
   end
 
   @doc ~S"""
-  Sets the packet's emitter.
-  """
-  def emit(packet, emitter) do
-    %P{ packet | emitter: emitter}
-  end
-
-  @doc ~S"""
   Tests to see if the given packet will have been played by the given time.
 
       iex> packet = Otis.Packet.new("1234", 0, 100, 3528)
@@ -117,22 +109,20 @@ defmodule Otis.Packet do
   end
 
   @doc ~S"""
-  Resets a packet back to a pristine state (no timestamp, no emitter).
+  Resets a packet back to a pristine state (no timestamp).
 
       iex> packet = Otis.Packet.new("1234", 0, 100, 3528)
       %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0 }
       iex> packet = Otis.Packet.timestamp(packet, 12341234)
       %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0, timestamp: 12341234 }
-      iex> packet = Otis.Packet.emit(packet, "emitter")
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0, timestamp: 12341234, emitter: "emitter" }
       iex> packet = %Otis.Packet{ packet | packet_number: 1234 }
-      %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0, timestamp: 12341234, emitter: "emitter", packet_number: 1234 }
+      %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0, timestamp: 12341234, packet_number: 1234 }
       iex> Otis.Packet.reset!(packet)
       %Otis.Packet{ rendition_id: "1234", offset_ms: 0, duration_ms: 100, packet_size: 3528, source_index: 0 }
 
   """
   def reset!(packet) do
-    struct P, Map.drop(packet, [:timestamp, :emitter, :packet_number, :__struct__])
+    struct P, Map.drop(packet, [:timestamp, :packet_number, :__struct__])
   end
 
   @doc "Marshals a packet into a binary blob for sending over the wire"
