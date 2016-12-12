@@ -6,13 +6,6 @@ defmodule Otis.Supervisor do
   end
 
   def init([packet_interval: packet_interval, packet_size: packet_size]) do
-    emitter_pool_options = [
-      name: {:local, Otis.EmitterPool},
-      worker_module: Otis.Channel.Emitter,
-      size: 16,
-      max_overflow: 2
-    ]
-
     children = [
       worker(Otis.DNSSD, []),
       worker(Otis.SSDP, []),
@@ -32,15 +25,6 @@ defmodule Otis.Supervisor do
       worker(Otis.Receivers.Database, []),
       worker(Otis.Receivers, []),
 
-      :poolboy.child_spec(Otis.EmitterPool, emitter_pool_options, [
-        interval: packet_interval,
-        packet_size: packet_size,
-        pool: Otis.EmitterPool
-      ]),
-      supervisor(Otis.Stream.Supervisor, []),
-      supervisor(Otis.SourceStreamSupervisor, []),
-      supervisor(Otis.Broadcaster, []),
-      supervisor(Otis.Controllers, []),
       supervisor(Otis.Channels, []),
       # This needs to be called by the app hosting the application
       # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)
