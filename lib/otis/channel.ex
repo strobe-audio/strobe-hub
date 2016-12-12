@@ -155,7 +155,7 @@ defmodule Otis.Channel do
   end
   def handle_call({:volume, volume}, _from, state) do
     volume = Otis.sanitize_volume(volume)
-    Otis.Receivers.Sets.volume_multiplier(state.id, volume)
+    Otis.Receivers.Channels.volume_multiplier(state.id, volume)
     event!(state, :channel_volume_change, volume)
     {:reply, {:ok, volume}, %S{state | volume: volume}}
   end

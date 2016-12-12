@@ -1,12 +1,12 @@
-defmodule Otis.Receivers.Sets do
+defmodule Otis.Receivers.Channels do
   use Supervisor
 
   alias Otis.Receiver
   @supervisor_name __MODULE__
-  @set_registry Otis.Receivers.SetRegistry
+  @channel_registry Otis.Receivers.ChannelRegistry
   @subscriber_registry Otis.Receivers.SubscriberRegistry
 
-  def set_namespace, do: @set_registry
+  def channel_namespace, do: @channel_registry
   def subscriber_namespace, do: @subscriber_registry
 
   def add_receiver(receiver, channel) do
@@ -15,11 +15,11 @@ defmodule Otis.Receivers.Sets do
   end
 
   def register(receiver, channel) do
-    Registry.register(@set_registry, channel.id, receiver)
+    Registry.register(@channel_registry, channel.id, receiver)
   end
 
   def lookup(channel_id) do
-    @set_registry |> Registry.lookup(channel_id) |> Enum.map(&elem(&1, 1))
+    @channel_registry |> Registry.lookup(channel_id) |> Enum.map(&elem(&1, 1))
   end
 
   def subscribe(name, channel_id) do

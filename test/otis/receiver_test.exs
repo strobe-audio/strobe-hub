@@ -191,7 +191,7 @@ defmodule Otis.ReceiverTest do
 
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
-    [r] = Otis.Receivers.Sets.lookup(channel_id)
+    [r] = Otis.Receivers.Channels.lookup(channel_id)
     assert r.id == id
   end
 
@@ -204,7 +204,7 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_connected, [^id, _]}
     :ok = :gen_tcp.close(mock.data_socket)
     assert_receive {:receiver_disconnected, [^id, _]}
-    assert [] == Otis.Receivers.Sets.lookup(channel_id)
+    assert [] == Otis.Receivers.Channels.lookup(channel_id)
   end
 
   test "subscribers receive notifications when receiver joins set", _context do
@@ -212,7 +212,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     channel_record = Otis.State.Channel.create!(channel_id, "Something")
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id)
-    Otis.Receivers.Sets.subscribe(:test, channel_id)
+    Otis.Receivers.Channels.subscribe(:test, channel_id)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
     assert_receive {:receiver_joined, [^id, _]}
@@ -223,7 +223,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     channel_record = Otis.State.Channel.create!(channel_id, "Something")
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id)
-    Otis.Receivers.Sets.subscribe(:test, channel_id)
+    Otis.Receivers.Channels.subscribe(:test, channel_id)
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
     assert_receive {:receiver_joined, [^id, _]}
@@ -243,7 +243,7 @@ defmodule Otis.ReceiverTest do
     mock2 = connect!(id2, 1234)
     assert_receive {:receiver_connected, [^id1, _]}
     assert_receive {:receiver_connected, [^id2, _]}
-    Otis.Receivers.Sets.send_data(channel_id, <<"DATA">>)
+    Otis.Receivers.Channels.send_data(channel_id, <<"DATA">>)
     {:ok, data} = data_recv_raw(mock1)
     assert data == <<"DATA">>
     {:ok, data} = data_recv_raw(mock2)
@@ -267,7 +267,7 @@ defmodule Otis.ReceiverTest do
     assert msg == %{ "volume" => 1.0 }
     {:ok, msg} = ctrl_recv(mock2)
     assert msg == %{ "volume" => 1.0 }
-    Otis.Receivers.Sets.volume_multiplier(channel_id, 0.5)
+    Otis.Receivers.Channels.volume_multiplier(channel_id, 0.5)
     # we don't get notifications when the multiplier changes
     refute_receive {:receiver_volume_change, [^id1, _]}
     refute_receive {:receiver_volume_change, [^id2, _]}
@@ -292,7 +292,7 @@ defmodule Otis.ReceiverTest do
     assert msg == %{ "volume" => 1.0 }
     {:ok, msg} = ctrl_recv(mock2)
     assert msg == %{ "volume" => 1.0 }
-    Otis.Receivers.Sets.stop(channel_id)
+    Otis.Receivers.Channels.stop(channel_id)
     # {:ok, msg} = ctrl_recv(mock1)
     # assert msg == %{ "command" => "stop" }
     {:ok, data} = data_recv_raw(mock1)
@@ -314,7 +314,7 @@ defmodule Otis.ReceiverTest do
     _mock2 = connect!(id2, 124)
     assert_receive {:receiver_connected, [^id1, _]}
     assert_receive {:receiver_connected, [^id2, _]}
-    assert Otis.Receivers.Sets.latency(channel_id) == 143
+    assert Otis.Receivers.Channels.latency(channel_id) == 143
   end
 
   test "we can query the connection status of a receiver" do

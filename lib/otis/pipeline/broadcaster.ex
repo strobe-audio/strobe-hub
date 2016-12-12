@@ -49,7 +49,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   def init([id, channel, hub, clock, config]) do
-    Otis.Receivers.Sets.subscribe(__MODULE__, id)
+    Otis.Receivers.Channels.subscribe(__MODULE__, id)
     {:ok, %S{
       id: id,
       channel: channel,
@@ -84,7 +84,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
   def handle_cast(:pause, state) do
     {:ok, time} = Clock.stop(state.clock)
-    Otis.Receivers.Sets.stop(state.id)
+    Otis.Receivers.Channels.stop(state.id)
     Producer.pause(state.hub)
     {_played, unplayed} = Enum.partition(state.inflight, &Packet.played?(&1, time))
     buffer = unplayed |> Enum.map(&Packet.reset!/1) |> Enum.reverse()
@@ -108,7 +108,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp start(time, state) do
-    offset_us = (state.config.base_latency_ms * 1000) + Otis.Receivers.Sets.latency(state.id)
+    offset_us = (state.config.base_latency_ms * 1000) + Otis.Receivers.Channels.latency(state.id)
     offset_n = Config.receiver_buffer_packets(state.config)
     state = resume(state)
     buffer_receivers(%S{state | t0: time, offset_us: offset_us, offset_n: offset_n, n: 0, inflight: []}, time)
@@ -125,7 +125,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp play_time(time, state) do
-    time + (state.config.base_latency_ms * 1000) + Otis.Receivers.Sets.latency(state.id)
+    time + (state.config.base_latency_ms * 1000) + Otis.Receivers.Channels.latency(state.id)
   end
 
   defp buffer_receivers(state, time) do
@@ -186,7 +186,7 @@ defmodule Otis.Pipeline.Broadcaster do
 
   defp broadcast_packets({state, packets}) do
     data = Enum.map(packets, &Packet.marshal/1)
-    Otis.Receivers.Sets.send_data(state.id, data)
+    Otis.Receivers.Channels.send_data(state.id, data)
     {state, packets}
   end
 

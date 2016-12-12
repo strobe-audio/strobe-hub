@@ -175,7 +175,7 @@ defmodule Otis.Receiver do
   Change the channel for an already running & configured receiver
   """
   def join_channel(receiver, channel) do
-    Otis.Receivers.Sets.add_receiver(receiver, channel)
+    Otis.Receivers.Channels.add_receiver(receiver, channel)
   end
 
   @doc ~S"""

@@ -43,7 +43,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     mock2 = connect!(id2, @receiver_latency)
     assert_receive {:receiver_connected, [^id1, _]}
     assert_receive {:receiver_connected, [^id2, _]}
-    receivers = Otis.Receivers.Sets.lookup(channel_id)
+    receivers = Otis.Receivers.Channels.lookup(channel_id)
     r1 = Enum.find(receivers, fn(r) -> r.id == id1 end)
     r2 = Enum.find(receivers, fn(r) -> r.id == id2 end)
     {:ok, channel: channel_record, channel_id: channel_id, receivers: [r1, r2], mocks: [mock1, mock2]}
@@ -789,7 +789,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     channel_id = context.channel_id
     _receiver_record = Otis.State.Receiver.create!(context.channel, id: receiver_id)
 
-    Otis.Receivers.Sets.subscribe(:test, channel_id)
+    Otis.Receivers.Channels.subscribe(:test, channel_id)
     mock = connect!(receiver_id, 1234)
     assert_receive {:receiver_joined, [^receiver_id, _]}
     :ok = :gen_tcp.close(mock.data_socket)

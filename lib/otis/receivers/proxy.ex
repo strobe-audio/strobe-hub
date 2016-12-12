@@ -17,13 +17,13 @@ defmodule Otis.Receivers.Proxy do
 
   def init([receiver, channel]) do
     Receiver.monitor(receiver)
-    Otis.Receivers.Sets.register(receiver, channel)
+    Otis.Receivers.Channels.register(receiver, channel)
     {:ok, {receiver, channel}}
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {receiver, channel}) do
     if Receiver.matches_pid?(receiver, pid) do
-      Otis.Receivers.Sets.notify_remove_receiver(receiver, channel)
+      Otis.Receivers.Channels.notify_remove_receiver(receiver, channel)
       {:stop, :normal, receiver}
     end
   end
