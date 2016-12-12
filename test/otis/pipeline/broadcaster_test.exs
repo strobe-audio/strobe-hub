@@ -119,6 +119,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     packet_time = fn(n) ->
       time + @receiver_latency  + (config.base_latency_ms * 1000) + (n * config.packet_duration_ms * 1_000)
     end
+    tick_time = fn(n) ->
+      time + (n * config.packet_duration_ms * 1_000)
+    end
 
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
@@ -136,8 +139,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
 
-    Enum.each(5..15, fn(n) ->
-      GenServer.call(clock, {:tick, time})
+    Enum.each(1..11, fn(t) ->
+      n = t + 4
+      GenServer.call(clock, {:tick, tick_time.(t)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -146,8 +150,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         assert packet.packet_number == n
       end)
     end)
-    Enum.each(16..31, fn(n) ->
-      GenServer.call(clock, {:tick, time})
+    Enum.each(12..27, fn(t) ->
+      n = t + 4
+      GenServer.call(clock, {:tick, tick_time.(t)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -156,8 +161,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         assert packet.packet_number == n
       end)
     end)
-    Enum.each(32..47, fn(n) ->
-      GenServer.call(clock, {:tick, time})
+    Enum.each(28..43, fn(t) ->
+      n = t + 4
+      GenServer.call(clock, {:tick, tick_time.(t)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -218,7 +224,6 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     GenServer.call(clock, {:tick, tick_time.(10)})
 
     Enum.each(5..14, fn(n) ->
-      IO.inspect [:test, n]
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -352,13 +357,13 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
 
-    Enum.each(5..15, fn(n) ->
+    Enum.each(12..22, fn(n) ->
       GenServer.call(clock, {:tick, tick_time.(n)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
-    Enum.each(16..31, fn(n) ->
+    Enum.each(23..38, fn(n) ->
       GenServer.call(clock, {:tick, tick_time.(n)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
@@ -417,8 +422,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
-    Enum.each(1..11, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+    Enum.each(1..11, fn(t) ->
+      GenServer.call(clock, {:tick, tick_time.(t)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -427,14 +432,14 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     end)
     assert_receive {:rendition_changed, [^channel_id, nil, ^r1id]}
 
-    Enum.each(5..15, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+    Enum.each(12..22, fn(t) ->
+      GenServer.call(clock, {:tick, tick_time.(t)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
-    Enum.each(16..31, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+    Enum.each(23..38, fn(t) ->
+      GenServer.call(clock, {:tick, tick_time.(t)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
@@ -584,7 +589,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         assert packet.data == d
       end)
     end)
-    Enum.each(5..16, fn(n) ->
+    Enum.each(1..12, fn(n) ->
       GenServer.call(clock, {:tick, tick_time.(n)})
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
