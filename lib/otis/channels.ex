@@ -1,6 +1,8 @@
 defmodule Otis.Channels do
   use Supervisor
 
+  alias Otis.State.Channel
+
   @supervisor __MODULE__
 
   def create(name) when is_binary(name) do
@@ -16,11 +18,11 @@ defmodule Otis.Channels do
     create(registry, id, name, Otis.Pipeline.config())
   end
   def create(registry, id, name, config) do
-    add(:create, registry, %Otis.State.Channel{id: id, name: name}, config)
+    add(:create, registry, %Channel{id: id, name: name}, config)
   end
 
   @doc "Start an existing channel"
-  def start(%Otis.State.Channel{} = channel, config \\ Otis.Pipeline.config()) do
+  def start(%Channel{} = channel, config \\ Otis.Pipeline.config()) do
     start(@supervisor, channel, config)
   end
   def start(registry, channel, config) do
