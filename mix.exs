@@ -13,7 +13,7 @@ defmodule Peel.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      escript: [main_module: Peel.Cli],
-     deps: deps]
+     deps: deps()]
   end
 
   # Configuration for the OTP application
