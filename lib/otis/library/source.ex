@@ -19,16 +19,12 @@ defprotocol Otis.Library.Source do
   def open!(source, id, packet_size_bytes)
 
   @doc """
-  Pauses the current stream.
+  Pauses the current stream. If the stream is live and cannot be resumed
+  without reloading then it should return :stop so the audio pipeline can shut
+  it down and restart it when required.
   """
-  @spec pause(t, binary, Enumerable.t) :: :ok
+  @spec pause(t, binary, Enumerable.t) :: :ok | :stop
   def pause(source, id, stream)
-
-  @doc """
-  Resumes the current stream.
-  """
-  @spec resume!(t, binary, Enumerable.t) :: {:reopen, Enumerable.t} | {:reuse, Enumerable.t}
-  def resume!(source, id, stream)
 
   @doc """
   Closes the given stream.
