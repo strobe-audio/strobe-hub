@@ -70,5 +70,5 @@ defmodule BBC do
     raise "Unknown channel #{inspect channel}"
   end
 
-  def library_id, do: "bbc"
+  def library_id, do: @library_id
 end

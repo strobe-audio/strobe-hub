@@ -1,7 +1,6 @@
 
 defmodule HLS.Client do
   alias   Experimental.{GenStage}
-  alias   HLS.Client.Registry
   require Logger
 
   use     GenStage

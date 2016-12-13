@@ -52,8 +52,6 @@ defimpl Poison.Encoder, for: BBC.Channel do
 end
 
 defimpl Otis.Library.Source, for: BBC.Channel do
-  alias HLS.Client.Registry
-
   def id(bbc) do
     bbc.id
   end
@@ -80,7 +78,7 @@ defimpl Otis.Library.Source, for: BBC.Channel do
     :stop
   end
 
-  def close(_channel, stream_id, _stream) do
+  def close(_channel, _stream_id, _stream) do
     :ok
   end
 
