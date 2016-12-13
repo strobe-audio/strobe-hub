@@ -76,25 +76,11 @@ defimpl Otis.Library.Source, for: BBC.Channel do
     channel |> BBC.playlist |> HLS.Stream.new(%HLS.Reader.Http{})
   end
 
-  def pause(_channel, stream_id, _stream) do
-    HLS.Client.stop(stream_id)
-    :ok
-  end
-
-  def resume!(channel, stream_id, stream) do
-    resume(channel, stream_id, stream, Registry.whereis_name(stream_id))
-  end
-
-  def resume(channel, stream_id, _stream, :undefined) do
-    {:ok, stream} = open(channel, stream_id)
-    {:reopen, stream}
-  end
-  def resume(_channel, _stream_id, stream, pid) when is_pid(pid) do
-    {:reuse, stream}
+  def pause(_channel, _stream_id, _stream) do
+    :stop
   end
 
   def close(_channel, stream_id, _stream) do
-    HLS.Client.stop(stream_id)
     :ok
   end
 

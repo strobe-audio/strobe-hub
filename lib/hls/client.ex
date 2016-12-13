@@ -11,18 +11,13 @@ defmodule HLS.Client do
     stream(stream, id, opts)
   end
 
-  def stop(id) do
-    GenStage.call(Registry.via(id), :stop)
-  end
-
   defp stream(stream, id, opts) do
-    # {:ok, pid} =  HLS.Client.Supervisor.start(stream, id, opts)
     {:ok, pid} =  HLS.Client.start_link(stream, id, opts)
     {:ok, GenStage.stream([pid])}
   end
 
   def start_link(stream, id, opts) do
-    GenStage.start_link(__MODULE__, [stream, id, opts], name: Registry.via(id))
+    GenStage.start_link(__MODULE__, [stream, id, opts])
   end
 
   # Callbacks
