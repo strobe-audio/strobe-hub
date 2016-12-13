@@ -16,18 +16,7 @@ defmodule Otis.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [ mod: {Otis, []},
-      applications: [
-        :porcelain,
-        :logger,
-        :dnssd,
-        :monotonic,
-        :sqlite_ecto,
-        :ecto,
-        :ranch,
-        :nerves_ssdp_server,
-        :gproc,
-        :erlsom,
-      ]
+      extra_applications: [:logger]
     ]
   end
 
@@ -57,6 +46,7 @@ defmodule Otis.Mixfile do
       {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
       {:nerves_ssdp_server, "~> 0.2.1"},
       {:gproc, "~> 0.5.0"},
+      {:mdns, "~> 0.1.5"},
     ]
   end
 end

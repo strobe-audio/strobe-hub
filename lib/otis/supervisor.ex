@@ -8,6 +8,7 @@ defmodule Otis.Supervisor do
   def init(pipeline_config) do
     children = [
       worker(Otis.DNSSD, [pipeline_config]),
+      worker(Otis.Mdns, [pipeline_config]),
       worker(Otis.SSDP, [pipeline_config]),
       worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
       worker(Otis.Source.File.Cache, []),
