@@ -15,7 +15,7 @@ defmodule Otis.Mdns do
       data: data(pipeline_config),
       ttl: 120,
       type: :srv,
-    } |> IO.inspect
+    }# |> IO.inspect
     Mdns.Server.add_service(ptr)
     Process.flag(:trap_exit, true)
     {:ok, %{}}
