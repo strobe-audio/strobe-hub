@@ -5,33 +5,20 @@ defmodule Test.Otis.Pipeline.Broadcaster do
 
   alias Otis.Packet
   alias Otis.Receiver
-  alias Otis.Library.Source
   alias Otis.Pipeline.Broadcaster
   alias Otis.Pipeline.Hub
   alias Otis.Pipeline.Playlist
-  alias Otis.State.Rendition
   alias Test.CycleSource
 
-  @table :cycle_sources
   @channel_id Otis.uuid()
   @receiver_latency 2222
 
-  def rendition(source) do
-    :ets.insert(@table, {source.id, source})
-    %Rendition{
-      id: Otis.uuid(),
-      channel_id: @channel_id,
-      source_type: Source.type(source) |> to_string,
-      source_id: Test.CycleSource.source_id(@table, source.id),
-      playback_duration: 1000,
-      playback_position: 0,
-      position: 0,
-    } |> Rendition.create!
+  setup_all do
+    CycleSource.start_table()
   end
 
   setup do
     MessagingHandler.attach()
-    _table = :ets.new(@table, [:set, :public, :named_table])
 
     channel_id = Otis.uuid
     id1 = Otis.uuid
@@ -50,12 +37,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "broadcaster does a flood send of receivers on start", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    s2 = CycleSource.new([<<"2">>], 1024)
-    s3 = CycleSource.new([<<"3">>], 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+    r3 = CycleSource.rendition!(@channel_id, [<<"3">>], 1024)
 
     renditions = [r1, r2, r3]
     {:ok, pl} = Playlist.start_link(@channel_id)
@@ -93,12 +77,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "clock tick sends next packet", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    s2 = CycleSource.new([<<"2">>], 1024)
-    s3 = CycleSource.new([<<"3">>], 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+    r3 = CycleSource.rendition!(@channel_id, [<<"3">>], 1024)
 
     renditions = [r1, r2, r3]
     {:ok, pl} = Playlist.start_link(@channel_id)
@@ -175,12 +156,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "late clock ticks send enought packets to catch up receiver", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    s2 = CycleSource.new([<<"2">>], 1024)
-    s3 = CycleSource.new([<<"3">>], 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+    r3 = CycleSource.rendition!(@channel_id, [<<"3">>], 1024)
 
     renditions = [r1, r2, r3]
     {:ok, pl} = Playlist.start_link(@channel_id)
@@ -241,12 +219,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "new receivers get buffer packets", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    s2 = CycleSource.new([<<"2">>], 1024)
-    s3 = CycleSource.new([<<"3">>], 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+    r3 = CycleSource.rendition!(@channel_id, [<<"3">>], 1024)
 
     renditions = [r1, r2, r3]
     {:ok, pl} = Playlist.start_link(@channel_id)
@@ -303,12 +278,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "rendition progress events", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    s2 = CycleSource.new([<<"2">>], 1024)
-    s3 = CycleSource.new([<<"3">>], 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+    r3 = CycleSource.rendition!(@channel_id, [<<"3">>], 1024)
 
     r1id = r1.id
     r2id = r2.id
@@ -380,12 +352,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "rendition change events", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    s2 = CycleSource.new([<<"2">>], 1024)
-    s3 = CycleSource.new([<<"3">>], 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+    r3 = CycleSource.rendition!(@channel_id, [<<"3">>], 1024)
 
     r1id = r1.id
     r2id = r2.id
@@ -467,8 +436,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       <<"a05840b11f6f31ee2ff801c36721b58e72704ce5823da13a13c283b3f469d6d9">>,
       <<"250faef208f92f6898994739c17141f57073ac7e14aeed826d16e5226b118013">>,
     ]
-    s1 = CycleSource.new(c, 1)
-    r1 = rendition(s1)
+    r1 = CycleSource.rendition!(@channel_id, c, 1)
 
     [m1, m2] = context.mocks
 
@@ -544,12 +512,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       <<"a05840b11f6f31ee2ff801c36721b58e72704ce5823da13a13c283b3f469d6d9">>,
       <<"250faef208f92f6898994739c17141f57073ac7e14aeed826d16e5226b118013">>,
     ]
-    s1 = CycleSource.new(c1, 1024)
-    s2 = CycleSource.new(c2, 1024)
-    s3 = CycleSource.new(c3, 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, c1, 1024)
+    r2 = CycleSource.rendition!(@channel_id, c2, 1024)
+    r3 = CycleSource.rendition!(@channel_id, c3, 1024)
 
     renditions = [r1, r2, r3]
     channel_id = context.channel_id
@@ -621,8 +586,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "broadcaster stop/start events", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    r1 = rendition(s1)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
     [m1, m2] = context.mocks
 
     renditions = [r1]
@@ -706,9 +670,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       <<"a05840b11f6f31ee2ff801c36721b58e72704ce5823da13a13c283b3f469d6d9">>,
       <<"250faef208f92f6898994739c17141f57073ac7e14aeed826d16e5226b118013">>,
     ]
-    s1 = CycleSource.new(c1, 1, self(), :live)
-    s2 = CycleSource.new(c2, 1, self(), :live)
-    r1 = rendition(s1)
+    r1 = CycleSource.rendition!(@channel_id, c1, 1, self(), :live)
+    s2 = CycleSource.new(c2, 1)
 
     [m1, m2] = context.mocks
 
@@ -732,8 +695,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
     assert_receive {:clock, {:start, _, 20}}
-    refute_receive {:source, :resume}
     :pong = GenServer.call(bc, :ping)
+
     Enum.each(Enum.slice(c1, 0..4), fn(d) ->
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
@@ -741,17 +704,19 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         assert packet.data == d
       end)
     end)
+
     Broadcaster.pause(bc)
-    assert_receive {:source, :pause}
+
+    # Replace source so next packet must be different
+    CycleSource.save(r1.id, s2)
+
     Enum.each([m1, m2], fn(m) ->
       {:ok, data} = data_recv_raw(m)
       assert data == Receiver.stop_command()
     end)
 
-    :ets.insert(@table, {s1.id, s2})
     Broadcaster.start(bc)
     assert_receive {:clock, {:start, _, 20}}
-    assert_receive {:source, :resume}
 
     Enum.each(Enum.slice(c2, 0..4), fn(d) ->
       Enum.each([m1, m2], fn(m) ->
@@ -763,12 +728,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "receiver events", context do
-    s1 = CycleSource.new([<<"1">>], 1024)
-    s2 = CycleSource.new([<<"2">>], 1024)
-    s3 = CycleSource.new([<<"3">>], 1024)
-    r1 = rendition(s1)
-    r2 = rendition(s2)
-    r3 = rendition(s3)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+    r3 = CycleSource.rendition!(@channel_id, [<<"3">>], 1024)
 
     renditions = [r1, r2, r3]
     {:ok, pl} = Playlist.start_link(@channel_id)

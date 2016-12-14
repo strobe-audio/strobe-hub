@@ -155,10 +155,6 @@ defimpl Otis.Library.Source, for: Otis.Source.File do
     :ok # no-op
   end
 
-  def resume!(_file, _id, stream) do
-    {:reuse, stream}
-  end
-
   def close(_file, _id, stream) do
     Elixir.File.close(stream)
   end

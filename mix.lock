@@ -11,7 +11,7 @@
   "mdns": {:hex, :mdns, "0.1.5", "566548ae7a1b806e2beb0d3b69a7858580c2f9fec4f8f128602a59a09f3aab39", [:mix], [{:dns, "~> 0.0.4", [hex: :dns, optional: false]}]},
   "monotonic": {:git, "https://github.com/magnetised/monotonic.ex.git", "66121d98bea181a3f712a9a133d270a0f94d0ad1", []},
   "nerves_ssdp_server": {:hex, :nerves_ssdp_server, "0.2.1", "2d010552023fc1a724e8cb5c92479a58552976e6f805b6dbf09babd31f923b8f", [:mix], []},
-  "otis_library": {:git, "git@gitlab.com:magnetised/otis_library.git", "19d8d2005601ee55a287865383ddeb6692d50384", []},
+  "otis_library": {:git, "git@gitlab.com:magnetised/otis_library.git", "cce1926691d97210d2129ee80a0ec881b2a7f230", []},
   "pipe": {:hex, :pipe, "0.0.2", "eff98a868b426745acef103081581093ff5c1b88100f8ff5949b4a30e81d0d9f", [:mix], []},
   "poison": {:hex, :poison, "1.5.2", "560bdfb7449e3ddd23a096929fb9fc2122f709bcc758b2d5d5a5c7d0ea848910", [:mix], []},
   "poolboy": {:hex, :poolboy, "1.5.1", "6b46163901cfd0a1b43d692657ed9d7e599853b3b21b95ae5ae0a777cf9b6ca8", [:rebar], []},

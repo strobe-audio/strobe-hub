@@ -175,10 +175,6 @@ defimpl Otis.Library.Source, for: Otis.Test.TestSource do
     # noop
   end
 
-  def resume!(_source, _id, _stream) do
-    # noop
-  end
-
   def close(_source, _id, _stream) do
     # noop
   end
@@ -206,7 +202,30 @@ end
 defmodule Test.CycleSource do
   use GenServer
 
-  defstruct [:id, :pid]
+  alias Otis.Library.Source
+  alias Otis.State.Rendition
+
+  @table :cycle_sources
+
+  defstruct [:id, :source, :cycles, :parent, :type]
+
+  def start_table() do
+    :ets.new(@table, [:set, :public, :named_table])
+    :ok
+  end
+
+  def save(source) do
+    save(source.id, source)
+  end
+  def save(id, source) do
+    :ets.insert(@table, {id, source})
+    source
+  end
+
+  def find(id) do
+    [{_, source}] = :ets.lookup(@table, id)
+    {:ok, source}
+  end
 
   def source_id(table, id) do
     Enum.join([table, id], ":")
@@ -216,14 +235,25 @@ defmodule Test.CycleSource do
   end
 
   def new(source, cycles \\ 1, parent \\ nil, type \\ :file) do
-    {:ok, pid} = start_link(source, cycles, parent, type)
-    %__MODULE__{id: Otis.uuid(), pid: pid}
-  end
-  def start_link(source, cycles \\ 1, parent \\ nil, type \\ :file) do
-    GenServer.start_link(__MODULE__, [source, cycles, parent, type])
+    # {:ok, pid} = start_link(source, cycles, parent, type)
+    %__MODULE__{id: Otis.uuid(), source: source, cycles: cycles, parent: parent, type: type}
   end
 
-  def init([source, cycles, parent, type]) do
+  def rendition!(channel_id, source, cycles \\ 1, parent \\ nil, type \\ :file) do
+    rendition(channel_id, source, cycles, parent, type) |> Rendition.create!
+  end
+  def rendition(channel_id, source, cycles \\ 1, parent \\ nil, type \\ :file) do
+    new(source, cycles, parent, type) |> save() |> source_rendition(channel_id)
+  end
+  def source_rendition(source, channel_id) do
+    %Rendition{id: source.id, channel_id: channel_id, source_type: Source.type(source), source_id: source.id, playback_duration: 1000, playback_position: 0, position: 0}
+  end
+
+  def start_link(source) do
+    GenServer.start_link(__MODULE__, source)
+  end
+
+  def init(%__MODULE__{source: source, cycles: cycles, parent: parent, type: type}) do
     state = %{ source: source, sink: [], cycles: cycles, parent: parent, type: type }
     {:ok, state}
   end
@@ -282,27 +312,34 @@ end
 defimpl Otis.Library.Source, for: Test.CycleSource do
   alias Test.CycleSource, as: S
 
-  def id(_source) do
-    ""
+  def id(%S{id: id} = _source) do
+    id
   end
+
   def type(_source) do
-    Test.CycleSource
+    Test.CycleSource |> to_string
   end
+
   def open!(source, _id, _packet_size_bytes) do
-    Otis.Pipeline.Producer.stream(source.pid)
+    {:ok, pid} = S.start_link(source)
+    Otis.Pipeline.Producer.stream(pid)
   end
-  def pause(%S{pid: pid}, _id, _stream) do
-    GenServer.call(pid, :pause)
+
+  def pause(%S{type: :file}, _id, _stream) do
+    :ok
   end
-  def resume!(%S{pid: pid}, _id, stream) do
-    GenServer.call(pid, {:resume, stream})
+  def pause(%S{type: :live}, _id, _stream) do
+    :stop
   end
+
   def close(_file, _id, _stream) do
     :ok
   end
+
   def audio_type(_source) do
     {".raw", "audio/raw"}
   end
+
   def metadata(_source) do
     %{}
   end
@@ -312,9 +349,9 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
 end
 
 defimpl Otis.Library.Source.Origin, for: Test.CycleSource do
-  def load!(%Test.CycleSource{id: id} = _source) do
-    [table, id] = Test.CycleSource.source_id(id)
-    [{_, source}] = :ets.lookup(String.to_atom(table), id)
+  alias Test.CycleSource
+  def load!(%CycleSource{id: id} = _source) do
+    {:ok, source} = CycleSource.find(id)
     source
   end
 end
@@ -359,7 +396,7 @@ defmodule Test.Otis.Pipeline.Clock do
 end
 
 
-Faker.start
+Faker.start()
 Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
 

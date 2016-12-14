@@ -61,12 +61,8 @@ defmodule Otis.Pipeline.Buffer do
     end
   end
   def handle_call(:pause, _from, state) do
-    :ok = Source.pause(state.source, state.id, state.stream)
-    {:reply, :ok, state}
-  end
-  def handle_call(:resume, _from, state) do
-    {action, _} = Source.resume!(state.source, state.id, state.stream)
-    {:reply, action, state}
+    reply = Source.pause(state.source, state.id, state.stream)
+    {:reply, reply, state}
   end
 
   def start_stream(nil, rendition_id, state) do

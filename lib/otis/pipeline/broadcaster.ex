@@ -82,19 +82,27 @@ defmodule Otis.Pipeline.Broadcaster do
     notify_channel(state, :broadcaster_start)
     {:noreply, %S{state | started: true}}
   end
+
   def handle_cast(:pause, state) do
     {:ok, time} = Clock.stop(state.clock)
     Otis.Receivers.Channels.stop(state.id)
-    Producer.pause(state.hub)
-    {_played, unplayed} = Enum.partition(state.inflight, &Packet.played?(&1, time))
-    buffer = unplayed |> Enum.map(&Packet.reset!/1) |> Enum.reverse()
-    {:noreply, %S{state | n: 0, buffer: buffer, inflight: []}}
+    state = case Producer.pause(state.hub) do
+      :ok ->
+        {_played, unplayed} = Enum.split_with(state.inflight, &Packet.played?(&1, time))
+        buffer = unplayed |> Enum.map(&Packet.reset!/1) |> Enum.reverse()
+        %S{state | n: 0, buffer: buffer, inflight: []}
+      :stop ->
+        %S{state | n: 0, buffer: [], inflight: []}
+    end
+    {:noreply, state}
   end
+
   def handle_cast({:tick, time}, state) do
     packets = packet_count_at_time(time, state) - state.n
     state = send_packets(state, time, packets)
     {:noreply, state}
   end
+
   def handle_cast({:skip, rendition_id}, state) do
     {:ok, time} = Clock.time(state.clock)
     Otis.Receivers.Channels.stop(state.id)
@@ -111,18 +119,7 @@ defmodule Otis.Pipeline.Broadcaster do
   defp start(time, state) do
     offset_us = (state.config.base_latency_ms * 1000) + Otis.Receivers.Channels.latency(state.id)
     offset_n = Config.receiver_buffer_packets(state.config)
-    state = resume(state)
     buffer_receivers(%S{state | t0: time, offset_us: offset_us, offset_n: offset_n, n: 0, inflight: []}, time)
-  end
-
-  defp resume(%S{started: false} = state) do
-    state
-  end
-  defp resume(%S{started: true} = state) do
-    case Producer.resume(state.hub) do
-      :reopen -> %S{ state | buffer: [] }
-      _ -> state
-    end
   end
 
   defp play_time(time, state) do
@@ -142,7 +139,7 @@ defmodule Otis.Pipeline.Broadcaster do
 
   defp monitor_packets({state, packets}, time) do
     inflight = Enum.concat(Enum.reverse(packets), state.inflight)
-    {played, unplayed} = Enum.partition(inflight, &Packet.played?(&1, time))
+    {played, unplayed} = Enum.split_with(inflight, &Packet.played?(&1, time))
     state = state |> monitor_rendition(played) |> monitor_progress(played)
     state = state |> monitor_status(unplayed)
     %S{state | inflight: unplayed }
@@ -181,7 +178,7 @@ defmodule Otis.Pipeline.Broadcaster do
 
   defp playable_packets(time, state) do
     t = play_time(time, state)
-    {_, playable} = Enum.partition(state.inflight, &Packet.played?(&1, t))
+    {_, playable} = Enum.split_with(state.inflight, &Packet.played?(&1, t))
     Enum.reverse(playable)
   end
 

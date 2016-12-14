@@ -14,10 +14,6 @@ defmodule Otis.Pipeline.Producer do
     GenServer.call(producer, :pause)
   end
 
-  def resume(producer) do
-    GenServer.call(producer, :resume)
-  end
-
   def stream(pid) do
     start = fn -> pid end
     next = fn(p) ->

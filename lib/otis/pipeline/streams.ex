@@ -16,6 +16,10 @@ defmodule Otis.Pipeline.Streams do
     {:ok, name}
   end
 
+  def streams do
+    Supervisor.which_children(@supervisor_name)
+  end
+
   def start_link do
     Supervisor.start_link(__MODULE__, :ok, name: @supervisor_name)
   end
