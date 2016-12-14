@@ -166,4 +166,15 @@ defmodule Test.Otis.Pipeline.Buffer do
     {:done, _packet} = Producer.next(buffer)
     assert :stop == Producer.pause(buffer)
   end
+
+  test "buffer sends file source duration", context do
+    d = [
+      <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
+      <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
+    ]
+    rendition = CycleSource.rendition!(@channel_id, d, 1)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:done, packet} = Producer.next(buffer)
+    assert packet.source_duration == 100_000
+  end
 end

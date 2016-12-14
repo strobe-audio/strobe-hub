@@ -289,26 +289,6 @@ defmodule Test.CycleSource do
   end
 end
 
-defmodule Test.PassthroughTranscoder do
-  use GenServer
-
-  def start_link(_source, inputstream, _playback_position, _config) do
-    GenServer.start_link(__MODULE__, inputstream)
-  end
-
-  def init(stream) do
-    {:ok, stream}
-  end
-
-  def handle_call(:next, _from, stream) do
-    resp = case Enum.take(stream, 1) do
-      [] -> :done
-      [v] -> {:ok, v}
-    end
-    {:reply, resp, stream}
-  end
-end
-
 defimpl Otis.Library.Source, for: Test.CycleSource do
   alias Test.CycleSource, as: S
 
@@ -343,8 +323,31 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
   def metadata(_source) do
     %{}
   end
+  def duration(%S{type: :live}) do
+    {:ok, :infinity}
+  end
   def duration(_source) do
-    0
+    {:ok, 100_000}
+  end
+end
+
+defmodule Test.PassthroughTranscoder do
+  use GenServer
+
+  def start_link(_source, inputstream, _playback_position, _config) do
+    GenServer.start_link(__MODULE__, inputstream)
+  end
+
+  def init(stream) do
+    {:ok, stream}
+  end
+
+  def handle_call(:next, _from, stream) do
+    resp = case Enum.take(stream, 1) do
+      [] -> :done
+      [v] -> {:ok, v}
+    end
+    {:reply, resp, stream}
   end
 end
 

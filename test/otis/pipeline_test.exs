@@ -122,12 +122,15 @@ defmodule Test.Otis.Pipeline do
     assert :stop == Otis.Library.Source.pause(source, nil, :stream)
   end
 
-  # test "Cyclesource live resume" do
-  #   source = CycleSource.new(Enum.to_list(1..10), 100, self(), :live)
-  #   {:reopen, nil} = Otis.Library.Source.resume!(source, nil, :stream)
-  #   assert_receive {:source, :resume}
-  # end
+  test "CycleSource file duration" do
+    source = CycleSource.new(Enum.to_list(1..10), 100)
+    assert {:ok, 100_000} == Otis.Library.Source.duration(source)
+  end
 
+  test "CycleSource live duration" do
+    source = CycleSource.new(Enum.to_list(1..10), 100, self(), :live)
+    assert {:ok, :infinity} == Otis.Library.Source.duration(source)
+  end
 
   test "PassthroughTranscoder" do
     array = CycleSource.new(Enum.to_list(0..4))

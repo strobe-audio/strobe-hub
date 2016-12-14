@@ -4,7 +4,8 @@ defmodule Otis.Packet do
   """
 
   defstruct [
-    rendition_id:     nil,
+    rendition_id:    nil,
+    source_duration: 0,
     source_index:  0,
     offset_ms:     0,
     duration_ms:   0,

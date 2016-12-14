@@ -171,7 +171,7 @@ defmodule Otis.Pipeline.Broadcaster do
 
   defp monitor_progress(state, played) do
     Enum.each(played, fn(packet) ->
-      Otis.State.Events.notify({:rendition_progress, [state.id, packet.rendition_id, packet.offset_ms, packet.duration_ms]})
+      Otis.State.Events.notify({:rendition_progress, [state.id, packet.rendition_id, packet.offset_ms, packet.source_duration]})
     end)
     state
   end
