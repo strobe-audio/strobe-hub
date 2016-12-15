@@ -7,6 +7,9 @@ defmodule Otis.LoggerHandler do
   end
 
   # Rate limit the source progress events to 1 out of 10 (or roughly every 1s)
+  def handle_event({:rendition_progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
+    {:ok, state}
+  end
   def handle_event({:rendition_progress, _args} = event, %{progress_count: 0} = state) do
     log_event(event, state)
     {:ok, %{state | progress_count: 100}}
