@@ -82,9 +82,10 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert packet.packet_size == 100
     assert byte_size(packet.data) == 100
     assert packet.data == <<"c20c0f7e5a74b8c36d2544bc6f82a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436",0,0,0,0,0,0,0,0>>
-    :done = Producer.next(buffer)
     pid = GenServer.whereis(buffer)
-    assert nil == pid
+    Process.monitor(pid)
+    :done = Producer.next(buffer)
+    assert_receive {:DOWN, _ref, :process, ^pid, {:shutdown, :normal}}
   end
 
   test "source size multiple of packet size", context do
