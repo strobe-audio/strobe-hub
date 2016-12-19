@@ -1,10 +1,11 @@
 defmodule Otis.Pipeline.Hub do
-  use GenServer
-
   @moduledoc """
   The interface between a broadcaster and a playlist: converts a playlist into
-  a stream of %Packet{}s by creating streams from the playlist entries.
+  a constant stream of %Packet{}s by creating sequential `Buffer`s from the
+  playlist entries.
   """
+
+  use GenServer
 
   alias Otis.Pipeline.Playlist
   alias Otis.Pipeline.Producer
