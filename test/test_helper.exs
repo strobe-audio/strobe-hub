@@ -207,7 +207,7 @@ defmodule Test.CycleSource do
 
   @table :cycle_sources
 
-  defstruct [:id, :source, :cycles, :parent, :type]
+  defstruct [:id, :source, :cycles, :parent, :type, :delay]
 
   def start_table() do
     :ets.new(@table, [:set, :public, :named_table])
@@ -234,16 +234,16 @@ defmodule Test.CycleSource do
     String.split(id, ":")
   end
 
-  def new(source, cycles \\ 1, type \\ :file) do
+  def new(source, cycles \\ 1, type \\ :file, delay \\ 0) do
     # {:ok, pid} = start_link(source, cycles, type)
-    %__MODULE__{id: Otis.uuid(), source: source, cycles: cycles, type: type}
+    %__MODULE__{id: Otis.uuid(), source: source, cycles: cycles, type: type, delay: delay}
   end
 
-  def rendition!(channel_id, source, cycles \\ 1, type \\ :file) do
-    rendition(channel_id, source, cycles, type) |> Rendition.create!
+  def rendition!(channel_id, source, cycles \\ 1, type \\ :file, delay \\ 0) do
+    rendition(channel_id, source, cycles, type, delay) |> Rendition.create!
   end
-  def rendition(channel_id, source, cycles \\ 1, type \\ :file) do
-    new(source, cycles, type) |> save() |> source_rendition(channel_id)
+  def rendition(channel_id, source, cycles \\ 1, type \\ :file, delay \\ 0) do
+    new(source, cycles, type, delay) |> save() |> source_rendition(channel_id)
   end
   def source_rendition(source, channel_id) do
     %Rendition{id: source.id, channel_id: channel_id, source_type: Source.type(source), source_id: source.id, playback_duration: 1000, playback_position: 0, position: 0}
@@ -253,8 +253,8 @@ defmodule Test.CycleSource do
     GenServer.start_link(__MODULE__, source)
   end
 
-  def init(%__MODULE__{source: source, cycles: cycles, type: type}) do
-    state = %{ source: source, sink: [], cycles: cycles, type: type }
+  def init(%__MODULE__{source: source, cycles: cycles, type: type, delay: delay}) do
+    state = %{ source: source, sink: [], cycles: cycles, type: type, delay: delay }
     {:ok, state}
   end
 
@@ -265,8 +265,17 @@ defmodule Test.CycleSource do
     source = Enum.reverse(sink)
     handle_call(:next, from, %{state | source: source, sink: [], cycles: cycles - 1})
   end
+  def handle_call(:next, from, %{delay: delay} = state) when delay > 0 do
+    Process.send_after(self(), {:delayed, from}, delay)
+    {:noreply, %{ state | delay: 0 }}
+  end
   def handle_call(:next, _from, %{source: [h | t], sink: sink} = state) do
     {:reply, {:ok, h}, %{state | source: t, sink: [h | sink]}}
+  end
+
+  def handle_info({:delayed, from}, %{source: [h | t], sink: sink} = state) do
+    GenServer.reply(from, {:ok, h})
+    {:noreply, %{state | source: t, sink: [h | sink]}}
   end
 end
 
@@ -376,6 +385,10 @@ defmodule Test.Otis.Pipeline.Clock do
   def handle_call(:stop, _from, {parent, time, _broadcaster}) do
     Kernel.send(parent, {:clock, {:stop}})
     {:reply, {:ok, time}, {parent, time, nil}}
+  end
+
+  def handle_info({:set_time, time}, {parent, _time, broadcaster}) do
+    {:noreply, {parent, time, broadcaster}}
   end
 end
 

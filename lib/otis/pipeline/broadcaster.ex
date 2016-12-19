@@ -77,8 +77,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   def handle_cast(:start, state) do
-    {:ok, time} = Clock.start(state.clock, self(), state.config.packet_duration_ms)
-    state = start(time, state)
+    state = start(&clock_start_time/1, state)
     notify_channel(state, :broadcaster_start)
     {:noreply, %S{state | started: true}}
   end
@@ -104,22 +103,43 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   def handle_cast({:skip, rendition_id}, state) do
-    {:ok, time} = Clock.time(state.clock)
     Otis.Receivers.Channels.stop(state.id)
     Hub.skip(state.hub, rendition_id)
-    state = start(time, %S{ state | buffer: [] })
+    state = start(&clock_time/1, %S{ state | buffer: [] })
     {:noreply, state}
+  end
+
+
+  defp start(time, %S{buffer: []} = state) do
+    case Producer.next(state.hub) do
+      :done ->
+        start_with_time(time, state)
+      {:ok, packet} ->
+        start_with_time(time, %S{state| buffer: [ packet | state.buffer ]})
+    end
+  end
+  defp start(time, state) do
+    start_with_time(time, state)
+  end
+
+  defp start_with_time(time, state) do
+    {:ok, t0} = time.(state)
+    offset_us = (state.config.base_latency_ms * 1000) + Otis.Receivers.Channels.latency(state.id)
+    offset_n = Config.receiver_buffer_packets(state.config)
+    buffer_receivers(%S{state | t0: t0, offset_us: offset_us, offset_n: offset_n, n: 0, inflight: []}, t0)
+  end
+
+  defp clock_start_time(state) do
+    Clock.start(state.clock, self(), state.config.packet_duration_ms)
+  end
+
+  defp clock_time(state) do
+    Clock.time(state.clock)
   end
 
   defp packet_count_at_time(time, state) do
     duration = time - state.t0
     round(Float.floor(state.offset_n + (duration / state.packet_duration_us)))
-  end
-
-  defp start(time, state) do
-    offset_us = (state.config.base_latency_ms * 1000) + Otis.Receivers.Channels.latency(state.id)
-    offset_n = Config.receiver_buffer_packets(state.config)
-    buffer_receivers(%S{state | t0: time, offset_us: offset_us, offset_n: offset_n, n: 0, inflight: []}, time)
   end
 
   defp play_time(time, state) do

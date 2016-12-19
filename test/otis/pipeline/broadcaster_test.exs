@@ -815,6 +815,42 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "clock is started after source is loaded", context do
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024, :live, 50)
 
+    renditions = [r1]
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    Playlist.replace(pl, renditions)
+
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      receiver_buffer_ms: 100,
+      base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    {:ok, hub} = Hub.start_link(pl, config)
+
+    t0 = 1_000_000
+    t1 = 2_000_000
+
+    packet_time = fn(t0, n) ->
+      t0 + @receiver_latency + (config.base_latency_ms * 1000) + (n * config.packet_duration_ms * 1_000)
+    end
+
+    {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(t0)
+    {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
+    Process.send_after(clock, {:set_time, t1}, 20)
+    Broadcaster.start(bc)
+    assert_receive {:clock, {:start, _, 20}}
+    :pong = GenServer.call(bc, :ping)
+    [m1, m2] = context.mocks
+    Enum.each(0..4, fn(n) ->
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, data} = data_recv_raw(m)
+        packet = Packet.unmarshal(data)
+        assert packet.timestamp == packet_time.(t1, n)
+      end)
+    end)
   end
 end
