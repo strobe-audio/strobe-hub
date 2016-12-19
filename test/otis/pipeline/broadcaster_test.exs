@@ -269,6 +269,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     m3 = connect!(id3, 2000)
     assert_receive {:receiver_connected, [^id3, _]}
 
+    {:ok, data} = data_recv_raw(m3)
+    assert data == Receiver.stop_command()
     Enum.each(0..4, fn(n) ->
       {:ok, data} = data_recv_raw(m3)
       packet = Packet.unmarshal(data)
