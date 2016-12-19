@@ -670,7 +670,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       <<"a05840b11f6f31ee2ff801c36721b58e72704ce5823da13a13c283b3f469d6d9">>,
       <<"250faef208f92f6898994739c17141f57073ac7e14aeed826d16e5226b118013">>,
     ]
-    r1 = CycleSource.rendition!(@channel_id, c1, 1, self(), :live)
+    r1 = CycleSource.rendition!(@channel_id, c1, 1, :live)
     s2 = CycleSource.new(c2, 1)
 
     [m1, m2] = context.mocks
@@ -765,7 +765,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   test "rendition progress events for live sources", context do
-    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024, self(), :live)
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024, :live)
 
     r1id = r1.id
 
@@ -812,5 +812,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     assert_receive {:rendition_progress, [^channel_id, ^r1id, 20, :infinity]}
+  end
+
+  test "clock is started after source is loaded", context do
+
   end
 end

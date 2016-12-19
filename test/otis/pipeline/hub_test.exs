@@ -142,7 +142,7 @@ defmodule Test.Otis.Pipeline.Hub do
       <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
       <<"a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436">>,
     ]
-    r1 = CycleSource.rendition!(@channel_id, c1, 1024, self())
+    r1 = CycleSource.rendition!(@channel_id, c1, 1024)
     renditions = [r1]
     {:ok, pl} = Playlist.start_link(@channel_id)
     Playlist.replace(pl, renditions)
@@ -166,7 +166,7 @@ defmodule Test.Otis.Pipeline.Hub do
       <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
       <<"a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436">>,
     ]
-    r1 = CycleSource.rendition!(@channel_id, c1, 1024, self(), :live)
+    r1 = CycleSource.rendition!(@channel_id, c1, 1024, :live)
 
     renditions = [r1]
     {:ok, pl} = Playlist.start_link(@channel_id)

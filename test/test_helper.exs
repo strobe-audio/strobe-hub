@@ -234,16 +234,16 @@ defmodule Test.CycleSource do
     String.split(id, ":")
   end
 
-  def new(source, cycles \\ 1, parent \\ nil, type \\ :file) do
-    # {:ok, pid} = start_link(source, cycles, parent, type)
-    %__MODULE__{id: Otis.uuid(), source: source, cycles: cycles, parent: parent, type: type}
+  def new(source, cycles \\ 1, type \\ :file) do
+    # {:ok, pid} = start_link(source, cycles, type)
+    %__MODULE__{id: Otis.uuid(), source: source, cycles: cycles, type: type}
   end
 
-  def rendition!(channel_id, source, cycles \\ 1, parent \\ nil, type \\ :file) do
-    rendition(channel_id, source, cycles, parent, type) |> Rendition.create!
+  def rendition!(channel_id, source, cycles \\ 1, type \\ :file) do
+    rendition(channel_id, source, cycles, type) |> Rendition.create!
   end
-  def rendition(channel_id, source, cycles \\ 1, parent \\ nil, type \\ :file) do
-    new(source, cycles, parent, type) |> save() |> source_rendition(channel_id)
+  def rendition(channel_id, source, cycles \\ 1, type \\ :file) do
+    new(source, cycles, type) |> save() |> source_rendition(channel_id)
   end
   def source_rendition(source, channel_id) do
     %Rendition{id: source.id, channel_id: channel_id, source_type: Source.type(source), source_id: source.id, playback_duration: 1000, playback_position: 0, position: 0}
@@ -253,8 +253,8 @@ defmodule Test.CycleSource do
     GenServer.start_link(__MODULE__, source)
   end
 
-  def init(%__MODULE__{source: source, cycles: cycles, parent: parent, type: type}) do
-    state = %{ source: source, sink: [], cycles: cycles, parent: parent, type: type }
+  def init(%__MODULE__{source: source, cycles: cycles, type: type}) do
+    state = %{ source: source, sink: [], cycles: cycles, type: type }
     {:ok, state}
   end
 
@@ -267,25 +267,6 @@ defmodule Test.CycleSource do
   end
   def handle_call(:next, _from, %{source: [h | t], sink: sink} = state) do
     {:reply, {:ok, h}, %{state | source: t, sink: [h | sink]}}
-  end
-
-  def handle_call(:pause, _from, state) do
-    notify_parent(state.parent, :pause)
-    {:reply, :ok, state}
-  end
-  def handle_call({:resume, stream}, _from, %{type: :file} = state) do
-    notify_parent(state.parent, :resume)
-    {:reply, {:reuse, stream}, state}
-  end
-  def handle_call({:resume, _stream}, _from, %{type: :live} = state) do
-    notify_parent(state.parent, :resume)
-    {:reply, {:reopen, nil}, state}
-  end
-
-  defp notify_parent(nil, _event) do
-  end
-  defp notify_parent(parent, event) do
-    send(parent, {:source, event})
   end
 end
 
