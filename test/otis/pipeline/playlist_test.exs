@@ -149,4 +149,16 @@ defmodule Test.Otis.Pipeline.Playlist do
     assert_receive {:rendition_deleted, [^cid, ^channel_id]}
     assert_receive {:rendition_deleted, [^did, ^channel_id]}
   end
+
+
+  test "it appends sources in the right position", context do
+    channel_id = context.id
+    {:ok, pl} = Playlist.start_link(channel_id)
+    Playlist.append(pl, context.sources)
+    {:ok, r} = Playlist.next(pl)
+    assert r.position == 0
+    Playlist.append(pl, context.sources)
+    {:ok, renditions} = Playlist.list(pl)
+    assert Enum.map(renditions, fn(r) -> r.position end) == [0, 1, 2, 3, 4, 5, 6, 7]
+  end
 end

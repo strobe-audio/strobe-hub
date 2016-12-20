@@ -98,8 +98,9 @@ defmodule Otis.Pipeline.Playlist do
   defp all_renditions(state) do
     [state.active | state.renditions] |> Enum.reject(&is_nil/1)
   end
+
   defp make_renditions(sources, state) do
-    make_renditions(sources, length(state.renditions), [], state.id)
+    make_renditions(sources, length(all_renditions(state)), [], state.id)
   end
 
   defp make_renditions([], _n, renditions, _id) do
