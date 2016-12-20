@@ -14,6 +14,9 @@ defmodule Otis.Transcoders.Avconv do
     {proc, outstream}
   end
 
+  def stop(nil) do
+    true
+  end
   def stop(process) do
     Porcelain.Process.stop(process)
   end

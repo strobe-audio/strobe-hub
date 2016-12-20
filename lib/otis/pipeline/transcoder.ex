@@ -2,13 +2,14 @@ defmodule Otis.Pipeline.Transcoder do
   use GenServer
 
   alias Otis.Library.Source
+  alias Otis.Transcoders.Avconv
 
   defmodule S do
     defstruct [
       :source,
       :inputstream,
       :playback_position,
-      :transcoder_pid,
+      :transcoder,
       :outputstream,
     ]
   end
@@ -18,6 +19,8 @@ defmodule Otis.Pipeline.Transcoder do
   end
 
   def init([source, inputstream, playback_position, config]) do
+    # Ensure we get the terminate/2 callback
+    Process.flag(:trap_exit, true)
     state = %S{
       source: source,
       inputstream: inputstream,
@@ -35,9 +38,14 @@ defmodule Otis.Pipeline.Transcoder do
     {:reply, resp, state}
   end
 
+  def terminate(_reason, state) do
+    Avconv.stop(state.transcoder)
+    :ok
+  end
+
   defp start(state, config) do
     {ext, _type} = Source.audio_type(state.source)
-    {pid, outputstream} = Otis.Transcoders.Avconv.transcode(state.inputstream, ext, state.playback_position, config)
-    %S{ state | transcoder_pid: pid, outputstream: outputstream }
+    {pid, outputstream} = Avconv.transcode(state.inputstream, ext, state.playback_position, config)
+    %S{ state | transcoder: pid, outputstream: outputstream }
   end
 end
