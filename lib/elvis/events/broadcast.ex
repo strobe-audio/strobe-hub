@@ -15,6 +15,10 @@ defmodule Elvis.Events.Broadcast do
   end
 
 
+  def handle_event({:library_request, _}, state) do
+    {:ok, state}
+  end
+
   def handle_event({:library_response, [id, response, socket]}, state) do
     Phoenix.Channel.push(socket, "library", %{ libraryId: id, folder: response })
     {:ok, state}
@@ -22,6 +26,10 @@ defmodule Elvis.Events.Broadcast do
 
   def handle_event({:channel_added, [_id, channel]}, state) do
     broadcast!("channel_added", Otis.State.status(channel))
+    {:ok, state}
+  end
+
+  def handle_event({:new_renditions, _}, state) do
     {:ok, state}
   end
 
