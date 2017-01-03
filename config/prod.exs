@@ -3,7 +3,6 @@ use Mix.Config
 # For production, we configure the host to read the PORT
 # from the system environment. Therefore, you will need
 # to set PORT=80 before running your server.
-#
 # You should also configure the url host to something
 # meaningful, we use this information when generating URLs.
 #
@@ -56,6 +55,8 @@ config :logger, level: :info
 # start per endpoint:
 #
 config :elvis, Elvis.Endpoint, server: true
+
+config :otis, :environment, :prod
 
 config :otis, Otis.State.Repo,
   adapter: Sqlite.Ecto,

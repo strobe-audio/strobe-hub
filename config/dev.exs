@@ -47,6 +47,7 @@ config :otis, Otis.Media,
   root: "#{__DIR__}/../_state/fs",
   at: "/fs"
 
+config :otis, :environment, :dev
 
 config :otis, Otis.State.Repo,
   adapter: Sqlite.Ecto,
