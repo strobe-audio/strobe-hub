@@ -119,7 +119,7 @@ defmodule Otis.Source.File do
   end
 
   defp read_metadata(path) do
-    System.cmd mediainfo, args(path), parallelism: true
+    System.cmd mediainfo(), args(path), parallelism: true
   end
 
   defp args(path) do
@@ -153,10 +153,6 @@ defimpl Otis.Library.Source, for: Otis.Source.File do
 
   def pause(_file, _id, _stream) do
     :ok # no-op
-  end
-
-  def resume!(_file, _id, stream) do
-    {:reuse, stream}
   end
 
   def close(_file, _id, stream) do

@@ -175,14 +175,14 @@ defmodule Otis.Receiver do
   Change the channel for an already running & configured receiver
   """
   def join_channel(receiver, channel) do
-    Otis.Channel.add_receiver(channel, receiver)
+    Otis.Receivers.Channels.add_receiver(receiver, channel)
   end
 
   @doc ~S"""
   Configure the receiver from the db and join it to the channel
   """
   def configure_and_join_channel(receiver, state, channel) do
-    set_volume(receiver, state.volume, Otis.Channel.volume!(channel))
+    set_volume(receiver, state.volume, channel.volume)
     join_channel(receiver, channel)
   end
 
@@ -192,12 +192,18 @@ defmodule Otis.Receiver do
 
   @stop_command <<"STOP">>
 
+  def stop_command, do: @stop_command
+
   def stop(receiver) do
     send_data(receiver, @stop_command)
+    # send_command(receiver, "stop")
   end
 
   def send_data(%{data: {pid, _socket}}, data) do
     GenServer.cast(pid, {:data, data})
+  end
+  def send_command(%{ctrl: {pid, _socket}}, command) do
+    GenServer.cast(pid, {:command, command})
   end
 
   def extract_params(values) do

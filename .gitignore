@@ -5,3 +5,4 @@ erl_crash.dump
 _build
 log
 _state
+.tool-versions*

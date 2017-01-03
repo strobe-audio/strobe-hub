@@ -11,30 +11,30 @@ defmodule Otis.State do
     defstruct [:id, :name, :volume, :online, :channel_id, :online]
   end
 
-  defmodule SourceStatus do
+  defmodule RenditionStatus do
     defstruct [:id, :position, :source, :playback_position, :source_id, :channel_id]
   end
 
   @doc "Returns the current state from the db"
   def current do
     channels = channels()
-    %{ channels: channels, receivers: receivers(), sources: sources() }
+    %{ channels: channels, receivers: receivers(), renditions: renditions() }
   end
 
   defp channels do
     # TODO:
     # - playlist
     # - current song
-    Enum.map Otis.State.Channel.all, &status/1
+    Enum.map Otis.State.Channel.all(), &status/1
   end
 
   def receivers do
     # TODO: find live state
-    Enum.map Otis.State.Receiver.all, &status/1
+    Enum.map Otis.State.Receiver.all(), &status/1
   end
 
-  def sources do
-    Enum.map Otis.State.Source.all, &source/1
+  def renditions do
+    Enum.map Otis.State.Rendition.all(), &rendition/1
   end
 
   def status(%Otis.State.Channel{} = channel) do
@@ -47,9 +47,9 @@ defmodule Otis.State do
     struct(ReceiverStatus, status)
   end
 
-  def source(source) do
-    status = source |> Map.from_struct |> Map.merge(source_status(source))
-    struct(SourceStatus, status)
+  def rendition(rendition) do
+    status = rendition |> Map.from_struct |> Map.merge(source_status(rendition))
+    struct(RenditionStatus, status)
   end
 
   def receiver_status(receiver) do
@@ -60,10 +60,8 @@ defmodule Otis.State do
     %{playing: Otis.Channels.playing?(channel.id)}
   end
 
-  # TODO: I need a separate nonclameture for the entry in a source list as
-  # opposed to the actual source it refers to
-  def source_status(entry) do
-    source = Otis.State.Source.source(entry)
+  def source_status(rendition) do
+    source = Otis.State.Rendition.source(rendition)
     %{source: source}
   end
 end
@@ -77,7 +75,7 @@ defimpl Poison.Encoder, for: Otis.State.ReceiverStatus do
   end
 end
 
-defimpl Poison.Encoder, for: Otis.State.SourceStatus do
+defimpl Poison.Encoder, for: Otis.State.RenditionStatus do
   def encode(status, opts) do
     status
     |> Map.take([:id, :position, :source])

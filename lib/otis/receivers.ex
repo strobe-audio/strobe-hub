@@ -11,8 +11,8 @@ defmodule Otis.Receivers do
     defstruct [receivers: nil]
   end
 
-  def start_link() do
-    GenServer.start_link(__MODULE__, [], name: @name)
+  def start_link(pipeline_config) do
+    GenServer.start_link(__MODULE__, pipeline_config, name: @name)
   end
 
   def receivers do
@@ -66,26 +66,26 @@ defmodule Otis.Receivers do
   end
 
   defp config do
-    Application.get_env :otis, __MODULE__
+    Application.get_env(:otis, __MODULE__)
   end
 
-  def data_port, do: config[:data_port]
-  def ctrl_port, do: config[:ctrl_port]
+  def data_port, do: config()[:data_port]
+  def ctrl_port, do: config()[:ctrl_port]
 
   # At the receiver end:
   # {:ok, s} = Socket.TCP.connect "192.168.1.117", 5540, [mode: :active]
   # :gen_tcp.send s, "id:" <> Janis.receiver_id
   # :gen_tcp.close s
-  def init([]) do
+  def init(pipeline_config) do
     Logger.info "Starting Receivers registry..."
-    start_listener(@name.DataListener, data_port, DataConnection)
-    start_listener(@name.ControlListener, ctrl_port, ControlConnection)
+    start_listener(@name.DataListener, data_port(), DataConnection, pipeline_config)
+    start_listener(@name.ControlListener, ctrl_port(), ControlConnection, pipeline_config)
     Otis.Receivers.Database.attach(self())
     {:ok, %S{}}
   end
 
-  defp start_listener(name, port, protocol) do
-    :ranch.start_listener(name, 10, :ranch_tcp, [port: port], protocol, [supervisor: @name])
+  defp start_listener(name, port, protocol, pipeline_config) do
+    :ranch.start_listener(name, 10, :ranch_tcp, [port: port], protocol, [supervisor: @name, pipeline_config: pipeline_config])
   end
 
   def handle_cast({:connect, type, id, {pid, socket}, params}, state) do

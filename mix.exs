@@ -4,15 +4,11 @@ defmodule Otis.Mixfile do
   def project do
     [app: :otis,
      version: "0.0.1",
-     build_path: "../../_build",
-     # config_path: "../../config/config.exs",
-     deps_path: "../../deps",
-     lockfile: "../../mix.lock",
-     elixir: "~> 1.2",
+     elixir: "~> 1.4.0-rc.1",
      consolidate_protocols: Mix.env != :test,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
-     deps: deps]
+     deps: deps()]
   end
 
   # Configuration for the OTP application
@@ -21,8 +17,8 @@ defmodule Otis.Mixfile do
   def application do
     [ mod: {Otis, []},
       applications: [
-        :porcelain,
         :logger,
+        :porcelain,
         :dnssd,
         :monotonic,
         :sqlite_ecto,
@@ -31,7 +27,13 @@ defmodule Otis.Mixfile do
         :nerves_ssdp_server,
         :gproc,
         :erlsom,
-      ]
+        :otis_library,
+        :mdns,
+        :uuid,
+        :poolboy,
+        # :logger_file_backend,
+      ],
+      extra_applications: []
     ]
   end
 
@@ -46,7 +48,7 @@ defmodule Otis.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [ {:porcelain, github: "alco/porcelain"},
-      {:dnssd, github: "benoitc/dnssd_erlang"},
+      {:dnssd, github: "benoitc/dnssd_erlang", compile: "rebar compile"},
       {:poolboy, "~> 1.4"},
       {:monotonic, github: "magnetised/monotonic.ex"},
       {:erlsom, github: "willemdj/erlsom"},
@@ -56,11 +58,12 @@ defmodule Otis.Mixfile do
       {:ecto, "~> 1.0"},
       {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
       {:faker, "~> 0.5", only: :test},
-      {:logger_file_backend, "~> 0.0.7"},
+      # {:logger_file_backend, "~> 0.0.7"},
       # {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
       {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
       {:nerves_ssdp_server, "~> 0.2.1"},
       {:gproc, "~> 0.5.0"},
+      {:mdns, "~> 0.1.5"},
     ]
   end
 end

@@ -43,7 +43,7 @@ defmodule Otis.Persistence.ReceiversTest do
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
     {:ok, receiver} = Receivers.receiver(id)
-    {:ok, receivers} = Otis.Channel.receivers context.channel
+    receivers = Otis.Receivers.Channels.lookup(context.channel.id)
     assert receivers == [receiver]
   end
 
@@ -54,13 +54,12 @@ defmodule Otis.Persistence.ReceiversTest do
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
     {:ok, receiver} = Receivers.receiver(id)
-    {:ok, receivers} = Otis.Channel.receivers context.channel
+    receivers = Otis.Receivers.Channels.lookup(context.channel.id)
     assert receivers == [receiver]
 
     channel1_id = context.channel.id
-    channel2_id = Otis.uuid
-    {:ok, channel2} = Otis.Channels.create(channel2_id, "Froggy")
-    channel2 = %Otis.Channel{pid: channel2, id: id}
+    channel2_id = Otis.uuid()
+    {:ok, _channel2} = Otis.Channels.create(channel2_id, "Froggy")
     assert_receive {:channel_added, [^channel2_id, _]}
 
     Otis.Receivers.attach id, channel2_id
@@ -69,9 +68,9 @@ defmodule Otis.Persistence.ReceiversTest do
     record = Otis.State.Receiver.find id
     assert record.channel_id == channel2_id
     {:ok, receiver} = Receivers.receiver(id)
-    {:ok, receivers} = Otis.Channel.receivers context.channel
+    receivers = Otis.Receivers.Channels.lookup(context.channel.id)
     assert receivers == []
-    {:ok, receivers} = Otis.Channel.receivers channel2
+    receivers = Otis.Receivers.Channels.lookup(channel2_id)
     assert receivers == [receiver]
   end
 end

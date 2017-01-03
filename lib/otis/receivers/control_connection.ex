@@ -38,6 +38,11 @@ defmodule Otis.Receivers.ControlConnection do
     {:noreply, state}
   end
 
+  def handle_cast({:command, command}, state) do
+    %{ command: command } |> Poison.encode! |> send_data(state)
+    {:noreply, state}
+  end
+
   def handle_call(:get_volume, _from, state) do
     {:reply, Map.fetch(state.settings, :volume), state}
   end
@@ -90,7 +95,7 @@ defmodule Otis.Receivers.ControlConnection do
   end
 
   defp monitor_connection(state) do
-    Process.send_after(self, :ping, @monitor_interval)
+    Process.send_after(self(), :ping, @monitor_interval)
     state
   end
 end

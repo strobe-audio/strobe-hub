@@ -4,19 +4,25 @@ defmodule Otis.DNSSD do
 
   @name Otis.DNSSD
 
-  def start_link do
-    GenServer.start_link(__MODULE__, :ok, name: @name)
+  def start_link(pipeline_config) do
+    GenServer.start_link(__MODULE__, pipeline_config, name: @name)
   end
 
-  def init(:ok) do
+  def init(pipeline_config) do
     Process.flag(:trap_exit, true)
-    Logger.info "Registering #{inspect service_name} on port #{service_port} #{ inspect service_texts }"
-    {:ok, ref} = register_service
-    {:ok, %{ref: ref}}
+    state = %{ref: nil, pipeline_config: pipeline_config}
+    Logger.info "Registering #{inspect service_name(state)} on port #{service_port(state)} #{ inspect service_texts(state) }"
+    {:ok, ref} = register_service(state)
+    {:ok, %{state| ref: ref }}
   end
 
-  defp register_service do
-    :dnssd.register(service_name, service_port, service_texts)
+  def handle_info({:dnssd, _ref, _msg}, state) do
+    # IO.inspect [__MODULE__, msg]
+    {:noreply, state}
+  end
+
+  defp register_service(state) do
+    :dnssd.register(service_name(state), service_port(state), service_texts(state))
   end
 
   def terminate(_reason, %{ref: ref}) do
@@ -24,25 +30,25 @@ defmodule Otis.DNSSD do
     :ok
   end
 
-  defp service_name do
+  defp service_name(_state) do
     "_peep-broadcaster._tcp"
   end
 
-  defp service_port do
+  defp service_port(_state) do
     config(Otis.SNTP)[:port]
   end
 
-  defp service_texts do
+  defp service_texts(state) do
     receivers = config(Otis.Receivers)
     [ {:data_port, to_string(receivers[:data_port])},
       {:ctrl_port, to_string(receivers[:ctrl_port])},
-      {:sntp_port, to_string(service_port)},
-      {:stream_interval, to_string(Otis.stream_interval_us)},
-      {:packet_size, to_string(Otis.stream_bytes_per_step)},
+      {:sntp_port, to_string(service_port(state))},
+      {:stream_interval, to_string(state.pipeline_config.packet_duration_ms * 1000)},
+      {:packet_size, to_string(state.pipeline_config.packet_size)},
     ]
   end
 
   defp config(mod) do
-    Application.get_env :otis, mod
+    Application.get_env(:otis, mod)
   end
 end

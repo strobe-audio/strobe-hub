@@ -31,12 +31,12 @@ config :logger, :console,
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-import_config "#{Mix.env}.exs"
-
 config :porcelain, :driver, Porcelain.Driver.Goon
 config :porcelain, :goon_driver_path, "#{__DIR__}/../bin/goon_darwin_amd64"
 
 config :otis, Otis.Media,
   root: "#{__DIR__}/../_state/fs",
   at: "/fs"
+
+import_config "#{Mix.env}.exs"
 

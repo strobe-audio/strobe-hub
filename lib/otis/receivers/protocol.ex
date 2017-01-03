@@ -14,9 +14,10 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def init(ref, socket, transport, opts \\ []) do
-        :ok = :proc_lib.init_ack({:ok, self})
+        pipeline_config = opts[:pipeline_config]
+        :ok = :proc_lib.init_ack({:ok, self()})
         :ok = :ranch.accept_ack(ref)
-        :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once, send_timeout: 2*Otis.stream_interval_ms])
+        :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once, send_timeout: 2_000*pipeline_config.packet_duration_ms])
         state = %S{
           socket: socket,
           transport: transport,
@@ -55,7 +56,7 @@ defmodule Otis.Receivers.Protocol do
       end
       def process_message({id, params}, state) do
         Logger.info "Receiver connection #{unquote(opts[:type])} #{id} => #{ inspect params }"
-        GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self, state.socket}, params})
+        GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self(), state.socket}, params})
         %S{ state | id: id }
       end
       def process_message(_msg, state) do
@@ -70,8 +71,10 @@ defmodule Otis.Receivers.Protocol do
         data |> Poison.decode! |> Map.pop("id")
       end
 
-      def send_data(data, state) do
-        state.transport.send(state.socket, data)
+      def send_data(packets, state) do
+        Enum.each(List.wrap(packets), fn(data) ->
+          state.transport.send(state.socket, data)
+        end)
       end
     end
   end

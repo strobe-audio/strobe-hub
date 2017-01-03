@@ -1,38 +1,31 @@
 defmodule Otis.Supervisor do
   use Supervisor
 
-  def start_link(opts) do
-    Supervisor.start_link(__MODULE__, opts, [])
+  def start_link(pipeline_config) do
+    Supervisor.start_link(__MODULE__, pipeline_config, [])
   end
 
-  def init([packet_interval: packet_interval, packet_size: packet_size]) do
-    emitter_pool_options = [
-      name: {:local, Otis.EmitterPool},
-      worker_module: Otis.Channel.Emitter,
-      size: 16,
-      max_overflow: 2
-    ]
-
+  def init(pipeline_config) do
     children = [
-      worker(Otis.DNSSD, []),
-      worker(Otis.SSDP, []),
+      worker(Otis.DNSSD, [pipeline_config]),
+      worker(Otis.Mdns, [pipeline_config]),
+      worker(Otis.SSDP, [pipeline_config]),
       worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
       worker(Otis.Source.File.Cache, []),
       worker(Otis.State.Repo, []),
       worker(Otis.State.Events, []),
       worker(Otis.State.Persistence, []),
-      worker(Otis.Receivers.Database, []),
-      worker(Otis.Receivers, []),
 
-      :poolboy.child_spec(Otis.EmitterPool, emitter_pool_options, [
-        interval: packet_interval,
-        packet_size: packet_size,
-        pool: Otis.EmitterPool
-      ]),
-      supervisor(Otis.Stream.Supervisor, []),
-      supervisor(Otis.SourceStreamSupervisor, []),
-      supervisor(Otis.Broadcaster, []),
-      supervisor(Otis.Controllers, []),
+      supervisor(Registry, [:unique, Otis.Pipeline.Streams.namespace()], id: Otis.Pipeline.Streams.namespace()),
+      supervisor(Otis.Pipeline.Streams, []),
+
+      supervisor(Registry, [:duplicate, Otis.Receivers.Channels.channel_namespace()], id: Otis.Receivers.Channels.channel_namespace()),
+      supervisor(Registry, [:duplicate, Otis.Receivers.Channels.subscriber_namespace()], id: Otis.Receivers.Channels.subscriber_namespace()),
+      supervisor(Otis.Receivers.Channels, []),
+
+      worker(Otis.Receivers.Database, []),
+      worker(Otis.Receivers, [pipeline_config]),
+
       supervisor(Otis.Channels, []),
       # This needs to be called by the app hosting the application
       # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)

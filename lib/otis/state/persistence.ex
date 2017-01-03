@@ -9,7 +9,7 @@ defmodule Otis.State.Persistence do
   @handlers [
     Otis.State.Persistence.Channels,
     Otis.State.Persistence.Receivers,
-    Otis.State.Persistence.Sources,
+    Otis.State.Persistence.Renditions,
   ]
 
   def init(:ok) do

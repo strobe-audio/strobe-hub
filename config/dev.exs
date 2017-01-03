@@ -20,3 +20,4 @@ config :otis, Otis.Receivers,
   data_port: 5540,
   ctrl_port: 5541
 
+config :otis, :environment, :dev

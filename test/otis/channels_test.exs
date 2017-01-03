@@ -1,6 +1,8 @@
 defmodule ChannelsTest do
   use ExUnit.Case
 
+  alias Otis.State.Channel
+
   @moduletag :channels
 
   def channel_ids() do
@@ -13,13 +15,13 @@ defmodule ChannelsTest do
 
   setup do
     shutdown()
-    MessagingHandler.attach
+    MessagingHandler.attach()
     on_exit &shutdown/0
     :ok
   end
 
   test "allows for the adding of a channel" do
-    id = Otis.uuid
+    id = Otis.uuid()
     {:ok, channel} = Otis.Channels.create(id, "Downstairs")
     pid = GenServer.whereis(channel)
     {:ok, list } = Otis.Channels.list()
@@ -27,7 +29,7 @@ defmodule ChannelsTest do
   end
 
   test "lets you retrieve a channel by id" do
-    id = Otis.uuid
+    id = Otis.uuid()
     {:ok, channel} = Otis.Channels.create(id, "Downstairs")
     pid = GenServer.whereis(channel)
     {:ok, found} = Otis.Channels.find(id)
@@ -40,7 +42,7 @@ defmodule ChannelsTest do
   end
 
   test "starts and adds the given channel" do
-    id = Otis.uuid
+    id = Otis.uuid()
     {:ok, channel} = Otis.Channels.create(id, "A Channel")
     pid = GenServer.whereis(channel)
     {:ok, list} = Otis.Channels.list()
@@ -48,13 +50,13 @@ defmodule ChannelsTest do
   end
 
   test "broadcasts an event when a channel is added" do
-    id = Otis.uuid
+    id = Otis.uuid()
     {:ok, _channel} = Otis.Channels.create(id, "My New Channel")
     assert_receive {:channel_added, [^id, %{id: ^id, name: "My New Channel"}]}, 200
   end
 
   test "broadcasts an event when a channel is removed" do
-    id = Otis.uuid
+    id = Otis.uuid()
     {:ok, channel} = Otis.Channels.create(id, "My New Channel")
     assert_receive {:channel_added, [^id, %{id: ^id, name: "My New Channel"}]}, 200
 
@@ -65,8 +67,8 @@ defmodule ChannelsTest do
   end
 
   test "doesn't broadcast an event when starting a channel" do
-    id = Otis.uuid
-    {:ok, _channel} = Otis.Channels.start(id, %{name: "Something"})
+    id = Otis.uuid()
+    {:ok, _channel} = Otis.Channels.start(%Channel{id: id, name: "Something"})
     refute_receive {:channel_added, [^id, _]}
 
     assert channel_ids() == [id]

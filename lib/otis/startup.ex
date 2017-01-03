@@ -8,6 +8,7 @@ defmodule Otis.Startup do
   end
 
   def init([state, channels_supervisor]) do
+    Application.get_env(:otis, Otis.State.Repo) |> Keyword.get(:database) |> ensure_db_path()
     :ok = state |> start_channels(channels_supervisor)
     :ok = state |> restore_source_lists(channels_supervisor)
     Otis.State.Events.add_handler(Otis.LoggerHandler, :events)
@@ -31,7 +32,7 @@ defmodule Otis.Startup do
 
   defp start_channel([channel | rest], channels_supervisor) do
     Logger.info "===> Starting channel #{ channel.id } #{ inspect channel.name }"
-    Otis.Channels.start(channels_supervisor, channel.id, channel)
+    Otis.Channels.start(channels_supervisor, channel, Otis.Pipeline.config())
     start_channel(rest, channels_supervisor)
   end
 
@@ -50,9 +51,9 @@ defmodule Otis.Startup do
   end
   defp restore_source_list([channel | channels]) do
     {:ok, channel_id} = Otis.Channel.id(channel)
-    {:ok, source_list} = Otis.Channel.source_list(channel)
-    sources = Otis.State.Source.restore(channel_id)
-    Otis.SourceList.replace(source_list, sources)
+    {:ok, playlist} = Otis.Channel.playlist(channel)
+    renditions = Otis.State.Rendition.for_channel(channel_id)
+    Otis.Pipeline.Playlist.replace(playlist, renditions)
     restore_source_list(channels)
   end
 
@@ -64,12 +65,18 @@ defmodule Otis.Startup do
       action.()
     rescue
       Sqlite.Ecto.Error ->
-        case Mix.env do
+        case Application.get_env(:otis, :environment) do
           :test -> nil
           _ ->
             Logger.error "Invalid db schema"
         end
         :ok
     end
+  end
+
+  defp ensure_db_path(nil) do
+  end
+  defp ensure_db_path(path) when is_binary(path) do
+    :ok = path |> Path.dirname() |> File.mkdir_p()
   end
 end
