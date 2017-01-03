@@ -23,8 +23,11 @@ defmodule Elvis.Mixfile do
        :cowboy,
        :logger,
        :otis,
+       # fix missing apps from other dependencies
+       :socket,
+       :pipe,
        :peel,
-       :hls
+       :hls,
      ]]
   end
 
@@ -40,13 +43,13 @@ defmodule Elvis.Mixfile do
      {:phoenix_html, "~> 2.1"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:cowboy, "~> 1.0"},
-     {:otis, path: "/Users/garry/Seafile/Peep/otis"},
-     # {:otis, git: "git@gitlab.com:magnetised/otis.git"},
+     # {:otis, path: "/Users/garry/Seafile/Peep/otis"},
+     {:otis, git: "git@gitlab.com:magnetised/otis.git"},
      # {:peel, path: "/Users/garry/Seafile/Peep/peel"},
      {:peel, git: "git@gitlab.com:magnetised/peel.git"},
      # {:hls, path: "/Users/garry/Seafile/Peep/hls"},
      {:hls, git: "git@gitlab.com:magnetised/peep_bbc.git"},
-     {:distillery, "~> 0.9"},
+     {:distillery, "~> 1.0"},
    ]
   end
 end
