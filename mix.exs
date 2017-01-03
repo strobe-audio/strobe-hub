@@ -16,7 +16,24 @@ defmodule Otis.Mixfile do
   # Type `mix help compile.app` for more information
   def application do
     [ mod: {Otis, []},
-      extra_applications: [:logger]
+      applications: [
+        :logger,
+        :porcelain,
+        :dnssd,
+        :monotonic,
+        :sqlite_ecto,
+        :ecto,
+        :ranch,
+        :nerves_ssdp_server,
+        :gproc,
+        :erlsom,
+        :otis_library,
+        :mdns,
+        :uuid,
+        :poolboy,
+        # :logger_file_backend,
+      ],
+      extra_applications: []
     ]
   end
 
@@ -41,7 +58,7 @@ defmodule Otis.Mixfile do
       {:ecto, "~> 1.0"},
       {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
       {:faker, "~> 0.5", only: :test},
-      {:logger_file_backend, "~> 0.0.7"},
+      # {:logger_file_backend, "~> 0.0.7"},
       # {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
       {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
       {:nerves_ssdp_server, "~> 0.2.1"},
