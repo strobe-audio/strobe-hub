@@ -42,7 +42,7 @@ defmodule Peel.Mixfile do
       # {:sqlite_ecto, "~> 1.0.0"},
       {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
       {:ecto, "~> 1.0"},
-      {:work_queue, github: "pragdave/work_queue"},
+      {:work_queue, github: "magnetised/work_queue"},
       # {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
       {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
       {:httpoison, "~> 0.9.0"},

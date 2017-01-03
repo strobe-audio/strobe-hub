@@ -18,4 +18,4 @@
   "sqlitex": {:hex, :sqlitex, "0.8.3", "226901fe73fb9d74a5bc742594074dc3cac725ee632d595a704dd8bf92661044", [:mix], [{:decimal, "~> 1.1.0", [hex: :decimal, optional: false]}, {:esqlite, "~> 0.2.0", [hex: :esqlite, optional: false]}, {:pipe, "~> 0.0.2", [hex: :pipe, optional: false]}]},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:rebar, :make], []},
   "uuid": {:hex, :uuid, "1.1.4", "36c7734e4c8e357f2f67ba57fb61799d60c20a7f817b104896cca64b857e3686", [:mix], []},
-  "work_queue": {:git, "https://github.com/pragdave/work_queue.git", "b0763d6e2419825ce6ccd15ba741f6d68757cf15", []}}
+  "work_queue": {:git, "https://github.com/magnetised/work_queue.git", "3a1566e1c5eccf147aa9b14f22c105d245d41cc9", []}}
