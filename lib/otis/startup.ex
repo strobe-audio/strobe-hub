@@ -8,6 +8,7 @@ defmodule Otis.Startup do
   end
 
   def init([state, channels_supervisor]) do
+    Application.get_env(:otis, Otis.State.Repo) |> Keyword.get(:database) |> ensure_db_path()
     :ok = state |> start_channels(channels_supervisor)
     :ok = state |> restore_source_lists(channels_supervisor)
     Otis.State.Events.add_handler(Otis.LoggerHandler, :events)
@@ -71,5 +72,11 @@ defmodule Otis.Startup do
         end
         :ok
     end
+  end
+
+  defp ensure_db_path(nil) do
+  end
+  defp ensure_db_path(path) when is_binary(path) do
+    :ok = path |> Path.dirname() |> File.mkdir_p()
   end
 end
