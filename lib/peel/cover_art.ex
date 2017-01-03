@@ -9,12 +9,6 @@ defmodule Peel.CoverArt do
   @name Peel.CoverArt
   @placeholder_path  Path.expand("./cover_art/placeholder.jpg", __DIR__)
 
-  if Code.ensure_loaded?(Otis.Media) do
-    @placeholder_image Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
-  else
-    @placeholder_image "placeholder.jpg"
-  end
-
   def pending_albums do
     Album.without_cover_image()
   end
@@ -61,7 +55,7 @@ defmodule Peel.CoverArt do
     {:ok, image}
   end
   def assign_default_cover({:error, _reaons}, _album) do
-    {:ok, @placeholder_image}
+    {:ok, placeholder_image()}
   end
 
   def media_location(%Album{id: id}), do: media_location(id)
@@ -82,7 +76,11 @@ defmodule Peel.CoverArt do
     GenServer.cast(@name, {:update, album, artwork_path})
   end
 
+  @placeholder_table :coverart_placeholder
+  @placeholder_key   :coverart_placeholder
+
   def init([]) do
+    :ets.new(@placeholder_table, [:set, :public, :named_table])
     {:ok, %{}}
   end
 
@@ -105,5 +103,25 @@ defmodule Peel.CoverArt do
 
   defp executable do
     System.find_executable("avconv")
+  end
+
+  def placeholder_image do
+    case :ets.lookup(@placeholder_table, @placeholder_key) do
+      [] ->
+        :ets.insert(@placeholder_table, {@placeholder_key, placeholder_image_path()})
+        placeholder_image()
+      [{_, path}] ->
+        path
+    end
+  end
+
+  if Code.ensure_loaded?(Otis.Media) do
+    def placeholder_image_path do
+      Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
+    end
+  else
+    def placeholder_image_path do
+      "placeholder.jpg"
+    end
   end
 end
