@@ -10,8 +10,11 @@ defmodule Otis.Receivers.Channels do
   def subscriber_namespace, do: @subscriber_registry
 
   def add_receiver(receiver, channel) do
-    {:ok, _proxy} = Supervisor.start_child(@supervisor_name, [receiver, channel])
+    # Notify new receiver before actually joining channel group to allow
+    # broadcasters to send buffer packets to new receiver before existing
+    # stream packets are sent automatically.
     notify_add_receiver(receiver, channel)
+    {:ok, _proxy} = Supervisor.start_child(@supervisor_name, [receiver, channel])
   end
 
   def register(receiver, channel) do

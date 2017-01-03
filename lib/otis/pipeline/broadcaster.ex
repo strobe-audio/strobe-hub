@@ -143,8 +143,8 @@ defmodule Otis.Pipeline.Broadcaster do
     round(Float.floor(state.offset_n + (duration / state.packet_duration_us)))
   end
 
-  defp play_time(time, state) do
-    time + (state.config.base_latency_ms * 1000) + Otis.Receivers.Channels.latency(state.id)
+  defp play_time(time, state, margin_ms \\ 0) do
+    time + ((state.config.base_latency_ms + margin_ms) * 1000) + Otis.Receivers.Channels.latency(state.id)
   end
 
   defp buffer_receivers(state, time) do
@@ -198,7 +198,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp playable_packets(time, state) do
-    t = play_time(time, state)
+    t = play_time(time, state, 50)
     {_, playable} = Enum.split_with(state.inflight, &Packet.played?(&1, t))
     Enum.reverse(playable)
   end
