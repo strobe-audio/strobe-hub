@@ -2,8 +2,14 @@ defmodule Elvis.Events.Startup do
   use     GenEvent
   require Logger
 
-  def register do
-    Otis.State.Events.add_mon_handler(__MODULE__, [])
+  if Code.ensure_loaded?(Otis.State.Events) do
+    def register do
+      Otis.State.Events.add_mon_handler(__MODULE__, [])
+    end
+  else
+    def register do
+      :ok
+    end
   end
 
   def handle_event({:controller_join, [socket]}, state) do

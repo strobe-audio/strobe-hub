@@ -10,10 +10,15 @@ defmodule Elvis.Events.Broadcast do
   # Send progress updates every @progress_interval times
   @progress_interval 5 # * 100 ms intervals
 
-  def register do
-    Otis.State.Events.add_mon_handler(__MODULE__, %{ progress_count: %{} })
+  if Code.ensure_loaded?(Otis.State.Events) do
+    def register do
+      Otis.State.Events.add_mon_handler(__MODULE__, %{ progress_count: %{} })
+    end
+  else
+    def register do
+      :ok
+    end
   end
-
 
   def handle_event({:library_request, _}, state) do
     {:ok, state}
