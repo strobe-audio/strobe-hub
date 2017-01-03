@@ -6,8 +6,14 @@ defmodule BBC.Events.Library do
 
   use  Otis.Library, namespace: BBC.library_id()
 
-  def register do
-    Otis.State.Events.add_mon_handler(__MODULE__, [])
+  if Code.ensure_loaded?(Otis.State.Events) do
+    def register do
+      Otis.State.Events.add_mon_handler(__MODULE__, [])
+    end
+  else
+    def register do
+      :ok
+    end
   end
 
   def setup(state) do
