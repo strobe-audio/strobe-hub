@@ -21,3 +21,4 @@ config :otis, Otis.Receivers,
   data_port: 15540,
   ctrl_port: 15541
 
+config :otis, :environment, :test

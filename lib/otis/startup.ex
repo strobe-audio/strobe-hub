@@ -64,7 +64,7 @@ defmodule Otis.Startup do
       action.()
     rescue
       Sqlite.Ecto.Error ->
-        case Mix.env do
+        case Application.get_env(:otis, :environment) do
           :test -> nil
           _ ->
             Logger.error "Invalid db schema"
