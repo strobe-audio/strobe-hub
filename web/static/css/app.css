@@ -30,6 +30,8 @@ html {
   font-size: 10px;
   height: 100vh;
   overflow: hidden;
+  /* https://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/ */
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 body {
   -webkit-overflow-scrolling: auto;
