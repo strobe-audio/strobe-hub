@@ -28,6 +28,12 @@ defmodule Peel.Album do
     has_many :tracks, Peel.Track
   end
 
+  def sorted do
+    Album
+    |> order_by(asc: :normalized_title)
+    |> Repo.all
+  end
+
   def by_title(title) do
     normalized_title = Peel.String.normalize(title)
     Album

@@ -18,6 +18,12 @@ defmodule Peel.Artist do
     has_many :tracks, Track
   end
 
+  def sorted do
+    Artist
+    |> order_by(asc: :normalized_name)
+    |> Repo.all
+  end
+
   def for_track(%Track{performer: nil} = track) do
     %Track{ track | performer: "Unknown artist" } |> for_track
   end

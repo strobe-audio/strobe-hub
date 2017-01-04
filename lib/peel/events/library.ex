@@ -51,7 +51,7 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["albums"], path) do
-    albums = Album.all |> Enum.map(fn(album) ->
+    albums = Album.sorted |> Enum.map(fn(album) ->
       %{
         id: "peel:album/#{album.id}",
         title: album.title,
@@ -109,7 +109,7 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["artists"], path) do
-    artists = Artist.all |> Enum.map(fn(artist) ->
+    artists = Artist.sorted |> Enum.map(fn(artist) ->
       %{
         id: "peel:artist/#{artist.id}",
         title: artist.name,
