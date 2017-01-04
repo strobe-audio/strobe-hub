@@ -48,6 +48,8 @@ defmodule Peel.Mixfile do
       {:httpoison, "~> 0.9.0"},
       {:floki, "~> 0.11.0"},
       {:poison, "~> 1.0"},
+      {:otis, path: "/Users/garry/Seafile/Peep/otis", only: :test},
+      # {:otis, }
     ]
   end
 end

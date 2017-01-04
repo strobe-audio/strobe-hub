@@ -9,10 +9,13 @@ defmodule Peel.Test.LibraryTest do
 
   setup_all do
     Ecto.Adapters.SQL.restart_test_transaction(Peel.Repo)
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
 
     on_exit fn ->
       Ecto.Adapters.SQL.rollback_test_transaction(Peel.Repo)
+      Ecto.Adapters.SQL.rollback_test_transaction(Otis.State.Repo)
     end
+
 
     artists = [
       %Artist{
@@ -119,7 +122,7 @@ defmodule Peel.Test.LibraryTest do
 
     Enum.each album_artists, &Repo.insert!/1
 
-    Otis.State.Channel.delete_all
+    # Otis.State.Channel.delete_all
 
     channel_id = "6df968bf-3454-4514-940b-4829dfcf4d3c"
 
@@ -128,16 +131,17 @@ defmodule Peel.Test.LibraryTest do
         name: "Sorry I Burnt Your Nose",
         position: 0, volume: 0.40037950664136623},
     ]
-    Enum.each channels, &Otis.State.Repo.insert!/1
+    # Enum.each channels, &Otis.State.Repo.insert!/1
 
-    Enum.each Otis.State.Channel.all, fn(channel) ->
-      Otis.Channels.start(channel.id, channel)
+    Enum.each channels, fn(channel) ->
+      Otis.Channels.start(channel)
     end
 
     on_exit fn ->
-      Enum.each Otis.State.Channel.all, fn(channel) ->
-        Otis.Channels.destroy!(channel.id)
-      end
+      nil
+      # Enum.each Otis.State.Channel.all, fn(channel) ->
+        # Otis.Channels.destroy!(channel.id)
+      # end
     end
 
     {:ok, channel_id: channel_id}
@@ -147,9 +151,9 @@ defmodule Peel.Test.LibraryTest do
     TestEventHandler.attach
     on_exit fn ->
       with {:ok, channel} <- Otis.Channels.find(context.channel_id),
-           {:ok, source_list} <- Otis.Channel.source_list(channel)
+           {:ok, playlist} <- Otis.Channel.playlist(channel)
       do
-        Otis.SourceList.clear(source_list)
+        Otis.Pipeline.Playlist.clear(playlist)
       end
     end
     :ok
@@ -316,7 +320,7 @@ defmodule Peel.Test.LibraryTest do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     path = "track/#{track.id}/play"
     Library.handle_request(channel_id, path)
-    assert_receive {:new_rendition, [^channel_id, 0, {_, 0, ^track}]}
+    assert_receive {:new_renditions, [^channel_id, [%Otis.State.Rendition{position: 0, source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"}]]}
   end
 
   test "peel:album/{album_id}/play", %{channel_id: channel_id} = _context do
@@ -324,12 +328,10 @@ defmodule Peel.Test.LibraryTest do
     path = "album/#{album.id}/play"
     Library.handle_request(channel_id, path)
 
-    [track1, track2] = [
-      Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428"),
-      Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df"),
-    ]
-
-    assert_receive {:new_rendition, [^channel_id, 0, {_, 0, ^track1}]}
-    assert_receive {:new_rendition, [^channel_id, 1, {_, 0, ^track2}]}
+    assert_receive {:new_renditions, [^channel_id, [
+        %Otis.State.Rendition{position: 0, source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"},
+        %Otis.State.Rendition{position: 1, source_id: "a3c90ce4-8a98-405f-bffd-04bc744c13df", source_type: "Elixir.Peel.Track"},
+      ]
+    ]}
   end
 end
