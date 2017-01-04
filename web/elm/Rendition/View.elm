@@ -94,7 +94,7 @@ progress rendition playing =
                     )
     in
         div [ classList [ ( "rendition--progress", True ), ( "rendition--progress__playing", playing ) ] ]
-            [ Html.map (always Rendition.NoOp) (Progress.circular 50 color percent)
+            [ Html.map (always Rendition.NoOp) (Progress.circular 50 color playing percent)
             ]
 
 
