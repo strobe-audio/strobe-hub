@@ -143,7 +143,7 @@ defmodule Otis.Pipeline.Broadcaster do
     round(Float.floor(state.offset_n + (duration / state.packet_duration_us)))
   end
 
-  defp play_time(time, state, margin_ms \\ 0) do
+  defp play_time(time, state, margin_ms) do
     time + ((state.config.base_latency_ms + margin_ms) * 1000) + Otis.Receivers.Channels.latency(state.id)
   end
 
