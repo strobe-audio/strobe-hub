@@ -8,14 +8,8 @@ defmodule Peel.Events.Library do
 
   use  Otis.Library, namespace: "peel"
 
-  if Code.ensure_loaded?(Otis.State.Events) do
-    def register do
-      Otis.State.Events.add_mon_handler(__MODULE__, [])
-    end
-  else
-    def register do
-      :ok
-    end
+  def event_handler do
+    {__MODULE__, []}
   end
 
   def setup(state) do

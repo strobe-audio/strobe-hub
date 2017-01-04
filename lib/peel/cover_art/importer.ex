@@ -12,10 +12,11 @@ defmodule Peel.CoverArt.Importer do
     GenServer.start_link(__MODULE__, [], name: @name)
   end
 
+  def event_handler do
+    {Peel.CoverArt.EventHandler, []}
+  end
+
   def init([]) do
-    if Code.ensure_loaded?(Otis.State.Events) do
-      Otis.State.Events.add_mon_handler(Peel.CoverArt.EventHandler, {})
-    end
     {:ok, {}}
   end
 
