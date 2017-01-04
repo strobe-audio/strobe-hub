@@ -5,11 +5,11 @@ defmodule Elvis.Mixfile do
     [app: :elvis,
      version: "0.0.1",
      elixir: "~> 1.0",
-     elixirc_paths: elixirc_paths(Mix.env),
+     elixirc_paths: elixirc_paths(Mix.env()),
      compilers: [:phoenix] ++ Mix.compilers,
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps]
+     build_embedded: Mix.env() == :prod,
+     start_permanent: Mix.env() == :prod,
+     deps: deps()]
   end
 
   # Configuration for the OTP application
