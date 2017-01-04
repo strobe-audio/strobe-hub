@@ -12,53 +12,63 @@ import Utils.RGB exposing (RGBA)
 circular : Int -> RGBA -> Bool -> Float -> Svg Msg
 circular size rgba playing percent =
     let
+        dim =
+            size - 1
 
-        dim = size - 1
-        rad = (toFloat size) / 2
+        rad =
+            (toFloat size) / 2
 
-        sw = 3.5
+        sw =
+            3.5
 
         -- percent = 65.0
-
         radius =
-           rad - (sw / 2.0) - 1.0
-            -- ((toFloat dim) / 2) - 4
+            rad - (sw / 2.0) - 1.0
 
+        -- ((toFloat dim) / 2) - 4
         r_ =
             (toString radius)
 
-        alpha = (angle percent)
+        alpha =
+            (angle percent)
 
         circumference =
             2.0 * radius * pi
 
-        viewBox_ = String.join " "
-          [ (toString -rad)
-          , (toString -rad)
-          , (toString size)
-          , (toString size)
-          ]
-        largeArcFlag = if percent > 50 then
-          "1"
-          else
-            "0"
+        viewBox_ =
+            String.join " "
+                [ (toString -rad)
+                , (toString -rad)
+                , (toString size)
+                , (toString size)
+                ]
 
-        clockwiseFlag = "1"
+        largeArcFlag =
+            if percent > 50 then
+                "1"
+            else
+                "0"
 
-        targetX = if percent == 100 then
-          -0.00001
-          else
-            (sin alpha) * radius
+        clockwiseFlag =
+            "1"
 
-        targetY = (cos (alpha - pi)) * radius
+        targetX =
+            if percent == 100 then
+                -0.00001
+            else
+                (sin alpha) * radius
 
-        path_ = String.join " "
-          [ "M0," ++ (toString (-radius))
-          , "A" ++ r_ ++ "," ++ r_
-          , "0"
-          , largeArcFlag ++ "," ++ clockwiseFlag
-          , (toString targetX) ++ "," ++ (toString targetY)
-          ]
+        targetY =
+            (cos (alpha - pi)) * radius
+
+        path_ =
+            String.join " "
+                [ "M0," ++ (toString (-radius))
+                , "A" ++ r_ ++ "," ++ r_
+                , "0"
+                , largeArcFlag ++ "," ++ clockwiseFlag
+                , (toString targetX) ++ "," ++ (toString targetY)
+                ]
 
         strokeColor =
             case playing of
@@ -77,7 +87,7 @@ circular size rgba playing percent =
                 , class "progress-circular--root"
                 ]
                 [ circle
-                    [ class "progress-circular--background", stroke "rgba(255, 255, 255, 0.2)", strokeWidth "2", r (toString (radius + (sw/2) - 1.5)), cx "0", cy "0", fill "none", transform "rotate(-90deg)"]
+                    [ class "progress-circular--background", stroke "rgba(255, 255, 255, 0.2)", strokeWidth "2", r (toString (radius + (sw / 2) - 1.5)), cx "0", cy "0", fill "none", transform "rotate(-90deg)" ]
                     []
                 , Svg.path
                     [ class "progress-circular--arc", fill "none", d path_, stroke strokeColor, strokeWidth (toString sw) ]
@@ -85,11 +95,16 @@ circular size rgba playing percent =
                 ]
             ]
 
+
 getArcLength : Float -> Float -> Float
 getArcLength radius percent =
-  0.02 * pi * radius * percent
+    0.02 * pi * radius * percent
+
+
 
 -- percent as an angle
+
+
 angle : Float -> Float
 angle percent =
-  0.02 * pi * percent
+    0.02 * pi * percent
