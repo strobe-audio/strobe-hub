@@ -86,9 +86,9 @@ defmodule MusicBrainz.Client do
 
   @doc ~S"""
 
-      iex> query = MusicBrainz.Client.search_url(:release)
+      iex> MusicBrainz.Client.search_url(:release)
       "http://musicbrainz.org/ws/2/release"
-      iex> query = MusicBrainz.Client.search_url(:release, release: "Something Or")
+      iex> MusicBrainz.Client.search_url(:release, release: "Something Or")
       "http://musicbrainz.org/ws/2/release?query=release:Something%20Or"
 
   """
@@ -99,13 +99,13 @@ defmodule MusicBrainz.Client do
 
   @doc ~S"""
 
-      iex> query = MusicBrainz.Client.make_query()
+      iex> MusicBrainz.Client.make_query()
       ""
-      iex> query = MusicBrainz.Client.make_query(release: "Something")
+      iex> MusicBrainz.Client.make_query(release: "Something")
       "?query=release:Something"
-      iex> query = MusicBrainz.Client.make_query(release: "Something", artist: "Famous")
+      iex> MusicBrainz.Client.make_query(release: "Something", artist: "Famous")
       "?query=release:Something%20AND%20artist:Famous"
-      iex> query = MusicBrainz.Client.make_query(release: "Something", artist: ["Famous", "Infamous", "Void"])
+      iex> MusicBrainz.Client.make_query(release: "Something", artist: ["Famous", "Infamous", "Void"])
       "?query=release:Something%20AND%20(artist:Famous%20OR%20artist:Infamous%20OR%20artist:Void)"
 
   """
