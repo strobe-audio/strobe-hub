@@ -197,8 +197,9 @@ update action model =
 
         Msg.BrowserViewport width ->
             let
+                _ = Debug.log "showPlaylistAndLibrary width" width
                 showPlaylistAndLibrary =
-                    width > 800
+                    width > 1000
             in
                 ( { model | showPlaylistAndLibrary = showPlaylistAndLibrary }, Cmd.none )
 
