@@ -44,7 +44,7 @@ player rendition playing =
                         [ div [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
                             [ text (renditionTitle rendition)
                             ]
-                        -- , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
+                          -- , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
                         ]
                     , div [ class "rendition--meta" ]
                         [ div [ class "rendition--meta--detail rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
@@ -52,7 +52,7 @@ player rendition playing =
                         , durationMeta
                         ]
                     ]
-                      , (progress rendition playing)
+                , (progress rendition playing)
                 ]
             ]
 
