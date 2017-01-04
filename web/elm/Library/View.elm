@@ -10,6 +10,7 @@ import List.Extra
 import String
 import Debug
 import Utils.Css
+import Utils.Text
 
 
 root : Library.Model -> Html Library.Msg
@@ -87,7 +88,7 @@ node library folder node =
                 []
             , div [ class "library--node--inner" ]
                 [ div []
-                    [ text node.title ]
+                    [ text (Utils.Text.truncateEllipsis node.title 90) ]
                 , (metadata node.metadata)
                 ]
             ]

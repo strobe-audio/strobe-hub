@@ -60,6 +60,8 @@
   border-bottom: solid 1px #ddd;
   cursor: pointer;
   transition: background-color 200ms;
+  max-width: 100vw;
+  overflow: hidden;
 }
 
 .library--node--inner {
@@ -69,6 +71,9 @@
   transform: translateY(-50%);
   padding: 0 $padding;
   cursor: pointer;
+  max-width: calc(100vw - 50px - (2 * $padding));
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .library--node__active {
