@@ -102,8 +102,7 @@ folder model folder =
                 div [] []
             else
                 div [ class "block-group library-contents" ] (List.map (node model folder) folder.children)
-    in
-        -- Debug.log (" folder " ++ (toString folder))
+    in Debug.log (" folder " ++ (toString folder))
         div []
             [ (breadcrumb model folder)
             , children
@@ -121,7 +120,7 @@ breadcrumb model folder =
                 |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
 
         ( list_, dropdown_ ) =
-            List.Extra.splitAt 2 (sections)
+            List.Extra.splitAt 1 (sections)
 
         dividers list =
             List.intersperse (span [ class "library--breadcrumb--divider" ] []) list
@@ -131,9 +130,15 @@ breadcrumb model folder =
 
         list =
             dividers (List.reverse list_)
+
+        dropdownEmpty = if List.isEmpty dropdown_ then
+            True
+          else
+            False
+
     in
         div [ class "library--breadcrumb" ]
-            [ div [ class "library--breadcrumb--dropdown" ] dropdown
+            [ div [ classList [("library--breadcrumb--dropdown", True), ("library--breadcrumb--dropdown__empty", dropdownEmpty)] ] dropdown
               -- , span [ class "library--breadcrumb--divider" ] []
             , div [ class "library--breadcrumb--sections" ] list
             ]

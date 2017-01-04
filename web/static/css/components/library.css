@@ -7,8 +7,26 @@
   display: flex;
   padding: 0 $padding;
   align-items: center;
+  font-weight: 500;
 }
 
+
+.library--breadcrumb--dropdown > .library--breadcrumb--section,
+.library--breadcrumb--dropdown > .library--breadcrumb--divider {
+  display: none;
+}
+.library--breadcrumb--dropdown > .library--breadcrumb--section:last-child {
+  display: block;
+}
+
+
+.library--breadcrumb--dropdown + .library--breadcrumb--sections:before {
+    content: "›";
+    margin: 0 $padding;
+}
+.library--breadcrumb--dropdown.library--breadcrumb--dropdown__empty + .library--breadcrumb--sections:before {
+  display: none;
+}
 
 .library--breadcrumb--section {
   cursor: pointer;
