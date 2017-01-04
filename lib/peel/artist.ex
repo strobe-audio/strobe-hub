@@ -56,5 +56,13 @@ defmodule Peel.Artist do
       where: artist.id == ^for_artist.id
     ) |> Repo.all
   end
+
+  def renormalize do
+    Repo.transaction fn ->
+      Enum.each(all(), fn(a) ->
+        a |> Ecto.Changeset.change(normalized_name: normalize_performer(a.name)) |> Repo.update!
+      end)
+    end
+  end
 end
 
