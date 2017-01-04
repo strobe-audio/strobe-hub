@@ -23,7 +23,7 @@ defmodule MusicBrainz.Client do
       Process.sleep(@period - time)
     end
     resp = HTTPoison.get(uri, [], [follow_redirect: true])
-    {:reply, resp, now}
+    {:reply, resp, now()}
   end
 
   defp now do

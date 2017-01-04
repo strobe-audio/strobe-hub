@@ -3,7 +3,6 @@ defmodule Peel.CoverArt.Importer do
   require Logger
 
   @name Peel.CoverArt.Importer
-  @max_workers 2
 
   def start do
     GenServer.cast(@name, :start)

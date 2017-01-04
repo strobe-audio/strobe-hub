@@ -23,7 +23,6 @@ defmodule MusicBrainz do
     {:ok, url}
   end
   def lookup_album_loose({:error, _reason}, %Album{} = album) do
-    artists = Peel.Album.artists(album)
     releases = Client.search_release(release: album.title)
     releases |> Stream.map(&lookup_cover_art/1) |> Enum.find({:error, :lookup_failed}, fn
       {:error, _} -> false

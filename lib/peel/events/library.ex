@@ -229,21 +229,18 @@ defmodule Peel.Events.Library do
   def link(%Track{title: title} = track) do
     library_link title, click_action(track)
   end
-
   def link(%Album{title: title} = album) do
     library_link title, click_action(album)
   end
-
   def link(%Artist{name: name} = artist) do
     library_link name, click_action(artist)
+  end
+  def link(_) do
+    library_link("", nil)
   end
 
   def link(title, action) when is_binary(title) do
     library_link(title, action)
-  end
-
-  def link(_) do
-    library_link("", nil)
   end
 
   def click_action(%Track{id: id}) do

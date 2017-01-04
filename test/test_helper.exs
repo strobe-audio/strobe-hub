@@ -2,7 +2,7 @@ defmodule TestEventHandler do
   use GenEvent
 
   def attach do
-    :ok = Otis.State.Events.add_mon_handler(__MODULE__, self)
+    :ok = Otis.State.Events.add_mon_handler(__MODULE__, self())
   end
 
   def init(parent) do
@@ -17,7 +17,7 @@ defmodule TestEventHandler do
   # Allows tests to wait for successful removal of the handler
   #
   #    on_exit fn ->
-  #      Otis.State.Events.remove_handler(MessagingHandler, self)
+  #      Otis.State.Events.remove_handler(MessagingHandler, self())
   #      assert_receive :remove_messaging_handler, 200
   #    end
 

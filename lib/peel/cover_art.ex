@@ -7,7 +7,6 @@ defmodule Peel.CoverArt do
   require Logger
 
   @name Peel.CoverArt
-  @placeholder_path  Path.expand("./cover_art/placeholder.jpg", __DIR__)
 
   def pending_albums do
     Album.without_cover_image()
@@ -61,7 +60,7 @@ defmodule Peel.CoverArt do
   def media_location(%Album{id: id}), do: media_location(id)
   def media_location(%Track{album_id: album_id}), do: media_location(album_id)
   def media_location(album_id) when is_binary(album_id) do
-    Otis.Media.location(media_namespace, "#{album_id}.jpg", optimize: 2)
+    Otis.Media.location(media_namespace(), "#{album_id}.jpg", optimize: 2)
   end
 
   def media_namespace do
@@ -95,7 +94,7 @@ defmodule Peel.CoverArt do
 
 
   def extract(input_path, output_path) do
-    case System.cmd(executable, ["-v", "quiet", "-i", input_path, output_path]) do
+    case System.cmd(executable(), ["-v", "quiet", "-i", input_path, output_path]) do
       {_, 0} -> :ok
       {_, _} -> :error
     end
@@ -116,6 +115,8 @@ defmodule Peel.CoverArt do
   end
 
   if Code.ensure_loaded?(Otis.Media) do
+    @placeholder_path  Path.expand("./cover_art/placeholder.jpg", __DIR__)
+
     def placeholder_image_path do
       Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
     end
