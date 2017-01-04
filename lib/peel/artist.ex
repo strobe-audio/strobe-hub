@@ -7,6 +7,8 @@ defmodule Peel.Artist do
   alias  Peel.Repo
   alias  Peel.Track
 
+  import Peel.String, only: [normalize_performer: 1]
+
   schema "artists" do
     field :name, :string
 
@@ -20,7 +22,7 @@ defmodule Peel.Artist do
     %Track{ track | performer: "Unknown artist" } |> for_track
   end
   def for_track(%Track{performer: performer} = track) do
-    normalized_performer = Peel.String.normalize(performer)
+    normalized_performer = normalize_performer(performer)
     Artist
     |> where(normalized_name: ^normalized_performer)
     |> limit(1)
@@ -39,7 +41,7 @@ defmodule Peel.Artist do
   end
 
   defp normalize(artist) do
-    %Artist{ artist | normalized_name: Peel.String.normalize(artist.name) }
+    %Artist{ artist | normalized_name: normalize_performer(artist.name) }
   end
 
   def associate(artist, track) do

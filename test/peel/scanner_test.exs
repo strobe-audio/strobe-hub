@@ -336,4 +336,36 @@ defmodule Peel.Test.ScannerTest do
     [artist] = Album.artists(album)
     assert artist.name == "Cream"
   end
+
+  test "it strips leading 'the' from performer names", context do
+    path = Path.join(context.root, "../broken/unknown_artist")
+    metadata = %Metadata{
+      album: " Fresh Cream ",
+      bit_rate: 288000,
+      channels: 2,
+      composer: " Peter Brown & Jack Bruce ",
+      date: "1966",
+      disk_number: 1,
+      disk_total: 1,
+      duration_ms: 173662,
+      extension: "m4a",
+      filename: " 01 I Feel Free ",
+      genre: "Rock",
+      mime_type: "audio/mp4",
+      performer: "The Beatles",
+      sample_rate: 44100,
+      stream_size: 6370536,
+      title: " I Feel Free ",
+      track_number: 1,
+      track_total: 11
+    }
+    Peel.Scanner.create_track(path, metadata)
+    assert length(Track.all) == 1
+    track = Track.first |> Repo.preload(:album)
+    assert track.performer == "The Beatles"
+    album = track.album
+    [artist] = Album.artists(album)
+    assert artist.name == "The Beatles"
+    assert artist.normalized_name == "beatles"
+  end
 end

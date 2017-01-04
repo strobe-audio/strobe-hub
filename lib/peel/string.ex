@@ -13,6 +13,15 @@ defmodule Peel.String do
     |> String.downcase
   end
 
+  @doc """
+  Normalize a performer name, stripping leading 'the's
+  """
+  def normalize_performer(string) do
+    string
+    |> normalize
+    |> strip_leading_the
+  end
+
   # http://www.regular-expressions.info/unicode.html
 
   # \p{M} -> a character intended to be combined with another character (e.g.
@@ -28,6 +37,8 @@ defmodule Peel.String do
   @whitespace_regex ~r/\p{Z}+/u
 
   @ampersand_regex ~r/&(?:amp)?;?/u
+
+  @the_regex ~r/^[Tt]he +/u
 
   @doc "Replace punctuation characters with spaces."
   def convert_punctuation(char) do
@@ -53,5 +64,12 @@ defmodule Peel.String do
   """
   def replace_ampersands(string) do
     Regex.replace(@ampersand_regex, string, "and")
+  end
+
+  @doc """
+  Remove leading 'the' so that performer names can be sorted ignoring them.
+  """
+  def strip_leading_the(string) do
+    Regex.replace(@the_regex, string, "")
   end
 end
