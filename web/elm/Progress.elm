@@ -6,10 +6,11 @@ import Html
 import Html.Attributes as Attr
 import VirtualDom exposing (attribute)
 import Msg exposing (Msg)
+import Utils.RGB exposing (RGBA)
 
 
-circular : Int -> Float -> Svg Msg
-circular size percent =
+circular : Int -> RGBA -> Float -> Svg Msg
+circular size rgba percent =
     let
 
         dim = size - 1
@@ -68,10 +69,10 @@ circular size percent =
                 , class "progress-circular--root"
                 ]
                 [ circle
-                    [ class "progress-circular--background", stroke "rgba(255, 255, 255, 0.2)", strokeWidth "2", r (toString (radius + (sw/2) - 0.1)), cx "0", cy "0", fill "none", transform "rotate(-90deg)"]
+                    [ class "progress-circular--background", stroke "rgba(255, 255, 255, 0.2)", strokeWidth "2", r (toString (radius + (sw/2) - 1.5)), cx "0", cy "0", fill "none", transform "rotate(-90deg)"]
                     []
                 , Svg.path
-                    [ class "progress-circular--arc", fill "none", d path_, stroke "rgba(255, 0, 0, 1)", strokeWidth (toString sw) ]
+                    [ class "progress-circular--arc", fill "none", d path_, stroke (Utils.RGB.cssRGBA rgba), strokeWidth (toString sw) ]
                     []
                 ]
             ]

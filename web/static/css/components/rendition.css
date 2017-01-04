@@ -179,7 +179,7 @@
     @mixin fa;
     content: "\f04b";
     position: absolute;
-    left: 0;
+    left: 4px;
     right: 0;
     top: 0;
     bottom: 0;
@@ -191,7 +191,7 @@
 .rendition--progress__playing {
   &:before {
     content: "\f04c";
-
+    left: 0px;
   }
 }
 .rendition--progress svg.progress-circular--root {

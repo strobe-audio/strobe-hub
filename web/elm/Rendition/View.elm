@@ -80,22 +80,22 @@ empty =
 
 progress : Rendition.Model -> Bool -> Html Rendition.Msg
 progress rendition playing =
-    case rendition.source.duration_ms of
-        Nothing ->
-            div [] []
+    let
+        ( percent, color ) =
+            case rendition.source.duration_ms of
+                Nothing ->
+                    ( 100.0
+                    , { r = 255, g = 0, b = 0, a = 0.5 }
+                    )
 
-        Just duration ->
-            let
-                percent =
-                    100.0 * (toFloat rendition.playbackPosition) / (toFloat duration)
-
-                progressStyle =
-                    [ ( "width", (toString percent) ++ "%" ) ]
-            in
-                div [ classList [ ("rendition--progress", True), ("rendition--progress__playing", playing) ] ]
-                    [ Html.map (always Rendition.NoOp) (Progress.circular 50 percent)
-                      -- div [ class "progress--complete", style progressStyle ] []
-                    ]
+                Just duration ->
+                    ( 100.0 * (toFloat rendition.playbackPosition) / (toFloat duration)
+                    , { r = 255, g = 0, b = 0, a = 1 }
+                    )
+    in
+        div [ classList [ ( "rendition--progress", True ), ( "rendition--progress__playing", playing ) ] ]
+            [ Html.map (always Rendition.NoOp) (Progress.circular 50 color percent)
+            ]
 
 
 playlist : Rendition.Model -> Html Rendition.Msg
