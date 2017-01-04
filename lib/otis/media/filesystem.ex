@@ -1,6 +1,6 @@
 defmodule Otis.Media.Filesystem do
   defmacro __using__(opts) do
-    quote do
+    quote location: :keep do
       {root, at} = case unquote(opts) do
         path when is_binary(path) ->
           path
