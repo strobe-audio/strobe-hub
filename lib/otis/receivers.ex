@@ -93,8 +93,8 @@ defmodule Otis.Receivers do
     {:noreply, state}
   end
 
-  def handle_cast({:disconnect, type, id}, state) do
-    state = disconnect(type, id, lookup(state, id), state)
+  def handle_cast({:disconnect, type, id, reason}, state) do
+    state = disconnect(type, id, reason, lookup(state, id), state)
     {:noreply, state}
   end
 
@@ -185,13 +185,17 @@ defmodule Otis.Receivers do
     Receiver.update(receiver, data: {pid, socket}, params: params) |> update_connect(id, state)
   end
 
-  def disconnect(type, id, :error, _state) do
+  def disconnect(type, id, _reason, :error, _state) do
     Logger.warn "#{ inspect type } disconnect from unknown receiver #{ id }"
   end
-  def disconnect(:data, id, {:ok, receiver}, state) do
+  def disconnect(:data, id, _reason, {:ok, receiver}, state) do
     Receiver.update(receiver, data: nil) |> update_disconnect(id, state)
   end
-  def disconnect(:ctrl, id, {:ok, receiver}, state) do
+  # ping messages have failed to send
+  def disconnect(:ctrl, id, :etimedout, {:ok, receiver}, state) do
+    Receiver.update(receiver, ctrl: nil) |> Receiver.disconnect() |> update_disconnect(id, state)
+  end
+  def disconnect(:ctrl, id, _reason, {:ok, receiver}, state) do
     Receiver.update(receiver, ctrl: nil) |> update_disconnect(id, state)
   end
 

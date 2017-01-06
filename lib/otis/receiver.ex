@@ -16,6 +16,20 @@ defmodule Otis.Receiver do
     struct(receiver, extract_params(values))
   end
 
+  def disconnect(%R{data: data, ctrl: ctrl} = receiver) do
+    disconnect(data)
+    disconnect(ctrl)
+    receiver
+  end
+  def disconnect({pid, _socket}) when is_pid(pid) do
+    try do
+      GenServer.cast(pid, :disconnect)
+    catch
+      :exit, _ -> :ok
+    end
+  end
+  def disconnect(nil), do: nil
+
   def id!(receiver) do
     receiver.id
   end

@@ -5,8 +5,8 @@ defmodule Otis.Receivers.DataConnection do
     case send_data(data, state) do
       :ok ->
         {:noreply, state}
-      {:error, _} ->
-        disconnect(state)
+      {:error, reason} ->
+        disconnect(state, reason)
         {:stop, :normal, state}
     end
   end

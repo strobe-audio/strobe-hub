@@ -1,7 +1,7 @@
 defmodule Otis.Receivers.Protocol do
   @moduledoc false
   defmacro __using__(opts) do
-    quote do
+    quote location: :keep do
       use     GenServer
       require Logger
 
@@ -28,6 +28,11 @@ defmodule Otis.Receivers.Protocol do
         :gen_server.enter_loop(__MODULE__, [], state)
       end
 
+      def handle_cast(:disconnect, state) do
+        state |> close |> disconnect(:disconnect)
+        {:stop, :normal, state}
+      end
+
       def handle_info({:tcp, _socket, data}, state) do
         state.transport.setopts(state.socket, [active: :once])
         state = data |> decode_message(state) |> process_message(state)
@@ -38,16 +43,12 @@ defmodule Otis.Receivers.Protocol do
         {:stop, :normal, state}
       end
       def handle_info({:tcp_closed, _socket}, %S{id: id} = state) do
-        disconnect(state)
+        disconnect(state, :closed)
         {:stop, :normal, state}
       end
 
       def handle_info({:tcp_error, _, reason}, state) do
-        disconnect(state)
-        {:stop, reason, state}
-      end
-      def handle_info({:tcp_error, _, reason}, state) do
-        disconnect(state)
+        state |> close |> disconnect(reason)
         {:stop, reason, state}
       end
 
@@ -63,8 +64,8 @@ defmodule Otis.Receivers.Protocol do
         state
       end
 
-      def disconnect(%S{id: id} = state) do
-        GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id})
+      def disconnect(%S{id: id} = state, reason) do
+        GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id, reason})
       end
 
       def decode_message(data, state) do
@@ -75,6 +76,11 @@ defmodule Otis.Receivers.Protocol do
         Enum.each(List.wrap(packets), fn(data) ->
           :ok = state.transport.send(state.socket, data)
         end)
+      end
+
+      defp close(state) do
+        :ok = state.transport.close(state.socket)
+        state
       end
 
       defp socket_opts(pipeline_config) do
