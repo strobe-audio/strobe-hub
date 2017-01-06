@@ -117,6 +117,10 @@ defmodule Otis.Receiver do
     set_volume(receiver, Otis.sanitize_volume(volume), Otis.sanitize_volume(multiplier))
   end
 
+  defp set_volume(%R{ctrl: nil} = receiver, _volume, _multiplier) do
+    Logger.warn "Attempt to set volume of receiver with no control connection #{receiver}"
+    receiver
+  end
   defp set_volume(%R{ctrl: {pid, _socket}} = receiver, volume, multiplier) do
     Otis.Receivers.ControlConnection.set_volume(pid, volume, multiplier)
     receiver
