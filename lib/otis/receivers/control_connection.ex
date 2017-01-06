@@ -90,8 +90,19 @@ defmodule Otis.Receivers.ControlConnection do
   defp calculated_volume(%S{settings: settings} = _state) do
     calculated_volume(settings)
   end
+
+  # https://www.dr-lex.be/info-stuff/volumecontrols.html
   defp calculated_volume(%{volume: volume, volume_multiplier: multiplier}) do
-    volume * multiplier
+    case volume * multiplier do
+      0.0 -> 0.0
+      1.0 -> 1.0
+      v when v < 0.1 -> logarithmic_volume(v) * (v * 10)
+      v -> logarithmic_volume(v)
+    end |> Otis.sanitize_volume
+  end
+
+  defp logarithmic_volume(volume) do
+    0.001 * :math.exp(volume * :math.log(1000.0))
   end
 
   defp monitor_connection(state) do
