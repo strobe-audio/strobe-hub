@@ -28,7 +28,7 @@
   "nerves_ssdp_server": {:hex, :nerves_ssdp_server, "0.2.1", "2d010552023fc1a724e8cb5c92479a58552976e6f805b6dbf09babd31f923b8f", [], []},
   "otis": {:git, "git@gitlab.com:magnetised/otis.git", "f61e341bc03f89bd2491e86548a6d913ba939bd5", []},
   "otis_library": {:git, "git@gitlab.com:magnetised/otis_library.git", "cce1926691d97210d2129ee80a0ec881b2a7f230", []},
-  "peel": {:git, "git@gitlab.com:magnetised/peel.git", "ab8661b0ca06a105aa2c975dcc5306623c1a48f6", []},
+  "peel": {:git, "git@gitlab.com:magnetised/peel.git", "7eb477854c786c753909b3e00379932fea3d116c", []},
   "phoenix": {:hex, :phoenix, "1.1.6", "7bf19002669c8f692f5a9c8d30dab7b49f3dc56228d5bde92a12fb426b4783c2", [], [{:cowboy, "~> 1.0", [hex: :cowboy, optional: true]}, {:plug, "~> 1.0", [hex: :plug, optional: false]}, {:poison, "~> 1.5 or ~> 2.0", [hex: :poison, optional: false]}]},
   "phoenix_html": {:hex, :phoenix_html, "2.9.2", "371160b30cf4e10443b015efce6f03e1f19aae98ff6487620477b13a5b2ef660", [:mix], [{:plug, "~> 1.0", [hex: :plug, optional: false]}]},
   "phoenix_live_reload": {:hex, :phoenix_live_reload, "1.0.6", "4490d588c4f60248b1c5f1f0dc0a7271e1aed4bddbd8b1542630f7bf6bc7b012", [:mix], [{:fs, "~> 0.9.1", [hex: :fs, optional: false]}, {:phoenix, "~> 1.0 or ~> 1.2-rc", [hex: :phoenix, optional: false]}]},
