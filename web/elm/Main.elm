@@ -46,6 +46,7 @@ subscriptions model =
     Sub.batch
         [ Ports.broadcasterStateActions
         , Ports.receiverStatusActions
+        , Ports.receiverPresenceActions
         , Ports.channelStatusActions
         , Ports.renditionProgressActions
         , Ports.renditionChangeActions

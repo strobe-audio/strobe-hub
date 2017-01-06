@@ -29,6 +29,11 @@ channel.on('receiver_removed', payload => {
   app.ports.receiverStatus.send(['receiver_removed', payload])
 })
 
+channel.on('receiver_connected', payload => {
+  console.log('receiver_connected', payload)
+  app.ports.receiverPresence.send(payload)
+})
+
 channel.on('receiver_added', payload => {
   console.log('receiver_added', payload)
   app.ports.receiverStatus.send(['receiver_added', payload])

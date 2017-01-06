@@ -23,6 +23,7 @@ type Msg
     | Channel ID.Channel Channel.Msg
     | ShowAttachReceiver Bool
     | Receiver ID.Receiver Receiver.Msg
+    | ReceiverPresence Receiver.State
     | Library Library.Msg
       -- events from broadcaster
     | BroadcasterChannelAdded Channel.State

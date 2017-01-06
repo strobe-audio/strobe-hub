@@ -114,6 +114,16 @@ update action model =
             in
                 { model | receivers = receivers } ! [ cmd ]
 
+        Msg.ReceiverPresence receiver ->
+            let
+                receivers_ =
+                    if List.any (\r -> r.id == receiver.id) model.receivers then
+                        model.receivers
+                    else
+                        (Receiver.State.initialState receiver) :: model.receivers
+            in
+                { model | receivers = receivers_ } ! []
+
         Msg.ShowAttachReceiver show ->
             { model | showAttachReceiver = show } ! []
 

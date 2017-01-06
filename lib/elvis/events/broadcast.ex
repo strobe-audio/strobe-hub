@@ -89,6 +89,12 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:receiver_connected, [receiver_id, receiver_connection]}, state) do
+    receiver = Otis.State.Receiver.find(receiver_connection.id)
+    broadcast!(to_string(:receiver_connected), Otis.State.status(receiver))
+    {:ok, state}
+  end
+
   def handle_event({event, [channel_id, receiver_id]}, state)
   when event in [:receiver_added, :receiver_removed] do
     broadcast!(to_string(event), %{channelId: channel_id, receiverId: receiver_id})

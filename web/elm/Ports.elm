@@ -46,6 +46,14 @@ receiverStatusActions =
         receiverStatus forward
 
 
+port receiverPresence : (Receiver.State -> m) -> Sub m
+
+
+receiverPresenceActions : Sub Msg
+receiverPresenceActions =
+    receiverPresence Msg.ReceiverPresence
+
+
 port channelStatus : (( String, Root.ChannelStatusEvent ) -> m) -> Sub m
 
 
