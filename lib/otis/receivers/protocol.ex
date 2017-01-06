@@ -73,7 +73,7 @@ defmodule Otis.Receivers.Protocol do
 
       def send_data(packets, state) do
         Enum.each(List.wrap(packets), fn(data) ->
-          state.transport.send(state.socket, data)
+          :ok = state.transport.send(state.socket, data)
         end)
       end
 
