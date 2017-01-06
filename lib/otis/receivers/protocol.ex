@@ -17,7 +17,7 @@ defmodule Otis.Receivers.Protocol do
         pipeline_config = opts[:pipeline_config]
         :ok = :proc_lib.init_ack({:ok, self()})
         :ok = :ranch.accept_ack(ref)
-        :ok = transport.setopts(socket, [mode: :binary, packet: 4, active: :once, send_timeout: 2_000*pipeline_config.packet_duration_ms])
+        :ok = transport.setopts(socket, socket_opts(pipeline_config))
         state = %S{
           socket: socket,
           transport: transport,
@@ -75,6 +75,16 @@ defmodule Otis.Receivers.Protocol do
         Enum.each(List.wrap(packets), fn(data) ->
           state.transport.send(state.socket, data)
         end)
+      end
+
+      defp socket_opts(pipeline_config) do
+        [ mode: :binary,
+          packet: 4,
+          active: :once,
+          keepalive: true,
+          nodelay: true,
+          send_timeout: 2_000*pipeline_config.packet_duration_ms,
+        ]
       end
     end
   end
