@@ -130,4 +130,20 @@ defmodule Otis.Receivers.ControlConnection do
     Process.cancel_timer(ref)
     %S{ state | monitor_timeout: nil }
   end
+
+  defp configure_receiver(state) do
+    # TODO: get wifi config from broadcaster state
+    regulatory_domain = System.get_env |> Map.get("OTIS_WLAN_COUNTRY", "00")
+    ssid = System.get_env("OTIS_WLAN_SSID")
+    psk  = System.get_env("OTIS_WLAN_PSK")
+    case {ssid, psk} do
+      {nil, _} ->
+        Logger.warn "Invalid WLAN config, missing SSID"
+        nil
+      {ssid, psk} ->
+        config = %{wifi: %{regulatory_domain: regulatory_domain, ssid: ssid, psk: psk}}
+        %{configure: config} |> send_command(state)
+    end
+    state
+  end
 end
