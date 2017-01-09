@@ -76,6 +76,10 @@ defmodule Otis.Receivers.Protocol do
         data |> Poison.decode! |> Map.pop("id")
       end
 
+      def send_command(data, state) do
+        data |> Poison.encode! |> send_data(state)
+      end
+
       def send_data(packets, state) do
         Enum.each(List.wrap(packets), fn(data) ->
           :ok = state.transport.send(state.socket, data)

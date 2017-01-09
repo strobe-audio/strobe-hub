@@ -40,7 +40,7 @@ defmodule Otis.Receivers.ControlConnection do
   end
 
   def handle_cast({:command, command}, state) do
-    %{ command: command } |> Poison.encode! |> send_data(state)
+    %{ command: command } |> send_command(state)
     {:noreply, state}
   end
 
@@ -77,7 +77,7 @@ defmodule Otis.Receivers.ControlConnection do
   end
   defp monitor_volume(state, values, _initial_volume, final_volume) do
     volume = calculated_volume(final_volume)
-    %{ volume: volume } |> Poison.encode! |> send_data(state)
+    %{ volume: volume } |> send_command(state)
     notify_volume(state, values)
   end
 
@@ -114,9 +114,7 @@ defmodule Otis.Receivers.ControlConnection do
   end
 
   defp send_ping(state) do
-    %{ ping: :erlang.unique_integer([:positive, :monotonic]) }
-    |> Poison.encode!
-    |> send_data(state)
+    %{ ping: :erlang.unique_integer([:positive, :monotonic]) } |> send_command(state)
     ref = Process.send_after(self(), :timeout, @timeout_interval)
     %S{ state | monitor_timeout: ref  }
   end
