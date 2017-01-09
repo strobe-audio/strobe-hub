@@ -26,7 +26,7 @@
   "mochiweb": {:hex, :mochiweb, "2.15.0", "e1daac474df07651e5d17cc1e642c4069c7850dc4508d3db7263a0651330aacc", [:rebar3], []},
   "monotonic": {:git, "https://github.com/magnetised/monotonic.ex.git", "66121d98bea181a3f712a9a133d270a0f94d0ad1", []},
   "nerves_ssdp_server": {:hex, :nerves_ssdp_server, "0.2.1", "2d010552023fc1a724e8cb5c92479a58552976e6f805b6dbf09babd31f923b8f", [], []},
-  "otis": {:git, "git@gitlab.com:magnetised/otis.git", "fcc28f6ccb4779fb749337ab48942ff4df259e23", []},
+  "otis": {:git, "git@gitlab.com:magnetised/otis.git", "3cfb5463f444c0a1adcd224e165d00744bf6277e", []},
   "otis_library": {:git, "git@gitlab.com:magnetised/otis_library.git", "cce1926691d97210d2129ee80a0ec881b2a7f230", []},
   "peel": {:git, "git@gitlab.com:magnetised/peel.git", "7eb477854c786c753909b3e00379932fea3d116c", []},
   "phoenix": {:hex, :phoenix, "1.1.6", "7bf19002669c8f692f5a9c8d30dab7b49f3dc56228d5bde92a12fb426b4783c2", [], [{:cowboy, "~> 1.0", [hex: :cowboy, optional: true]}, {:plug, "~> 1.0", [hex: :plug, optional: false]}, {:poison, "~> 1.5 or ~> 2.0", [hex: :poison, optional: false]}]},
