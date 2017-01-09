@@ -192,7 +192,7 @@ defmodule Otis.Receivers do
     Receiver.update(receiver, data: nil) |> update_disconnect(id, state)
   end
   # ping messages have failed to send
-  def disconnect(:ctrl, id, :etimedout, {:ok, receiver}, state) do
+  def disconnect(:ctrl, id, :offline, {:ok, receiver}, state) do
     Receiver.update(receiver, ctrl: nil) |> Receiver.disconnect() |> update_disconnect(id, state)
   end
   def disconnect(:ctrl, id, _reason, {:ok, receiver}, state) do

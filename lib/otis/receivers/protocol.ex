@@ -6,7 +6,7 @@ defmodule Otis.Receivers.Protocol do
       require Logger
 
       defmodule S do
-        defstruct [:socket, :transport, :id, :supervisor, :settings]
+        defstruct [:socket, :transport, :id, :supervisor, :settings, :monitor_timeout]
       end
 
       def start_link(ref, socket, transport, opts) do
@@ -29,7 +29,7 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def handle_cast(:disconnect, state) do
-        state |> close |> disconnect(:disconnect)
+        close_and_disconnect(state)
         {:stop, :normal, state}
       end
 
@@ -43,17 +43,17 @@ defmodule Otis.Receivers.Protocol do
         {:stop, :normal, state}
       end
       def handle_info({:tcp_closed, _socket}, %S{id: id} = state) do
-        disconnect(state, :closed)
+        disconnect(state)
         {:stop, :normal, state}
       end
 
       def handle_info({:tcp_error, _, reason}, state) do
-        state |> close |> disconnect(reason)
+        close_and_disconnect(state)
         {:stop, reason, state}
       end
 
       def process_message({_id, %{"pong" => _pong}}, state) do
-        state
+        receiver_alive(state)
       end
       def process_message({id, params}, state) do
         Logger.info "Receiver connection #{unquote(opts[:type])} #{id} => #{ inspect params }"
@@ -64,8 +64,12 @@ defmodule Otis.Receivers.Protocol do
         state
       end
 
-      def disconnect(%S{id: id} = state, reason) do
+      def disconnect(%S{id: id} = state, reason \\ :normal) do
         GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id, reason})
+      end
+
+      def close_and_disconnect(%S{id: id} = state, reason \\ :normal) do
+        state |> close |> disconnect(reason)
       end
 
       def decode_message(data, state) do

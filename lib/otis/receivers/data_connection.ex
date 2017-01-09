@@ -6,11 +6,12 @@ defmodule Otis.Receivers.DataConnection do
       :ok ->
         {:noreply, state}
       {:error, reason} ->
-        disconnect(state, reason)
+        disconnect(state)
         {:stop, :normal, state}
     end
   end
 
   defp initial_settings, do: %{}
   defp monitor_connection(state), do: state
+  defp receiver_alive(state), do: state
 end

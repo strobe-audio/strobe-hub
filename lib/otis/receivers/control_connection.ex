@@ -2,6 +2,7 @@ defmodule Otis.Receivers.ControlConnection do
   use Otis.Receivers.Protocol, type: :ctrl
 
   @monitor_interval 1000
+  @timeout_interval 4000
 
   def set_volume(connection, volume) do
     GenServer.cast(connection, {:set_volume, volume})
@@ -51,11 +52,13 @@ defmodule Otis.Receivers.ControlConnection do
     {:reply, Map.fetch(state.settings, :volume_multiplier), state}
   end
 
-  def handle_info(:ping, state) do
-    %{ ping: :erlang.unique_integer([:positive, :monotonic]) }
-    |> Poison.encode!
-    |> send_data(state)
-    {:noreply, monitor_connection(state)}
+  def handle_info(:start_monitor, state) do
+    {:noreply, send_ping(state)}
+  end
+
+  def handle_info(:timeout, state) do
+    close_and_disconnect(state, :offline)
+    {:stop, :normal, cancel_timeout(state)}
   end
 
   # the volume here must match the default volume setting in the audio
@@ -106,7 +109,27 @@ defmodule Otis.Receivers.ControlConnection do
   end
 
   defp monitor_connection(state) do
-    Process.send_after(self(), :ping, @monitor_interval)
+    Process.send_after(self(), :start_monitor, @monitor_interval)
     state
+  end
+
+  defp send_ping(state) do
+    %{ ping: :erlang.unique_integer([:positive, :monotonic]) }
+    |> Poison.encode!
+    |> send_data(state)
+    ref = Process.send_after(self(), :timeout, @timeout_interval)
+    %S{ state | monitor_timeout: ref  }
+  end
+
+  defp receiver_alive(state) do
+    state |> cancel_timeout |> monitor_connection
+  end
+
+  defp cancel_timeout(%S{monitor_timeout: nil} = state) do
+    state
+  end
+  defp cancel_timeout(%S{monitor_timeout: ref} = state) do
+    Process.cancel_timer(ref)
+    %S{ state | monitor_timeout: nil }
   end
 end
