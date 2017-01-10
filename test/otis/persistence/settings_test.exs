@@ -19,6 +19,12 @@ defmodule Otis.Persistence.SettingsTest do
     assert {:ok, "fish"} == Setting.get :test, :value
   end
 
+  test "it can overwrite values" do
+    Setting.put :test, :value, "fish"
+    Setting.put :test, :value, "door"
+    assert {:ok, "door"} == Setting.get :test, :value
+  end
+
   test "it returns all values from a namespace as a map" do
     values = [key1: %{fish: "fry1", dog: "tooth1"}, key2: %{fish: "fry1", dog: "tooth1"}]
     Enum.each values, fn({k, v}) ->

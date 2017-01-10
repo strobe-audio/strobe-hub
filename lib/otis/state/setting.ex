@@ -23,14 +23,24 @@ defmodule Otis.State.Setting do
     field :value,     Otis.State.Setting.JSON
   end
 
+  def put(ns, key, _value) when ns == "" or key == "", do: :error
   def put(ns, key, value) do
-    %{namespace: to_string(ns), key: to_string(key), value: value}
-    |> put_changeset()
-    |> Repo.insert!
+    try do
+      _put!(ns, key, value)
+    rescue
+      e in Sqlite.Ecto.Error ->
+        case e do
+          %Sqlite.Ecto.Error{sqlite: {:constraint, _}} ->
+            _delete(ns, key)
+            put(ns, key, value)
+          _ ->
+            raise e
+        end
+    end
   end
 
   def get(ns, key) do
-    _get(to_string(ns), to_string(key))
+    _get(to_string(ns), to_string(key)) |> value_of
   end
 
   def namespace(ns) when is_atom(ns) do
@@ -44,12 +54,24 @@ defmodule Otis.State.Setting do
     |> to_map
   end
 
+  defp _delete(ns, key) when is_binary(ns) and is_binary(key) do
+    Setting
+    |> where(namespace: ^ns, key: ^key)
+    |> Repo.delete_all
+  end
+  defp _delete(ns, key), do: _delete(to_string(ns), to_string(key))
+
+  defp _put!(ns, key, value) do
+    %{namespace: to_string(ns), key: to_string(key), value: value}
+    |> put_changeset()
+    |> Repo.insert!
+  end
+
   defp _get(ns, key) when is_binary(ns) and is_binary(key) do
     Setting
     |> where(namespace: ^ns, key: ^key)
     |> order_by([s], asc: s.key )
     |> Repo.one
-    |> value_of
   end
 
   defp value_of(nil), do: :error
