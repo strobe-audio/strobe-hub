@@ -25,6 +25,7 @@ defmodule Otis.Supervisor do
 
       worker(Otis.Receivers.Database, []),
       worker(Otis.Receivers, [pipeline_config]),
+      worker(Otis.Receivers.Logger, []),
 
       supervisor(Otis.Channels, []),
       # This needs to be called by the app hosting the application

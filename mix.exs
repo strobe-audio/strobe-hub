@@ -33,7 +33,10 @@ defmodule Otis.Mixfile do
         :poolboy,
         # :logger_file_backend,
       ],
-      extra_applications: []
+      extra_applications: [],
+      env: [
+        receiver_logger: [addr: {224,0,0,224}, port: 9999],
+      ]
     ]
   end
 
