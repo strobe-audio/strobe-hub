@@ -121,7 +121,7 @@ defmodule Otis.State.Persistence.Receivers do
   end
 
   defp invented_name(id) do
-    "Receiver #{id}"
+    "Receiver #{String.slice(id, 0..12)}"
   end
 end
 
