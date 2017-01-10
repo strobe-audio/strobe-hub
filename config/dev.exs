@@ -35,7 +35,7 @@ config :logger, :console,
   level: :info,
   format: "$date $time $metadata [$level]$levelpad $message\n",
   sync_threshold: 1_000_000,
-  metadata: [:request_id],
+  metadata: [:request_id, :ip],
   colors: [info: :green]
 
 # Set a higher stacktrace during development.
