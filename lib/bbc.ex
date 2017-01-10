@@ -31,6 +31,7 @@ defmodule BBC do
     %Channel{id: "radio5live", title: "BBC Radio 5 Live"},
     %Channel{id: "radio5liveextra", title: "BBC Radio 5 Live Sports Extra"},
     %Channel{id: "radio6", title: "BBC Radio 6 Music"},
+    %Channel{id: "radio_ulster", title: "BBC Radio Ulster"},
   ]
   @channel_names Enum.map(@channels, fn(%Channel{id: id}) -> id end)
 
