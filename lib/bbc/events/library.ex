@@ -53,7 +53,7 @@ defmodule BBC.Events.Library do
       play = url(["channel", channel.id, "play"])
       %{ id: "bbc:channel/#{channel.id}",
         title: channel.title,
-        icon: Channel.cover_image(channel),
+        icon: Channel.cover_image(channel, :small),
         actions: %{ click: play, play: play },
         metadata: nil
       }
