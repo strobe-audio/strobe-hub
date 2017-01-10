@@ -204,8 +204,10 @@ defmodule Otis.Receiver do
     join_channel(receiver, channel)
   end
 
-  def configure(receiver, %Otis.State.Receiver{volume: volume} = _config) do
-    volume(receiver, volume)
+  def configure(%R{ctrl: {pid, _socket}}, settings) do
+    Otis.Receivers.ControlConnection.configure(pid, settings)
+  end
+  def configure(_receiver, _settings) do
   end
 
   @stop_command <<"STOP">>

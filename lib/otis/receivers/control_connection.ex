@@ -24,6 +24,10 @@ defmodule Otis.Receivers.ControlConnection do
     GenServer.call(connection, :get_volume_multiplier)
   end
 
+  def configure(connection, settings) do
+    GenServer.cast(connection, {:configure, settings})
+  end
+
   def handle_cast({:set_volume, volume}, state) do
     state = change_volume(state, [volume: volume])
     {:noreply, state}
@@ -41,6 +45,11 @@ defmodule Otis.Receivers.ControlConnection do
 
   def handle_cast({:command, command}, state) do
     %{ command: command } |> send_command(state)
+    {:noreply, state}
+  end
+
+  def handle_cast({:configure, settings}, state) do
+    %{configure: settings} |> send_command(state)
     {:noreply, state}
   end
 
@@ -129,21 +138,5 @@ defmodule Otis.Receivers.ControlConnection do
   defp cancel_timeout(%S{monitor_timeout: ref} = state) do
     Process.cancel_timer(ref)
     %S{ state | monitor_timeout: nil }
-  end
-
-  defp configure_receiver(state) do
-    # TODO: get wifi config from broadcaster state
-    regulatory_domain = System.get_env |> Map.get("OTIS_WLAN_COUNTRY", "00")
-    ssid = System.get_env("OTIS_WLAN_SSID")
-    psk  = System.get_env("OTIS_WLAN_PSK")
-    case {ssid, psk} do
-      {nil, _} ->
-        Logger.warn "Invalid WLAN config, missing SSID"
-        nil
-      {ssid, psk} ->
-        config = %{wifi: %{regulatory_domain: regulatory_domain, ssid: ssid, psk: psk}}
-        %{configure: config} |> send_command(state)
-    end
-    state
   end
 end

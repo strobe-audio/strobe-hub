@@ -24,7 +24,7 @@ defmodule Otis.Receivers.Protocol do
           supervisor: opts[:supervisor],
           settings: initial_settings(),
         }
-        state = state |> monitor_connection |> configure_receiver
+        state = state |> monitor_connection
         :gen_server.enter_loop(__MODULE__, [], state)
       end
 

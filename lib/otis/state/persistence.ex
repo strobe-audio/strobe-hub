@@ -10,6 +10,7 @@ defmodule Otis.State.Persistence do
     Otis.State.Persistence.Channels,
     Otis.State.Persistence.Receivers,
     Otis.State.Persistence.Renditions,
+    Otis.State.Persistence.Configuration,
   ]
 
   def init(:ok) do

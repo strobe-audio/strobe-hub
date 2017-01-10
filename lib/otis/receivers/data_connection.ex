@@ -14,5 +14,4 @@ defmodule Otis.Receivers.DataConnection do
   defp initial_settings, do: %{}
   defp monitor_connection(state), do: state
   defp receiver_alive(state), do: state
-  defp configure_receiver(state), do: state
 end
