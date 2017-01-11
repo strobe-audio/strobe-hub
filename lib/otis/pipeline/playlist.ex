@@ -52,7 +52,7 @@ defmodule Otis.Pipeline.Playlist do
     {:reply, {:ok, all_renditions(state)}, state}
   end
   def handle_call(:next, _from, %S{renditions: []} = state) do
-    {:reply, :done, state}
+    {:reply, :done, %S{ state | active: nil }}
   end
   def handle_call(:next, _from, %S{renditions: [a | renditions]} = state) do
     {:reply, {:ok, a}, %S{ state | renditions: renditions, active: a }}

@@ -161,4 +161,15 @@ defmodule Test.Otis.Pipeline.Playlist do
     {:ok, renditions} = Playlist.list(pl)
     assert Enum.map(renditions, fn(r) -> r.position end) == [0, 1, 2, 3, 4, 5, 6, 7]
   end
+
+  test "clears the active rendition when empty", context do
+    channel_id = context.id
+    [s1, _, _, _] = context.sources
+    {:ok, pl} = Playlist.start_link(channel_id)
+    :ok = Playlist.append(pl, s1)
+    assert_receive {:new_rendition_created, _}
+    {:ok, _} = Playlist.next(pl)
+    :done = Playlist.next(pl)
+    assert {:ok, []} == Playlist.list(pl)
+  end
 end
