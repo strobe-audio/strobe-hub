@@ -1,6 +1,8 @@
 defmodule Otis.Pipeline.Transcoder do
   use GenServer
 
+  require Logger
+
   alias Otis.Library.Source
   alias Otis.Transcoders.Avconv
 
@@ -38,7 +40,17 @@ defmodule Otis.Pipeline.Transcoder do
     {:reply, resp, state}
   end
 
-  def terminate(_reason, state) do
+  def handle_info({:EXIT, pid, reason}, state) do
+    Logger.debug "#{__MODULE__} got EXIT from #{inspect pid}: #{inspect reason}"
+    {:noreply, state}
+  end
+  def handle_info(msg, state) do
+    Logger.warn "#{__MODULE__} Unhandled message handle_info/2 #{inspect msg}"
+    {:noreply, state}
+  end
+
+  def terminate(reason, state) do
+    Logger.debug "#{__MODULE__} terminate #{inspect reason}"
     Avconv.stop(state.transcoder)
     :ok
   end
