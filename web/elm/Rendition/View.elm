@@ -8,6 +8,7 @@ import Rendition
 import Source.View
 import Utils.Css
 import Progress
+import Debug
 
 
 player : Rendition.Model -> Bool -> Html Rendition.Msg
@@ -100,11 +101,19 @@ progress rendition playing =
 
 playlist : Rendition.Model -> Html Rendition.Msg
 playlist rendition =
+  let
+        source =
+            rendition.source
+
+        coverImage =
+            source.cover_image
+  in
     div
         [ class "block playlist--entry"
         , onDoubleClick Rendition.SkipTo
         ]
-        [ div [ class "playlist--entry--inner" ]
+        [ div [ class "playlist--entry--image", style [("backgroundImage", "url(" ++ coverImage ++")")] ] []
+        , div [ class "playlist--entry--inner" ]
             [ div [ class "playlist--entry--title" ]
                 [ strong [] [ text (renditionTitle rendition) ] ]
             , div [ class "playlist--entry--album" ]
@@ -114,6 +123,7 @@ playlist rendition =
                 , text (renditionAlbum rendition)
                 ]
             ]
+        , div [ class "playlist--entry--skip", onClick Rendition.SkipTo ] []
         ]
 
 

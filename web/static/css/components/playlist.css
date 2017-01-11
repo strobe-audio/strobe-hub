@@ -10,12 +10,16 @@
 
 .playlist--entry {
   height: $button-size;
-  padding: 0 $padding;
   border-bottom: solid 1px #ddd;
   cursor: pointer;
-  &:hover {
-    color: red;
-  }
+  display: flex;
+}
+.playlist--entry--image {
+  width: $button-size;
+  height: $button-size;
+  overflow: hidden;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 .playlist--entry--inner {
   position: relative;
@@ -24,7 +28,21 @@
   max-height: calc($button-size - $padding);
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 0 $padding;
+  flex: 1;
+  &:hover {
+    color: red;
+  }
 }
 .playlist--entry--album {
   color: #999;
+}
+.playlist--entry--skip {
+  @mixin fa-btn "\f050";  /* play */
+  /* background-color: rgba(0, 0, 0, 0.01); */
+  border-left: solid 1px #eee;
+  flex: 0 0 $button-size;
+  &:before {
+    color: #ddd;
+  }
 }
