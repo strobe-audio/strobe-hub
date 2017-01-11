@@ -161,7 +161,7 @@ defmodule Otis.Pipeline.Broadcaster do
   defp monitor_packets({state, packets}, time) do
     inflight = Enum.concat(Enum.reverse(packets), state.inflight)
     {played, unplayed} = Enum.split_with(inflight, &Packet.played?(&1, time))
-    state = state |> monitor_rendition(played) |> monitor_progress(played)
+    state = state |> monitor_rendition(played, unplayed) |> monitor_progress(played)
     state = state |> monitor_status(unplayed)
     %S{state | inflight: unplayed }
   end
@@ -175,17 +175,21 @@ defmodule Otis.Pipeline.Broadcaster do
     state
   end
 
-  defp monitor_rendition(state, []) do
+  defp monitor_rendition(state, played, [] = _unplayed) do
+    Otis.State.Events.notify({:rendition_changed, [state.id, state.rendition_id, nil]})
+    %S{ state | rendition_id: nil }
+  end
+  defp monitor_rendition(state, [], _unplayed) do
     state
   end
-  defp monitor_rendition(%S{rendition_id: nil} = state, [packet | _rest]) do
+  defp monitor_rendition(%S{rendition_id: nil} = state, [packet | _rest], _unplayed) do
     Otis.State.Events.notify({:rendition_changed, [state.id, nil, packet.rendition_id]})
     %S{state|rendition_id: packet.rendition_id}
   end
-  defp monitor_rendition(%S{rendition_id: rendition_id} = state, [%Packet{rendition_id: rendition_id} | _rest]) do
+  defp monitor_rendition(%S{rendition_id: rendition_id} = state, [%Packet{rendition_id: rendition_id} | _rest], _unplayed) do
     state
   end
-  defp monitor_rendition(%S{rendition_id: rendition_id} = state, [packet | _rest]) do
+  defp monitor_rendition(%S{rendition_id: rendition_id} = state, [packet | _rest], _unplayed) do
     Otis.State.Events.notify({:rendition_changed, [state.id, rendition_id, packet.rendition_id]})
     %S{state|rendition_id: packet.rendition_id}
   end

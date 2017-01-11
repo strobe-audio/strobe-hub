@@ -360,6 +360,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
 
     r1id = r1.id
     r2id = r2.id
+    r3id = r3.id
     channel_id = context.channel_id
 
     renditions = [r1, r2, r3]
@@ -416,6 +417,19 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     assert_receive {:rendition_changed, [^channel_id, ^r1id, ^r2id]}
+    # we've already sent the first 4 packets
+    Enum.each(39..(47 - 4), fn(t) ->
+      GenServer.call(clock, {:tick, tick_time.(t)})
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, _data} = data_recv_raw(m)
+      end)
+    end)
+    Enum.each((48 - 4)..48, fn(t) ->
+      GenServer.call(clock, {:tick, tick_time.(t)})
+      :pong = GenServer.call(bc, :ping)
+    end)
+    assert_receive {:rendition_changed, [^channel_id, ^r2id, ^r3id]}
+    assert_receive {:rendition_changed, [^channel_id, ^r3id, nil]}
   end
 
   test "rebuffer unplayed packets on resume", context do
