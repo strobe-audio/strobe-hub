@@ -4,6 +4,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html
+import Html.Lazy exposing(lazy)
+
 import Json.Decode as Json
 import Debug
 
@@ -204,4 +206,4 @@ cover channel =
 
 playlist : Channel.Model -> Html Msg
 playlist channel =
-    Html.map (Msg.Channel channel.id) (Channel.View.playlist channel)
+    Html.map (Msg.Channel channel.id) (lazy Channel.View.playlist channel)
