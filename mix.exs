@@ -18,10 +18,11 @@ defmodule Elvis.Mixfile do
   def application do
     [mod: {Elvis, []},
      applications: [
+       :logger,
+       :logger_papertrail_backend,
        :phoenix,
        :phoenix_html,
        :cowboy,
-       :logger,
        :otis,
        # fix missing apps from other dependencies
        :socket,
@@ -50,6 +51,7 @@ defmodule Elvis.Mixfile do
      # {:hls, path: "/Users/garry/Seafile/Peep/hls"},
      {:hls, git: "git@gitlab.com:magnetised/peep_bbc.git"},
      {:distillery, "~> 1.0"},
+     {:logger_papertrail_backend, "~> 0.1.0"},
    ]
   end
 end

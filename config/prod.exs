@@ -13,9 +13,25 @@ use Mix.Config
 config :elvis, Elvis.Endpoint,
   # http: [port: {:system, "PORT"}],
   http: [port: 4000],
-  url: [host: "192.168.1.67", port: 4000],
+  # url: [host: "192.168.1.67", port: 4000],
   check_origin: false,
   cache_static_manifest: "priv/static/manifest.json"
+
+papertrail_host = System.get_env("PAPERTRAIL_SYSTEM_HOST")
+papertrail_system_name = System.get_env |> Map.get("PAPERTRAIL_SYSTEM_NAME", "unknown")
+
+IO.inspect "===> Logging to papertrail: #{papertrail_host}/#{papertrail_system_name}"
+
+config :logger,
+  backends: [:console, LoggerPapertrailBackend.Logger],
+  level: :info
+
+config :logger, :logger_papertrail_backend,
+  host:  papertrail_host,
+  system_name: papertrail_system_name,
+  level: :debug,
+  format: "$date $time $metadata [$level]$levelpad $message\n",
+  metadata: [:module, :line]
 
 # Do not print debug messages in production
 # config :logger, level: :info

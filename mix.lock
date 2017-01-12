@@ -19,6 +19,7 @@
   "httpoison": {:hex, :httpoison, "0.9.2", "a211a8e87403a043c41218e64df250d321f236ac57f786c6a0ccf3e9e817c819", [:mix], [{:hackney, "~> 1.6.0", [hex: :hackney, optional: false]}]},
   "idna": {:hex, :idna, "1.2.0", "ac62ee99da068f43c50dc69acf700e03a62a348360126260e87f2b54eced86b2", [], []},
   "logger_file_backend": {:hex, :logger_file_backend, "0.0.8", "1cdf1c492d6f64ee5d76d423cd76e2282ae3a7800468cb8b305bdfd1e775c07b", [:mix], []},
+  "logger_papertrail_backend": {:hex, :logger_papertrail_backend, "0.1.1", "d5e8a56037dff43126db32b72c23087207b06dc6cfab50d4f476d5ec3536ab5d", [:mix], []},
   "mdns": {:hex, :mdns, "0.1.5", "566548ae7a1b806e2beb0d3b69a7858580c2f9fec4f8f128602a59a09f3aab39", [:mix], [{:dns, "~> 0.0.4", [hex: :dns, optional: false]}]},
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [], []},
   "mime": {:hex, :mime, "1.0.1", "05c393850524767d13a53627df71beeebb016205eb43bfbd92d14d24ec7a1b51", [:mix], []},
