@@ -22,9 +22,7 @@ defmodule Otis.Receivers.Proxy do
   end
 
   def handle_info({:DOWN, _ref, :process, pid, _reason}, {receiver, channel}) do
-    if Receiver.matches_pid?(receiver, pid) do
-      Otis.Receivers.Channels.notify_remove_receiver(receiver, channel)
-      {:stop, :normal, receiver}
-    end
+    Otis.Receivers.Channels.notify_remove_receiver(receiver, channel)
+    {:stop, :normal, receiver}
   end
 end
