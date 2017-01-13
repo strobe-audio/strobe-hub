@@ -12,6 +12,7 @@ import Rendition.State
 import Input
 import Input.State
 import Volume
+import Utils.Touch
 
 
 forChannel : String -> List { a | channelId : String } -> List { a | channelId : String }
@@ -43,6 +44,7 @@ newChannel channelState =
     , showAddReceiver = False
     , editName = False
     , editNameInput = Input.State.blank
+    , touches = Utils.Touch.null
     }
 
 
@@ -180,6 +182,20 @@ update action channel =
             in
                 ( channel_, Channel.Cmd.clearPlaylist channel_ )
 
+        Channel.Tap te ->
+            let
+                touches =
+                    Utils.Touch.update te channel.touches
+
+                ( updated, cmd ) =
+                    case Utils.Touch.testEvent te touches of
+                        Utils.Touch.Tap msg ->
+                            update msg { channel | touches = Utils.Touch.null }
+
+                        _ ->
+                            { channel | touches = touches } ! []
+            in
+                updated ! []
 
 updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )
 updateVolume volumeMsg channel =

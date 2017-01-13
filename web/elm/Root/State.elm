@@ -15,6 +15,7 @@ import Input.State
 import Msg exposing (Msg)
 import Navigation
 import Routing
+import Utils.Touch
 
 
 initialState : Root.Model
@@ -29,6 +30,7 @@ initialState =
     , showChannelSwitcher = False
     , activeChannelId = Nothing
     , showAttachReceiver = False
+    , touches = Utils.Touch.emptyModel
     }
 
 
@@ -218,6 +220,21 @@ update action model =
             -- _ = Debug.log "scroll" value
             -- in
             ( model, Cmd.none )
+
+        Msg.SingleTouch te ->
+            let
+                touches =
+                    Utils.Touch.update te model.touches
+
+                ( updated, cmd ) =
+                    case Utils.Touch.testEvent te touches of
+                        Utils.Touch.Tap msg ->
+                            update msg { model | touches = Utils.Touch.null }
+
+                        _ ->
+                            { model | touches = touches } ! []
+            in
+                updated ! []
 
 
 libraryVisible : Root.Model -> Bool

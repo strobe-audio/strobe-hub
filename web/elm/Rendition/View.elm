@@ -8,7 +8,6 @@ import Rendition
 import Source.View
 import Utils.Css
 import Progress
-import Debug
 import Utils.Touch exposing (onSingleTouch)
 import Utils.Css
 
@@ -68,7 +67,13 @@ cover rendition playing =
     in
         div [ id rendition.id, class "rendition" ]
             [ div [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
-                [ img [ src coverImage, alt "", onClick Rendition.PlayPause, onSingleTouch Rendition.PlayPause ] []
+                [ img
+                    [ src coverImage
+                    , alt ""
+                    -- , onClick Rendition.PlayPause
+                    -- , onSingleTouch Rendition.PlayPause
+                    ]
+                    []
                 ]
             ]
 
@@ -110,8 +115,8 @@ playlist rendition =
         coverImage =
             source.cover_image
 
-        mapTouch a =
-            Html.Attributes.map Rendition.Touch a
+        mapSwipe a =
+            Html.Attributes.map Rendition.Swipe a
 
         (swiping, entryStyle) = case rendition.swipe of
             Just swipe ->
@@ -143,9 +148,9 @@ playlist rendition =
             , ("playlist--entry__removing" , rendition.removeInProgress)
             ]
         , onDoubleClick Rendition.SkipTo
-        , mapTouch (Utils.Touch.touchStart Rendition.NoOp)
-        , mapTouch (Utils.Touch.touchMove Rendition.NoOp)
-        , mapTouch (Utils.Touch.touchEnd Rendition.NoOp)
+        , mapSwipe (Utils.Touch.touchStart Rendition.NoOp)
+        , mapSwipe (Utils.Touch.touchMove Rendition.NoOp)
+        , mapSwipe (Utils.Touch.touchEnd Rendition.NoOp)
         ]
         [ div
             [ class "playlist--entry--contents"

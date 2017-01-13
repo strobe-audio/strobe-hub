@@ -43,14 +43,14 @@ update action rendition =
         Rendition.PlayPause ->
             ( rendition, Cmd.none )
 
-        Rendition.Touch te ->
+        Rendition.Swipe te ->
             let
                 touches =
-                    Debug.log "touches" (Utils.Touch.update te rendition.touches)
+                    Utils.Touch.update te rendition.touches
 
                 ( updated, cmd ) =
                     case Utils.Touch.testEvent te touches of
-                        Utils.Touch.Swipe Utils.Touch.Left x ->
+                        Utils.Touch.Swipe Utils.Touch.Left x msg ->
                             { rendition | touches = touches, swipe = Just { offset = x } } ! []
 
                         Utils.Touch.None ->
@@ -60,6 +60,21 @@ update action rendition =
 
                               Nothing ->
                                 { rendition | touches = touches, menu = False } ! []
+
+                        _ ->
+                            { rendition | touches = touches, swipe = Nothing } ! []
+            in
+                updated ! []
+
+        Rendition.Tap te ->
+            let
+                touches =
+                    Debug.log "touches" (Utils.Touch.update te rendition.touches)
+
+                ( updated, cmd ) =
+                    case Utils.Touch.testEvent te touches of
+                        Utils.Touch.Tap msg ->
+                            update msg { rendition | touches = Utils.Touch.null }
 
                         _ ->
                             { rendition | touches = touches, swipe = Nothing } ! []

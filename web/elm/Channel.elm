@@ -6,6 +6,7 @@ import Input
 import Receiver
 import Rendition
 import Volume as V
+import Utils.Touch
 
 
 type alias Model =
@@ -19,6 +20,7 @@ type alias Model =
     , showAddReceiver : Bool
     , editName : Bool
     , editNameInput : Input.Model
+    , touches : Utils.Touch.Model
     }
 
 
@@ -58,6 +60,7 @@ type Msg
     | Rename String
     | Renamed String
     | ClearPlaylist
+    | Tap (Utils.Touch.E Msg)
     | NoOp
 
 

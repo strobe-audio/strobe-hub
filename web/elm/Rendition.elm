@@ -56,7 +56,8 @@ type Msg
     | PlayPause
     | SkipTo
     | Progress ProgressEvent
-    | Touch (Utils.Touch.E Msg)
+    | Swipe (Utils.Touch.E Msg)
+    | Tap (Utils.Touch.E Msg)
     | CloseMenu
     | Remove
 

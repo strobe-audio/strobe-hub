@@ -24,6 +24,10 @@ cover channel =
     let
         maybeRendition =
             List.head channel.playlist
+
+        mapTap a =
+            Html.Attributes.map Channel.Tap a
+
     in
         case maybeRendition of
             Nothing ->
@@ -32,8 +36,11 @@ cover channel =
                     ]
 
             Just rendition ->
-                div [ class "channel--rendition" ]
-                    [ Html.map (always Channel.PlayPause) (Rendition.View.cover rendition channel.playing)
+                div [ class "channel--rendition"
+                    , mapTap (Utils.Touch.touchStart Channel.PlayPause)
+                    , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
+                    ]
+                    [ Html.map (always Channel.NoOp) (Rendition.View.cover rendition channel.playing)
                     ]
 
 

@@ -72,6 +72,10 @@ update action model maybeChannelId =
               touches =
                 Debug.log "touches" (Utils.Touch.update te model.touches)
 
+              (updated_, cmd_) = case Utils.Touch.testEvent te touches of
+                  _ ->
+                    { model | touches = touches  } ! []
+
               -- change to click type
               (updated, cmd) = case Utils.Touch.isSingleClick te touches of
                 Nothing ->

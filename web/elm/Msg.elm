@@ -8,6 +8,7 @@ import Root
 import ID
 import Input
 import Navigation
+import Utils.Touch
 
 
 type Msg
@@ -35,3 +36,4 @@ type Msg
       -- events from browser
     | BrowserViewport Int
     | BrowserScroll Int
+    | SingleTouch (Utils.Touch.E Msg)

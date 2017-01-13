@@ -12,6 +12,7 @@ import Receiver
 import Rendition
 import ID
 import Input
+import Utils.Touch
 
 
 type alias Model =
@@ -25,6 +26,7 @@ type alias Model =
     , listMode : ChannelListMode
     , showPlaylistAndLibrary : Bool
     , library : Library.Model
+    , touches : Utils.Touch.Model
     }
 
 

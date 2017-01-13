@@ -15,7 +15,7 @@ import Receivers.View
 import Source.View
 import Json.Decode as Json
 import Msg exposing (Msg)
-import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
+import Utils.Touch exposing (onUnifiedClick)
 
 
 root : Root.Model -> Html Msg
@@ -89,6 +89,9 @@ currentChannelPlayer channel =
 libraryToggleView : Root.Model -> Channel.Model -> Html Msg
 libraryToggleView model channel =
     let
+        mapTouch a =
+            Html.Attributes.map Msg.SingleTouch a
+
         duration =
             Source.View.durationString (Channel.playlistDuration channel)
 
@@ -99,7 +102,8 @@ libraryToggleView model channel =
                     , ( "root--mode--choice__active", model.listMode == Root.PlaylistMode )
                     ]
                 , onClick (Msg.SetListMode Root.PlaylistMode)
-                , onSingleTouch (Msg.SetListMode Root.PlaylistMode)
+                , mapTouch (Utils.Touch.touchStart (Msg.SetListMode Root.PlaylistMode))
+                , mapTouch (Utils.Touch.touchEnd (Msg.SetListMode Root.PlaylistMode))
                 ]
                 -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
                 [ div [ class "root--mode--channel-name" ] [ text channel.name ]
@@ -114,7 +118,8 @@ libraryToggleView model channel =
                     , ( "root--mode--choice__active", model.listMode == Root.LibraryMode )
                     ]
                 , onClick (Msg.SetListMode Root.LibraryMode)
-                , onSingleTouch (Msg.SetListMode Root.LibraryMode)
+                , mapTouch (Utils.Touch.touchStart (Msg.SetListMode Root.LibraryMode))
+                , mapTouch (Utils.Touch.touchEnd (Msg.SetListMode Root.LibraryMode))
                 ]
                 [ text "Library" ]
             ]

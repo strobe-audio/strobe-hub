@@ -19,11 +19,11 @@ type Direction
     | Right
 
 
-type Gesture
+type Gesture msg
     = None
-    | Tap
-    | LongPress
-    | Swipe Direction Float
+    | Tap msg
+    | LongPress msg
+    | Swipe Direction Float msg
 
 type alias SwipeModel =
     { offset : Float
@@ -48,6 +48,10 @@ type alias Model =
     , end : Maybe T
     }
 
+
+null : Model
+null =
+    emptyModel
 
 emptyModel : Model
 emptyModel =
@@ -166,7 +170,7 @@ testSingleClick msg start end =
             Nothing
 
 
-testEvent : E msg -> Model -> Gesture
+testEvent : E msg -> Model -> Gesture msg
 testEvent event model =
     case event of
         Start touch msg ->
@@ -189,7 +193,7 @@ testEvent event model =
                       touch.clientY - start.clientY |> abs
               in
                   if (off >= min) && (dy < min) then
-                      (Swipe (directionOf dx) off)
+                      (Swipe (directionOf dx) off msg)
                   else
                       None
 
@@ -199,8 +203,31 @@ testEvent event model =
 
 
         End touch msg ->
-            None
             -- (Maybe.map2 (testSingleClick m) model.start model.end) |> Maybe.andThen (\x -> x)
+            case model.start of
+                Just start ->
+                    let
+                        min =
+                            50
+                        dx =
+                            touch.clientX - start.clientX
+
+                        dy =
+                            touch.clientY - start.clientY
+
+                        dd =
+                          (sqrt (dx * dx) + (dy * dy))
+
+                        tt =
+                          (touch.time - start.time)
+                    in
+                        if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
+                            Tap msg
+                        else
+                            None
+
+                Nothing ->
+                    None
 
 
 directionOf : Float -> Direction
