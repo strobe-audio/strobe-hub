@@ -29,6 +29,9 @@ defmodule Otis.Pipeline.Playlist do
   def replace(pid, renditions) do
     GenServer.cast(pid, {:replace, renditions})
   end
+  def remove(pid, id) when is_binary(id) do
+    GenServer.cast(pid, {:remove, id})
+  end
 
   defmodule S do
     @moduledoc false
@@ -83,6 +86,18 @@ defmodule Otis.Pipeline.Playlist do
     notify_skip(drop, state)
     notify_deletions(drop, state)
     {:noreply, %S{ state | renditions: keep, active: nil }}
+  end
+  def handle_cast({:remove, id}, state) do
+    {drop, keep} = state.renditions |> Enum.split_with(fn(r) -> r.id == id end)
+    notify_deletions(drop, state)
+    active = case state.active do
+      %Rendition{id: ^id} = a ->
+        notify_deletions([a], state)
+        nil
+      nil -> nil
+      a -> a
+    end
+    {:noreply, %S{ state | renditions: keep, active: active }}
   end
 
   defp notify_deletions(renditions, state) do

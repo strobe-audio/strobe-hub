@@ -118,6 +118,15 @@ defmodule Otis.ChannelTest do
 
   test "skipping renditions"
 
+  test "removing renditions", %{channel_id: channel_id} = context do
+    {:ok, pl} = Otis.Channel.playlist(context.channel)
+    :ok = Otis.Pipeline.Playlist.append(pl, TestSource.new)
+    {:ok, [rendition]} = Otis.Pipeline.Playlist.list(pl)
+    :ok = Otis.Channel.remove(context.channel, rendition.id)
+    rid = rendition.id
+    assert_receive {:rendition_deleted, [^rid, ^channel_id]}
+  end
+
   test "playback completion sets state & sends message", context do
     channel_id = context.channel_id
     {:ok, :play} = Otis.Channel.play_pause(context.channel)

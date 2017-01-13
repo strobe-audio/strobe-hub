@@ -101,6 +101,13 @@ defmodule Otis.Channel do
     GenServer.call(channel, {:append_sources, sources})
   end
 
+  def remove(%__MODULE__{pid: pid}, rendition_id) do
+    remove(pid, rendition_id)
+  end
+  def remove(channel, rendition_id) do
+    GenServer.call(channel, {:remove_rendition, rendition_id})
+  end
+
   def start_link(channel, config, name) do
     GenServer.start_link(__MODULE__, [channel, config], name: name)
   end
@@ -162,6 +169,11 @@ defmodule Otis.Channel do
 
   def handle_call({:append_sources, sources}, _from, state) do
     Playlist.append(state.playlist, sources)
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:remove_rendition, rendition_id}, _from, state) do
+    Playlist.remove(state.playlist, rendition_id)
     {:reply, :ok, state}
   end
 

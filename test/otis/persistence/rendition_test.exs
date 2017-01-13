@@ -187,4 +187,27 @@ defmodule Otis.Persistence.RenditionTest do
     {:ok, [rendition]} = Playlist.list(context.playlist)
     assert rendition.playback_duration == nil
   end
+
+  test "removing a rendition", context do
+    Playlist.append(context.playlist, [TestSource.new, TestSource.new])
+    {:ok, [_rendition1, rendition2]} = Playlist.list(context.playlist)
+    assert_receive {:new_rendition_created, _}
+    assert_receive {:new_rendition_created, _}
+    Playlist.remove(context.playlist, rendition2.id)
+    channel_id = context.channel.id
+    r2id = rendition2.id
+    assert_receive {:rendition_deleted, [^r2id, ^channel_id]}
+    assert nil == Otis.State.Rendition.find(rendition2.id)
+  end
+
+  test "removing the active rendition", context do
+    Playlist.append(context.playlist, [TestSource.new, TestSource.new])
+    assert_receive {:new_rendition_created, _}
+    assert_receive {:new_rendition_created, _}
+    {:ok, [rendition1, _rendition2]} = Playlist.list(context.playlist)
+    {:ok, _r} = Playlist.next(context.playlist)
+    Playlist.remove(context.playlist, rendition1.id)
+    assert_receive {:rendition_deleted, _}
+    assert nil == Otis.State.Rendition.find(rendition1.id)
+  end
 end

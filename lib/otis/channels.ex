@@ -103,6 +103,10 @@ defmodule Otis.Channels do
     Otis.Channel.skip(whereis_name(id), source_id)
   end
 
+  def remove(id, rendition_id) do
+    Otis.Channel.remove(whereis_name(id), rendition_id)
+  end
+
   def rename(id, name) when is_binary(id) do
     Otis.State.Events.notify({:channel_rename, [id, name]})
   end
