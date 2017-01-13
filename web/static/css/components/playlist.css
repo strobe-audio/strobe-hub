@@ -12,8 +12,9 @@
   height: $button-size;
   border-bottom: solid 1px #ddd;
   cursor: pointer;
-  display: flex;
+  position: relative;
 }
+
 .playlist--entry--image {
   width: $button-size;
   height: $button-size;
@@ -45,4 +46,56 @@
   &:before {
     color: #ddd;
   }
+}
+
+
+$menu-width: calc(2 * $button-size);
+
+.playlist--entry--menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #333;
+  z-index: 0;
+  justify-content: flex-end;
+}
+
+.playlist--entry .playlist--entry--menu {
+  display: none;
+}
+
+.playlist--entry__menu .playlist--entry--menu,
+.playlist--entry__swiping .playlist--entry--menu {
+  display: flex;
+}
+
+.playlist--entry--contents {
+  height: $button-size;
+  position: relative;
+  display: flex;
+  z-index: 1;
+  background-color: #fff;
+}
+
+
+.playlist--entry__menu .playlist--entry--contents {
+  left: -$menu-width;
+}
+
+.playlist--entry--menu__clear {
+  @mixin fa-btn "\f1f8";
+  color: #ccc;
+  width: $button-size;
+  height: $button-size;
+  background: rgba(255, 255, 255, 0.1);
+  &:hover {
+    color: red;
+    background: rgba(255, 0, 0, 0.4);
+  }
+}
+
+.playlist--entry__removing {
+  opacity: 0.2;
 }

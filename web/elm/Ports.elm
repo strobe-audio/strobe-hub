@@ -172,6 +172,9 @@ port channelClearPlaylist : ID.Channel -> Cmd msg
 port playlistSkipRequests : ( String, String ) -> Cmd msg
 
 
+port playlistRemoveRequests : ( String, String ) -> Cmd msg
+
+
 port addChannelRequests : String -> Cmd msg
 
 

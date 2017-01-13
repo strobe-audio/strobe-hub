@@ -121,6 +121,11 @@ app.ports.playlistSkipRequests.subscribe(event => {
   .receive("error", payload => console.log(payload.message))
 })
 
+app.ports.playlistRemoveRequests.subscribe(event => {
+  channel.push("remove_rendition", event)
+  .receive("error", payload => console.log(payload.message))
+})
+
 app.ports.attachReceiverRequests.subscribe(event => {
   channel.push("attach_receiver", event)
   .receive("error", payload => console.log(payload.message))

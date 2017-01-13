@@ -39,8 +39,13 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
-  def handle_in("skip_track", [channel_id, source_id], socket) do
-    Otis.Channels.skip channel_id, source_id
+  def handle_in("skip_track", [channel_id, rendition_id], socket) do
+    Otis.Channels.skip channel_id, rendition_id
+    {:noreply, socket}
+  end
+
+  def handle_in("remove_rendition", [channel_id, rendition_id], socket) do
+    Otis.Channels.remove channel_id, rendition_id
     {:noreply, socket}
   end
 

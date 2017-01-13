@@ -12,9 +12,6 @@ import Debug
 import Utils.Css
 import Utils.Text
 import Utils.Touch exposing (onSingleTouch)
-import Touch exposing (TouchEvent(..), Touch)
-import SingleTouch exposing (SingleTouch)
-import Json.Decode as Decode
 
 
 root : Library.Model -> Html Library.Msg

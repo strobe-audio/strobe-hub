@@ -12,6 +12,22 @@ import SingleTouch exposing (SingleTouch)
 import MultiTouch exposing (MultiTouch, onMultiTouch)
 import Json.Decode as Decode
 
+-- Only support left/right swipes (who swipes *up*!??)
+
+type Direction
+    = Left
+    | Right
+
+
+type Gesture
+    = None
+    | Tap
+    | LongPress
+    | Swipe Direction Float
+
+type alias SwipeModel =
+    { offset : Float
+    }
 
 type E msg
     = Start T msg
@@ -45,13 +61,13 @@ update : E msg -> Model -> Model
 update event model =
     case event of
         Start t m ->
-            updateTouchStart model t
+            { model | start = Just t, actual = Nothing, end = Nothing }
 
         Actual t m ->
-            updateTouchActual model t
+            { model | actual = Just t, end = Nothing }
 
         End t m ->
-            updateTouchEnd model t
+            { model | end = Just t }
 
 
 onSingleTouch : msg -> Html.Attribute msg
@@ -71,21 +87,6 @@ preventAndStop =
     { stopPropagation = True
     , preventDefault = True
     }
-
-
-updateTouchStart : Model -> T -> Model
-updateTouchStart model t =
-    { model | start = Just t }
-
-
-updateTouchActual : Model -> T -> Model
-updateTouchActual model t =
-    { model | actual = Just t }
-
-
-updateTouchEnd : Model -> T -> Model
-updateTouchEnd model t =
-    { model | end = Just t }
 
 
 singleClickDuration =
@@ -154,12 +155,57 @@ testSingleClick msg start end =
             end.clientY - start.clientY
 
         dd =
-            Debug.log "dd" (sqrt (dx * dx) + (dy * dy))
+            (sqrt (dx * dx) + (dy * dy))
 
         tt =
-            Debug.log "tt" (end.time - start.time)
+            (end.time - start.time)
     in
         if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
             Debug.log "single click event" (Just msg)
         else
             Nothing
+
+
+testEvent : E msg -> Model -> Gesture
+testEvent event model =
+    case event of
+        Start touch msg ->
+            None
+
+        -- this could return e.g. long-click or swipe events
+        Actual touch msg ->
+          case model.start of
+            Just start ->
+              let
+                  min =
+                      50
+                  dx =
+                      (touch.clientX - start.clientX)
+
+                  off =
+                      abs dx
+
+                  dy =
+                      touch.clientY - start.clientY |> abs
+              in
+                  if (off >= min) && (dy < min) then
+                      (Swipe (directionOf dx) off)
+                  else
+                      None
+
+
+            Nothing ->
+              None
+
+
+        End touch msg ->
+            None
+            -- (Maybe.map2 (testSingleClick m) model.start model.end) |> Maybe.andThen (\x -> x)
+
+
+directionOf : Float -> Direction
+directionOf dx =
+    if dx < 0 then
+        Left
+    else
+        Right

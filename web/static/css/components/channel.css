@@ -1,5 +1,7 @@
 .channel--playlist {
   background: #fff;
+  overflow: hidden;
+  width: 100vw;
 }
 .channel--rendition {
   flex: 1;

@@ -10,6 +10,7 @@ import Utils.Css
 import Progress
 import Debug
 import Utils.Touch exposing (onSingleTouch)
+import Utils.Css
 
 
 player : Rendition.Model -> Bool -> Html Rendition.Msg
@@ -108,23 +109,69 @@ playlist rendition =
 
         coverImage =
             source.cover_image
+
+        mapTouch a =
+            Html.Attributes.map Rendition.Touch a
+
+        (swiping, entryStyle) = case rendition.swipe of
+            Just swipe ->
+                ( True
+                , [("left", Utils.Css.px -swipe.offset)]
+                )
+
+            Nothing ->
+                ( False
+                , []
+                )
+        menu =
+            if swiping || rendition.menu then
+                [ div
+                    [ class "playlist--entry--menu__clear"
+                    , onClick Rendition.Remove
+                    , onSingleTouch Rendition.Remove
+                    ]
+                    []
+                ]
+            else
+                []
   in
     div
-        [ class "block playlist--entry"
-        , onDoubleClick Rendition.SkipTo
-        ]
-        [ div [ class "playlist--entry--image", style [("backgroundImage", "url(" ++ coverImage ++")")] ] []
-        , div [ class "playlist--entry--inner" ]
-            [ div [ class "playlist--entry--title" ]
-                [ strong [] [ text (renditionTitle rendition) ] ]
-            , div [ class "playlist--entry--album" ]
-                [ strong []
-                    [ text (renditionPerformer rendition) ]
-                , text ", "
-                , text (renditionAlbum rendition)
-                ]
+        [ classList
+            [ ("playlist--entry", True)
+            , ("playlist--entry__menu" , rendition.menu)
+            , ("playlist--entry__swiping" , swiping)
+            , ("playlist--entry__removing" , rendition.removeInProgress)
             ]
-        , div [ class "playlist--entry--skip", onClick Rendition.SkipTo, onSingleTouch Rendition.SkipTo ] []
+        , onDoubleClick Rendition.SkipTo
+        , mapTouch (Utils.Touch.touchStart Rendition.NoOp)
+        , mapTouch (Utils.Touch.touchMove Rendition.NoOp)
+        , mapTouch (Utils.Touch.touchEnd Rendition.NoOp)
+        ]
+        [ div
+            [ class "playlist--entry--contents"
+            , style entryStyle
+            , onClick Rendition.CloseMenu
+            ]
+            [ div [ class "playlist--entry--image", style [("backgroundImage", "url(" ++ coverImage ++")")] ] []
+            , div [ class "playlist--entry--inner" ]
+                [ div [ class "playlist--entry--title" ]
+                    [ strong [] [ text (renditionTitle rendition) ] ]
+                , div [ class "playlist--entry--album" ]
+                    [ strong []
+                        [ text (renditionPerformer rendition) ]
+                    , text ", "
+                    , text (renditionAlbum rendition)
+                    ]
+                ]
+            , div
+                [ class "playlist--entry--skip"
+                , onClick Rendition.SkipTo
+                , onSingleTouch Rendition.SkipTo
+                ]
+                []
+            ]
+        , div
+            [ class "playlist--entry--menu" ] menu
         ]
 
 

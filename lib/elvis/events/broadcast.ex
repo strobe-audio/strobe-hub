@@ -84,6 +84,11 @@ defmodule Elvis.Events.Broadcast do
     {:ok, %{state | progress_count: Map.put(state.progress_count, channel_id, count)}}
   end
 
+  def handle_event({:rendition_deleted, [rendition_id, channel_id]}, state) do
+    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [rendition_id]})
+    {:ok, state}
+  end
+
   def handle_event({:channel_play_pause, [channel_id, status]}, state) do
     broadcast!("channel_play_pause", %{channelId: channel_id, status: status})
     {:ok, state}

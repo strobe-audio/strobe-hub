@@ -23,7 +23,7 @@ initialState : BroadcasterState -> Channel.State -> Channel.Model
 initialState broadcasterState channelState =
     let
         renditions =
-            forChannel channelState.id broadcasterState.renditions
+            (List.map Rendition.State.initialState (forChannel channelState.id broadcasterState.renditions))
 
         model =
             newChannel channelState

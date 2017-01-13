@@ -1,6 +1,7 @@
 module Rendition exposing (..)
 
 import ID
+import Utils.Touch
 
 
 type alias Source =
@@ -27,7 +28,7 @@ type alias Source =
     }
 
 
-type alias Model =
+type alias State =
     { id : ID.Rendition
     , position : Int
     , playbackPosition : Int
@@ -36,12 +37,28 @@ type alias Model =
     , source : Source
     }
 
+type alias Model =
+    { id : ID.Rendition
+    , position : Int
+    , playbackPosition : Int
+    , sourceId : String
+    , channelId : String
+    , source : Source
+    , touches : Utils.Touch.Model
+    , swipe : Maybe Utils.Touch.SwipeModel
+    , menu : Bool
+    , removeInProgress : Bool
+    }
+
 
 type Msg
     = NoOp
     | PlayPause
     | SkipTo
     | Progress ProgressEvent
+    | Touch (Utils.Touch.E Msg)
+    | CloseMenu
+    | Remove
 
 
 type alias ProgressEvent =
