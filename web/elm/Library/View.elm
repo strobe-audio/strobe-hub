@@ -14,8 +14,8 @@ import Utils.Text
 import Utils.Touch exposing (onSingleTouch)
 import Touch exposing (TouchEvent(..), Touch)
 import SingleTouch exposing (SingleTouch)
-
 import Json.Decode as Decode
+
 
 root : Library.Model -> Html Library.Msg
 root model =
@@ -77,40 +77,27 @@ node library folder node =
 
         click msg =
             onWithOptions "click" options (Json.succeed msg)
+
+        mapTouch a =
+            Html.Attributes.map Library.Touch a
     in
         div
-            ([ classList
+            [ classList
                 [ ( "library--node", True )
                 , ( "library--node__active", isActive )
                 , ( "library--click-action", True )
                 ]
             , onClick (Library.ExecuteAction node.actions.click)
-            , Html.Events.onWithOptions
-                "touchstart"
-                { stopPropagation = False , preventDefault = False }
-                (Decode.map3
-                  (\x y t -> Library.Touch (Utils.Touch.Start { clientX = x, clientY = y, time = t }))
-                  (Decode.at ["touches", "0", "clientX"] Decode.float)
-                  (Decode.at ["touches", "0", "clientY"] Decode.float)
-                  (Decode.field "timeStamp" Decode.int)
-                )
-            , Html.Events.onWithOptions
-                "touchend"
-                Utils.Touch.preventAndStop
-                (Decode.map3
-                  (\x y t -> Library.Touch (Utils.Touch.End { clientX = x, clientY = y, time = t } (Library.ExecuteAction node.actions.click)))
-                  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
-                  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
-                  (Decode.field "timeStamp" Decode.int)
-                )
-            -- , SingleTouch.onSingleTouch TouchEnd Touch.preventAndStop (always (Library.ExecuteAction node.actions.click))
-            ]) -- ++ (Utils.Touch.onSingleTouchWithoutScroll Library.Touch (Library.ExecuteAction node.actions.click)))
+            , mapTouch (Utils.Touch.touchStart (Library.ExecuteAction node.actions.click))
+            , mapTouch (Utils.Touch.touchEnd (Library.ExecuteAction node.actions.click))
+            ]
             [ div
-                ([ class "library--node--icon"
+                [ class "library--node--icon"
                 , style [ ( "backgroundImage", (Utils.Css.url node.icon) ) ]
                 , click (Library.MaybeExecuteAction node.actions.play)
-
-                ]) -- ++ (Utils.Touch.onSingleTouchWithoutScroll Library.Touch (Library.MaybeExecuteAction node.actions.play)))
+                , mapTouch (Utils.Touch.touchStart (Library.MaybeExecuteAction node.actions.play))
+                , mapTouch (Utils.Touch.touchEnd (Library.MaybeExecuteAction node.actions.play))
+                ]
                 []
             , div [ class "library--node--inner" ]
                 [ div []
@@ -162,14 +149,14 @@ breadcrumb model folder =
         list =
             dividers (List.reverse list_)
 
-        dropdownEmpty = if List.isEmpty dropdown_ then
-            True
-          else
-            False
-
+        dropdownEmpty =
+            if List.isEmpty dropdown_ then
+                True
+            else
+                False
     in
         div [ class "library--breadcrumb" ]
-            [ div [ classList [("library--breadcrumb--dropdown", True), ("library--breadcrumb--dropdown__empty", dropdownEmpty)] ] dropdown
+            [ div [ classList [ ( "library--breadcrumb--dropdown", True ), ( "library--breadcrumb--dropdown__empty", dropdownEmpty ) ] ] dropdown
               -- , span [ class "library--breadcrumb--divider" ] []
             , div [ class "library--breadcrumb--sections" ] list
             ]
