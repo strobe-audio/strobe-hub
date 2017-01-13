@@ -26,7 +26,7 @@ defmodule Otis.State.Persistence.Configuration do
     Setting.namespace(key) |> send_configuration(key, receiver)
   end
 
-  defp send_configuration(:error, key, receiver), do: nil
+  defp send_configuration(:error, _key, _receiver), do: nil
   defp send_configuration({:ok, settings}, key, receiver) do
     Otis.Receiver.configure(receiver, %{ key => settings })
   end

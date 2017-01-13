@@ -175,7 +175,7 @@ defmodule Otis.Pipeline.Broadcaster do
     state
   end
 
-  defp monitor_rendition(state, played, [] = _unplayed) do
+  defp monitor_rendition(state, _played, [] = _unplayed) do
     Otis.State.Events.notify({:rendition_changed, [state.id, state.rendition_id, nil]})
     %S{ state | rendition_id: nil }
   end
