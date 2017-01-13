@@ -120,9 +120,13 @@ defmodule Otis.Receiver do
   def matches_pid?({id, receiver}, pid) when is_binary(id) do
     matches_pid?(receiver, pid)
   end
-  def matches_pid?(%R{data: {dpid, _}, ctrl: {cpid, _}, latch: lpid}, pid) do
-    (dpid == pid) || (cpid == pid) || (lpid == pid)
+  def matches_pid?(%R{data: data, ctrl: ctrl, latch: lpid}, pid) do
+    _match_pid?(data, pid) || _match_pid?(ctrl, pid) || _match_pid?(lpid, pid)
   end
+  def _match_pid?(nil, _pid), do: false
+  def _match_pid?({cpid, _}, pid), do: _match_pid?(cpid, pid)
+  def _match_pid?(cpid, pid) when is_pid(cpid), do: cpid == pid
+  def _match_pid?(_, _), do: false
 
   @doc ~S"""
   Set the volume and multiplier simultaneously.
