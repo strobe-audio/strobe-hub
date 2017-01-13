@@ -15,6 +15,7 @@ import Receivers.View
 import Source.View
 import Json.Decode as Json
 import Msg exposing (Msg)
+import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
 
 
 root : Root.Model -> Html Msg
@@ -78,7 +79,7 @@ controlBar model =
 
 channelSettingsButton : Root.Model -> Html Msg
 channelSettingsButton model =
-    div [ class "root--channel-select", onClick Msg.ToggleChannelSelector {- , onTouch -} ]
+    div ([ class "root--channel-select" ] ++ (onUnifiedClick Msg.ToggleChannelSelector))
         [ i [ class "fa fa-bullseye" ] [] ]
 
 currentChannelPlayer : Channel.Model -> Html Msg
@@ -98,6 +99,7 @@ libraryToggleView model channel =
                     , ( "root--mode--choice__active", model.listMode == Root.PlaylistMode )
                     ]
                 , onClick (Msg.SetListMode Root.PlaylistMode)
+                , onSingleTouch (Msg.SetListMode Root.PlaylistMode)
                 ]
                 -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
                 [ div [ class "root--mode--channel-name" ] [ text channel.name ]
@@ -112,6 +114,7 @@ libraryToggleView model channel =
                     , ( "root--mode--choice__active", model.listMode == Root.LibraryMode )
                     ]
                 , onClick (Msg.SetListMode Root.LibraryMode)
+                , onSingleTouch (Msg.SetListMode Root.LibraryMode)
                 ]
                 [ text "Library" ]
             ]

@@ -43,7 +43,8 @@ $volume-height: $button-size;
   left: 0;
   top: 0;
   z-index: 0;
-  /* disable mouse events */
+  /* disable mouse & touch events */
+  pointer-events: none;
 }
 
 .volume-label {
@@ -57,6 +58,11 @@ $volume-height: $button-size;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  /* disable mouse events */
+  /* disable mouse & touch events */
+  pointer-events: none;
 }
 
+.volume-label * {
+  /* disable mouse & touch events */
+  pointer-events: none;
+}

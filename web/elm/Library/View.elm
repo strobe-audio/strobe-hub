@@ -11,7 +11,11 @@ import String
 import Debug
 import Utils.Css
 import Utils.Text
+import Utils.Touch exposing (onSingleTouch)
+import Touch exposing (TouchEvent(..), Touch)
+import SingleTouch exposing (SingleTouch)
 
+import Json.Decode as Decode
 
 root : Library.Model -> Html Library.Msg
 root model =
@@ -29,13 +33,15 @@ metadata metadata =
             div [ class "library--node--metadata" ] (List.map (metadataGroup) metadataGroups)
 
 
-metadataClick : String -> Html.Attribute Library.Msg
+metadataClick : String -> List (Html.Attribute Library.Msg)
 metadataClick action =
     let
         options =
             { preventDefault = True, stopPropagation = True }
     in
-        onWithOptions "click" options (Json.succeed (Library.ExecuteAction action))
+        [ onWithOptions "click" options (Json.succeed (Library.ExecuteAction action))
+        , onSingleTouch (Library.ExecuteAction action)
+        ]
 
 
 metadataGroup : Library.Metadata -> Html Library.Msg
@@ -49,7 +55,7 @@ metadataGroup group =
                             [ class "library--no-action" ]
 
                         Just action ->
-                            [ class "library--click-action", (metadataClick action) ]
+                            ([ class "library--click-action" ] ++ (metadataClick action))
             in
                 (a attrs [ text link.title ])
 
@@ -73,18 +79,38 @@ node library folder node =
             onWithOptions "click" options (Json.succeed msg)
     in
         div
-            [ classList
+            ([ classList
                 [ ( "library--node", True )
                 , ( "library--node__active", isActive )
                 , ( "library--click-action", True )
                 ]
             , onClick (Library.ExecuteAction node.actions.click)
-            ]
+            , Html.Events.onWithOptions
+                "touchstart"
+                { stopPropagation = False , preventDefault = False }
+                (Decode.map3
+                  (\x y t -> Library.Touch (Utils.Touch.Start { clientX = x, clientY = y, time = t }))
+                  (Decode.at ["touches", "0", "clientX"] Decode.float)
+                  (Decode.at ["touches", "0", "clientY"] Decode.float)
+                  (Decode.field "timeStamp" Decode.int)
+                )
+            , Html.Events.onWithOptions
+                "touchend"
+                Utils.Touch.preventAndStop
+                (Decode.map3
+                  (\x y t -> Library.Touch (Utils.Touch.End { clientX = x, clientY = y, time = t } (Library.ExecuteAction node.actions.click)))
+                  (Decode.at ["changedTouches", "0", "clientX"] Decode.float)
+                  (Decode.at ["changedTouches", "0", "clientY"] Decode.float)
+                  (Decode.field "timeStamp" Decode.int)
+                )
+            -- , SingleTouch.onSingleTouch TouchEnd Touch.preventAndStop (always (Library.ExecuteAction node.actions.click))
+            ]) -- ++ (Utils.Touch.onSingleTouchWithoutScroll Library.Touch (Library.ExecuteAction node.actions.click)))
             [ div
-                [ class "library--node--icon"
+                ([ class "library--node--icon"
                 , style [ ( "backgroundImage", (Utils.Css.url node.icon) ) ]
                 , click (Library.MaybeExecuteAction node.actions.play)
-                ]
+
+                ]) -- ++ (Utils.Touch.onSingleTouchWithoutScroll Library.Touch (Library.MaybeExecuteAction node.actions.play)))
                 []
             , div [ class "library--node--inner" ]
                 [ div []
@@ -102,7 +128,7 @@ folder model folder =
                 div [] []
             else
                 div [ class "block-group library-contents" ] (List.map (node model folder) folder.children)
-    in Debug.log (" folder " ++ (toString folder))
+    in
         div []
             [ (breadcrumb model folder)
             , children
@@ -113,7 +139,12 @@ breadcrumb : Library.Model -> Library.Folder -> Html Library.Msg
 breadcrumb model folder =
     let
         breadcrumbLink classes index level =
-            a [ class classes, onClick (Library.PopLevel (index)) ] [ text level.title ]
+            a
+                [ class classes
+                , onClick (Library.PopLevel (index))
+                , onSingleTouch (Library.PopLevel (index))
+                ]
+                [ text level.title ]
 
         sections =
             (model.levels)

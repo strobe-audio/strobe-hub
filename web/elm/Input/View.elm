@@ -5,6 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
 import Input
+import Utils.Touch exposing (onSingleTouch)
 
 
 inputSubmitCancel : Input.Model -> Html Input.Msg
@@ -13,13 +14,13 @@ inputSubmitCancel model =
         valid =
             model.validator model.value
 
-        submit =
+        clickSubmit =
             onWithOptions
                 "click"
                 { defaultOptions | stopPropagation = True }
                 (Json.succeed Input.Submit)
 
-        cancel =
+        clickCancel =
             onWithOptions
                 "click"
                 { defaultOptions | stopPropagation = True }
@@ -39,10 +40,11 @@ inputSubmitCancel model =
                 []
             , div
                 [ classList [ ( "input--submit", True ), ( "input--submit__valid", valid ) ]
-                , submit
+                , clickSubmit
+                , onSingleTouch Input.Submit
                 ]
                 []
-            , div [ class "input--cancel", cancel ] []
+            , div [ class "input--cancel", clickCancel, onSingleTouch Input.Cancel ] []
             ]
 
 

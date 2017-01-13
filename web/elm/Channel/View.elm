@@ -16,6 +16,7 @@ import Rendition
 import Rendition.View
 import Receiver
 import Receiver.View
+import Utils.Touch exposing (onSingleTouch)
 
 
 cover : Channel.Model -> Html Channel.Msg
@@ -80,6 +81,7 @@ playlist channel =
                     , div
                         [ class "channel--playlist-actions--clear"
                         , onClick (Channel.ClearPlaylist)
+                        , onSingleTouch (Channel.ClearPlaylist)
                         ]
                         []
                     ]

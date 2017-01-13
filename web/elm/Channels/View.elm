@@ -24,6 +24,7 @@ import Input
 import Input.View
 import Source.View
 import Msg exposing (Msg)
+import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
 
 
 channels : Root.Model -> Html Msg
@@ -98,6 +99,7 @@ channelSelectorPanel model activeChannel =
                                 , ( "channels--add-btn__active", model.showAddChannel )
                                 ]
                             , onClick Msg.ToggleAddChannel
+                            , onSingleTouch Msg.ToggleAddChannel
                             ]
                             []
                         ]
@@ -111,7 +113,7 @@ channelSelectorPanel model activeChannel =
                             ]
                         ]
                     ]
-                    , div [ class "channels--toggle", onMouseDown Msg.ToggleChannelSelector ] []
+                    , div ([ class "channels--toggle" ]  ++ (onUnifiedClick Msg.ToggleChannelSelector)) []
                     ]
 
 
@@ -122,7 +124,9 @@ addChannelPanel model =
             div [] []
 
         True ->
-            Html.map Msg.AddChannelInput (Input.View.inputSubmitCancel model.newChannelInput)
+          div [class "channels--add-channel-input"]
+              [ Html.map Msg.AddChannelInput (Input.View.inputSubmitCancel model.newChannelInput)
+              ]
 
 
 channelChoice : List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
@@ -143,7 +147,7 @@ channelChoice receivers activeChannel channelSummary =
                     Source.View.durationString time
 
         onClickChoose =
-            onClick (Msg.ActivateChannel channel)
+            onUnifiedClick (Msg.ActivateChannel channel)
 
         onClickEdit =
             onWithOptions "click"
@@ -171,23 +175,21 @@ channelChoice receivers activeChannel channelSummary =
                 ]
             ]
             [ div
-                [ classList
+                ([ classList
                     [ ( "channels-selector--display", True )
                     , ( "channels-selector--display__inactive", channel.editName )
                     ]
-                , onClickChoose
-                ]
-                [ div [ class "channels-selector--channel--name", onClickChoose ] [ text channel.name ]
-                , div [ class "channels-selector--channel--duration duration", onClickChoose ] [ text duration ]
+                ] ++ onClickChoose)
+                [ div ([ class "channels-selector--channel--name" ] ++ onClickChoose) [ text channel.name ]
+                , div ([ class "channels-selector--channel--duration duration" ] ++ onClickChoose) [ text duration ]
                 , div
-                    [ classList
+                    ([ classList
                         [ ( "channels-selector--channel--receivers", True )
                         , ( "channels-selector--channel--receivers__empty", channelSummary.receiverCount == 0 )
                         ]
-                    , onClickChoose
-                    ]
+                    ] ++ onClickChoose)
                     [ text (toString channelSummary.receiverCount) ]
-                , div [ class "channels-selector--channel--edit", onClickEdit ] []
+                , div [ class "channels-selector--channel--edit", onClickEdit, onSingleTouch (Msg.Channel channelSummary.id (Channel.ShowEditName True)) ] []
                 ]
             , div
                 [ classList

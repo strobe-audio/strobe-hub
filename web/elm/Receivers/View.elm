@@ -14,6 +14,7 @@ import Receiver
 import Receiver.View
 import Root
 import Msg exposing (Msg)
+import Utils.Touch exposing (onSingleTouch)
 
 
 receivers : Root.Model -> Channel.Model -> Html Msg
@@ -71,7 +72,7 @@ receivers model channel =
                                 )
     in
         div [ class "receivers" ]
-            [ div [ class "receivers--head", onClick action ]
+            [ div [ class "receivers--head", onClick action, onSingleTouch action ]
                 ((div [ class "receivers--title" ] [ text (count ++ "/" ++ (toString (List.length model.receivers)) ++ " Receivers") ]) :: addButton)
             , div [ class "receivers--list" ] receiverList
             ]

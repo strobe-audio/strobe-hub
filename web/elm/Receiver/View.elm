@@ -15,6 +15,7 @@ import Receiver
 import Channel
 import Volume.View
 import Input.View
+import Utils.Touch exposing (onSingleTouch)
 
 
 receiverClasses : Receiver.Model -> Bool -> List ( String, Bool )
@@ -49,7 +50,12 @@ attached receiver channel =
                     [ Html.map Receiver.Volume (Volume.View.control receiver.volume (text receiver.name))
                     ]
                 , div [ class "receiver--action" ]
-                    [ div [ class "receiver--action__edit", onClickEdit ] []
+                    [ div
+                        [ class "receiver--action__edit"
+                        , onClickEdit
+                        , onSingleTouch (Receiver.ShowEditName True)
+                        ]
+                        []
                     ]
                 ]
             , div
@@ -67,6 +73,7 @@ detached receiver channel =
     div
         [ classList (receiverClasses receiver False)
         , onClick (Receiver.Attach channel.id)
+        , onSingleTouch (Receiver.Attach channel.id)
         ]
         [ div [ class "receiver--state receiver--state__detached" ] []
         , div [ class "receiver--name" ] [ text receiver.name ]

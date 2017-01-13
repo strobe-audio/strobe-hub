@@ -65,3 +65,6 @@
   left: 0;
   display: block;
 }
+.receiver--edit .input .input--input {
+  max-width: calc(100vw - (3 * $button-size));
+}

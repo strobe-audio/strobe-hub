@@ -250,6 +250,11 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   }
 }
 
+.channels--add-channel-input .input .input--input,
+.channels-selector--edit .input .input--input {
+  max-width: calc(100vw - (3 * $button-size));
+}
+
 @media (--desktop) {
   .channels {
     width: $channel-column-width;

@@ -1,5 +1,6 @@
 module Library exposing (..)
 
+import Utils.Touch
 
 type Msg
     = NoOp
@@ -8,6 +9,7 @@ type Msg
     | Response Folder
     | PopLevel Int
     | ActionComplete
+    | Touch (Utils.Touch.E Msg)
 
 
 
@@ -132,6 +134,7 @@ type alias Node =
 type alias Model =
     { levels : List Folder
     , currentRequest : Maybe String
+    , touches : Utils.Touch.Model
     }
 
 

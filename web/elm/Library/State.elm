@@ -4,6 +4,8 @@ import ID
 import Library
 import Library.Cmd
 import Time exposing (millisecond)
+import Debug
+import Utils.Touch
 
 
 initialState : Library.Model
@@ -14,6 +16,7 @@ initialState =
     in
         { levels = [ root ]
         , currentRequest = Nothing
+        , touches = Utils.Touch.emptyModel
         }
 
 
@@ -63,6 +66,23 @@ update action model maybeChannelId =
 
         Library.PopLevel index ->
             ( { model | levels = List.drop index model.levels }, Cmd.none )
+
+        Library.Touch te ->
+          let
+              touches =
+                Debug.log "touches" (Utils.Touch.update te model.touches)
+
+              -- change to click type
+              (updated, cmd) = case Utils.Touch.isSingleClick te touches of
+                Nothing ->
+                  { model | touches = touches  } ! []
+
+                Just msg ->
+                  update msg { model | touches = Utils.Touch.emptyModel } maybeChannelId
+
+
+          in
+                (updated, cmd)
 
 
 currentLevel : Library.Model -> Library.Folder

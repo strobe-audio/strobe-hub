@@ -9,6 +9,7 @@ import Source.View
 import Utils.Css
 import Progress
 import Debug
+import Utils.Touch exposing (onSingleTouch)
 
 
 player : Rendition.Model -> Bool -> Html Rendition.Msg
@@ -37,7 +38,7 @@ player rendition playing =
                     div [ class "rendition--meta--detail rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration source) ++ ")") ]
     in
         div [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ] ]
-            [ div [ class "rendition--control", onClick Rendition.PlayPause ]
+            [ div [ class "rendition--control", onClick Rendition.PlayPause, onSingleTouch Rendition.PlayPause ]
                 [ -- div [ class "rendition--play-pause-btn", style [ ( "backgroundImage", (Utils.Css.url coverImage) ) ] ]
                   --   []
                   div [ class "rendition--details" ]
@@ -66,7 +67,7 @@ cover rendition playing =
     in
         div [ id rendition.id, class "rendition" ]
             [ div [ classList [ ( "rendition--cover", True ), ( "rendition--cover__playing", playing ) ] ]
-                [ img [ src coverImage, alt "", onClick Rendition.PlayPause ] []
+                [ img [ src coverImage, alt "", onClick Rendition.PlayPause, onSingleTouch Rendition.PlayPause ] []
                 ]
             ]
 
@@ -123,7 +124,7 @@ playlist rendition =
                 , text (renditionAlbum rendition)
                 ]
             ]
-        , div [ class "playlist--entry--skip", onClick Rendition.SkipTo ] []
+        , div [ class "playlist--entry--skip", onClick Rendition.SkipTo, onSingleTouch Rendition.SkipTo ] []
         ]
 
 
