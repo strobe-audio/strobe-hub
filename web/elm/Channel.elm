@@ -54,7 +54,7 @@ type Msg
     | ShowAddReceiver Bool
     | RenditionProgress Rendition.ProgressEvent
     | RenditionChange Rendition.ChangeEvent
-    | AddRendition Rendition.Model
+    | AddRendition Rendition.State
     | ShowEditName Bool
     | EditName Input.Msg
     | Rename String

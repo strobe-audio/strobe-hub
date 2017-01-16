@@ -98,7 +98,7 @@ volumeChangeActions =
     volumeChange Msg.BroadcasterVolumeChange
 
 
-port playlistAddition : (Rendition.Model -> m) -> Sub m
+port playlistAddition : (Rendition.State -> m) -> Sub m
 
 
 playListAdditionActions : Sub Msg

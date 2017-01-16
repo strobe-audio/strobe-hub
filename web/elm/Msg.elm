@@ -32,7 +32,7 @@ type Msg
     | BroadcasterReceiverRenamed ( ID.Receiver, String )
     | BroadcasterLibraryRegistration Library.Node
     | BroadcasterVolumeChange Root.VolumeChangeEvent
-    | BroadcasterRenditionAdded Rendition.Model
+    | BroadcasterRenditionAdded Rendition.State
       -- events from browser
     | BrowserViewport Int
     | BrowserScroll Int

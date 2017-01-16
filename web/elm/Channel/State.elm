@@ -123,13 +123,16 @@ update action channel =
             in
                 ( updatedChannel, Cmd.none )
 
-        Channel.AddRendition rendition ->
+        Channel.AddRendition renditionState ->
             let
                 before =
-                    List.take rendition.position channel.playlist
+                    List.take renditionState.position channel.playlist
+
+                model =
+                    Rendition.State.initialState renditionState
 
                 after =
-                    rendition :: (List.drop rendition.position channel.playlist)
+                     model :: (List.drop renditionState.position channel.playlist)
 
                 playlist =
                     List.concat [ before, after ]
