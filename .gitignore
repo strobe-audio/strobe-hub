@@ -24,3 +24,4 @@ priv/static/css/*
 
 rel
 priv/static
+.tool-versions*
