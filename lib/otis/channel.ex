@@ -188,6 +188,7 @@ defmodule Otis.Channel do
   end
 
   def handle_cast(:clear, state) do
+    Playlist.clear(state.playlist)
     {:noreply, state}
   end
 

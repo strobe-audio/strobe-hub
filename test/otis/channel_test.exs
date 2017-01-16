@@ -135,4 +135,14 @@ defmodule Otis.ChannelTest do
     send pid, :broadcaster_stop
     assert_receive {:channel_play_pause, [^channel_id, :pause]}
   end
+
+  test "clearing playlist", context do
+    channel_id = context.channel_id
+    {:ok, pl} = Otis.Channel.playlist(context.channel)
+    :ok = Otis.Pipeline.Playlist.append(pl, TestSource.new)
+    {:ok, [rendition]} = Otis.Pipeline.Playlist.list(pl)
+    :ok = Otis.Channel.clear(context.channel)
+    rid = rendition.id
+    assert_receive {:rendition_deleted, [^rid, ^channel_id]}
+  end
 end
