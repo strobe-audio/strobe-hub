@@ -4,7 +4,14 @@ import Elm from 'Main'
 
 let app = Elm.Main.embed(document.getElementById('elm-main'))
 
-let socket = new Socket("/controller", {params: {}})
+let socketOpts = {
+  params: {},
+  // reconnect attempt every half second. this is sensible/safe behaviour for
+  // an app that expects < 5 simultaneous connections
+  reconnectAfterMs: () => 500,
+  heartbeatIntervalMs: 1000,
+}
+let socket = new Socket("/controller", socketOpts)
 
 socket.connect();
 
