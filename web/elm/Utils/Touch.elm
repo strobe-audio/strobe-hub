@@ -177,34 +177,31 @@ testEvent event model =
 
         -- this could return e.g. long-click or swipe events
         Actual touch msg ->
-          case model.start of
-            Just start ->
-              let
-                  min =
-                      50
-                  dx =
-                      (touch.clientX - start.clientX)
+            Maybe.andThen
+                (\start ->
+                    let
+                        min =
+                            50
+                        dx =
+                            (touch.clientX - start.clientX)
 
-                  off =
-                      abs dx
+                        off =
+                            abs dx
 
-                  dy =
-                      touch.clientY - start.clientY |> abs
-              in
-                  if (off >= min) && (dy < min) then
-                      Just (Swipe (directionOf dx) off msg)
-                  else
-                      Nothing
-
-
-            Nothing ->
-              Nothing
+                        dy =
+                            touch.clientY - start.clientY |> abs
+                    in
+                        if (off >= min) && (dy < min) then
+                            Just (Swipe (directionOf dx) off msg)
+                        else
+                            Nothing
+                )
+                model.start
 
 
         End touch msg ->
-            -- (Maybe.map2 (testSingleClick m) model.start model.end) |> Maybe.andThen (\x -> x)
-            case model.start of
-                Just start ->
+            Maybe.andThen
+                (\start ->
                     let
                         min =
                             50
@@ -224,9 +221,8 @@ testEvent event model =
                             Just (Tap msg)
                         else
                             Nothing
-
-                Nothing ->
-                    Nothing
+                )
+                model.start
 
 
 directionOf : Float -> Direction
