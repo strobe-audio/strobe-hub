@@ -20,8 +20,7 @@ type Direction
 
 
 type Gesture msg
-    = None
-    | Tap msg
+    = Tap msg
     | LongPress msg
     | Swipe Direction Float msg
 
@@ -170,11 +169,11 @@ testSingleClick msg start end =
             Nothing
 
 
-testEvent : E msg -> Model -> Gesture msg
+testEvent : E msg -> Model -> Maybe (Gesture msg)
 testEvent event model =
     case event of
         Start touch msg ->
-            None
+            Nothing
 
         -- this could return e.g. long-click or swipe events
         Actual touch msg ->
@@ -193,13 +192,13 @@ testEvent event model =
                       touch.clientY - start.clientY |> abs
               in
                   if (off >= min) && (dy < min) then
-                      (Swipe (directionOf dx) off msg)
+                      Just (Swipe (directionOf dx) off msg)
                   else
-                      None
+                      Nothing
 
 
             Nothing ->
-              None
+              Nothing
 
 
         End touch msg ->
@@ -222,12 +221,12 @@ testEvent event model =
                           (touch.time - start.time)
                     in
                         if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
-                            Tap msg
+                            Just (Tap msg)
                         else
-                            None
+                            Nothing
 
                 Nothing ->
-                    None
+                    Nothing
 
 
 directionOf : Float -> Direction

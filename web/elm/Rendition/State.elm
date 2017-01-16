@@ -50,10 +50,10 @@ update action rendition =
 
                 ( updated, cmd ) =
                     case Utils.Touch.testEvent te touches of
-                        Utils.Touch.Swipe Utils.Touch.Left x msg ->
+                        Just (Utils.Touch.Swipe Utils.Touch.Left x msg) ->
                             { rendition | touches = touches, swipe = Just { offset = x } } ! []
 
-                        Utils.Touch.None ->
+                        Nothing ->
                             case rendition.swipe of
                               Just swipe ->
                                 { rendition | touches = touches, swipe = Nothing, menu = True } ! []
@@ -73,7 +73,7 @@ update action rendition =
 
                 ( updated, cmd ) =
                     case Utils.Touch.testEvent te touches of
-                        Utils.Touch.Tap msg ->
+                        Just (Utils.Touch.Tap msg) ->
                             update msg { rendition | touches = Utils.Touch.null }
 
                         _ ->

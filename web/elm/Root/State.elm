@@ -228,7 +228,7 @@ update action model =
 
                 ( updated, cmd ) =
                     case Utils.Touch.testEvent te touches of
-                        Utils.Touch.Tap msg ->
+                        Just (Utils.Touch.Tap msg) ->
                             update msg { model | touches = Utils.Touch.null }
 
                         _ ->

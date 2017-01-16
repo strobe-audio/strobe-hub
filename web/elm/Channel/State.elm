@@ -192,7 +192,7 @@ update action channel =
 
                 ( updated, cmd ) =
                     case Utils.Touch.testEvent te touches of
-                        Utils.Touch.Tap msg ->
+                        Just (Utils.Touch.Tap msg) ->
                             update msg { channel | touches = Utils.Touch.null }
 
                         _ ->
