@@ -93,11 +93,11 @@ preventAndStop =
 
 
 singleClickDuration =
-    500
+    200
 
 
 singleClickDistance =
-    40
+    10
 
 
 decodeTouchEvent : String -> (T -> E msg) -> Decode.Decoder (E msg)
@@ -158,10 +158,10 @@ testSingleClick msg start end =
             end.clientY - start.clientY
 
         dd =
-            (sqrt (dx * dx) + (dy * dy))
+            Debug.log "tap distance" (sqrt ((dx * dx) + (dy * dy)))
 
         tt =
-            (end.time - start.time)
+            Debug.log "tap duration" (end.time - start.time)
     in
         if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
             Debug.log "single click event" (Just msg)
