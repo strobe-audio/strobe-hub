@@ -59,6 +59,7 @@ subscriptions model =
         , Ports.channelRenameActions
         , Ports.receiverRenameActions
         , Ports.scrollTopActions
+        , Ports.connectionStatusActions
         , viewportWidth
         ]
 

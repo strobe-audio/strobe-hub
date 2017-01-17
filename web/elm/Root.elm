@@ -16,7 +16,8 @@ import Utils.Touch
 
 
 type alias Model =
-    { channels : List Channel.Model
+    { connected : Bool
+    , channels : List Channel.Model
     , receivers : List Receiver.Model
     , showAddChannel : Bool
     , newChannelInput : Input.Model

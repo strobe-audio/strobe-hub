@@ -20,7 +20,8 @@ import Utils.Touch
 
 initialState : Root.Model
 initialState =
-    { channels = []
+    { connected = False
+    , channels = []
     , receivers = []
     , listMode = Root.PlaylistMode
     , showPlaylistAndLibrary = False
@@ -64,6 +65,12 @@ update action model =
     case action of
         Msg.NoOp ->
             model ! []
+
+        Msg.Connected connected ->
+            let
+                _ = Debug.log "connected" connected
+            in
+                { model | connected = connected } ! []
 
         Msg.UrlChange location ->
             let

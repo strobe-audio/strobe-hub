@@ -20,6 +20,19 @@ import Utils.Touch exposing (onUnifiedClick)
 
 root : Root.Model -> Html Msg
 root model =
+    case model.connected of
+        True ->
+            rootWhenConnected model
+
+        False ->
+            div
+                [ class "root--offline" ]
+                [ div [ class "root--offline__message" ] [ text"Offline"]
+                ]
+
+
+rootWhenConnected : Root.Model -> Html Msg
+rootWhenConnected model =
     let
         library =
             if Root.State.libraryVisible model then
@@ -62,6 +75,7 @@ root model =
                             ]
                         ]
                     ]
+
 
 
 controlBar : Root.Model -> Html Msg

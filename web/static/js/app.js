@@ -13,6 +13,16 @@ let socketOpts = {
 }
 let socket = new Socket("/controller", socketOpts)
 
+socket.onOpen(() =>{
+  // app.ports.connectionStatus.send(true)
+})
+socket.onClose(() =>{
+  app.ports.connectionStatus.send(false)
+})
+socket.onError(() =>{
+  app.ports.connectionStatus.send(false)
+})
+
 socket.connect();
 
 let channel = socket.channel('controllers:browser', {})
@@ -92,7 +102,10 @@ channel.on('receiver_rename', payload => {
 })
 
 channel.join()
-.receive('ok', resp => { console.log('joined!', resp); })
+.receive('ok', resp => {
+  app.ports.connectionStatus.send(true)
+  console.log('joined!', resp);
+})
 .receive('error', resp => { console.error('unable to join', resp); })
 
 // channel.push('list_libraries', {})

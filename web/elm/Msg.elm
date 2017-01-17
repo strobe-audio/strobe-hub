@@ -13,6 +13,7 @@ import Utils.Touch
 
 type Msg
     = NoOp
+    | Connected Bool
     | UrlChange Navigation.Location
     | InitialState Root.BroadcasterState
     | ToggleChannelSelector

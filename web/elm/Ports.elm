@@ -11,6 +11,12 @@ import Receiver
 
 -- Incoming JS -> Elm
 
+port connectionStatus : (Bool -> m) -> Sub m
+
+
+connectionStatusActions =
+    connectionStatus Msg.Connected
+
 
 port windowWidth : (Int -> m) -> Sub m
 

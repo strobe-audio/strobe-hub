@@ -112,3 +112,27 @@
   line-height: $button-size;
   cursor: pointer;
 }
+
+.root--offline {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  color: #333;
+  font-size: 5.5rem;
+}
+
+.root--offline__message {
+  position: relative;
+  top: -2em;
+}
+.root--offline__message:before {
+  @mixin fa;
+  display: block;
+  content: "\f071";
+  color: #222;
+  width: 100%;
+  text-align: center;
+  line-height: 2.5;
+}
