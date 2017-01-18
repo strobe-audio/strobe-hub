@@ -76,3 +76,59 @@ receivers model channel =
                 ((div [ class "receivers--title" ] [ text (count ++ "/" ++ (toString (List.length model.receivers)) ++ " Receivers") ]) :: addButton)
             , div [ class "receivers--list" ] receiverList
             ]
+
+attached : Root.Model -> Channel.Model -> Html Msg
+attached model channel =
+    let
+        receivers =
+            Receiver.attachedReceivers model.receivers channel
+
+        active =
+            (List.length receivers) > 0
+
+        receiverEntry receiver =
+            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver channel)
+
+    in
+        if active then
+            div
+                [ class "receivers" ]
+                [ div
+                    [ class "receivers--head" ]
+                    [ div
+                        [ class "receivers--title" ]
+                        [ (text ((toString (List.length receivers)) ++ " Attached Receivers"))
+                        ]
+                    ]
+                , div [ class "receivers--list" ]    (List.map receiverEntry receivers)
+                ]
+        else
+            div [] []
+
+detached : Root.Model -> Channel.Model -> Html Msg
+detached model channel =
+    let
+        receivers =
+            Receiver.detachedReceivers model.receivers channel
+
+        active =
+            (List.length receivers) > 0
+
+        receiverEntry receiver =
+            Html.map (Msg.Receiver receiver.id) (Receiver.View.detached receiver channel)
+
+    in
+        if active then
+            div
+                [ class "receivers" ]
+                [ div
+                    [ class "receivers--head" ]
+                    [ div
+                        [ class "receivers--title" ]
+                        [ (text ((toString (List.length receivers)) ++ " Detached Receivers"))
+                        ]
+                    ]
+                , div [ class "receivers--list" ]    (List.map receiverEntry receivers)
+                ]
+        else
+            div [] []

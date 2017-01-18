@@ -287,6 +287,11 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   @mixin fa-btn "\f0d8";
 }
 
+.channels--receivers {
+  margin-top: calc($button-size / 2);
+  border-top: dotted 1px rgba(255, 255, 255, 0.2);
+}
+
 @media (--desktop) {
   .channels {
     width: $channel-column-width;

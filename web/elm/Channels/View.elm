@@ -84,6 +84,7 @@ channel model channel =
         , (changeChannel model channel)
         , (channelVolume model channel)
         , (channelReceivers model channel)
+        , (detachedReceivers model channel)
         ]
 
 
@@ -93,8 +94,19 @@ channelReceivers model channel =
         True ->
             div [] []
         False ->
-            Receivers.View.receivers model channel
+            div
+                [ class "channels--receivers channel--receivers__attached" ]
+                [ Receivers.View.attached model channel ]
 
+detachedReceivers : Root.Model -> Channel.Model -> Html Msg
+detachedReceivers model channel =
+    case model.showChangeChannel of
+        True ->
+            div [] []
+        False ->
+            div
+                [ class "channels--receivers channel--receivers__detached" ]
+                [ Receivers.View.detached model channel ]
 
 channelVolume : Root.Model -> Channel.Model -> Html Msg
 channelVolume model channel =
