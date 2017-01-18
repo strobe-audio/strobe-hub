@@ -129,7 +129,7 @@ changeChannel : Root.Model -> Channel.Model -> Html Msg
 changeChannel model activeChannel =
     let
         channels =
-            model.channels
+            List.filter (\c -> c.id /= activeChannel.id) model.channels
 
         receivers =
             model.receivers
