@@ -21,6 +21,7 @@ import Utils.Touch exposing (onSingleTouch)
 receiverClasses : Receiver.Model -> Bool -> List ( String, Bool )
 receiverClasses receiver attached =
     [ ( "receiver", True )
+    , ( "receiver__online", receiver.online )
     , ( "receiver__offline", not receiver.online )
     , ( "receiver__attached", attached )
     , ( "receiver__detached", not attached )
@@ -42,12 +43,16 @@ attached receiver channel =
 
                 True ->
                     Input.View.inputSubmitCancel receiver.editNameInput
+
+        receiverLabel receiver =
+            div [ class "receiver--name" ] [ text receiver.name ]
+
     in
         div [ id ("receiver-" ++ receiver.id), classList (receiverClasses receiver True) ]
             [ div [ class "receiver--view" ]
                 [ div [ class "receiver--state" ] []
                 , div [ class "receiver--volume" ]
-                    [ Html.map Receiver.Volume (Volume.View.control receiver.volume (text receiver.name))
+                    [ Html.map Receiver.Volume (Volume.View.control receiver.volume (receiverLabel receiver))
                     ]
                 , div [ class "receiver--action" ]
                     [ div

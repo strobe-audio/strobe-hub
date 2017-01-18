@@ -60,11 +60,15 @@ control volume label =
             onWithOptions "touchmove"
                 Touch.preventAndStop
                 (decodeTouch "touch move")
+
+        volumeStyle v =
+            style [ ( "width", (toString (v * 100)) ++ "%" ) ]
+
     in
         div [ class "volume-control" ]
             [ div ([ class "volume-mute-btn fa fa-volume-off" ] ++ (onUnifiedClick (Volume.Change (Just 0.0)))) []
             , div [ class "volume", touchstart, touchmove, mousedown, mousemove ]
-                [ div [ class "volume-level", style [ ( "width", (toString (volume * 100)) ++ "%" ) ] ] []
+                [ div [ class "volume-level", volumeStyle volume ] []
                 , div [ class "volume-label" ] [ label ]
                 ]
             , div ([ class "volume-full-btn fa fa-volume-up" ] ++ (onUnifiedClick (Volume.Change (Just 1.0)))) []

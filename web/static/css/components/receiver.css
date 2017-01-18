@@ -68,3 +68,21 @@
 .receiver--edit .input .input--input {
   max-width: calc(100vw - (3 * $button-size));
 }
+
+.receiver .receiver--name:after,
+.receiver .receiver--name:before {
+  @mixin fa;
+  width: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  position: relative;
+  left: -0px;
+  top: -1px;
+  font-size: 0.8em;
+}
+
+.receiver.receiver__online .receiver--name:before {
+  content: "\f111"; /* fa-circle */
+}
+.receiver.receiver__offline .receiver--name:before {
+  content: "\f1db"; /* fa-circle-thin */
+}
