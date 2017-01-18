@@ -3,7 +3,7 @@
   -webkit-user-select: none;
   -ms-user-select: none;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   /* line-height: $button-size; */
   position: fixed;
   top: $button-size;
@@ -40,7 +40,7 @@
 }
 
 .channels--overlay {
-  width: 100vw;
+  width: calc(100vw - $button-size);
   display: flex;
   flex-direction: row;
   position: relative;
