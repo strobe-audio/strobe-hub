@@ -111,9 +111,9 @@ folder model folder =
             if List.isEmpty folder.children then
                 div [] []
             else
-                div [ class "block-group library-contents" ] (List.map (node model folder) folder.children)
+                div [ class "library-contents" ] (List.map (node model folder) folder.children)
     in
-        div []
+        div [ class "library--folder" ]
             [ (breadcrumb model folder)
             , children
             ]
