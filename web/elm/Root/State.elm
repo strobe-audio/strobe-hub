@@ -28,7 +28,8 @@ initialState =
     , library = Library.State.initialState
     , showAddChannel = False
     , newChannelInput = Input.State.blank
-    , showChannelSwitcher = False
+    , showChannelSwitcher = True
+    , showChangeChannel = False
     , activeChannelId = Nothing
     , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
@@ -145,7 +146,10 @@ update action model =
 
         Msg.ActivateChannel channel ->
             -- { model | showAddChannel = False, activeChannelId = Just channel.id } ! []
-            { model | showAddChannel = False } ! [ Navigation.newUrl (Routing.channelLocation channel.id) ]
+            let
+                _ = Debug.log "showing channel" (channel.id, channel.name)
+            in
+                { model | showAddChannel = False, showChangeChannel = False } ! [ Navigation.newUrl (Routing.channelLocation channel.id) ]
 
         Msg.AddChannel channelName ->
             model ! [ Root.Cmd.addChannel channelName ]
@@ -155,6 +159,9 @@ update action model =
 
         Msg.ToggleChannelSelector ->
             { model | showChannelSwitcher = not model.showChannelSwitcher } ! []
+
+        Msg.ToggleChangeChannel ->
+            { model | showChangeChannel = not model.showChangeChannel } ! []
 
         Msg.ToggleAddChannel ->
             { model | showAddChannel = not model.showAddChannel } ! []
@@ -241,7 +248,7 @@ update action model =
                         _ ->
                             { model | touches = touches } ! []
             in
-                updated ! []
+                updated ! [cmd]
 
 
 libraryVisible : Root.Model -> Bool

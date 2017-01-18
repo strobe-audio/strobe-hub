@@ -17,6 +17,7 @@ type Msg
     | UrlChange Navigation.Location
     | InitialState Root.BroadcasterState
     | ToggleChannelSelector
+    | ToggleChangeChannel
     | SetListMode Root.ChannelListMode
     | ActivateChannel Channel.Model
     | ToggleAddChannel

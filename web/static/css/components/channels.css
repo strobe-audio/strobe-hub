@@ -29,10 +29,14 @@
   flex: 1;
 }
 
+.channels--channel-control .volume-control .channel--name {
+  font-weight: 600;
+}
 .channels-selector {
   display: flex;
   flex-direction: column;
   flex: 1;
+  background: #E65100;
 }
 
 .channels--overlay {
@@ -115,9 +119,11 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   font-size: 0.8em;
-  color: #ccc;
+  color: #fff;
   text-transform: uppercase;
   border-bottom: solid 1px $channel-select-border;
+  /* background: rgba(0, 0, 0, 0.1); */
+  background: #BF360C;
 }
 
 .channels-selector--group {
@@ -204,13 +210,19 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 .channels-selector--channel--receivers {
   padding: 0 $padding;
   margin: 0 $padding;
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #000;
-  border-radius: 4px;
+  /* background-color: rgba(255, 255, 255, 0.8); */
+  background-color: #DD2C00;
+  color: #FB8C00;
+  border-radius: 2px;
 }
 .channels-selector--channel--receivers__empty {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: rgba(0, 0, 0, 1.0);
+  /* background-color: rgba(255, 255, 255, 0.2); */
+  /* color: rgba(0, 0, 0, 1.0); */
+  background-color: #DD2C00;
+  color: #FF6D00;
+}
+.channels-selector--channel--receivers:active {
+  color: #ff0;
 }
 .channels-selector--channel__active {
 	color: rgba(255, 255, 255, 0.3);
@@ -255,6 +267,26 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   max-width: calc(100vw - (3 * $button-size));
 }
 
+.channels--channel-title {
+  height: $button-size;
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: 500;
+  font-size: 1.2em;
+}
+.channels--channel-title .channel--name {
+  flex: 1;
+}
+.channels--show-switch-channel {
+  @mixin fa-btn "\f074";
+  flex: 0 0 $button-size;
+  background: rgba(0, 0, 0, 0.5);
+}
+.channels--view__change-channel .channels--show-switch-channel {
+  @mixin fa-btn "\f0d8";
+}
+
 @media (--desktop) {
   .channels {
     width: $channel-column-width;
@@ -267,3 +299,5 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
     right: 0;
   }
 }
+
+

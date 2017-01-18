@@ -22,6 +22,7 @@ type alias Model =
     , showAddChannel : Bool
     , newChannelInput : Input.Model
     , showChannelSwitcher : Bool
+    , showChangeChannel : Bool
     , showAttachReceiver : Bool
     , activeChannelId : Maybe ID.Channel
     , listMode : ChannelListMode

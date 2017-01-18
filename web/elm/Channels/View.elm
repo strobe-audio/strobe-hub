@@ -43,14 +43,107 @@ channelsBar model activeChannel =
         options =
             { defaultOptions | preventDefault = True }
 
-        -- onTouch =
-        --   onWithOptions "touchend" options Json.value (\_ -> (Channels.ToggleSelector))
+        contents = case model.showChannelSwitcher of
+            False ->
+                div [] []
+
+            True ->
+                div [ classList
+                        [ ( "channels", True )
+                        , ( "channels__select-channel", model.showChannelSwitcher )
+                        ]
+                    ]
+                    [ div
+                        [ class "channels--overlay" ]
+                        -- [ (channelSelectorPanel model activeChannel)
+                        [ (channel model activeChannel)
+                        ]
+                    , div ([ class "channels--toggle" ] ++ (onUnifiedClick Msg.ToggleChannelSelector)) []
+                    ]
+
     in
-        div [ classList [ ( "channels", True ), ( "channels__select-channel", model.showChannelSwitcher ) ] ]
-            [ (channelSelectorPanel model activeChannel)
+        contents
+
+
+channel : Root.Model -> Channel.Model -> Html Msg
+channel model channel =
+    -- title with switcher
+    -- channel volume
+    -- receiver list
+    div
+        [ classList
+            [ ("channels--view", True)
+            , ("channels--view__change-channel", model.showChangeChannel)
             ]
+        ]
+        [ div
+            [ class "channels--channel-title" ]
+            [ div [ class "channel--name", onClick Msg.ToggleChangeChannel ] [ text channel.name ]
+            , div [ class "channels--show-switch-channel", onClick Msg.ToggleChangeChannel ] []
+            ]
+        , (changeChannel model channel)
+        , (channelVolume model channel)
+        , (channelReceivers model channel)
+        ]
 
 
+channelReceivers : Root.Model -> Channel.Model -> Html Msg
+channelReceivers model channel =
+    case model.showChangeChannel of
+        True ->
+            div [] []
+        False ->
+            Receivers.View.receivers model channel
+
+
+channelVolume : Root.Model -> Channel.Model -> Html Msg
+channelVolume model channel =
+    let
+        volumeCtrl =
+            (Volume.View.control channel.volume
+                (text "Master volume")
+            )
+    in
+        case model.showChangeChannel of
+            True ->
+                div [] []
+            False ->
+                div
+                    [ class "channels--channel-control" ]
+                    [ Html.map (\m -> (Msg.Channel channel.id) (Channel.Volume m)) volumeCtrl
+                    ]
+
+changeChannel : Root.Model -> Channel.Model -> Html Msg
+changeChannel model activeChannel =
+    let
+        channels =
+            model.channels
+
+        receivers =
+            model.receivers
+
+        channelSummaries =
+            List.map (Channel.summary receivers) channels
+
+        ( activeChannels, inactiveChannels ) =
+            List.partition Channel.isActive channelSummaries
+
+        orderChannels summaries =
+            List.sortBy (\c -> c.channel.originalName) summaries
+
+    in
+        case model.showChangeChannel of
+            True ->
+                div [ class "channels-selector" ]
+                    [ div [ class "channels-selector--list" ]
+                    [ div [ class "channels-selector--separator" ] [ text "Active" ]
+                    , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
+                    , div [ class "channels-selector--separator" ] [ text "Inactive" ]
+                    , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
+                    ]
+                    ]
+            False ->
+                div [] []
 
 
 channelSelectorPanel : Root.Model -> Channel.Model -> Html Msg
@@ -78,43 +171,35 @@ channelSelectorPanel model activeChannel =
                 (div [ class "channel--name" ] [ text activeChannel.name ])
             )
     in
-        case model.showChannelSwitcher of
-            False ->
-                div [] []
-
-            True ->
-                div [ class "channels--overlay" ]
-                    [ div
-                        [class "channels--view"]
-                    [ div [ class "channels--channel-control" ]
-                        [ Html.map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
-                        , (Receivers.View.receivers model activeChannel)
+        div
+            [class "channels--view"]
+            [ div [ class "channels--channel-control" ]
+                [ Html.map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
+                , (Receivers.View.receivers model activeChannel)
+                ]
+            , div [ class "channels--header" ]
+                [ div [ class "channels--title" ]
+                    [ text (((toString (List.length channels)) ++ " Channels")) ]
+                , div
+                    [ classList
+                        [ ( "channels--add-btn", True )
+                        , ( "channels--add-btn__active", model.showAddChannel )
                         ]
-                    , div [ class "channels--header" ]
-                        [ div [ class "channels--title" ]
-                            [ text (((toString (List.length channels)) ++ " Channels")) ]
-                        , div
-                            [ classList
-                                [ ( "channels--add-btn", True )
-                                , ( "channels--add-btn__active", model.showAddChannel )
-                                ]
-                            , onClick Msg.ToggleAddChannel
-                            , onSingleTouch Msg.ToggleAddChannel
-                            ]
-                            []
-                        ]
-                    , addChannelPanel model
-                    , div [ class "channels-selector" ]
-                        [ div [ class "channels-selector--list" ]
-                            [ div [ class "channels-selector--separator" ] [ text "Active" ]
-                            , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
-                            , div [ class "channels-selector--separator" ] [ text "Inactive" ]
-                            , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
-                            ]
-                        ]
+                    , onClick Msg.ToggleAddChannel
+                    , onSingleTouch Msg.ToggleAddChannel
                     ]
-                    , div ([ class "channels--toggle" ]  ++ (onUnifiedClick Msg.ToggleChannelSelector)) []
+                    []
+                ]
+            , addChannelPanel model
+            , div [ class "channels-selector" ]
+                [ div [ class "channels-selector--list" ]
+                    [ div [ class "channels-selector--separator" ] [ text "Active" ]
+                    , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
+                    , div [ class "channels-selector--separator" ] [ text "Inactive" ]
+                    , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
                     ]
+                ]
+            ]
 
 
 addChannelPanel : Root.Model -> Html Msg
@@ -146,8 +231,13 @@ channelChoice receivers activeChannel channelSummary =
                 time ->
                     Source.View.durationString time
 
+        mapTouch a =
+            Html.Attributes.map Msg.SingleTouch a
+
         onClickChoose =
-            onUnifiedClick (Msg.ActivateChannel channel)
+            [ mapTouch (Utils.Touch.touchStart (Msg.ActivateChannel channel))
+            , mapTouch (Utils.Touch.touchEnd (Msg.ActivateChannel channel))
+            ]
 
         onClickEdit =
             onWithOptions "click"
