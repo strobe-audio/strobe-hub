@@ -1,6 +1,9 @@
 .library {
   padding-bottom: 50vh;
+  width: 100vw;
+  overflow: hidden;
 }
+
 .library--breadcrumb {
   min-height: $button-size;
   background: rgba(0, 0, 0, 0.1);
@@ -104,6 +107,17 @@
 
 .library--no-action:hover {
   color: inherit !important;
+}
+
+.library--levels {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  transition: left 200ms;
+}
+
+.library--folder {
+  flex: 0 0 100vw;
 }
 
 @media (--mobile) {

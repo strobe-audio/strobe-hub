@@ -1,6 +1,7 @@
 module Library exposing (..)
 
 import Utils.Touch
+import Stack exposing (Stack)
 
 type Msg
     = NoOp
@@ -12,6 +13,61 @@ type Msg
     | Touch (Utils.Touch.E Msg)
 
 
+type alias Action =
+    String
+
+-- can serialise this as just `action` and restore as
+-- {action = "<action>", contents = Nothing}
+type alias Level =
+    { action : Action
+    , contents : Maybe Folder
+    }
+
+type alias Folder =
+    { id : String
+    , title : String
+    , icon : String
+    , children : List Node
+    }
+
+
+type alias Node =
+    { id : String
+    , title : String
+    , icon : String
+    , actions : Actions
+    , metadata : Maybe (List Metadata)
+    }
+
+
+type alias Model =
+    { levels : Stack Level
+    , depth : Int
+    , currentRequest : Maybe Action
+    , touches : Utils.Touch.Model
+    }
+
+
+type alias FolderResponse =
+    { libraryId : String
+    , folder : Folder
+    }
+
+
+type alias Metadata =
+    List Link
+
+
+type alias Link =
+    { title : String
+    , action : Maybe String
+    }
+
+
+type alias Actions =
+    { click : String
+    , play : Maybe String
+    }
 
 {-
 
@@ -112,49 +168,3 @@ type Msg
    in the playlist artist name & album name (& any other metadata) must have actions attached too. you should be able to click on the artist of a playlist entry & go to the library view for that artist..
 
 -}
-
-
-type alias Folder =
-    { id : String
-    , title : String
-    , icon : String
-    , children : List Node
-    }
-
-
-type alias Node =
-    { id : String
-    , title : String
-    , icon : String
-    , actions : Actions
-    , metadata : Maybe (List Metadata)
-    }
-
-
-type alias Model =
-    { levels : List Folder
-    , currentRequest : Maybe String
-    , touches : Utils.Touch.Model
-    }
-
-
-type alias FolderResponse =
-    { libraryId : String
-    , folder : Folder
-    }
-
-
-type alias Metadata =
-    List Link
-
-
-type alias Link =
-    { title : String
-    , action : Maybe String
-    }
-
-
-type alias Actions =
-    { click : String
-    , play : Maybe String
-    }

@@ -6,15 +6,22 @@ import Library.Cmd
 import Time exposing (millisecond)
 import Debug
 import Utils.Touch
+import Stack exposing (Stack)
 
 
 initialState : Library.Model
 initialState =
     let
-        root =
+        rootFolder =
             { id = "libraries", title = "Libraries", icon = "", children = [] }
+
+        root =
+            { action = "root", contents = Just rootFolder }
+        levels =
+            Stack.initialise |> Stack.push root
     in
-        { levels = [ root ]
+        { levels = levels
+        , depth = 0
         , currentRequest = Nothing
         , touches = Utils.Touch.emptyModel
         }
@@ -39,7 +46,8 @@ update action model maybeChannelId =
                     ( { model | currentRequest = Just a }
                     , Cmd.batch
                         [ (Library.Cmd.sendAction channelId a)
-                        , (Library.Cmd.requestComplete (300 * millisecond))
+                        -- disable this auto-completion as I need the currentRequest value
+                        -- , (Library.Cmd.requestComplete (300 * millisecond))
                         ]
                     )
 
@@ -55,17 +63,33 @@ update action model maybeChannelId =
                     update (Library.ExecuteAction libraryAction) model maybeChannelId
 
         Library.Response folder ->
-            let
-                _ =
-                    Debug.log "current action" model.currentRequest
+            case model.currentRequest of
+                Nothing ->
+                    model ! []
 
-                model_ =
-                    pushLevel model folder
-            in
-                ( { model_ | currentRequest = Nothing }, Cmd.none )
+                Just action ->
+                    let
+                        _ =
+                            Debug.log "current action" action
+
+                        model_ =
+                            pushLevel model action folder
+                    in
+                        ( { model_ | currentRequest = Nothing }, Cmd.none )
 
         Library.PopLevel index ->
-            ( { model | levels = List.drop index model.levels }, Cmd.none )
+            let
+                levels = case model.depth of
+                    0 ->
+                        model.levels
+                    _ ->
+                        let
+                            (_, levels) = Stack.pop model.levels
+                        in
+                            levels
+
+            in
+                ( { model | levels = levels, depth = (max 0 model.depth - 1) }, Cmd.none )
 
         Library.Touch te ->
           let
@@ -89,9 +113,9 @@ update action model maybeChannelId =
                 (updated, cmd)
 
 
-currentLevel : Library.Model -> Library.Folder
+currentLevel : Library.Model -> Library.Level
 currentLevel model =
-    case List.head model.levels of
+    case List.head <| Stack.toList model.levels of
         Just level ->
             level
 
@@ -99,49 +123,71 @@ currentLevel model =
             Debug.crash "Model has no root level!"
 
 
-pushLevel : Library.Model -> Library.Folder -> Library.Model
-pushLevel model folder =
-    -- Debug.log ("pushLevel |" ++ (toString folder) ++ "| |" ++ (toString model.level) ++ "| ")
-    { model | levels = (folder :: model.levels) }
+pushLevel : Library.Model -> Library.Action -> Library.Folder -> Library.Model
+pushLevel model action folder =
+    let
+        level =
+            { action = action, contents = Just folder }
+
+        levels =
+            Stack.push level model.levels
+
+    in
+        -- Debug.log ("pushLevel |" ++ (toString folder) ++ "| |" ++ (toString model.level) ++ "| ")
+        { model
+        | depth = model.depth + 1
+        , levels = levels
+        }
 
 
 add : Library.Model -> Library.Node -> Library.Model
 add model library =
     let
-        levels =
-            (List.reverse model.levels)
+
+        _ = Debug.log "library" model
+
+        reversedLevels =
+            List.reverse <| Stack.toList model.levels
 
         root =
-            case (List.head levels) of
+            case (List.head reversedLevels) of
                 Just level ->
-                    { level | children = (addUniqueLibrary library level.children) }
+                    case level.contents of
+                        Nothing ->
+                            level
+                        Just folder ->
+                            { level | contents = Just (addUniqueLibrary library folder) }
 
                 Nothing ->
                     Debug.crash "Model has no root level!"
 
         others =
-            case List.tail levels of
+            case List.tail reversedLevels of
                 Just l ->
                     l
 
                 Nothing ->
                     []
+
+        levels =
+            Stack.fromList (List.reverse (root :: others))
+
     in
-        { model | levels = (List.reverse (root :: others)) }
+        { model | levels = levels }
 
 
-addUniqueLibrary : Library.Node -> List Library.Node -> List Library.Node
-addUniqueLibrary library libraries =
+addUniqueLibrary : Library.Node -> Library.Folder -> Library.Folder
+addUniqueLibrary library folder =
     let
         duplicate =
-            Debug.log "Duplicate library?" (List.any (\l -> l.id == library.id) libraries)
+            Debug.log "Duplicate library?" (List.any (\l -> l.id == library.id) folder.children)
 
-        libraries_ =
+        children =
             case duplicate of
                 True ->
-                    libraries
+                    folder.children
 
                 False ->
-                    library :: libraries
+                    library :: folder.children
     in
-        libraries_
+        { folder | children = children }

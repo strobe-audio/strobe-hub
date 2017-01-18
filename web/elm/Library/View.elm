@@ -12,12 +12,52 @@ import Debug
 import Utils.Css
 import Utils.Text
 import Utils.Touch exposing (onSingleTouch)
+import Stack
 
 
 root : Library.Model -> Html Library.Msg
 root model =
     div [ class "library" ]
-        [ folder model (Library.State.currentLevel model) ]
+        [ (breadcrumb model)
+        , (levels model)
+        ]
+
+levels : Library.Model -> Html Library.Msg
+levels model =
+    let
+        levels =
+            Stack.toList model.levels |> List.reverse
+
+        levelColumn l =
+            case l.contents of
+                Nothing ->
+                    div [] [ text "Not loaded" ]
+                Just folder_ ->
+                    folder model folder_
+
+        columns =
+            List.map levelColumn levels
+
+        left =
+            model.depth * -100
+
+    in
+        div
+            [ class "library--levels", style [("left", (toString left) ++ "vw")] ]
+            columns
+
+
+folder : Library.Model -> Library.Folder -> Html Library.Msg
+folder model folder =
+    let
+        children =
+            if List.isEmpty folder.children then
+                div [] []
+            else
+                div [ class "library-contents" ] (List.map (node model folder) folder.children)
+    in
+        div [ class "library--folder" ]
+            [ children ]
 
 
 metadata : Maybe (List Library.Metadata) -> Html Library.Msg
@@ -104,35 +144,25 @@ node library folder node =
             ]
 
 
-folder : Library.Model -> Library.Folder -> Html Library.Msg
-folder model folder =
-    let
-        children =
-            if List.isEmpty folder.children then
-                div [] []
-            else
-                div [ class "library-contents" ] (List.map (node model folder) folder.children)
-    in
-        div [ class "library--folder" ]
-            [ (breadcrumb model folder)
-            , children
-            ]
 
 
-breadcrumb : Library.Model -> Library.Folder -> Html Library.Msg
-breadcrumb model folder =
+breadcrumb : Library.Model -> Html Library.Msg
+breadcrumb model =
     let
         breadcrumbLink classes index level =
-            a
-                [ class classes
-                , onClick (Library.PopLevel (index))
-                , onSingleTouch (Library.PopLevel (index))
-                ]
-                [ text level.title ]
+            let
+                title = Maybe.map (\f -> f.title) level.contents |> Maybe.withDefault "Not loaded"
+            in
+                a
+                    [ class classes
+                    , onClick (Library.PopLevel (index))
+                    , onSingleTouch (Library.PopLevel (index))
+                    ]
+                    [ text title ]
 
         sections =
-            (model.levels)
-                |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
+            (Stack.toList model.levels)
+            |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
 
         ( list_, dropdown_ ) =
             List.Extra.splitAt 1 (sections)
