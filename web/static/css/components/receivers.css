@@ -6,6 +6,7 @@
   height: $button-size;
   display: flex;
   align-items: center;
+  border-top: dotted 1px rgba(255, 255, 255, 0.2);
 }
 
 .receivers--title {
