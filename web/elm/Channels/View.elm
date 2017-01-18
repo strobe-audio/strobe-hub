@@ -247,9 +247,13 @@ channelChoice receivers activeChannel channelSummary =
             Html.Attributes.map Msg.SingleTouch a
 
         onClickChoose =
-            [ mapTouch (Utils.Touch.touchStart (Msg.ActivateChannel channel))
-            , mapTouch (Utils.Touch.touchEnd (Msg.ActivateChannel channel))
-            ]
+            let
+                msg = (Msg.ActivateChannel channel)
+            in
+                [ mapTouch (Utils.Touch.touchStart msg)
+                , mapTouch (Utils.Touch.touchEnd msg)
+                , onClick msg
+                ]
 
         onClickEdit =
             onWithOptions "click"
