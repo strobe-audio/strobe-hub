@@ -327,4 +327,23 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver_disconnected, [^id, _]}
     assert false == Receivers.connected?(id)
   end
+
+  test "detecting error responses", _context do
+    results = [
+      :ok,
+      :ok,
+      {:error, :something},
+    ]
+    assert {:error, :something} == Otis.Receivers.DataConnection.return_errors(results)
+    results = [
+      :ok,
+      :ok,
+    ]
+    assert :ok == Otis.Receivers.DataConnection.return_errors(results)
+    results = [
+      {:error, :something},
+      {:error, :anotherthing},
+    ]
+    assert {:error, :something} == Otis.Receivers.DataConnection.return_errors(results)
+  end
 end

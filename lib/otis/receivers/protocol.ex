@@ -81,10 +81,23 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def send_data(packets, state) do
-        Enum.each(List.wrap(packets), fn(data) ->
-          :ok = state.transport.send(state.socket, data)
-        end)
+        errors = packets
+        |> List.wrap
+        |> Enum.map(fn(data) -> state.transport.send(state.socket, data) end)
+        |> return_errors()
       end
+
+      def return_errors(errors) do
+        errors
+        |> Enum.filter(&is_error_response?/1)
+        |> case do
+          [error | _] -> error
+          [] -> :ok
+        end
+      end
+
+      defp is_error_response?({:error, _reason}), do: true
+      defp is_error_response?(:ok), do: false
 
       defp close(state) do
         :ok = state.transport.close(state.socket)
