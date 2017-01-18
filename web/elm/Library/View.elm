@@ -31,7 +31,15 @@ levels model =
         levelColumn l =
             case l.contents of
                 Nothing ->
-                    div [] [ text "Not loaded" ]
+                    div
+                        [ class "library--folder library--folder__loading" ]
+                        [ div
+                            [ class "library--spinner" ]
+                            [ i [ class "fa fa-circle-o-notch fa-spin" ] []
+                            , text "Loading..."
+                            ]
+                        ]
+
                 Just folder_ ->
                     folder model folder_
 

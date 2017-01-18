@@ -113,11 +113,23 @@
   display: flex;
   flex-direction: row;
   position: relative;
-  transition: left 200ms;
+  transition: left 150ms;
 }
 
 .library--folder {
   flex: 0 0 100vw;
+}
+
+.library--folder__loading {
+  text-align: center;
+}
+
+.library--spinner {
+  padding-top: $button-size;
+}
+
+.library--spinner i {
+  margin-right: calc($padding / 2);
 }
 
 @media (--mobile) {

@@ -43,13 +43,23 @@ update action model maybeChannelId =
         Library.ExecuteAction a ->
             case maybeChannelId of
                 Just channelId ->
-                    ( { model | currentRequest = Just a }
-                    , Cmd.batch
-                        [ (Library.Cmd.sendAction channelId a)
+                    let
+                        level =
+                            { action = a, contents = Nothing }
+
+                        levels =
+                            Stack.push level model.levels
+
+                        model_ =
+                            { model
+                            | currentRequest = Just a
+                            , levels = levels
+                            , depth = model.depth + 1
+                            }
+                    in
+                        model_ ! [ (Library.Cmd.sendAction channelId a) ]
                         -- disable this auto-completion as I need the currentRequest value
                         -- , (Library.Cmd.requestComplete (300 * millisecond))
-                        ]
-                    )
 
                 Nothing ->
                     ( model, Cmd.none )
@@ -73,7 +83,7 @@ update action model maybeChannelId =
                             Debug.log "current action" action
 
                         model_ =
-                            pushLevel model action folder
+                            setLevelContents model action folder
                     in
                         ( { model_ | currentRequest = Nothing }, Cmd.none )
 
@@ -122,6 +132,20 @@ currentLevel model =
         Nothing ->
             Debug.crash "Model has no root level!"
 
+setLevelContents : Library.Model -> Library.Action -> Library.Folder -> Library.Model
+setLevelContents model action folder =
+    let
+        updateLevel l =
+            if l.action == action then
+                { l | contents = Just folder }
+            else
+                l
+
+        levels =
+            (List.map updateLevel) <| (Stack.toList model.levels)
+
+    in
+        { model | levels = (Stack.fromList levels) }
 
 pushLevel : Library.Model -> Library.Action -> Library.Folder -> Library.Model
 pushLevel model action folder =
