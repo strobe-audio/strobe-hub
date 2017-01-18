@@ -8,7 +8,7 @@ $mobile-max-width: calc($channel-column-width * 2);
 $padding: 6px;
 
 
-$button-size: 50px;
+$button-size: 60px;
 
 $mode-selector-height: $button-size;
 
