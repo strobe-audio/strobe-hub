@@ -15,7 +15,7 @@ import Receiver
 import Channel
 import Volume.View
 import Input.View
-import Utils.Touch exposing (onSingleTouch)
+import Utils.Touch
 
 
 receiverClasses : Receiver.Model -> Bool -> List ( String, Bool )
@@ -26,7 +26,6 @@ receiverClasses receiver attached =
     , ( "receiver__attached", attached )
     , ( "receiver__detached", not attached )
     ]
-
 
 attached : Receiver.Model -> Channel.Model -> Html Receiver.Msg
 attached receiver channel =
@@ -58,7 +57,8 @@ attached receiver channel =
                     [ div
                         [ class "receiver--action__edit"
                         , onClickEdit
-                        , onSingleTouch (Receiver.ShowEditName True)
+                        , mapTouch (Utils.Touch.touchStart (Receiver.ShowEditName True))
+                        , mapTouch (Utils.Touch.touchEnd (Receiver.ShowEditName True))
                         ]
                         []
                     ]
@@ -75,15 +75,20 @@ attached receiver channel =
 
 detached : Receiver.Model -> Channel.Model -> Html Receiver.Msg
 detached receiver channel =
-    div
-        [ classList (receiverClasses receiver False)
-        , onClick (Receiver.Attach channel.id)
-        , onSingleTouch (Receiver.Attach channel.id)
-        ]
-        [ div [ class "receiver--state receiver--state__detached" ] []
-        , div [ class "receiver--name" ] [ text receiver.name ]
-        , div [ class "receiver--action" ] []
-        ]
+    let
+        msg =
+            (Receiver.Attach channel.id)
+    in
+        div
+            [ classList (receiverClasses receiver False)
+            , onClick msg
+            , mapTouch (Utils.Touch.touchStart msg)
+            , mapTouch (Utils.Touch.touchEnd msg)
+            ]
+            [ div [ class "receiver--state receiver--state__detached" ] []
+            , div [ class "receiver--name" ] [ text receiver.name ]
+            , div [ class "receiver--action" ] []
+            ]
 
 
 attach : Channel.Model -> Receiver.Model -> Html Receiver.Msg
@@ -97,3 +102,8 @@ attach channel receiver =
         , div [ class "channel-receivers--edit-receiver" ]
             [ i [ class "fa fa-pencil" ] [] ]
         ]
+
+
+mapTouch : Attribute (Utils.Touch.E Receiver.Msg) -> Attribute Receiver.Msg
+mapTouch a =
+    Html.Attributes.map Receiver.SingleTouch a

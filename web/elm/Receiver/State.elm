@@ -11,6 +11,7 @@ import Volume
 import Msg exposing (Msg)
 import Input
 import Input.State
+import Utils.Touch
 
 
 initialState : Receiver.State -> Receiver.Model
@@ -22,6 +23,7 @@ initialState state =
     , channelId = state.channelId
     , editName = False
     , editNameInput = Input.State.blank
+    , touches = Utils.Touch.null
     }
 
 
@@ -114,6 +116,19 @@ update action model =
 
                 _ ->
                     model ! []
+        Receiver.SingleTouch te ->
+            let
+                touches =
+                    Utils.Touch.update te model.touches
+                ( updated, cmd ) =
+                    case Utils.Touch.testEvent te touches of
+                        Just (Utils.Touch.Tap msg) ->
+                            update msg { model | touches = Utils.Touch.null }
+
+                        _ ->
+                            { model | touches = touches } ! []
+            in
+                updated ! [cmd]
 
 
 processInputAction : Maybe Input.Action -> Receiver.Model -> ( Receiver.Model, Receiver.Msg )

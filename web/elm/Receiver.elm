@@ -3,6 +3,7 @@ module Receiver exposing (..)
 import ID
 import Volume
 import Input
+import Utils.Touch
 
 
 type alias Model =
@@ -13,6 +14,7 @@ type alias Model =
     , channelId : ID.Channel
     , editName : Bool
     , editNameInput : Input.Model
+    , touches : Utils.Touch.Model
     }
 
 
@@ -29,6 +31,7 @@ type Msg
     | EditName Input.Msg
     | Rename String
     | Renamed String
+    | SingleTouch (Utils.Touch.E Msg)
 
 
 type alias State =

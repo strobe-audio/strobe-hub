@@ -243,8 +243,6 @@ channelChoice receivers activeChannel channelSummary =
                 time ->
                     Source.View.durationString time
 
-        mapTouch a =
-            Html.Attributes.map Msg.SingleTouch a
 
         onClickChoose =
             let
@@ -315,3 +313,8 @@ cover channel =
 playlist : Channel.Model -> Html Msg
 playlist channel =
     Html.map (Msg.Channel channel.id) (lazy Channel.View.playlist channel)
+
+
+mapTouch : Attribute (Utils.Touch.E Msg) -> Attribute Msg
+mapTouch a =
+    Html.Attributes.map Msg.SingleTouch a
