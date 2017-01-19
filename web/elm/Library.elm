@@ -7,7 +7,7 @@ type Msg
     = NoOp
     | ExecuteAction Action String
     | MaybeExecuteAction (Maybe Action) String
-    | Response Folder
+    | Response ActionURL (Maybe Folder)
     | PopLevel Int
     | ActionComplete
     | Touch (Utils.Touch.E Msg)
@@ -57,7 +57,8 @@ type alias Model =
 
 type alias FolderResponse =
     { libraryId : String
-    , folder : Folder
+    , url : ActionURL
+    , folder : Maybe Folder
     }
 
 

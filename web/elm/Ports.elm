@@ -127,7 +127,7 @@ libraryResponseActions : Sub Msg
 libraryResponseActions =
     let
         translate response =
-            Msg.Library (Library.Response response.folder)
+            Msg.Library (Library.Response response.url response.folder)
     in
         libraryResponse translate
 

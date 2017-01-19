@@ -77,20 +77,25 @@ update action model maybeChannelId =
                 Just libraryAction ->
                     update (Library.ExecuteAction libraryAction title) model maybeChannelId
 
-        Library.Response folder ->
+        Library.Response url folderResponse ->
             case model.currentRequest of
                 Nothing ->
                     model ! []
 
                 Just action ->
-                    let
-                        _ =
-                            Debug.log "current action" action
+                    case folderResponse of
+                        Nothing ->
+                            ( { model | currentRequest = Nothing }, Cmd.none )
 
-                        model_ =
-                            setLevelContents model action folder
-                    in
-                        ( { model_ | currentRequest = Nothing }, Cmd.none )
+                        Just folder ->
+                            let
+                                _ =
+                                    Debug.log "current action" action
+
+                                model_ =
+                                    setLevelContents model action folder
+                            in
+                                ( { model_ | currentRequest = Nothing }, Cmd.none )
 
         Library.PopLevel index ->
             let

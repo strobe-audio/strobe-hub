@@ -24,8 +24,8 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:library_response, [id, response, socket]}, state) do
-    Phoenix.Channel.push(socket, "library", %{ libraryId: id, folder: response })
+  def handle_event({:library_response, [id, url, response, socket]}, state) do
+    Phoenix.Channel.push(socket, "library", %{ libraryId: id, url: url, folder: response })
     {:ok, state}
   end
 
