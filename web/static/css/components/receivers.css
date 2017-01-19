@@ -22,6 +22,10 @@
   background-color: rgba(0, 0, 0, 0.5);
 }
 
-
+.receivers--active-empty {
+  text-align: center;
+  color: #666;
+  line-height: $button-size;
+}
 
 

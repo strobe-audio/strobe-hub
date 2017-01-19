@@ -90,21 +90,24 @@ attached model channel =
         receiverEntry receiver =
             Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver channel)
 
+        contents =
+            if active then
+                div [ class "receivers--list" ]    (List.map receiverEntry receivers)
+            else
+                div [ class "receivers--active-empty" ] [ text "Add receivers from list below" ]
+
     in
-        if active then
-            div
-                [ class "receivers" ]
+        div
+            [ class "receivers" ]
+            [ div
+                [ class "receivers--head" ]
                 [ div
-                    [ class "receivers--head" ]
-                    [ div
-                        [ class "receivers--title" ]
-                        [ (text ((toString (List.length receivers)) ++ " Attached Receivers"))
-                        ]
+                    [ class "receivers--title" ]
+                    [ (text ((toString (List.length receivers)) ++ " Attached Receivers"))
                     ]
-                , div [ class "receivers--list" ]    (List.map receiverEntry receivers)
                 ]
-        else
-            div [] []
+            , contents
+            ]
 
 detached : Root.Model -> Channel.Model -> Html Msg
 detached model channel =
