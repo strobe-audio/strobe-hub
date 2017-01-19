@@ -78,8 +78,20 @@ channel model channel =
         ]
         [ div
             [ class "channels--channel-title" ]
-            [ div [ class "channel--name", onClick Msg.ToggleChangeChannel ] [ text channel.name ]
-            , div [ class "channels--show-switch-channel", onClick Msg.ToggleChangeChannel ] []
+            [ div
+                [ class "channel--name"
+                , onClick Msg.ToggleChangeChannel
+                , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
+                , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
+                ]
+                [ text channel.name ]
+            , div
+                [ class "channels--show-switch-channel"
+                , onClick Msg.ToggleChangeChannel
+                , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
+                , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
+                ]
+                []
             ]
         , (changeChannel model channel)
         , (channelVolume model channel)
