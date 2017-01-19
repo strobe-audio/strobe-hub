@@ -41,7 +41,7 @@ defmodule BBC.Events.Library do
       title: "BBC",
       icon: bbc_logo(),
       actions: %{
-        click: url("root"),
+        click: %{ url: url("root"), level: true },
         play: nil
       },
       metadata: nil
@@ -50,7 +50,7 @@ defmodule BBC.Events.Library do
 
   def route_library_request(_channel_id, ["root"], _path) do
     channels = Enum.map BBC.channels(), fn(channel) ->
-      play = url(["channel", channel.id, "play"])
+      play = %{ url: url(["channel", channel.id, "play"]), level: false }
       %{ id: "bbc:channel/#{channel.id}",
         title: channel.title,
         icon: Channel.cover_image(channel, :small),
