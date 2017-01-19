@@ -22,7 +22,7 @@ defmodule Peel.Events.Library do
       title: "Your Music",
       icon: "",
       actions: %{
-        click: url("root"),
+        click: %{ url: url("root"), level: true },
         play: nil
       },
       metadata: nil
@@ -43,8 +43,8 @@ defmodule Peel.Events.Library do
       title: "Your Music",
       icon: "",
       children: [
-        %{ id: "peel:albums", title: "Albums", icon: "", actions: %{ click: url("albums"), play: nil }, metadata: nil },
-        %{ id: "peel:artists", title: "Artists", icon: "", actions: %{ click: url("artists"), play: nil }, metadata: nil },
+        %{ id: "peel:albums", title: "Albums", icon: "", actions: %{ click: %{ url: url("albums"), level: true }, play: nil }, metadata: nil },
+        %{ id: "peel:artists", title: "Artists", icon: "", actions: %{ click: %{ url: url("artists"), level: true }, play: nil }, metadata: nil },
         # TODO: other top-level items
       ],
     }
@@ -238,27 +238,27 @@ defmodule Peel.Events.Library do
   end
 
   def click_action(%Track{id: id}) do
-    url(["track", id, "play"])
+    %{ url: url(["track", id, "play"]), level: false }
   end
 
   def click_action(%Album{id: id}) do
-    url(["album", id])
+    %{ url: url(["album", id]), level: true }
   end
 
   def click_action(%Artist{id: id}) do
-    url(["artist", id])
+    %{ url: url(["artist", id]), level: true }
   end
 
   def play_action(%Track{id: id}) do
-    url(["track", id, "play"])
+    %{ url: url(["track", id, "play"]), level: false }
   end
 
   def play_action(%Album{id: id}) do
-    url(["album", id, "play"])
+    %{ url: url(["album", id, "play"]), level: false }
   end
 
   def play_action(%Artist{id: id}) do
-    url(["artist", id, "play"])
+    %{ url: url(["artist", id, "play"]), level: false }
   end
 
   def icon(nil), do: ""
