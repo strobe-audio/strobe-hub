@@ -6,7 +6,8 @@
   flex-direction: row;
   /* line-height: $button-size; */
   position: fixed;
-  top: $button-size;
+  /* top: $button-size; */
+  top: $top-bar-height;
   left: 0;
   bottom: 0;
   width: 0;
@@ -63,7 +64,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 
 .channels-selector--channel {
   /* flex: 0 0 $button-size; */
-  height: 50px;
+  height: $button-size;
   display: flex;
   align-items: center;
   color: #fff;

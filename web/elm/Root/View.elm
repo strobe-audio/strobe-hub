@@ -98,7 +98,15 @@ channelSettingsButton model =
 
 currentChannelPlayer : Channel.Model -> Html Msg
 currentChannelPlayer channel =
-    Html.map (Msg.Channel channel.id) (Channel.View.player channel)
+    div
+        [ class "root--channel-state" ]
+        [ div
+            [ class "root--channel-name" ]
+            [ div [ class "channel--name" ] [ text channel.name ] ]
+        , div
+            [ class "root--channel-rendition" ]
+            [ Html.map (Msg.Channel channel.id) (Channel.View.player channel) ]
+        ]
 
 libraryToggleView : Root.Model -> Channel.Model -> Html Msg
 libraryToggleView model channel =
@@ -120,7 +128,7 @@ libraryToggleView model channel =
                 , mapTouch (Utils.Touch.touchEnd (Msg.SetListMode Root.PlaylistMode))
                 ]
                 -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
-                [ div [ class "root--mode--channel-name" ] [ text channel.name ]
+                [ div [ class "root--mode--channel-name" ] [ text "Playlist" ]
                 , div [ class "root--mode--channel-duration" ] [ text duration ]
                 ]
             ]

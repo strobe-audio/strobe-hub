@@ -10,6 +10,9 @@ $padding: 6px;
 
 $button-size: 60px;
 
+$active-channel-bar-height: 20px;
+$top-bar-height: calc($button-size + $active-channel-bar-height);
+
 $mode-selector-height: $button-size;
 
 $channel-icon: "\f140";

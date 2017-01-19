@@ -75,7 +75,8 @@
 }
 .root--mode--playlist {
   &:before {
-    content: $channel-icon;
+    /* content: $channel-icon; */
+    content: "\f0ca"; /* fa-list-ul */
   }
 }
 .root--mode--playlist-label {
@@ -102,15 +103,17 @@
   color: #fff;
   background: #000;
   display: flex;
-  height: $button-size;
+  height: $top-bar-height;
   /* flex: 0 0 $button-size; */
 }
 
 .root--channel-select {
   flex: 0 0 $button-size;
   text-align: center;
-  line-height: $button-size;
+  /* line-height: $button-size; */
+  line-height: $top-bar-height;
   cursor: pointer;
+  background: #BF360C;
 }
 
 .root--offline {
@@ -135,4 +138,24 @@
   width: 100%;
   text-align: center;
   line-height: 2.5;
+}
+
+.root--channel-state {
+  /* display: flex; */
+  flex: 1;
+  /* flex-direction: column; */
+}
+
+.root--channel-rendition {
+  height: $button-size;
+}
+.root--channel-name {
+  height: $active-channel-bar-height;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: $active-channel-bar-height;
+  /* background: rgba(255, 0, 0, 0.3); */
+  color: #E65100;
+  /* padding: 0 $padding; */
 }

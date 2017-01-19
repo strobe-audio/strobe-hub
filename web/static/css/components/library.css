@@ -96,7 +96,7 @@
   transform: translateY(-50%);
   padding: 0 $padding;
   cursor: pointer;
-  max-width: calc(100vw - 50px - (2 * $padding));
+  max-width: calc(100vw - $button-size - (2 * $padding));
   overflow: hidden;
   text-overflow: ellipsis;
 }
