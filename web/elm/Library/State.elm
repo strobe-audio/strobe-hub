@@ -16,7 +16,8 @@ initialState =
             { id = "libraries", title = "Libraries", icon = "", children = [] }
 
         root =
-            { action = "root", contents = Just rootFolder }
+            { action = "root", title = rootFolder.title, contents = Just rootFolder }
+
         levels =
             Stack.initialise |> Stack.push root
     in
@@ -40,12 +41,12 @@ update action model maybeChannelId =
             in
                 ( { model | currentRequest = Nothing }, Cmd.none )
 
-        Library.ExecuteAction a ->
+        Library.ExecuteAction a title ->
             case maybeChannelId of
                 Just channelId ->
                     let
                         level =
-                            { action = a, contents = Nothing }
+                            { action = a, title = title, contents = Nothing }
 
                         levels =
                             Stack.push level model.levels
@@ -64,13 +65,13 @@ update action model maybeChannelId =
                 Nothing ->
                     ( model, Cmd.none )
 
-        Library.MaybeExecuteAction a ->
+        Library.MaybeExecuteAction a title ->
             case a of
                 Nothing ->
                     ( model, Cmd.none )
 
                 Just libraryAction ->
-                    update (Library.ExecuteAction libraryAction) model maybeChannelId
+                    update (Library.ExecuteAction libraryAction title) model maybeChannelId
 
         Library.Response folder ->
             case model.currentRequest of
@@ -146,22 +147,6 @@ setLevelContents model action folder =
 
     in
         { model | levels = (Stack.fromList levels) }
-
-pushLevel : Library.Model -> Library.Action -> Library.Folder -> Library.Model
-pushLevel model action folder =
-    let
-        level =
-            { action = action, contents = Just folder }
-
-        levels =
-            Stack.push level model.levels
-
-    in
-        -- Debug.log ("pushLevel |" ++ (toString folder) ++ "| |" ++ (toString model.level) ++ "| ")
-        { model
-        | depth = model.depth + 1
-        , levels = levels
-        }
 
 
 add : Library.Model -> Library.Node -> Library.Model

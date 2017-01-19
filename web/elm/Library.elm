@@ -5,8 +5,8 @@ import Stack exposing (Stack)
 
 type Msg
     = NoOp
-    | ExecuteAction String
-    | MaybeExecuteAction (Maybe String)
+    | ExecuteAction Action String
+    | MaybeExecuteAction (Maybe Action) String
     | Response Folder
     | PopLevel Int
     | ActionComplete
@@ -20,6 +20,7 @@ type alias Action =
 -- {action = "<action>", contents = Nothing}
 type alias Level =
     { action : Action
+    , title : String
     , contents : Maybe Folder
     }
 
@@ -65,8 +66,8 @@ type alias Link =
 
 
 type alias Actions =
-    { click : String
-    , play : Maybe String
+    { click : Action
+    , play : Maybe Action
     }
 
 {-
