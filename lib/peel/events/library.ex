@@ -132,13 +132,14 @@ defmodule Peel.Events.Library do
         nil
       artist ->
         albums = artist |> Artist.albums |> Enum.map(fn(album) ->
+          click = click_action(album)
           %{
             id: "peel:album/#{album.id}",
             title: album.title,
             icon: icon(album.cover_image),
             actions: %{
-              click: "#{click_action(album)}/artist/#{artist_id}",
-              play: "#{click_action(album)}/artist/#{artist_id}/play",
+              click: %{ url: "#{click.url}/artist/#{artist_id}", level: true},
+              play: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
             },
             metadata: album_date_metadata([], album.date)
           }
