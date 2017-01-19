@@ -25,6 +25,10 @@
   max-width: calc(100vw - (2 * $button-size));
 }
 
+.receiver--volume .volume-level {
+  background-color: #00796B;
+}
+
 .receiver__attached {
 }
 
