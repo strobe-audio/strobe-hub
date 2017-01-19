@@ -159,3 +159,11 @@
   color: #E65100;
   /* padding: 0 $padding; */
 }
+
+.root--notifications {
+	position: fixed;
+  top: calc($active-channel-bar-height + $button-size + $padding);
+	width: 76vw;
+	margin: 0 12vw 0 12vw;
+	z-index: 10000;
+}

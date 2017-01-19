@@ -1,7 +1,7 @@
 module Channel.State exposing (initialState, update, newChannel)
 
 import Debug
-import Root exposing (BroadcasterState)
+import State exposing (BroadcasterState)
 import Msg exposing (Msg)
 import Channel
 import Channel.Cmd

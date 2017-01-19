@@ -17,6 +17,8 @@ import Msg exposing (Msg)
 import Navigation
 import Routing
 import Utils.Touch
+import Notification
+import State
 
 
 initialState : Root.Model
@@ -24,7 +26,7 @@ initialState =
     { connected = False
     , channels = []
     , receivers = []
-    , listMode = Root.PlaylistMode
+    , listMode = State.PlaylistMode
     , showPlaylistAndLibrary = False
     , library = Library.State.initialState
     , showAddChannel = False
@@ -35,10 +37,11 @@ initialState =
     , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
     , animationTime = Nothing
+    , notifications = []
     }
 
 
-broadcasterState : Root.BroadcasterState -> List Channel.Model
+broadcasterState : State.BroadcasterState -> List Channel.Model
 broadcasterState state =
     List.map (Channel.State.initialState (Debug.log "state" state)) state.channels
 
@@ -221,7 +224,27 @@ update action model =
                     model ! []
 
         Msg.BroadcasterRenditionAdded rendition ->
-            update (Msg.Channel rendition.channelId (Channel.AddRendition rendition)) model
+            let
+                (model_, channelCmd) =
+                    update (Msg.Channel rendition.channelId (Channel.AddRendition rendition)) model
+
+                notifications =
+                    case model.activeChannelId of
+                        Nothing ->
+                            model.notifications
+
+                        Just id ->
+                            if rendition.channelId == id then
+                                let
+                                    notification =
+                                        Debug.log "adding notification"
+                                        Notification.forRendition model.animationTime rendition
+                                in
+                                    notification :: model.notifications
+                            else
+                                model.notifications
+            in
+                { model_ | notifications = notifications } ! [channelCmd]
 
         Msg.BrowserViewport width ->
             let
@@ -255,9 +278,20 @@ update action model =
         Msg.AnimationFrame time ->
             let
                 (library, cmd) =
-                    Library.State.update (Library.AnimationFrame time) model.library Nothing
+                    Library.State.update
+                        (Library.AnimationFrame time)
+                        model.library
+                        Nothing
+
+                notifications =
+                    List.filter (Notification.isVisible time) model.notifications
+
             in
-                { model | animationTime = Just time, library = library } ! [(Cmd.map Msg.Library cmd)]
+                { model
+                | animationTime = Just time
+                , library = library
+                , notifications = notifications
+                } ! [(Cmd.map Msg.Library cmd)]
 
 
 libraryVisible : Root.Model -> Bool
@@ -268,14 +302,14 @@ libraryVisible model =
 
         False ->
             case model.listMode of
-                Root.LibraryMode ->
+                State.LibraryMode ->
                     True
 
-                Root.PlaylistMode ->
+                State.PlaylistMode ->
                     False
 
 
-loadChannels : Root.Model -> Root.BroadcasterState -> List Channel.Model
+loadChannels : Root.Model -> State.BroadcasterState -> List Channel.Model
 loadChannels model state =
     let
         channels =
@@ -287,7 +321,7 @@ loadChannels model state =
         channels
 
 
-loadReceivers : Root.Model -> Root.BroadcasterState -> List Receiver.Model
+loadReceivers : Root.Model -> State.BroadcasterState -> List Receiver.Model
 loadReceivers model state =
     List.map Receiver.State.initialState state.receivers
 
@@ -305,3 +339,5 @@ processAddChannelInputAction action model =
 
                 Input.Close ->
                     ( model, Msg.ToggleAddChannel )
+
+

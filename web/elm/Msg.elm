@@ -6,21 +6,21 @@ import Library
 import Channel
 import Receiver
 import Rendition
-import Root
 import ID
 import Input
 import Navigation
 import Utils.Touch
+import State
 
 
 type Msg
     = NoOp
     | Connected Bool
     | UrlChange Navigation.Location
-    | InitialState Root.BroadcasterState
+    | InitialState State.BroadcasterState
     | ToggleChannelSelector
     | ToggleChangeChannel
-    | SetListMode Root.ChannelListMode
+    | SetListMode State.ChannelListMode
     | ActivateChannel Channel.Model
     | ToggleAddChannel
     | AddChannelInput Input.Msg
@@ -35,7 +35,7 @@ type Msg
     | BroadcasterChannelRenamed ( ID.Channel, String )
     | BroadcasterReceiverRenamed ( ID.Receiver, String )
     | BroadcasterLibraryRegistration Library.Node
-    | BroadcasterVolumeChange Root.VolumeChangeEvent
+    | BroadcasterVolumeChange State.VolumeChangeEvent
     | BroadcasterRenditionAdded Rendition.State
       -- events from browser
     | BrowserViewport Int

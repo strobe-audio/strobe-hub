@@ -14,6 +14,9 @@ import Rendition
 import ID
 import Input
 import Utils.Touch
+import Notification
+import State
+import Msg exposing (Msg)
 
 
 type alias Model =
@@ -26,23 +29,12 @@ type alias Model =
     , showChangeChannel : Bool
     , showAttachReceiver : Bool
     , activeChannelId : Maybe ID.Channel
-    , listMode : ChannelListMode
+    , listMode : State.ChannelListMode
     , showPlaylistAndLibrary : Bool
     , library : Library.Model
     , touches : Utils.Touch.Model
     , animationTime : Maybe Time
-    }
-
-
-type ChannelListMode
-    = LibraryMode
-    | PlaylistMode
-
-
-type alias BroadcasterState =
-    { channels : List Channel.State
-    , receivers : List Receiver.State
-    , renditions : List Rendition.State
+    , notifications : List (Notification.Model Msg)
     }
 
 
@@ -57,12 +49,6 @@ type alias ChannelStatusEvent =
     , status : String
     }
 
-
-type alias VolumeChangeEvent =
-    { id : String
-    , target : String
-    , volume : Float
-    }
 
 
 activeChannel : Model -> Maybe Channel.Model
@@ -83,10 +69,10 @@ playlistVisible model =
 
         False ->
             case model.listMode of
-                LibraryMode ->
+                State.LibraryMode ->
                     False
 
-                PlaylistMode ->
+                State.PlaylistMode ->
                     True
 
 

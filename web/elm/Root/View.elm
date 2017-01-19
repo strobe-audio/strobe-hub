@@ -3,7 +3,6 @@ module Root.View exposing (root)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Html
 import Debug
 import Root
 import Root.State
@@ -16,6 +15,8 @@ import Source.View
 import Json.Decode as Json
 import Msg exposing (Msg)
 import Utils.Touch exposing (onUnifiedClick)
+import Notification.View
+import State
 
 
 root : Root.Model -> Html Msg
@@ -59,6 +60,7 @@ rootWhenConnected model =
                       {- , on "scroll" (Json.value Msg.BrowserScroll) -}
                     ]
                     [ (controlBar model)
+                    , (notifications model)
                     , div [ class "root--wrapper" ]
                         [ (Channels.View.channels model)
                         , div
@@ -90,6 +92,12 @@ controlBar model =
                 , (currentChannelPlayer channel)
                 ]
 
+notifications : Root.Model -> Html Msg
+notifications model =
+    div
+        [ class "root--notifications" ]
+        [ (Notification.View.notifications model.animationTime model.notifications)
+        ]
 
 channelSettingsButton : Root.Model -> Html Msg
 channelSettingsButton model =
@@ -121,11 +129,11 @@ libraryToggleView model channel =
             [ div
                 [ classList
                     [ ( "root--mode--choice root--mode--playlist", True )
-                    , ( "root--mode--choice__active", model.listMode == Root.PlaylistMode )
+                    , ( "root--mode--choice__active", model.listMode == State.PlaylistMode )
                     ]
-                , onClick (Msg.SetListMode Root.PlaylistMode)
-                , mapTouch (Utils.Touch.touchStart (Msg.SetListMode Root.PlaylistMode))
-                , mapTouch (Utils.Touch.touchEnd (Msg.SetListMode Root.PlaylistMode))
+                , onClick (Msg.SetListMode State.PlaylistMode)
+                , mapTouch (Utils.Touch.touchStart (Msg.SetListMode State.PlaylistMode))
+                , mapTouch (Utils.Touch.touchEnd (Msg.SetListMode State.PlaylistMode))
                 ]
                 -- [ span [ class "root--mode--playlist-label" ] [ text "Playlist" ]
                 [ div [ class "root--mode--channel-name" ] [ text "Playlist" ]
@@ -137,11 +145,11 @@ libraryToggleView model channel =
             [ div
                 [ classList
                     [ ( "root--mode--choice root--mode--library", True )
-                    , ( "root--mode--choice__active", model.listMode == Root.LibraryMode )
+                    , ( "root--mode--choice__active", model.listMode == State.LibraryMode )
                     ]
-                , onClick (Msg.SetListMode Root.LibraryMode)
-                , mapTouch (Utils.Touch.touchStart (Msg.SetListMode Root.LibraryMode))
-                , mapTouch (Utils.Touch.touchEnd (Msg.SetListMode Root.LibraryMode))
+                , onClick (Msg.SetListMode State.LibraryMode)
+                , mapTouch (Utils.Touch.touchStart (Msg.SetListMode State.LibraryMode))
+                , mapTouch (Utils.Touch.touchEnd (Msg.SetListMode State.LibraryMode))
                 ]
                 [ text "Library" ]
             ]

@@ -6,6 +6,7 @@ import Library
 import Rendition
 import Msg exposing (Msg)
 import Root
+import State
 import Receiver
 
 
@@ -32,7 +33,7 @@ scrollTopActions =
     scrollTop Msg.BrowserScroll
 
 
-port broadcasterState : (Root.BroadcasterState -> m) -> Sub m
+port broadcasterState : (State.BroadcasterState -> m) -> Sub m
 
 
 broadcasterStateActions : Sub Msg
@@ -96,7 +97,7 @@ renditionChangeActions =
         renditionChange forward
 
 
-port volumeChange : (Root.VolumeChangeEvent -> m) -> Sub m
+port volumeChange : (State.VolumeChangeEvent -> m) -> Sub m
 
 
 volumeChangeActions : Sub Msg
