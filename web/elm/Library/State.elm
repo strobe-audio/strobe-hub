@@ -7,6 +7,8 @@ import Time exposing (millisecond)
 import Debug
 import Utils.Touch
 import Stack exposing (Stack)
+import Animation
+import Ease
 
 
 initialState : Library.Model
@@ -25,6 +27,8 @@ initialState =
         , depth = 0
         , currentRequest = Nothing
         , touches = Utils.Touch.emptyModel
+        , animationTime = Nothing
+        , levelAnimation = (Animation.static 0)
         }
 
 
@@ -54,10 +58,14 @@ update action model maybeChannelId =
                                     levels =
                                         Stack.push level model.levels
 
+                                    animation =
+                                        levelAnimation model (model.depth + 1)
+
                                 in
                                     { model
                                     | levels = levels
                                     , depth = model.depth + 1
+                                    , levelAnimation = animation
                                     }
                             else
                                 model
@@ -104,12 +112,15 @@ update action model maybeChannelId =
                         model.levels
                     _ ->
                         let
+
                             (_, levels) = Stack.pop model.levels
                         in
                             levels
+                animation =
+                    levelAnimation model (model.depth - 1)
 
             in
-                ( { model | levels = levels, depth = (max 0 model.depth - 1) }, Cmd.none )
+                ( { model | levels = levels, depth = (max 0 model.depth - 1), levelAnimation = animation }, Cmd.none )
 
         Library.Touch te ->
           let
@@ -132,6 +143,9 @@ update action model maybeChannelId =
           in
                 (updated, cmd)
 
+        Library.AnimationFrame time ->
+            { model | animationTime = Just time } ! []
+
 
 currentLevel : Library.Model -> Library.Level
 currentLevel model =
@@ -141,6 +155,7 @@ currentLevel model =
 
         Nothing ->
             Debug.crash "Model has no root level!"
+
 
 setLevelContents : Library.Model -> Library.ActionURL -> Library.Folder -> Library.Model
 setLevelContents model action folder =
@@ -161,8 +176,6 @@ setLevelContents model action folder =
 add : Library.Model -> Library.Node -> Library.Model
 add model library =
     let
-
-        _ = Debug.log "library" model
 
         reversedLevels =
             List.reverse <| Stack.toList model.levels
@@ -209,3 +222,23 @@ addUniqueLibrary library folder =
                     library :: folder.children
     in
         { folder | children = children }
+
+
+levelOffset : Int -> Float
+levelOffset depth =
+    (depth * 100) |> toFloat
+
+
+levelAnimation : Library.Model -> Int -> Animation.Animation
+levelAnimation model targetDepth =
+    (Maybe.map
+        (\time ->
+            (Animation.animation time)
+            |> (Animation.from (levelOffset model.depth))
+            |> Animation.to (levelOffset targetDepth)
+            |> Animation.duration (300 * Time.millisecond)
+            |> Animation.ease Ease.inOutSine
+        )
+        model.animationTime
+    ) |> Maybe.withDefault (Animation.static (levelOffset model.depth))
+

@@ -1,5 +1,7 @@
 module Msg exposing (..)
 
+import Time exposing (Time)
+
 import Library
 import Channel
 import Receiver
@@ -39,3 +41,4 @@ type Msg
     | BrowserViewport Int
     | BrowserScroll Int
     | SingleTouch (Utils.Touch.E Msg)
+    | AnimationFrame Time

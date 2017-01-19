@@ -8,6 +8,7 @@ import Channel
 import Channel.State
 import Receiver
 import Receiver.State
+import Library
 import Library.State
 import ID
 import Input
@@ -33,6 +34,7 @@ initialState =
     , activeChannelId = Nothing
     , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
+    , animationTime = Nothing
     }
 
 
@@ -249,6 +251,13 @@ update action model =
                             { model | touches = touches } ! []
             in
                 updated ! [cmd]
+
+        Msg.AnimationFrame time ->
+            let
+                (library, cmd) =
+                    Library.State.update (Library.AnimationFrame time) model.library Nothing
+            in
+                { model | animationTime = Just time, library = library } ! [(Cmd.map Msg.Library cmd)]
 
 
 libraryVisible : Root.Model -> Bool

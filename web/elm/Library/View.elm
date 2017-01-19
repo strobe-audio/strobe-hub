@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
+import Animation
 import Library
 import Library.State
 import List.Extra
@@ -47,7 +48,12 @@ levels model =
             List.map levelColumn levels
 
         left =
-            model.depth * -100
+            case model.animationTime of
+                Nothing ->
+                    0
+
+                Just time ->
+                    -(Animation.animate time model.levelAnimation)
 
     in
         div

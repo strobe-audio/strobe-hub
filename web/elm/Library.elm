@@ -1,7 +1,9 @@
 module Library exposing (..)
 
+import Time exposing (Time)
 import Utils.Touch
 import Stack exposing (Stack)
+import Animation
 
 type Msg
     = NoOp
@@ -11,6 +13,7 @@ type Msg
     | PopLevel Int
     | ActionComplete
     | Touch (Utils.Touch.E Msg)
+    | AnimationFrame Time
 
 
 type alias ActionURL =
@@ -52,6 +55,8 @@ type alias Model =
     , depth : Int
     , currentRequest : Maybe ActionURL
     , touches : Utils.Touch.Model
+    , animationTime : Maybe Time
+    , levelAnimation : Animation.Animation
     }
 
 

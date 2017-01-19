@@ -113,7 +113,6 @@
   display: flex;
   flex-direction: row;
   position: relative;
-  transition: left 150ms;
 }
 
 .library--folder {

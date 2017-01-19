@@ -2,6 +2,7 @@ module Root exposing (..)
 
 import List.Extra
 import Json.Decode as Json
+import Time exposing (Time)
 
 
 --
@@ -29,6 +30,7 @@ type alias Model =
     , showPlaylistAndLibrary : Bool
     , library : Library.Model
     , touches : Utils.Touch.Model
+    , animationTime : Maybe Time
     }
 
 

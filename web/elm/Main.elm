@@ -4,6 +4,7 @@ import Debug
 import Html
 import Msg exposing (Msg)
 import Window
+import AnimationFrame
 import Root
 import Root.State
 import Root.View
@@ -61,6 +62,7 @@ subscriptions model =
         , Ports.scrollTopActions
         , Ports.connectionStatusActions
         , viewportWidth
+        , AnimationFrame.times (Msg.AnimationFrame)
         ]
 
 
