@@ -13,13 +13,19 @@ type Msg
     | Touch (Utils.Touch.E Msg)
 
 
-type alias Action =
+type alias ActionURL =
     String
+
+
+type alias Action =
+    { url : ActionURL
+    , level : Bool
+    }
 
 -- can serialise this as just `action` and restore as
 -- {action = "<action>", contents = Nothing}
 type alias Level =
-    { action : Action
+    { action : ActionURL
     , title : String
     , contents : Maybe Folder
     }
@@ -44,7 +50,7 @@ type alias Node =
 type alias Model =
     { levels : Stack Level
     , depth : Int
-    , currentRequest : Maybe Action
+    , currentRequest : Maybe ActionURL
     , touches : Utils.Touch.Model
     }
 
@@ -61,7 +67,7 @@ type alias Metadata =
 
 type alias Link =
     { title : String
-    , action : Maybe String
+    , action : Maybe Action
     }
 
 

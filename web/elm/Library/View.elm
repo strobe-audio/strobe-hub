@@ -78,7 +78,7 @@ metadata node metadata =
             div [ class "library--node--metadata" ] (List.map (metadataGroup node) metadataGroups)
 
 
-metadataClick : String -> String -> List (Html.Attribute Library.Msg)
+metadataClick : String -> Library.Action -> List (Html.Attribute Library.Msg)
 metadataClick title action =
     let
         options =
@@ -115,7 +115,7 @@ node library folder node =
     let
         isActive =
             Maybe.withDefault False
-                (Maybe.map (\action -> node.actions.click == action) library.currentRequest)
+                (Maybe.map (\action -> node.actions.click.url == action) library.currentRequest)
 
         options =
             { preventDefault = True, stopPropagation = True }

@@ -45,20 +45,24 @@ update action model maybeChannelId =
             case maybeChannelId of
                 Just channelId ->
                     let
-                        level =
-                            { action = a, title = title, contents = Nothing }
-
-                        levels =
-                            Stack.push level model.levels
-
                         model_ =
-                            { model
-                            | currentRequest = Just a
-                            , levels = levels
-                            , depth = model.depth + 1
-                            }
+                            if a.level then
+                                let
+                                    level =
+                                        { action = a.url, title = title, contents = Nothing }
+
+                                    levels =
+                                        Stack.push level model.levels
+
+                                in
+                                    { model
+                                    | levels = levels
+                                    , depth = model.depth + 1
+                                    }
+                            else
+                                model
                     in
-                        model_ ! [ (Library.Cmd.sendAction channelId a) ]
+                        { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url) ]
                         -- disable this auto-completion as I need the currentRequest value
                         -- , (Library.Cmd.requestComplete (300 * millisecond))
 
@@ -133,7 +137,7 @@ currentLevel model =
         Nothing ->
             Debug.crash "Model has no root level!"
 
-setLevelContents : Library.Model -> Library.Action -> Library.Folder -> Library.Model
+setLevelContents : Library.Model -> Library.ActionURL -> Library.Folder -> Library.Model
 setLevelContents model action folder =
     let
         updateLevel l =
