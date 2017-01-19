@@ -36,7 +36,7 @@ defmodule Otis.Library do
           title: "Override me",
           icon: "",
           actions: %{
-            click: url("root"),
+            click: %{ url: url("root"), level: true },
             play: nil
           },
           metadata: nil
