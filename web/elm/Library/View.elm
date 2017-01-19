@@ -1,6 +1,7 @@
 module Library.View exposing (..)
 
 import Html exposing (..)
+import Html.Lazy
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
@@ -20,14 +21,19 @@ root : Library.Model -> Html Library.Msg
 root model =
     div [ class "library" ]
         [ (breadcrumb model)
-        , (levels model)
+        , (Html.Lazy.lazy levels model)
         ]
 
 levels : Library.Model -> Html Library.Msg
 levels model =
     let
         levels =
-            Stack.toList model.levels |> List.reverse
+            Stack.toList model.levels
+                |> (  Maybe.map (\l -> [l]) model.unloadingLevel
+                   |> Maybe.withDefault []
+                   |> List.append
+                   )
+                |> List.reverse
 
         levelColumn l =
             case l.contents of

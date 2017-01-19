@@ -54,6 +54,7 @@ type alias Model =
     { levels : Stack Level
     , depth : Int
     , currentRequest : Maybe ActionURL
+    , unloadingLevel : Maybe Level
     , touches : Utils.Touch.Model
     , animationTime : Maybe Time
     , levelAnimation : Animation.Animation

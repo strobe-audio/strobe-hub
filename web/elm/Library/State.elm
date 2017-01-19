@@ -26,6 +26,7 @@ initialState =
         { levels = levels
         , depth = 0
         , currentRequest = Nothing
+        , unloadingLevel = Nothing
         , touches = Utils.Touch.emptyModel
         , animationTime = Nothing
         , levelAnimation = (Animation.static 0)
@@ -107,20 +108,29 @@ update action model maybeChannelId =
 
         Library.PopLevel index ->
             let
-                levels = case model.depth of
-                    0 ->
-                        model.levels
-                    _ ->
-                        let
+                model_ =
+                    case model.depth of
+                        0 ->
+                            model
 
-                            (_, levels) = Stack.pop model.levels
-                        in
-                            levels
-                animation =
-                    levelAnimation model (model.depth - 1)
+                        _ ->
+                            let
+                                (maybeCurrentLevel, levels) =
+                                    Stack.pop model.levels
+
+                                animation =
+                                    levelAnimation model (model.depth - 1)
+
+                            in
+                                { model
+                                | levels = levels
+                                , depth = (max 0 model.depth - 1)
+                                , levelAnimation = animation
+                                , unloadingLevel = maybeCurrentLevel
+                                }
 
             in
-                ( { model | levels = levels, depth = (max 0 model.depth - 1), levelAnimation = animation }, Cmd.none )
+                ( model_, Cmd.none )
 
         Library.Touch te ->
           let
@@ -144,7 +154,15 @@ update action model maybeChannelId =
                 (updated, cmd)
 
         Library.AnimationFrame time ->
-            { model | animationTime = Just time } ! []
+            let
+                model_ =
+                    if Animation.isDone time model.levelAnimation then
+                        { model | unloadingLevel = Nothing }
+
+                    else
+                        model
+            in
+                { model_ | animationTime = Just time } ! []
 
 
 currentLevel : Library.Model -> Library.Level
@@ -236,7 +254,7 @@ levelAnimation model targetDepth =
             (Animation.animation time)
             |> (Animation.from (levelOffset model.depth))
             |> Animation.to (levelOffset targetDepth)
-            |> Animation.duration (300 * Time.millisecond)
+            |> Animation.duration (200 * Time.millisecond)
             |> Animation.ease Ease.inOutSine
         )
         model.animationTime
