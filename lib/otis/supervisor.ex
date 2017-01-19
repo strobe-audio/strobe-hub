@@ -31,7 +31,7 @@ defmodule Otis.Supervisor do
       # This needs to be called by the app hosting the application
       # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)
     ]
-    supervise(children, strategy: :one_for_one)
+    supervise(children, strategy: :one_for_all)
   end
 
   def config(mod) do
