@@ -13,13 +13,9 @@ defmodule Otis.Library do
         {:ok, state}
       end
 
-      def handle_event({:library_request, [channel_id, @protocol <> path, socket]}, state) do
-        case handle_request(channel_id, path) do
-          nil ->
-            nil
-          response ->
-            Otis.State.Events.notify({:library_response, [@namespace, response, socket]})
-        end
+      def handle_event({:library_request, [channel_id, (@protocol <> path) = url, socket]}, state) do
+        response = handle_request(channel_id, path)
+        Otis.State.Events.notify({:library_response, [@namespace, url, response, socket]})
         {:ok, state}
       end
 
