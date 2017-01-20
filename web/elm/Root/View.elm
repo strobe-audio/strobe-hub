@@ -19,6 +19,7 @@ import Msg exposing (Msg)
 import Utils.Touch exposing (onUnifiedClick)
 import Notification.View
 import State
+import Spinner
 
 
 root : Root.Model -> Html Msg
@@ -32,7 +33,7 @@ root model =
                 [ class "root--offline" ]
                 [ div
                     [ class "root--offline__message" ]
-                    [ img [ src "/svg/ripple.svg" ] []
+                    [ Spinner.ripple
                     , text "Connecting"
                     ]
                 ]
