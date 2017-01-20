@@ -63,13 +63,21 @@ player channel =
                     div [] []
 
                 Just rendition ->
-                    Html.map (always Channel.NoOp) (Rendition.View.progress rendition channel.playing)
+                    div
+                        [ onClick Channel.PlayPause
+                        -- , mapTap (Utils.Touch.touchStart Channel.PlayPause)
+                        -- , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
+                        ]
+                        [ Html.map
+                            (always Channel.PlayPause)
+                            (Rendition.View.progress rendition channel.playing)
+                        ]
     in
         div
             [ class "channel--playback"
-            , onClick Channel.PlayPause
-            , mapTap (Utils.Touch.touchStart Channel.PlayPause)
-            , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
+            -- , onClick Channel.PlayPause
+            -- , mapTap (Utils.Touch.touchStart Channel.PlayPause)
+            -- , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
             ]
             [ div
                 [ class "channel--info" ]
@@ -81,7 +89,7 @@ player channel =
                     ]
                 , rendition
                 ]
-            , progress
+            -- , progress
             ]
 
 

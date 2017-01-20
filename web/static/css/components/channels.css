@@ -49,7 +49,9 @@
 }
 
 .channels--view {
-  width: $channels-view-width;
+	color: #fff;
+	background: #111;
+	width: 100vw;
 }
 .channels--toggle {
   width: $button-size;

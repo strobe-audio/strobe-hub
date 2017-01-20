@@ -9,8 +9,11 @@ import Msg exposing (Msg)
 
 playPause : Channel.Model -> Cmd Msg
 playPause channel =
-    Ports.playPauseChanges ( channel.id, channel.playing )
-        |> Cmd.map (always Msg.NoOp)
+    let
+        msg =
+            ( channel.id, channel.playing )
+    in
+        Ports.playPauseChanges msg |> Cmd.map (always Msg.NoOp)
 
 
 volume : Channel.Model -> Cmd Msg

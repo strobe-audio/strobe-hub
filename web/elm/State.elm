@@ -22,3 +22,32 @@ type alias VolumeChangeEvent =
 type ChannelListMode
     = LibraryMode
     | PlaylistMode
+
+type ViewMode
+    = ViewCurrentChannel
+    | ViewChannelSwitch
+    | ViewLibrary
+    | ViewSettings
+
+viewLabel : ViewMode -> String
+viewLabel mode =
+    case mode of
+        ViewCurrentChannel ->
+            "Channel"
+
+        ViewChannelSwitch ->
+            "Channels"
+
+        ViewLibrary ->
+            "Library"
+
+        ViewSettings ->
+            "Settings"
+
+viewModes : List ViewMode
+viewModes =
+    [ ViewCurrentChannel
+    , ViewChannelSwitch
+    , ViewLibrary
+    , ViewSettings
+    ]

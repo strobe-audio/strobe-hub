@@ -49,7 +49,7 @@ levels model =
                         ]
 
                 Just folder_ ->
-                    folder model folder_
+                    (Html.Lazy.lazy2 folder model folder_)
 
         columns =
             List.map levelColumn levels

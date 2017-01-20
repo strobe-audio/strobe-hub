@@ -38,6 +38,8 @@ initialState =
     , touches = Utils.Touch.emptyModel
     , animationTime = Nothing
     , notifications = []
+    -- NEW
+    , viewMode = State.ViewCurrentChannel
     }
 
 
@@ -298,6 +300,9 @@ update action model =
                     , notifications = notifications
                 }
                     ! [ (Cmd.map Msg.Library cmd) ]
+
+        Msg.ActivateView mode ->
+            { model | viewMode = mode } ! []
 
 
 libraryVisible : Root.Model -> Bool

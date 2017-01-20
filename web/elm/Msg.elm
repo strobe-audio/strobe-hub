@@ -41,3 +41,5 @@ type Msg
     | BrowserScroll Int
     | SingleTouch (Utils.Touch.E Msg)
     | AnimationFrame Time
+    -- new
+    | ActivateView State.ViewMode
