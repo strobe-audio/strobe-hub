@@ -22,5 +22,8 @@
     "type": "git"
   },
   "author": "Garry Hill <garry@magnetised.net>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "css-loader": "^0.26.1"
+  }
 }
