@@ -352,7 +352,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     channel_record = Otis.State.Channel.create!(channel_id, "Something")
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id)
-    _mock1 = connect!(id, 143)
+    _mock = connect!(id, 143)
     assert_receive {:receiver_connected, [^id, _]}
 
     {:ok, r} = Otis.Receivers.receiver(id)
@@ -363,7 +363,7 @@ defmodule Otis.ReceiverTest do
     data_status = :erlang.port_info(data)
     assert is_pid(data_status[:connected]) == true
     # reconnect the same receiver ...
-    _mock1 = connect!(id, 143)
+    mock = connect!(id, 143)
 
     refute_receive {:receiver_disconnected, [^id, _]}
 
@@ -374,5 +374,14 @@ defmodule Otis.ReceiverTest do
     # validate that our receiver db is correct
     {:ok, r} = Otis.Receivers.receiver(id)
     assert Receiver.alive?(r)
+
+    assert_receive {:receiver_removed, [^channel_id, ^id]}
+
+    [r] = Otis.Receivers.Channels.lookup channel_id
+    assert r.id == id
+
+    Otis.Receivers.Channels.send_data(channel_id, <<"DATA HERE">>)
+    {:ok, data} = data_recv_raw(mock)
+    assert data == <<"DATA HERE">>
   end
 end
