@@ -116,10 +116,12 @@ update action model =
 
                 _ ->
                     model ! []
+
         Receiver.SingleTouch te ->
             let
                 touches =
                     Utils.Touch.update te model.touches
+
                 ( updated, cmd ) =
                     case Utils.Touch.testEvent te touches of
                         Just (Utils.Touch.Tap msg) ->
@@ -128,7 +130,7 @@ update action model =
                         _ ->
                             { model | touches = touches } ! []
             in
-                updated ! [cmd]
+                updated ! [ cmd ]
 
 
 processInputAction : Maybe Input.Action -> Receiver.Model -> ( Receiver.Model, Receiver.Msg )

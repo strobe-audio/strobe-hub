@@ -78,6 +78,7 @@ receivers model channel =
             , div [ class "receivers--list" ] receiverList
             ]
 
+
 attached : Root.Model -> Channel.Model -> Html Msg
 attached model channel =
     let
@@ -92,10 +93,9 @@ attached model channel =
 
         contents =
             if active then
-                div [ class "receivers--list" ]    (List.map receiverEntry receivers)
+                div [ class "receivers--list" ] (List.map receiverEntry receivers)
             else
                 div [ class "receivers--active-empty" ] [ text "Add receivers from list below" ]
-
     in
         div
             [ class "receivers" ]
@@ -108,6 +108,7 @@ attached model channel =
                 ]
             , contents
             ]
+
 
 detached : Root.Model -> Channel.Model -> Html Msg
 detached model channel =
@@ -126,9 +127,8 @@ detached model channel =
                 (Html.Keyed.node
                     "div"
                     []
-                    [(receiver.id, Receiver.View.detached receiver channel)]
+                    [ ( receiver.id, Receiver.View.detached receiver channel ) ]
                 )
-
     in
         if active then
             div
@@ -140,7 +140,7 @@ detached model channel =
                         [ (text ((toString (List.length receivers)) ++ " Detached Receivers"))
                         ]
                     ]
-                , div [ class "receivers--list" ]    (List.map receiverEntry receivers)
+                , div [ class "receivers--list" ] (List.map receiverEntry receivers)
                 ]
         else
             div [] []

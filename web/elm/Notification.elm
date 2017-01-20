@@ -6,6 +6,7 @@ import Ease
 import Time exposing (Time)
 import Rendition
 
+
 type alias Model msg =
     { id : String
     , title : Html.Html msg
@@ -14,16 +15,17 @@ type alias Model msg =
     , disappearAnimation : Animation
     }
 
+
 animate : Time -> Model msg -> Float
 animate t n =
     (Animation.animate t n.appearAnimation)
-    * (Animation.animate t n.disappearAnimation)
+        * (Animation.animate t n.disappearAnimation)
 
 
 isVisible : Time -> Model msg -> Bool
 isVisible t n =
-       (not <| (Animation.isDone t n.appearAnimation))
-       || (not <| (Animation.isDone t n.disappearAnimation))
+    (not <| (Animation.isDone t n.appearAnimation))
+        || (not <| (Animation.isDone t n.disappearAnimation))
 
 
 appearAnimation : Maybe Time -> Animation.Animation
@@ -31,13 +33,14 @@ appearAnimation maybeTime =
     (Maybe.map
         (\time ->
             (Animation.animation time)
-            |> (Animation.from 0.0)
-            |> Animation.to 1.0
-            |> Animation.duration (300 * Time.millisecond)
-            |> Animation.ease Ease.inOutSine
+                |> (Animation.from 0.0)
+                |> Animation.to 1.0
+                |> Animation.duration (300 * Time.millisecond)
+                |> Animation.ease Ease.inOutSine
         )
         maybeTime
-    ) |> Maybe.withDefault (Animation.static 1.0)
+    )
+        |> Maybe.withDefault (Animation.static 1.0)
 
 
 disappearAnimation : Maybe Time -> Animation.Animation
@@ -45,14 +48,15 @@ disappearAnimation maybeTime =
     (Maybe.map
         (\time ->
             (Animation.animation time)
-            |> Animation.delay (2 * Time.second)
-            |> Animation.from 1.0
-            |> Animation.to 0.0
-            |> Animation.duration (300 * Time.millisecond)
-            |> Animation.ease Ease.inOutSine
+                |> Animation.delay (2 * Time.second)
+                |> Animation.from 1.0
+                |> Animation.to 0.0
+                |> Animation.duration (300 * Time.millisecond)
+                |> Animation.ease Ease.inOutSine
         )
         maybeTime
-    ) |> Maybe.withDefault (Animation.static 0.0)
+    )
+        |> Maybe.withDefault (Animation.static 0.0)
 
 
 forRendition : Maybe Time -> Rendition.State -> Model msg
@@ -63,6 +67,7 @@ forRendition maybeTime rendition =
     , appearAnimation = appearAnimation maybeTime
     , disappearAnimation = disappearAnimation maybeTime
     }
+
 
 renditionNotificationTitle : Rendition.State -> Html.Html msg
 renditionNotificationTitle rendition =

@@ -27,6 +27,7 @@ receiverClasses receiver attached =
     , ( "receiver__detached", not attached )
     ]
 
+
 attached : Receiver.Model -> Channel.Model -> Html Receiver.Msg
 attached receiver channel =
     let
@@ -45,7 +46,6 @@ attached receiver channel =
 
         receiverLabel receiver =
             div [ class "receiver--name" ] [ text receiver.name ]
-
     in
         div [ id ("receiver-" ++ receiver.id), classList (receiverClasses receiver True) ]
             [ div [ class "receiver--view" ]

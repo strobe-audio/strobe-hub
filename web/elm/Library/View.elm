@@ -24,14 +24,15 @@ root model =
         , (Html.Lazy.lazy levels model)
         ]
 
+
 levels : Library.Model -> Html Library.Msg
 levels model =
     let
         levels =
             Stack.toList model.levels
-                |> (  Maybe.map (\l -> [l]) model.unloadingLevel
-                   |> Maybe.withDefault []
-                   |> List.append
+                |> (Maybe.map (\l -> [ l ]) model.unloadingLevel
+                        |> Maybe.withDefault []
+                        |> List.append
                    )
                 |> List.reverse
 
@@ -60,10 +61,9 @@ levels model =
 
                 Just time ->
                     -(Animation.animate time model.levelAnimation)
-
     in
         div
-            [ class "library--levels", style [("left", (toString left) ++ "vw")] ]
+            [ class "library--levels", style [ ( "left", (toString left) ++ "vw" ) ] ]
             columns
 
 
@@ -164,8 +164,6 @@ node library folder node =
             ]
 
 
-
-
 breadcrumb : Library.Model -> Html Library.Msg
 breadcrumb model =
     let
@@ -179,7 +177,7 @@ breadcrumb model =
 
         sections =
             (Stack.toList model.levels)
-            |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
+                |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
 
         ( list_, dropdown_ ) =
             List.Extra.splitAt 1 (sections)

@@ -37,12 +37,14 @@ type alias State =
     , source : Source
     }
 
+
 type alias Model =
     { id : ID.Rendition
     , position : Int
     , playbackPosition : Int
     , sourceId : String
-    , channelId : String , source : Source
+    , channelId : String
+    , source : Source
     , touches : Utils.Touch.Model
     , swipe : Maybe Utils.Touch.SwipeModel
     , menu : Bool
@@ -79,5 +81,3 @@ duration : Model -> Maybe Int
 duration rendition =
     Maybe.map (\duration -> duration - rendition.playbackPosition)
         rendition.source.duration_ms
-
-

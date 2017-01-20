@@ -74,7 +74,8 @@ update action model =
 
         Msg.Connected connected ->
             let
-                _ = Debug.log "connected" connected
+                _ =
+                    Debug.log "connected" connected
             in
                 { model | connected = connected } ! []
 
@@ -152,7 +153,8 @@ update action model =
         Msg.ActivateChannel channel ->
             -- { model | showAddChannel = False, activeChannelId = Just channel.id } ! []
             let
-                _ = Debug.log "showing channel" (channel.id, channel.name)
+                _ =
+                    Debug.log "showing channel" ( channel.id, channel.name )
             in
                 { model | showAddChannel = False, showChangeChannel = False } ! [ Navigation.newUrl (Routing.channelLocation channel.id) ]
 
@@ -225,7 +227,7 @@ update action model =
 
         Msg.BroadcasterRenditionAdded rendition ->
             let
-                (model_, channelCmd) =
+                ( model_, channelCmd ) =
                     update (Msg.Channel rendition.channelId (Channel.AddRendition rendition)) model
 
                 notifications =
@@ -238,17 +240,21 @@ update action model =
                                 let
                                     notification =
                                         Debug.log "adding notification"
-                                        Notification.forRendition model.animationTime rendition
+                                            Notification.forRendition
+                                            model.animationTime
+                                            rendition
                                 in
                                     notification :: model.notifications
                             else
                                 model.notifications
             in
-                { model_ | notifications = notifications } ! [channelCmd]
+                { model_ | notifications = notifications } ! [ channelCmd ]
 
         Msg.BrowserViewport width ->
             let
-                _ = Debug.log "showPlaylistAndLibrary width" width
+                _ =
+                    Debug.log "showPlaylistAndLibrary width" width
+
                 showPlaylistAndLibrary =
                     width > 1000
             in
@@ -273,11 +279,11 @@ update action model =
                         _ ->
                             { model | touches = touches } ! []
             in
-                updated ! [cmd]
+                updated ! [ cmd ]
 
         Msg.AnimationFrame time ->
             let
-                (library, cmd) =
+                ( library, cmd ) =
                     Library.State.update
                         (Library.AnimationFrame time)
                         model.library
@@ -285,13 +291,13 @@ update action model =
 
                 notifications =
                     List.filter (Notification.isVisible time) model.notifications
-
             in
                 { model
-                | animationTime = Just time
-                , library = library
-                , notifications = notifications
-                } ! [(Cmd.map Msg.Library cmd)]
+                    | animationTime = Just time
+                    , library = library
+                    , notifications = notifications
+                }
+                    ! [ (Cmd.map Msg.Library cmd) ]
 
 
 libraryVisible : Root.Model -> Bool
@@ -339,5 +345,3 @@ processAddChannelInputAction action model =
 
                 Input.Close ->
                     ( model, Msg.ToggleAddChannel )
-
-

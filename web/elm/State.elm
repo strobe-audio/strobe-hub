@@ -1,6 +1,5 @@
 module State exposing (..)
 
-
 import Channel
 import Receiver
 import Rendition

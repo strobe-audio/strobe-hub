@@ -12,7 +12,9 @@ import SingleTouch exposing (SingleTouch)
 import MultiTouch exposing (MultiTouch, onMultiTouch)
 import Json.Decode as Decode
 
+
 -- Only support left/right swipes (who swipes *up*!??)
+
 
 type Direction
     = Left
@@ -24,9 +26,11 @@ type Gesture msg
     | LongPress msg
     | Swipe Direction Float msg
 
+
 type alias SwipeModel =
     { offset : Float
     }
+
 
 type E msg
     = Start T msg
@@ -51,6 +55,7 @@ type alias Model =
 null : Model
 null =
     emptyModel
+
 
 emptyModel : Model
 emptyModel =
@@ -182,6 +187,7 @@ testEvent event model =
                     let
                         min =
                             50
+
                         dx =
                             (touch.clientX - start.clientX)
 
@@ -198,13 +204,13 @@ testEvent event model =
                 )
                 model.start
 
-
         End touch msg ->
             Maybe.andThen
                 (\start ->
                     let
                         min =
                             50
+
                         dx =
                             touch.clientX - start.clientX
 
@@ -212,10 +218,10 @@ testEvent event model =
                             touch.clientY - start.clientY
 
                         dd =
-                          (sqrt (dx * dx) + (dy * dy))
+                            (sqrt (dx * dx) + (dy * dy))
 
                         tt =
-                          (touch.time - start.time)
+                            (touch.time - start.time)
                     in
                         if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
                             Just (Tap msg)

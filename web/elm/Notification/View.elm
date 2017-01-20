@@ -1,6 +1,5 @@
 module Notification.View exposing (..)
 
-
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Notification
@@ -25,8 +24,5 @@ notification t n =
     let
         opacity =
             Notification.animate t n |> toString
-
     in
-        div [ class "notification", style [("opacity", opacity)] ] [ n.title ]
-
-
+        div [ class "notification", style [ ( "opacity", opacity ) ] ] [ n.title ]

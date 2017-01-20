@@ -83,7 +83,6 @@ rootWhenConnected model =
                     ]
 
 
-
 controlBar : Root.Model -> Html Msg
 controlBar model =
     case Root.activeChannel model of
@@ -96,6 +95,7 @@ controlBar model =
                 , (currentChannelPlayer channel)
                 ]
 
+
 notifications : Root.Model -> Html Msg
 notifications model =
     div
@@ -103,10 +103,12 @@ notifications model =
         [ (Notification.View.notifications model.animationTime model.notifications)
         ]
 
+
 channelSettingsButton : Root.Model -> Html Msg
 channelSettingsButton model =
     div ([ class "root--channel-select" ] ++ (onUnifiedClick Msg.ToggleChannelSelector))
         [ i [ class "fa fa-bullseye" ] [] ]
+
 
 currentChannelPlayer : Channel.Model -> Html Msg
 currentChannelPlayer channel =
@@ -119,6 +121,7 @@ currentChannelPlayer channel =
             [ class "root--channel-rendition" ]
             [ Html.map (Msg.Channel channel.id) (Channel.View.player channel) ]
         ]
+
 
 libraryToggleView : Root.Model -> Channel.Model -> Html Msg
 libraryToggleView model channel =

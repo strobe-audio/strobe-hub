@@ -50,7 +50,6 @@ type alias ChannelStatusEvent =
     }
 
 
-
 activeChannel : Model -> Maybe Channel.Model
 activeChannel model =
     case model.activeChannelId of

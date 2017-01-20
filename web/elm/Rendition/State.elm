@@ -36,7 +36,6 @@ update action rendition =
         Rendition.CloseMenu ->
             ( { rendition | menu = False }, Cmd.none )
 
-
         Rendition.Progress event ->
             ( { rendition | playbackPosition = event.progress }, Cmd.none )
 
@@ -50,16 +49,16 @@ update action rendition =
 
                 ( updated, cmd ) =
                     case Utils.Touch.testEvent te touches of
-                        Just (Utils.Touch.Swipe Utils.Touch.Left x msg) ->
+                        Just (Utils.Touch.Swipe (Utils.Touch.Left) x msg) ->
                             { rendition | touches = touches, swipe = Just { offset = x } } ! []
 
                         Nothing ->
                             case rendition.swipe of
-                              Just swipe ->
-                                { rendition | touches = touches, swipe = Nothing, menu = True } ! []
+                                Just swipe ->
+                                    { rendition | touches = touches, swipe = Nothing, menu = True } ! []
 
-                              Nothing ->
-                                { rendition | touches = touches, menu = False } ! []
+                                Nothing ->
+                                    { rendition | touches = touches, menu = False } ! []
 
                         _ ->
                             { rendition | touches = touches, swipe = Nothing } ! []

@@ -5,6 +5,7 @@ import Utils.Touch
 import Stack exposing (Stack)
 import Animation
 
+
 type Msg
     = NoOp
     | ExecuteAction Action String
@@ -25,13 +26,18 @@ type alias Action =
     , level : Bool
     }
 
+
+
 -- can serialise this as just `action` and restore as
 -- {action = "<action>", contents = Nothing}
+
+
 type alias Level =
     { action : ActionURL
     , title : String
     , contents : Maybe Folder
     }
+
 
 type alias Folder =
     { id : String
@@ -82,6 +88,8 @@ type alias Actions =
     { click : Action
     , play : Maybe Action
     }
+
+
 
 {-
 

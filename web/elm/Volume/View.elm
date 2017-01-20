@@ -63,7 +63,6 @@ control volume label =
 
         volumeStyle v =
             style [ ( "width", (toString (v * 100)) ++ "%" ) ]
-
     in
         div [ class "volume-control" ]
             [ div ([ class "volume-mute-btn fa fa-volume-off" ] ++ (onUnifiedClick (Volume.Change (Just 0.0)))) []

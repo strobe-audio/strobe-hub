@@ -61,20 +61,19 @@ update action model maybeChannelId =
 
                                     animation =
                                         levelAnimation model (model.depth + 1)
-
                                 in
                                     { model
-                                    | levels = levels
-                                    , depth = model.depth + 1
-                                    , levelAnimation = animation
+                                        | levels = levels
+                                        , depth = model.depth + 1
+                                        , levelAnimation = animation
                                     }
                             else
                                 model
                     in
                         { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url) ]
-                        -- disable this auto-completion as I need the currentRequest value
-                        -- , (Library.Cmd.requestComplete (300 * millisecond))
 
+                -- disable this auto-completion as I need the currentRequest value
+                -- , (Library.Cmd.requestComplete (300 * millisecond))
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -115,50 +114,47 @@ update action model maybeChannelId =
 
                         _ ->
                             let
-                                (maybeCurrentLevel, levels) =
+                                ( maybeCurrentLevel, levels ) =
                                     Stack.pop model.levels
 
                                 animation =
                                     levelAnimation model (model.depth - 1)
-
                             in
                                 { model
-                                | levels = levels
-                                , depth = (max 0 model.depth - 1)
-                                , levelAnimation = animation
-                                , unloadingLevel = maybeCurrentLevel
+                                    | levels = levels
+                                    , depth = (max 0 model.depth - 1)
+                                    , levelAnimation = animation
+                                    , unloadingLevel = maybeCurrentLevel
                                 }
-
             in
                 ( model_, Cmd.none )
 
         Library.Touch te ->
-          let
-              touches =
-                Debug.log "touches" (Utils.Touch.update te model.touches)
+            let
+                touches =
+                    Debug.log "touches" (Utils.Touch.update te model.touches)
 
-              (updated_, cmd_) = case Utils.Touch.testEvent te touches of
-                  _ ->
-                    { model | touches = touches  } ! []
+                ( updated_, cmd_ ) =
+                    case Utils.Touch.testEvent te touches of
+                        _ ->
+                            { model | touches = touches } ! []
 
-              -- change to click type
-              (updated, cmd) = case Utils.Touch.isSingleClick te touches of
-                Nothing ->
-                  { model | touches = touches  } ! []
+                -- change to click type
+                ( updated, cmd ) =
+                    case Utils.Touch.isSingleClick te touches of
+                        Nothing ->
+                            { model | touches = touches } ! []
 
-                Just msg ->
-                  update msg { model | touches = Utils.Touch.emptyModel } maybeChannelId
-
-
-          in
-                (updated, cmd)
+                        Just msg ->
+                            update msg { model | touches = Utils.Touch.emptyModel } maybeChannelId
+            in
+                ( updated, cmd )
 
         Library.AnimationFrame time ->
             let
                 model_ =
                     if Animation.isDone time model.levelAnimation then
                         { model | unloadingLevel = Nothing }
-
                     else
                         model
             in
@@ -186,7 +182,6 @@ setLevelContents model action folder =
 
         levels =
             (List.map updateLevel) <| (Stack.toList model.levels)
-
     in
         { model | levels = (Stack.fromList levels) }
 
@@ -194,7 +189,6 @@ setLevelContents model action folder =
 add : Library.Model -> Library.Node -> Library.Model
 add model library =
     let
-
         reversedLevels =
             List.reverse <| Stack.toList model.levels
 
@@ -204,6 +198,7 @@ add model library =
                     case level.contents of
                         Nothing ->
                             level
+
                         Just folder ->
                             { level | contents = Just (addUniqueLibrary library folder) }
 
@@ -220,7 +215,6 @@ add model library =
 
         levels =
             Stack.fromList (List.reverse (root :: others))
-
     in
         { model | levels = levels }
 
@@ -252,11 +246,11 @@ levelAnimation model targetDepth =
     (Maybe.map
         (\time ->
             (Animation.animation time)
-            |> (Animation.from (levelOffset model.depth))
-            |> Animation.to (levelOffset targetDepth)
-            |> Animation.duration (200 * Time.millisecond)
-            |> Animation.ease Ease.inOutSine
+                |> (Animation.from (levelOffset model.depth))
+                |> Animation.to (levelOffset targetDepth)
+                |> Animation.duration (200 * Time.millisecond)
+                |> Animation.ease Ease.inOutSine
         )
         model.animationTime
-    ) |> Maybe.withDefault (Animation.static (levelOffset model.depth))
-
+    )
+        |> Maybe.withDefault (Animation.static (levelOffset model.depth))

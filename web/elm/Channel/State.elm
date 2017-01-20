@@ -132,7 +132,7 @@ update action channel =
                     Rendition.State.initialState renditionState
 
                 after =
-                     model :: (List.drop renditionState.position channel.playlist)
+                    model :: (List.drop renditionState.position channel.playlist)
 
                 playlist =
                     List.concat [ before, after ]
@@ -199,6 +199,7 @@ update action channel =
                             { channel | touches = touches } ! []
             in
                 updated ! []
+
 
 updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )
 updateVolume volumeMsg channel =

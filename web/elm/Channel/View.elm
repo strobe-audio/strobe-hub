@@ -27,7 +27,6 @@ cover channel =
 
         mapTap a =
             Html.Attributes.map Channel.Tap a
-
     in
         case maybeRendition of
             Nothing ->
@@ -36,7 +35,8 @@ cover channel =
                     ]
 
             Just rendition ->
-                div [ class "channel--rendition"
+                div
+                    [ class "channel--rendition"
                     , mapTap (Utils.Touch.touchStart Channel.PlayPause)
                     , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
                     ]
