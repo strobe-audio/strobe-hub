@@ -10,7 +10,7 @@ defmodule Elvis.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/", from: :elvis, gzip: false,
-    only: ~w(css fonts images js favicon.ico robots.txt)
+    only: ~w(css fonts images js svg favicon.ico robots.txt)
 
   plug Plug.Static,
     at: Otis.Media.at(), from: Otis.Media.from(), gzip: false,

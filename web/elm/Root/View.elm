@@ -28,7 +28,11 @@ root model =
         False ->
             div
                 [ class "root--offline" ]
-                [ div [ class "root--offline__message" ] [ text"Offline"]
+                [ div
+                    [ class "root--offline__message" ]
+                    [ img [ src "/svg/ripple.svg" ] []
+                    , text "Connecting"
+                    ]
                 ]
 
 
