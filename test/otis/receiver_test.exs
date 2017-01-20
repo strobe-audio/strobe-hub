@@ -53,7 +53,7 @@ defmodule Otis.ReceiverTest do
     Receiver.volume receiver, 0.13
     assert_receive {:receiver_volume_change, [^id, 0.13]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 0.13 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.13) }
     {:ok, 0.13} = Receiver.volume receiver
   end
 
@@ -68,25 +68,25 @@ defmodule Otis.ReceiverTest do
     Receiver.volume receiver, 0.13
     assert_receive {:receiver_volume_change, [^id, 0.13]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 0.13 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.13) }
 
     Receiver.volume_multiplier receiver, 0.5
     refute_receive {:receiver_volume_change, [^id, 0.13]}
     refute_receive {:receiver_volume_change, [^id, 0.065]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 0.065 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.065) }
     {:ok, 0.5} = Receiver.volume_multiplier receiver
 
     Receiver.volume receiver, 0.6
     assert_receive {:receiver_volume_change, [^id, 0.6]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 0.3 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.3) }
 
     Receiver.volume_multiplier receiver, 0.1
     refute_receive {:receiver_volume_change, [^id, 0.6]}
     refute_receive {:receiver_volume_change, [^id, 0.06]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 0.06 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.06) }
   end
 
   test "setting the volume & multiplier simultaneously", _context do
@@ -100,18 +100,18 @@ defmodule Otis.ReceiverTest do
     Receiver.volume receiver, 0.3, 0.1
     assert_receive {:receiver_volume_change, [^id, 0.3]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 0.03 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.03) }
 
     Receiver.volume receiver, 0.1, 0.3
     assert_receive {:receiver_volume_change, [^id, 0.1]}
     # Could assert that no volume change message is sent, but really, who cares!?
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 0.03 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.03) }
 
     Receiver.volume receiver, 0.9, 0.1
     assert_receive {:receiver_volume_change, [^id, 0.9]}
     {:ok, %{ "volume" => volume }} = ctrl_recv(mock)
-    assert_in_delta volume, 0.09, 0.0001
+    assert_in_delta volume, Receiver.perceptual_volume(0.09), 0.000001
   end
 
   test "broadcasts an event on volume change" do
@@ -272,9 +272,9 @@ defmodule Otis.ReceiverTest do
     refute_receive {:receiver_volume_change, [^id1, _]}
     refute_receive {:receiver_volume_change, [^id2, _]}
     {:ok, msg} = ctrl_recv(mock1)
-    assert msg == %{ "volume" => 0.5 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.5) }
     {:ok, msg} = ctrl_recv(mock2)
-    assert msg == %{ "volume" => 0.5 }
+    assert msg == %{ "volume" => Receiver.perceptual_volume(0.5) }
   end
 
   test "we can send stop commands to a receiver set", _context do

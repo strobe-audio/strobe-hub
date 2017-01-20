@@ -179,6 +179,25 @@ defmodule Otis.Receiver do
     Otis.Receivers.ControlConnection.get_volume(pid)
   end
 
+  @doc """
+  Maps linear volume 0.0 <= v <= 1.0 to exponential version based on
+  calculations here: https://www.dr-lex.be/info-stuff/volumecontrols.html
+  """
+  def perceptual_volume(volume) do
+    case volume do
+      0.0 -> 0.0
+      1.0 -> 1.0
+      v when v < 0.1 -> logarithmic_volume(v) * (v * 10)
+      v -> logarithmic_volume(v)
+    end |> Otis.sanitize_volume
+  end
+
+  @exponent_factor :math.log(1000.0)
+
+  defp logarithmic_volume(volume) do
+    0.001 * :math.exp(volume * @exponent_factor)
+  end
+
   @doc ~S"""
   Volume multiplier is the way through which the channels control all of
   their receivers' volumes.
