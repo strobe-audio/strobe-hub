@@ -115,11 +115,9 @@ currentChannelPlayer channel =
     div
         [ class "root--channel-state" ]
         [ div
-            [ class "root--channel-name" ]
-            [ div [ class "channel--name" ] [ text channel.name ] ]
-        , div
             [ class "root--channel-rendition" ]
-            [ Html.map (Msg.Channel channel.id) (Channel.View.player channel) ]
+            [ Html.map (Msg.Channel channel.id) (Channel.View.player channel)
+            ]
         ]
 
 

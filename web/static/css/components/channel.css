@@ -36,3 +36,27 @@
     background: rgba(255, 0, 0, 0.4);
   }
 }
+
+.channel--playback {
+  display: flex;
+  flex-direction: row;
+}
+
+.channel--info {
+  flex: 1;
+}
+
+.channel--info--name {
+  height: $active-channel-bar-height;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: $active-channel-bar-height;
+  color: #E65100;
+  position: relative;
+}
+.channel--info--name .channel--name {
+  position: absolute;
+  bottom: -1px;
+  line-height: 0;
+}

@@ -12,6 +12,52 @@ import Utils.Touch exposing (onSingleTouch)
 import Utils.Css
 
 
+info : Rendition.Model -> Bool -> Html Rendition.Msg
+info rendition playing =
+    let
+        source =
+            rendition.source
+
+        coverImage =
+            source.cover_image
+
+        albumMeta =
+            case source.album of
+                Nothing ->
+                    div [] []
+
+                Just album ->
+                    div [ class "rendition--meta--detail rendition--meta--album" ] [ text (renditionAlbum rendition) ]
+
+        durationMeta =
+            case source.duration_ms of
+                Nothing ->
+                    div [] []
+
+                Just duration ->
+                    div [ class "rendition--meta--detail rendition--meta--duration" ] [ text ("(" ++ (Source.View.duration source) ++ ")") ]
+    in
+        div [ id rendition.id, classList [ ( "rendition", True ), ( "rendition__playing", playing ) ] ]
+            [ div [ class "rendition--control" ]
+                [ -- div [ class "rendition--play-pause-btn", style [ ( "backgroundImage", (Utils.Css.url coverImage) ) ] ]
+                  --   []
+                  div [ class "rendition--details" ]
+                    [ div [ class "rendition--details--top" ]
+                        [ div [ classList [ ( "rendition--title", True ), ( "rendition--title__playing", playing ) ] ]
+                            [ text (renditionTitle rendition)
+                            ]
+                          -- , div [ class "rendition--duration duration" ] [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
+                        ]
+                    , div [ class "rendition--meta" ]
+                        [ div [ class "rendition--meta--detail rendition--meta--artist" ] [ text (renditionPerformer rendition) ]
+                        , albumMeta
+                        , durationMeta
+                        ]
+                    ]
+                ]
+            ]
+
+
 player : Rendition.Model -> Bool -> Html Rendition.Msg
 player rendition playing =
     let
