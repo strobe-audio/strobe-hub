@@ -58,6 +58,7 @@ rootWithActiveChannel model channel =
         div
             [ id "root" ]
             [ (activeRendition model channel)
+            , (notifications model)
             , (activeView model channel)
             , (switchView model channel)
             ]
