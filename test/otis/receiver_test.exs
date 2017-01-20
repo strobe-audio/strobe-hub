@@ -346,4 +346,33 @@ defmodule Otis.ReceiverTest do
     ]
     assert {:error, :something} == Otis.Receivers.DataConnection.return_errors(results)
   end
+
+  test "connecting receiver with existing (presumably stale) connections", _context do
+    channel_id = Otis.uuid
+    id = Otis.uuid
+    channel_record = Otis.State.Channel.create!(channel_id, "Something")
+    _receiver_record = Otis.State.Receiver.create!(channel_record, id: id)
+    _mock1 = connect!(id, 143)
+    assert_receive {:receiver_connected, [^id, _]}
+
+    {:ok, r} = Otis.Receivers.receiver(id)
+    {_, ctrl} = r.ctrl
+    {_, data} = r.data
+    ctrl_status = :erlang.port_info(ctrl)
+    assert is_pid(ctrl_status[:connected]) == true
+    data_status = :erlang.port_info(data)
+    assert is_pid(data_status[:connected]) == true
+    # reconnect the same receiver ...
+    _mock1 = connect!(id, 143)
+
+    refute_receive {:receiver_disconnected, [^id, _]}
+
+    # test that the previous tcp connections have been closed
+    assert :undefined == :erlang.port_info(ctrl)
+    assert :undefined == :erlang.port_info(data)
+    assert_receive {:receiver_connected, [^id, _]}
+    # validate that our receiver db is correct
+    {:ok, r} = Otis.Receivers.receiver(id)
+    assert Receiver.alive?(r)
+  end
 end

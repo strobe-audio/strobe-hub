@@ -13,7 +13,21 @@ defmodule Otis.Receiver do
   end
 
   def update(receiver, values) do
-    struct(receiver, extract_params(values))
+    update_closing(receiver, extract_params(values))
+  end
+
+  defp update_closing(receiver, values) do
+    receiver = Enum.reduce([:ctrl, :data], receiver, &update_closing(&1, &2, values))
+    struct(receiver, values)
+  end
+  defp update_closing(type, receiver, values) do
+    case Keyword.get(values, type) do
+      nil ->
+        receiver
+      {_pid, _sock} ->
+        Map.get(receiver, type) |> disconnect
+        Map.put(receiver, type, nil)
+    end
   end
 
   def disconnect(%R{data: data, ctrl: ctrl} = receiver) do

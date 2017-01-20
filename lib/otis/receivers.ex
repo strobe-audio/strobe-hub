@@ -93,8 +93,8 @@ defmodule Otis.Receivers do
     {:noreply, state}
   end
 
-  def handle_cast({:disconnect, type, id, reason}, state) do
-    state = disconnect(type, id, reason, lookup(state, id), state)
+  def handle_cast({:disconnect, type, id, pid, reason}, state) do
+    state = disconnect(type, id, pid, reason, lookup(state, id), state)
     {:noreply, state}
   end
 
@@ -138,8 +138,9 @@ defmodule Otis.Receivers do
   defp insert(state, receiver) do
     insert(state, Receiver.id!(receiver), receiver)
   end
-  defp insert(%S{receivers: nil}, _id, _receiver) do
+  defp insert(%S{receivers: nil} = state, _id, _receiver) do
     Logger.error("Receivers table nil!")
+    state
   end
   defp insert(%S{receivers: receivers} = state, id, receiver) do
     :ets.insert(receivers, {id, receiver})
@@ -185,18 +186,31 @@ defmodule Otis.Receivers do
     Receiver.update(receiver, data: {pid, socket}, params: params) |> update_connect(id, state)
   end
 
-  def disconnect(type, id, _reason, :error, _state) do
+  def disconnect(type, id, _pid, _reason, :error, state) do
     Logger.warn "#{ inspect type } disconnect from unknown receiver #{ id }"
+    state
   end
-  def disconnect(:data, id, _reason, {:ok, receiver}, state) do
-    Receiver.update(receiver, data: nil) |> update_disconnect(id, state)
+  def disconnect(:data, id, pid, _reason, {:ok, receiver}, state) do
+    if Receiver.matches_pid?(receiver, pid) do
+      Receiver.update(receiver, data: nil) |> update_disconnect(id, state)
+    else
+      state
+    end
   end
   # ping messages have failed to send
-  def disconnect(:ctrl, id, :offline, {:ok, receiver}, state) do
-    Receiver.update(receiver, ctrl: nil) |> Receiver.disconnect() |> update_disconnect(id, state)
+  def disconnect(:ctrl, id, pid, :offline, {:ok, receiver}, state) do
+    if Receiver.matches_pid?(receiver, pid) do
+      Receiver.update(receiver, ctrl: nil) |> Receiver.disconnect() |> update_disconnect(id, state)
+    else
+      state
+    end
   end
-  def disconnect(:ctrl, id, _reason, {:ok, receiver}, state) do
-    Receiver.update(receiver, ctrl: nil) |> update_disconnect(id, state)
+  def disconnect(:ctrl, id, pid, _reason, {:ok, receiver}, state) do
+    if Receiver.matches_pid?(receiver, pid) do
+      Receiver.update(receiver, ctrl: nil) |> update_disconnect(id, state)
+    else
+      state
+    end
   end
 
   def relatch(receiver, id, state) do
@@ -207,10 +221,12 @@ defmodule Otis.Receivers do
   end
 
   def update_connect(receiver, id, state) do
+    Logger.info "Receivers update_connect #{id}: #{inspect receiver}"
     update_receiver(receiver, id, state) |> after_connect(receiver)
   end
 
   def update_disconnect(receiver, id, state) do
+    Logger.info "Receivers update_disconnect #{id}: #{inspect receiver}"
     update_receiver(receiver, id, state) |> after_disconnect(receiver)
   end
 
@@ -223,10 +239,12 @@ defmodule Otis.Receivers do
   end
 
   def after_connect(state, receiver) do
+    Logger.info "Receivers after_connect alive: #{Receiver.alive?(receiver)}: #{inspect receiver}"
     start_valid_receiver(state, receiver, Receiver.alive?(receiver))
   end
 
   def after_disconnect(state, receiver) do
+    Logger.info "Receivers after_disconnect dead: #{inspect Receiver.dead?(receiver)}; zombie: #{ inspect Receiver.zombie?(receiver) } #{inspect receiver}"
     state
     |> disable_zombie_receiver(receiver, Receiver.zombie?(receiver))
     |> remove_dead_receiver(receiver, Receiver.dead?(receiver))

@@ -65,7 +65,7 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def disconnect(%S{id: id} = state, reason \\ :normal) do
-        GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id, reason})
+        GenServer.cast(state.supervisor, {:disconnect, unquote(opts[:type]), id, self(), reason})
       end
 
       def close_and_disconnect(%S{id: id} = state, reason \\ :normal) do
