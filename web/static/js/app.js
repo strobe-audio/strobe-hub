@@ -1,4 +1,5 @@
 
+import 'no_bounce'
 import {Socket} from 'phoenix'
 import Elm from 'Main'
 
