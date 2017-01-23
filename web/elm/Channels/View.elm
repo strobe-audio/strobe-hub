@@ -32,7 +32,6 @@ channel model channel =
         [ id "__scrolling__"
         , classList
             [ ( "channels--view", True )
-            , ( "channels--view__change-channel", model.showChangeChannel )
             ]
         ]
         [ (changeChannel model channel)
@@ -44,7 +43,6 @@ channel model channel =
 --         [ id "__scrolling__"
 --         , classList
 --             [ ( "channels--view", True )
---             , ( "channels--view__change-channel", model.showChangeChannel )
 --             ]
 --         ]
 --         [ div
@@ -73,26 +71,16 @@ channel model channel =
 
 channelReceivers : Root.Model -> Channel.Model -> Html Msg
 channelReceivers model channel =
-    case model.showChangeChannel of
-        True ->
-            div [] []
-
-        False ->
-            div
-                [ class "channels--receivers channel--receivers__attached" ]
-                [ Receivers.View.attached model channel ]
+    div
+        [ class "channels--receivers channel--receivers__attached" ]
+        [ Receivers.View.attached model channel ]
 
 
 detachedReceivers : Root.Model -> Channel.Model -> Html Msg
 detachedReceivers model channel =
-    case model.showChangeChannel of
-        True ->
-            div [] []
-
-        False ->
-            div
-                [ class "channels--receivers channel--receivers__detached" ]
-                [ Receivers.View.detached model channel ]
+        div
+            [ class "channels--receivers channel--receivers__detached" ]
+            [ Receivers.View.detached model channel ]
 
 
 channelVolume : Root.Model -> Channel.Model -> Html Msg
@@ -103,15 +91,10 @@ channelVolume model channel =
                 (text "Master volume")
             )
     in
-        case model.showChangeChannel of
-            True ->
-                div [] []
-
-            False ->
-                div
-                    [ class "channels--channel-control" ]
-                    [ Html.map (\m -> (Msg.Channel channel.id) (Channel.Volume m)) volumeCtrl
-                    ]
+        div
+            [ class "channels--channel-control" ]
+            [ Html.map (\m -> (Msg.Channel channel.id) (Channel.Volume m)) volumeCtrl
+            ]
 
 
 changeChannel : Root.Model -> Channel.Model -> Html Msg

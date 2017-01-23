@@ -25,8 +25,6 @@ type alias Model =
     , receivers : List Receiver.Model
     , showAddChannel : Bool
     , newChannelInput : Input.Model
-    , showChannelSwitcher : Bool
-    , showChangeChannel : Bool
     , showAttachReceiver : Bool
     , activeChannelId : Maybe ID.Channel
     , listMode : State.ChannelListMode
@@ -75,8 +73,3 @@ playlistVisible model =
 
                 State.PlaylistMode ->
                     True
-
-
-overlayActive : Model -> Bool
-overlayActive model =
-    model.showChannelSwitcher

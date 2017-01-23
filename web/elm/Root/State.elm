@@ -31,8 +31,6 @@ initialState =
     , library = Library.State.initialState
     , showAddChannel = False
     , newChannelInput = Input.State.blank
-    , showChannelSwitcher = False
-    , showChangeChannel = False
     , activeChannelId = Nothing
     , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
@@ -158,19 +156,13 @@ update action model =
                 _ =
                     Debug.log "showing channel" ( channel.id, channel.name )
             in
-                { model | showAddChannel = False, showChangeChannel = False } ! [ Navigation.newUrl (Routing.channelLocation channel.id) ]
+                { model | showAddChannel = False } ! [ Navigation.newUrl (Routing.channelLocation channel.id) ]
 
         Msg.AddChannel channelName ->
             model ! [ Root.Cmd.addChannel channelName ]
 
         Msg.SetListMode mode ->
             { model | listMode = mode } ! []
-
-        Msg.ToggleChannelSelector ->
-            { model | showChannelSwitcher = not model.showChannelSwitcher } ! []
-
-        Msg.ToggleChangeChannel ->
-            { model | showChangeChannel = not model.showChangeChannel } ! []
 
         Msg.ToggleAddChannel ->
             { model | showAddChannel = not model.showAddChannel } ! []

@@ -17,8 +17,6 @@ type Msg
     | Connected Bool
     | UrlChange Navigation.Location
     | InitialState State.BroadcasterState
-    | ToggleChannelSelector
-    | ToggleChangeChannel
     | SetListMode State.ChannelListMode
     | ActivateChannel Channel.Model
     | ToggleAddChannel
