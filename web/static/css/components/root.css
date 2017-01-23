@@ -203,6 +203,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	color: #fff;
+
 }
 .root--switch-view--btn__active {
 	background: rgba(255, 0, 0, 0.8);

@@ -33,7 +33,7 @@ viewLabel : ViewMode -> String
 viewLabel mode =
     case mode of
         ViewCurrentChannel ->
-            "Channel"
+            "Playlist"
 
         ViewChannelSwitch ->
             "Channels"
@@ -47,7 +47,7 @@ viewLabel mode =
 viewModes : List ViewMode
 viewModes =
     [ ViewCurrentChannel
-    , ViewChannelSwitch
     , ViewLibrary
+    , ViewChannelSwitch
     , ViewSettings
     ]
