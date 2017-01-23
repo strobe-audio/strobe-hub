@@ -38,8 +38,8 @@ type Msg
     | BrowserViewport Int
     | BrowserScroll Int
     | SingleTouch (Utils.Touch.E Msg)
-    | AnimationFrame Time
     -- new
     | ActivateView State.ViewMode
     | ToggleShowChannelControl
     | ReceiverAttachmentChange
+    | AnimationScroll (Time, Float)

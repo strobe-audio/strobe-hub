@@ -29,6 +29,7 @@ initialState =
         , unloadingLevel = Nothing
         , touches = Utils.Touch.emptyModel
         , animationTime = Nothing
+        , scrollPosition = Nothing
         , levelAnimation = (Animation.static 0)
         }
 
@@ -150,7 +151,7 @@ update action model maybeChannelId =
             in
                 ( updated, cmd )
 
-        Library.AnimationFrame time ->
+        Library.AnimationFrame (time, scrollPosition) ->
             let
                 model_ =
                     if Animation.isDone time model.levelAnimation then
@@ -158,7 +159,10 @@ update action model maybeChannelId =
                     else
                         model
             in
-                { model_ | animationTime = Just time } ! []
+                { model_
+                | animationTime = Just time
+                , scrollPosition = Just scrollPosition
+                } ! []
 
 
 currentLevel : Library.Model -> Library.Level

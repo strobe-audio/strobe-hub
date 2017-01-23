@@ -111,6 +111,19 @@ channel.join()
 
 // channel.push('list_libraries', {})
 
+let raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame
+
+let frame = () => {
+	let scroller = document.getElementById('__scrolling__')
+	let scrollTop = 0
+	if (scroller) {
+		scrollTop = scroller.scrollTop
+	}
+	app.ports.animationScroll.send([Date.now(), scrollTop])
+	raf(frame)
+}
+
+raf(frame)
 
 
 app.ports.volumeChangeRequests.subscribe(event => {

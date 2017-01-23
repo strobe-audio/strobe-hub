@@ -4,6 +4,7 @@ import Html exposing (..)
 import Html.Lazy exposing (lazy, lazy2)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
+import Html.Keyed
 import Json.Decode as Json
 import Animation
 import Library
@@ -39,7 +40,8 @@ levels model =
         levelColumn ( l, isCurrent ) =
             case l.contents of
                 Nothing ->
-                    div
+                    ( l.action
+                    , div
                         [ class "library--folder library--folder__loading" ]
                         [ div
                             [ class "library--spinner" ]
@@ -47,9 +49,12 @@ levels model =
                             , text "Loading..."
                             ]
                         ]
+                    )
 
                 Just folder_ ->
-                    (folder model folder_ isCurrent)
+                    ( l.action
+                    , (folder model folder_ isCurrent)
+                    )
 
         count =
             (List.length levels) - 1
@@ -65,9 +70,10 @@ levels model =
                 Just time ->
                     -(Animation.animate time model.levelAnimation)
     in
-        div
-            [ class "library--levels", style [ ( "left", (toString left) ++ "vw" ) ] ]
-            columns
+        Html.Keyed.node
+            "div"
+                [ class "library--levels", style [ ( "left", (toString left) ++ "vw" ) ] ]
+                columns
 
 
 folder : Library.Model -> Library.Folder -> Bool -> Html Library.Msg
@@ -84,6 +90,7 @@ folder model folder isCurrent =
                 [ id "__scrolling__" ]
             else
                 [ ]
+
     in
         div ( attrs ++ [ class "library--folder" ])
             [ children ]

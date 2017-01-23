@@ -276,24 +276,6 @@ update action model =
             in
                 updated ! [ cmd ]
 
-        Msg.AnimationFrame time ->
-            let
-                ( library, cmd ) =
-                    Library.State.update
-                        (Library.AnimationFrame time)
-                        model.library
-                        Nothing
-
-                notifications =
-                    List.filter (Notification.isVisible time) model.notifications
-            in
-                { model
-                    | animationTime = Just time
-                    , library = library
-                    , notifications = notifications
-                }
-                    ! [ (Cmd.map Msg.Library cmd) ]
-
         Msg.ActivateView mode ->
             { model | showChannelControl = False, viewMode = mode } ! []
 
@@ -315,6 +297,33 @@ update action model =
                     in
 
                         { model | showAttachReceiver = showAttachReceiver } ! []
+
+        Msg.AnimationScroll (time, position) ->
+            let
+                ( library, cmd ) =
+                    Library.State.update
+                        (Library.AnimationFrame ( time, position ))
+                        model.library
+                        Nothing
+
+                notifications =
+                    List.filter (Notification.isVisible time) model.notifications
+            in
+                { model
+                    | animationTime = Just time
+                    , library = library
+                    , notifications = notifications
+                }
+                    ! [ (Cmd.map Msg.Library cmd) ]
+            -- let
+            --     _ =
+            --         if position /= 0 then
+            --             Debug.log "s" (time, position)
+            --         else
+            --             (time, position)
+            --
+            -- in
+            --     model ! []
 
 
 libraryVisible : Root.Model -> Bool

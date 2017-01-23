@@ -8,6 +8,7 @@ import Msg exposing (Msg)
 import Root
 import State
 import Receiver
+import Time
 
 
 -- Incoming JS -> Elm
@@ -158,6 +159,13 @@ receiverRenameActions =
     receiverRenames Msg.BroadcasterReceiverRenamed
 
 
+
+port animationScroll : (( Time.Time, Float ) -> m) -> Sub m
+
+
+animationScrollActions : Sub Msg
+animationScrollActions =
+    animationScroll Msg.AnimationScroll
 
 -- Outgoing Elm -> JS
 

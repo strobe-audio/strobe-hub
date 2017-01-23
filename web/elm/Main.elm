@@ -62,7 +62,7 @@ subscriptions model =
         , Ports.scrollTopActions
         , Ports.connectionStatusActions
         , viewportWidth
-        , AnimationFrame.times (Msg.AnimationFrame)
+        , Ports.animationScrollActions
         ]
 
 
