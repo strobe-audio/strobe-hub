@@ -218,10 +218,11 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   border-radius: 2px;
 }
 .channels-selector--channel--receivers__empty {
-  /* background-color: rgba(255, 255, 255, 0.2); */
+  background-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.3);
   /* color: rgba(0, 0, 0, 1.0); */
-  background-color: #DD2C00;
-  color: #FF6D00;
+  /* background-color: #DD2C00; */
+  /* color: #DD2C00; */
 }
 .channels-selector--channel--receivers:active {
   color: #ff0;
