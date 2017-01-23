@@ -26,50 +26,8 @@ import Msg exposing (Msg)
 import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
 
 
-channels : Root.Model -> Html Msg
-channels model =
-    case Root.activeChannel model of
-        Nothing ->
-            div [] []
-
-        Just channel ->
-            channelsBar model channel
-
-
-channelsBar : Root.Model -> Channel.Model -> Html Msg
-channelsBar model activeChannel =
-    let
-        options =
-            { defaultOptions | preventDefault = True }
-
-        contents =
-            case model.showChannelSwitcher of
-                False ->
-                    div [] []
-
-                True ->
-                    div
-                        [ classList
-                            [ ( "channels", True )
-                            , ( "channels__select-channel", model.showChannelSwitcher )
-                            ]
-                        ]
-                        [ div
-                            [ class "channels--overlay" ]
-                            -- [ (channelSelectorPanel model activeChannel)
-                            [ (channel model activeChannel)
-                            ]
-                        , div ([ class "channels--toggle" ] ++ (onUnifiedClick Msg.ToggleChannelSelector)) []
-                        ]
-    in
-        contents
-
-
 channel : Root.Model -> Channel.Model -> Html Msg
 channel model channel =
-    -- title with switcher
-    -- channel volume
-    -- receiver list
     div
         [ id "__scrolling__"
         , classList
@@ -177,74 +135,6 @@ changeChannel model activeChannel =
                 div [] []
 
 
-channelSelectorPanel : Root.Model -> Channel.Model -> Html Msg
-channelSelectorPanel model activeChannel =
-    let
-        channels =
-            model.channels
-
-        receivers =
-            model.receivers
-
-        -- unselectedChannels =
-        --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
-        channelSummaries =
-            List.map (Channel.summary receivers) channels
-
-        ( activeChannels, inactiveChannels ) =
-            List.partition Channel.isActive channelSummaries
-
-        orderChannels summaries =
-            List.sortBy (\c -> c.channel.originalName) summaries
-
-        volumeCtrl =
-            (Volume.View.control activeChannel.volume
-                (div [ class "channel--name" ] [ text activeChannel.name ])
-            )
-    in
-        div
-            [ class "channels--view" ]
-            [ div [ class "channels--channel-control" ]
-                [ Html.map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
-                , (Receivers.View.receivers model activeChannel)
-                ]
-            , div [ class "channels--header" ]
-                [ div [ class "channels--title" ]
-                    [ text (((toString (List.length channels)) ++ " Channels")) ]
-                , div
-                    [ classList
-                        [ ( "channels--add-btn", True )
-                        , ( "channels--add-btn__active", model.showAddChannel )
-                        ]
-                    , onClick Msg.ToggleAddChannel
-                    , onSingleTouch Msg.ToggleAddChannel
-                    ]
-                    []
-                ]
-            , addChannelPanel model
-            , div [ class "channels-selector" ]
-                [ div [ class "channels-selector--list" ]
-                    [ div [ class "channels-selector--separator" ] [ text "Active" ]
-                    , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
-                    , div [ class "channels-selector--separator" ] [ text "Inactive" ]
-                    , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
-                    ]
-                ]
-            ]
-
-
-addChannelPanel : Root.Model -> Html Msg
-addChannelPanel model =
-    case model.showAddChannel of
-        False ->
-            div [] []
-
-        True ->
-            div [ class "channels--add-channel-input" ]
-                [ Html.map Msg.AddChannelInput (Input.View.inputSubmitCancel model.newChannelInput)
-                ]
-
-
 channelChoice : List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
 channelChoice receivers activeChannel channelSummary =
     let
@@ -328,16 +218,86 @@ channelChoice receivers activeChannel channelSummary =
             ]
 
 
-cover : Channel.Model -> Html Msg
-cover channel =
-    Html.map (Msg.Channel channel.id) (Channel.View.cover channel)
-
-
-playlist : Channel.Model -> Html Msg
-playlist channel =
-    Html.map (Msg.Channel channel.id) (lazy Channel.View.playlist channel)
 
 
 mapTouch : Attribute (Utils.Touch.E Msg) -> Attribute Msg
 mapTouch a =
     Html.Attributes.map Msg.SingleTouch a
+
+
+-- channelSelectorPanel : Root.Model -> Channel.Model -> Html Msg
+-- channelSelectorPanel model activeChannel =
+--     let
+--         channels =
+--             model.channels
+--
+--         receivers =
+--             model.receivers
+--
+--         -- unselectedChannels =
+--         --   List.filter (\channel -> channel.id /= activeChannel.id) channels.channels
+--         channelSummaries =
+--             List.map (Channel.summary receivers) channels
+--
+--         ( activeChannels, inactiveChannels ) =
+--             List.partition Channel.isActive channelSummaries
+--
+--         orderChannels summaries =
+--             List.sortBy (\c -> c.channel.originalName) summaries
+--
+--         volumeCtrl =
+--             (Volume.View.control activeChannel.volume
+--                 (div [ class "channel--name" ] [ text activeChannel.name ])
+--             )
+--     in
+--         div
+--             [ class "channels--view" ]
+--             [ div [ class "channels--channel-control" ]
+--                 [ Html.map (\m -> (Msg.Channel activeChannel.id) (Channel.Volume m)) volumeCtrl
+--                 , (Receivers.View.receivers model activeChannel)
+--                 ]
+--             , div [ class "channels--header" ]
+--                 [ div [ class "channels--title" ]
+--                     [ text (((toString (List.length channels)) ++ " Channels")) ]
+--                 , div
+--                     [ classList
+--                         [ ( "channels--add-btn", True )
+--                         , ( "channels--add-btn__active", model.showAddChannel )
+--                         ]
+--                     , onClick Msg.ToggleAddChannel
+--                     , onSingleTouch Msg.ToggleAddChannel
+--                     ]
+--                     []
+--                 ]
+--             , addChannelPanel model
+--             , div [ class "channels-selector" ]
+--                 [ div [ class "channels-selector--list" ]
+--                     [ div [ class "channels-selector--separator" ] [ text "Active" ]
+--                     , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
+--                     , div [ class "channels-selector--separator" ] [ text "Inactive" ]
+--                     , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
+--                     ]
+--                 ]
+--             ]
+--
+--
+-- addChannelPanel : Root.Model -> Html Msg
+-- addChannelPanel model =
+--     case model.showAddChannel of
+--         False ->
+--             div [] []
+--
+--         True ->
+--             div [ class "channels--add-channel-input" ]
+--                 [ Html.map Msg.AddChannelInput (Input.View.inputSubmitCancel model.newChannelInput)
+--                 ]
+--
+--
+-- cover : Channel.Model -> Html Msg
+-- cover channel =
+--     Html.map (Msg.Channel channel.id) (Channel.View.cover channel)
+--
+--
+-- playlist : Channel.Model -> Html Msg
+-- playlist channel =
+--     Html.map (Msg.Channel channel.id) (lazy Channel.View.playlist channel)
