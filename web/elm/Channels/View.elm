@@ -35,28 +35,40 @@ channel model channel =
             , ( "channels--view__change-channel", model.showChangeChannel )
             ]
         ]
-        [ div
-            [ class "channels--channel-title" ]
-            [ div
-                [ class "channel--name"
-                , onClick Msg.ToggleChangeChannel
-                , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
-                , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
-                ]
-                [ text channel.name ]
-            , div
-                [ class "channels--show-switch-channel"
-                , onClick Msg.ToggleChangeChannel
-                , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
-                , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
-                ]
-                []
-            ]
-        , (changeChannel model channel)
-        , (channelVolume model channel)
-        , (channelReceivers model channel)
-        , (detachedReceivers model channel)
+        [ (changeChannel model channel)
         ]
+
+-- channel : Root.Model -> Channel.Model -> Html Msg
+-- channel model channel =
+--     div
+--         [ id "__scrolling__"
+--         , classList
+--             [ ( "channels--view", True )
+--             , ( "channels--view__change-channel", model.showChangeChannel )
+--             ]
+--         ]
+--         [ div
+--             [ class "channels--channel-title" ]
+--             [ div
+--                 [ class "channel--name"
+--                 , onClick Msg.ToggleChangeChannel
+--                 , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
+--                 , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
+--                 ]
+--                 [ text channel.name ]
+--             , div
+--                 [ class "channels--show-switch-channel"
+--                 , onClick Msg.ToggleChangeChannel
+--                 , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
+--                 , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
+--                 ]
+--                 []
+--             ]
+--         , (changeChannel model channel)
+--         , (channelVolume model channel)
+--         , (channelReceivers model channel)
+--         , (detachedReceivers model channel)
+--         ]
 
 
 channelReceivers : Root.Model -> Channel.Model -> Html Msg
@@ -106,7 +118,7 @@ changeChannel : Root.Model -> Channel.Model -> Html Msg
 changeChannel model activeChannel =
     let
         channels =
-            List.filter (\c -> c.id /= activeChannel.id) model.channels
+            model.channels
 
         receivers =
             model.receivers
@@ -118,21 +130,18 @@ changeChannel model activeChannel =
             List.partition Channel.isActive channelSummaries
 
         orderChannels summaries =
-            List.sortBy (\c -> c.channel.originalName) summaries
-    in
-        case model.showChangeChannel of
-            True ->
-                div [ class "channels-selector" ]
-                    [ div [ class "channels-selector--list" ]
-                        [ div [ class "channels-selector--separator" ] [ text "Active" ]
-                        , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
-                        , div [ class "channels-selector--separator" ] [ text "Inactive" ]
-                        , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
-                        ]
-                    ]
+            List.sortBy (\c -> c.channel.id) summaries
 
-            False ->
-                div [] []
+    in
+        div [ class "channels-selector" ]
+            [ div [ class "channels-selector--list" ]
+                [ div [ class "channels-selector--separator" ] [ text "Active" ]
+                , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
+                , div [ class "channels-selector--separator" ] [ text "Inactive" ]
+                , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
+                ]
+            ]
+
 
 
 channelChoice : List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
@@ -206,15 +215,15 @@ channelChoice receivers activeChannel channelSummary =
                         ++ onClickChoose
                     )
                     [ text (toString channelSummary.receiverCount) ]
-                , div [ class "channels-selector--channel--edit", onClickEdit, onSingleTouch (Msg.Channel channelSummary.id (Channel.ShowEditName True)) ] []
+                -- , div [ class "channels-selector--channel--edit", onClickEdit, onSingleTouch (Msg.Channel channelSummary.id (Channel.ShowEditName True)) ] []
                 ]
-            , div
-                [ classList
-                    [ ( "channels-selector--edit", True )
-                    , ( "channels-selector--edit__active", channel.editName )
-                    ]
-                ]
-                [ Html.map (\e -> Msg.Channel channel.id (Channel.EditName e)) editNameInput ]
+            -- , div
+            --     [ classList
+            --         [ ( "channels-selector--edit", True )
+            --         , ( "channels-selector--edit__active", channel.editName )
+            --         ]
+            --     ]
+            --     [ Html.map (\e -> Msg.Channel channel.id (Channel.EditName e)) editNameInput ]
             ]
 
 
