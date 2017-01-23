@@ -128,7 +128,14 @@ rendition model channel =
                     [ class "channel--info--name" ]
                     [ div
                         [ class "channel--name" ]
-                        [ text channel.name ]
+                        [ text channel.name
+                        , span
+                            [ class "channel--playlist-duration" ]
+                            [ text
+                                <| Source.View.durationString
+                                <| (Channel.playlistDuration channel)
+                            ]
+                        ]
                     ]
                 , rendition
                 ]

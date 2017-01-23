@@ -14,6 +14,9 @@
     padding-right: calc($padding/2);
   }
 }
+.channel--playlist-duration {
+	margin-left: $padding;
+}
 
 .channel--playlist-actions {
   display: flex;
@@ -62,6 +65,9 @@
   line-height: 0;
 }
 
+.channel--info--name .channel--playlist-duration {
+	color: #BF360C;
+}
 .channel--control {
 	color: #fff;
 }
