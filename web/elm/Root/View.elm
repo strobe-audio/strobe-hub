@@ -46,7 +46,7 @@ rootWhenConnected model =
             div [ class "loading" ] [ text "Loading..." ]
 
         Just channel ->
-            lazy2 rootWithActiveChannel model channel
+            rootWithActiveChannel model channel
 
 
 rootWithActiveChannel : Root.Model -> Channel.Model -> Html Msg

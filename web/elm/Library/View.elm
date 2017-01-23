@@ -1,7 +1,7 @@
 module Library.View exposing (..)
 
 import Html exposing (..)
-import Html.Lazy
+import Html.Lazy exposing (lazy, lazy2)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode as Json
@@ -21,7 +21,7 @@ root : Library.Model -> Html Library.Msg
 root model =
     div [ class "library" ]
         [ (breadcrumb model)
-        , (Html.Lazy.lazy levels model)
+        , (levels model)
         ]
 
 
@@ -49,7 +49,7 @@ levels model =
                         ]
 
                 Just folder_ ->
-                    (Html.Lazy.lazy2 (folder model) folder_ isCurrent)
+                    (folder model folder_ isCurrent)
 
         count =
             (List.length levels) - 1
