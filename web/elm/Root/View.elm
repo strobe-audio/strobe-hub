@@ -80,8 +80,8 @@ activeRendition model channel =
                 Just rendition ->
                     div
                         [ onClick Channel.PlayPause
-                        -- , mapTouch (Utils.Touch.touchStart Channel.PlayPause)
-                        -- , mapTouch (Utils.Touch.touchEnd Channel.PlayPause)
+                        , mapTouch (Utils.Touch.touchStart Channel.PlayPause)
+                        , mapTouch (Utils.Touch.touchEnd Channel.PlayPause)
                         ]
                         [ Html.map
                             (always Channel.PlayPause)
