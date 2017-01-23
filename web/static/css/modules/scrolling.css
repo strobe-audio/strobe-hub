@@ -1,0 +1,6 @@
+#__scrolling__ {
+	overflow-x: hidden;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+}

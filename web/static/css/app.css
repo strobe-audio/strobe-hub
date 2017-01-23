@@ -9,6 +9,7 @@
 @import "modules/pocketgrid.css";
 @import "modules/layout.css";
 @import "modules/breakpoints.css";
+@import "modules/scrolling.css";
 
 @import "components/root.css";
 @import "components/channels.css";

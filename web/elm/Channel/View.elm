@@ -126,7 +126,7 @@ playlist channel =
                         []
                     ]
     in
-        div [ class "channel--playlist" ]
+        div [ id "__scrolling__", class "channel--playlist" ]
             [ div [ class "channel--playlist-actions" ]
                 actionButtons
             , panel

@@ -36,7 +36,7 @@ levels model =
                    )
                 |> List.reverse
 
-        levelColumn l =
+        levelColumn ( l, isCurrent ) =
             case l.contents of
                 Nothing ->
                     div
@@ -49,10 +49,13 @@ levels model =
                         ]
 
                 Just folder_ ->
-                    (Html.Lazy.lazy2 folder model folder_)
+                    (Html.Lazy.lazy2 (folder model) folder_ isCurrent)
+
+        count =
+            (List.length levels) - 1
 
         columns =
-            List.map levelColumn levels
+            List.map levelColumn <| List.indexedMap (\p l -> (l, p == count)) levels
 
         left =
             case model.animationTime of
@@ -67,16 +70,22 @@ levels model =
             columns
 
 
-folder : Library.Model -> Library.Folder -> Html Library.Msg
-folder model folder =
+folder : Library.Model -> Library.Folder -> Bool -> Html Library.Msg
+folder model folder isCurrent =
     let
         children =
             if List.isEmpty folder.children then
                 div [] []
             else
                 div [ class "library-contents" ] (List.map (node model folder) folder.children)
+
+        attrs =
+            if isCurrent then
+                [ id "__scrolling__" ]
+            else
+                [ ]
     in
-        div [ class "library--folder" ]
+        div ( attrs ++ [ class "library--folder" ])
             [ children ]
 
 

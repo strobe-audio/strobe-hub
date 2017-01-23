@@ -71,7 +71,8 @@ channel model channel =
     -- channel volume
     -- receiver list
     div
-        [ classList
+        [ id "__scrolling__"
+        , classList
             [ ( "channels--view", True )
             , ( "channels--view__change-channel", model.showChangeChannel )
             ]

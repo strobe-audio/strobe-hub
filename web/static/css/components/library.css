@@ -126,11 +126,6 @@
 
 .library--folder {
   flex: 0 0 100vw;
-	/* overflow: auto; */
-	overflow-x: hidden;
-	overflow-y: scroll;
-	-webkit-overflow-scrolling: touch;
-  transform: translateZ(0);
 }
 
 .library--folder__loading {
