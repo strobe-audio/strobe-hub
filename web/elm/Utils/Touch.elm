@@ -98,7 +98,7 @@ preventAndStop =
 
 
 singleClickDuration =
-    200
+    400
 
 
 singleClickDistance =
