@@ -41,3 +41,5 @@ type Msg
     | AnimationFrame Time
     -- new
     | ActivateView State.ViewMode
+    | ToggleShowChannelControl
+    | ReceiverAttachmentChange

@@ -12,6 +12,7 @@ import Msg exposing (Msg)
 import Input
 import Input.State
 import Utils.Touch
+import Task
 
 
 initialState : Receiver.State -> Receiver.Model
@@ -60,7 +61,13 @@ update action model =
             model ! [ Receiver.Cmd.attach channelId model.id ]
 
         Receiver.Attached channelId ->
-            { model | channelId = channelId } ! []
+            let
+                -- send a message so that we can hide the attach list if the
+                -- detached receiver list is empty
+                cmd =
+                    Task.perform identity (Task.succeed Msg.ReceiverAttachmentChange)
+            in
+                { model | channelId = channelId } ! [cmd]
 
         Receiver.Online channelId ->
             { model | online = True, channelId = channelId } ! []

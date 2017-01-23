@@ -11,6 +11,7 @@ import Channel
 import Channel.View
 import Channels.View
 import Library.View
+import Receiver
 import Receivers.View
 import Rendition.View
 import Source.View
@@ -59,6 +60,7 @@ rootWithActiveChannel model channel =
             [ id "root" ]
             [ (activeRendition model channel)
             , (notifications model)
+            , (channelControl model channel)
             , (activeView model channel)
             , (switchView model channel)
             ]
@@ -84,14 +86,52 @@ activeRendition model channel =
                         , mapTouch (Utils.Touch.touchEnd Channel.PlayPause)
                         ]
                         [ Html.map
-                            (always Channel.PlayPause)
+                            (always Channel.NoOp)
                             (Rendition.View.progress rendition channel.playing)
                         ]
 
     in
         div [ class "root--active-rendition" ]
-            [ Html.map (Msg.Channel channel.id) (Channel.View.player channel)
+            [ (rendition model channel)
             , Html.map (Msg.Channel channel.id) progress
+            ]
+
+
+rendition : Root.Model -> Channel.Model -> Html Msg
+rendition model channel =
+    let
+        maybeRendition =
+            List.head channel.playlist
+
+        rendition =
+            case maybeRendition of
+                Nothing ->
+                    div [] [ text "No song..." ]
+
+                Just rendition ->
+                    div [ class "channel--rendition" ]
+                        [ Html.map (always Msg.NoOp) (Rendition.View.info rendition channel.playing)
+                        ]
+
+        mapTap a =
+            Html.Attributes.map Msg.SingleTouch a
+    in
+        div
+            [ class "channel--playback"
+            , onClick Msg.ToggleShowChannelControl
+            , mapTap (Utils.Touch.touchStart Msg.ToggleShowChannelControl)
+            , mapTap (Utils.Touch.touchEnd Msg.ToggleShowChannelControl)
+            ]
+            [ div
+                [ class "channel--info" ]
+                [ div
+                    [ class "channel--info--name" ]
+                    [ div
+                        [ class "channel--name" ]
+                        [ text channel.name ]
+                    ]
+                , rendition
+                ]
             ]
 
 
@@ -153,3 +193,89 @@ notifications model =
         ]
 
 
+channelControl : Root.Model -> Channel.Model -> Html Msg
+channelControl model channel =
+    let
+        contents =
+            case model.showChannelControl of
+                False ->
+                    []
+
+                True ->
+                    [ (Html.map
+                        (Msg.Channel channel.id)
+                        (Channel.View.control model channel)
+                      )
+                    , (receiverControl model channel)
+                    -- padding
+                    , (div [ style [("height", "30vh")] ] [])
+                    ]
+
+    in
+        div
+            [ classList
+                [ ("root--channel-control", True)
+                , ("root--channel-control__active", model.showChannelControl)
+                , ("scrolling", True)
+                ]
+            ]
+            contents
+
+
+receiverControl : Root.Model -> Channel.Model -> Html Msg
+receiverControl model channel =
+    let
+        hideAttachMsg =
+            Msg.ShowAttachReceiver False
+
+        ( attached, detached ) =
+            Receiver.partitionReceivers model.receivers channel
+
+        contents =
+            case model.showAttachReceiver of
+                True ->
+                    Channels.View.detachedReceivers model channel
+
+                False ->
+                    Channels.View.channelReceivers model channel
+
+        showAttachMsg =
+            if List.isEmpty detached then
+                Msg.NoOp
+
+            else
+                Msg.ShowAttachReceiver True
+
+    in
+        div
+            [ class "root--receiver-control" ]
+            [ div
+                [ class "root--receiver-control-tabs" ]
+                [ div
+                    [ classList
+                        [ ("root--receiver-control-tab", True )
+                        , ("root--receiver-control-tab__active", not model.showAttachReceiver )
+                        , ("root--receiver-control--attached", True )
+                        ]
+                    , onClick hideAttachMsg
+                    , mapTouch (Utils.Touch.touchStart hideAttachMsg)
+                    , mapTouch (Utils.Touch.touchEnd hideAttachMsg)
+                    ]
+                    [ text ((toString (List.length attached)) ++ " Receivers")
+                    ]
+                , div
+                    [ classList
+                        [ ("root--receiver-control-tab", True )
+                        , ("root--receiver-control-tab__active", model.showAttachReceiver )
+                        , ("root--receiver-control--detached", True )
+                        , ("root--receiver-control-tab__disabled", (List.isEmpty detached) )
+                        ]
+                    , onClick showAttachMsg
+                    , mapTouch (Utils.Touch.touchStart showAttachMsg)
+                    , mapTouch (Utils.Touch.touchEnd showAttachMsg)
+                    ]
+                    [ text "Attach"
+                    ]
+                ]
+            , contents
+            ]

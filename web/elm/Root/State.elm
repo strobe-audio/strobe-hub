@@ -38,6 +38,7 @@ initialState =
     , notifications = []
     -- NEW
     , viewMode = State.ViewCurrentChannel
+    , showChannelControl = True
     }
 
 
@@ -294,7 +295,26 @@ update action model =
                     ! [ (Cmd.map Msg.Library cmd) ]
 
         Msg.ActivateView mode ->
-            { model | viewMode = mode } ! []
+            { model | showChannelControl = False, viewMode = mode } ! []
+
+        Msg.ToggleShowChannelControl ->
+            { model | showChannelControl = not model.showChannelControl } ! []
+
+        Msg.ReceiverAttachmentChange ->
+            case Root.activeChannel model of
+                Nothing ->
+                    model ! []
+
+                Just channel ->
+                    let
+                        detached =
+                            Receiver.detachedReceivers model.receivers channel
+
+                        showAttachReceiver =
+                            not <| List.isEmpty detached
+                    in
+
+                        { model | showAttachReceiver = showAttachReceiver } ! []
 
 
 libraryVisible : Root.Model -> Bool

@@ -291,7 +291,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 }
 
 .channels--receivers {
-  margin-top: calc($button-size / 2);
+  /* margin-top: calc($button-size / 2); */
 }
 
 @media (--desktop) {

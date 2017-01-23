@@ -212,3 +212,58 @@
 	display: flex;
 	flex-direction: row;
 }
+
+
+/* channel control */
+
+.root--channel-control {
+	display: flex;
+	height: 0;
+	opacity: 0;
+	background: rgba(0, 0, 0, 0.9);
+	transition: height 200ms, opacity 300ms;
+	position: fixed;
+	top: $button-size;
+	right: 0;
+	left: 0;
+	z-index: 1000000;
+  transform: translateZ(0);
+	color: #fff;
+	margin-bottom: 500px;
+}
+
+.root--channel-control__active {
+	flex-direction: column;
+	height: calc(100vh - (2 * $button-size));
+	transition: height 200ms, opacity 300ms;
+	opacity: 1;
+}
+
+.root--receiver-control  {
+	/* margin-top: calc($button-size / 2); */
+}
+.root--receiver-control-tabs {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	height: $button-size;
+	align-items: center;
+}
+
+.root--receiver-control-tab {
+	flex: 0 0 40vw;
+	text-align: center;
+	background: #333;
+	height: calc($button-size / 2);
+	display: flex;
+	align-items: center;
+	text-align: center;
+	justify-content: center;
+}
+.root--receiver-control-tab__active {
+	font-weight: bold;
+	background: #ccc;
+}
+.root--receiver-control-tab__disabled {
+	color: #999;
+}

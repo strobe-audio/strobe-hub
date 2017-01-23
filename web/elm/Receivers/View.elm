@@ -97,17 +97,18 @@ attached model channel =
             else
                 div [ class "receivers--active-empty" ] [ text "Add receivers from list below" ]
     in
-        div
-            [ class "receivers" ]
-            [ div
-                [ class "receivers--head" ]
-                [ div
-                    [ class "receivers--title" ]
-                    [ (text ((toString (List.length receivers)) ++ " Attached Receivers"))
-                    ]
-                ]
-            , contents
-            ]
+        div [ class "receivers--list" ] (List.map receiverEntry receivers)
+        -- div
+        --     [ class "receivers" ]
+        --     [ div
+        --         [ class "receivers--head" ]
+        --         [ div
+        --             [ class "receivers--title" ]
+        --             [ (text ((toString (List.length receivers)) ++ " Attached Receivers"))
+        --             ]
+        --         ]
+        --     , contents
+        --     ]
 
 
 detached : Root.Model -> Channel.Model -> Html Msg
@@ -130,17 +131,18 @@ detached model channel =
                     [ ( receiver.id, Receiver.View.detached receiver channel ) ]
                 )
     in
-        if active then
-            div
-                [ class "receivers" ]
-                [ div
-                    [ class "receivers--head" ]
-                    [ div
-                        [ class "receivers--title" ]
-                        [ (text ((toString (List.length receivers)) ++ " Detached Receivers"))
-                        ]
-                    ]
-                , div [ class "receivers--list" ] (List.map receiverEntry receivers)
-                ]
-        else
-            div [] []
+        -- if active then
+        --     div
+        --         [ class "receivers" ]
+        --         [ div
+        --             [ class "receivers--head" ]
+        --             [ div
+        --                 [ class "receivers--title" ]
+        --                 [ (text ((toString (List.length receivers)) ++ " Detached Receivers"))
+        --                 ]
+        --             ]
+        --         , div [ class "receivers--list" ] (List.map receiverEntry receivers)
+        --         ]
+        -- else
+        --     div [] []
+        div [ class "receivers--list" ] (List.map receiverEntry receivers)

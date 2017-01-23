@@ -35,6 +35,7 @@ type alias Model =
     , notifications : List (Notification.Model Msg)
     -- NEW
     , viewMode : State.ViewMode
+    , showChannelControl : Bool
     }
 
 

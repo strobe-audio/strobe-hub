@@ -61,3 +61,94 @@
   bottom: -1px;
   line-height: 0;
 }
+
+.channel--control {
+	color: #fff;
+}
+
+.channel--rewind-play-skip {
+	display: flex;
+	flex-direction: row;
+	margin: calc($button-size / 2) calc($button-size / 2) 0;
+}
+
+.channel--rendition-cover {
+	margin: $padding 0 calc($button-size / 2) 0;
+	/* background-color: rgba(255, 255, 255, 0.6); */
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: calc(100vw - $button-size) auto;
+	height: calc(100vw - $button-size);
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.channel--play-control-btn {
+	background: rgba(0, 0, 0, 0.6);
+	flex: 1;
+	justify-content: center;
+	height: $button-size;
+	font-size: calc($button-size / 1.5);
+	line-height: $button-size;
+	opacity: 0.5;
+  &:before {
+    @mixin fa;
+		text-align: center;
+		display: inline-block;
+		width: 100%;
+		height: 100%;
+  }
+}
+
+.channel--play-control-btn__enabled {
+	opacity: 1;
+}
+.channel--rewind:before {
+	content: "\f049";
+}
+.channel--play:before  {
+	content: "\f04b";
+}
+.channel--pause:before  {
+	content: "\f04c";
+}
+.channel--skip:before  {
+	content: "\f050";
+}
+.channel--rewind:before,
+.channel--skip:before  {
+	font-size: calc($button-size / 2);
+}
+
+
+.channel--rendition-progress {
+	margin: 0 calc($button-size / 2) 0 calc($button-size / 2);
+	height: calc($button-size / 2);
+	display: flex;
+	align-items: center;
+	background: rgba(0, 0, 0, 0.2);
+}
+
+
+.channel--rendition-progress--time {
+	flex: 0 0 $button-size;
+	box-sizing: border-box;
+	padding: $padding;
+}
+
+.channel--rendition-progress--bar-outer {
+	flex: 1;
+	height: $padding;
+	background: rgba(255, 255, 255, 0.1);
+}
+.channel--rendition-progress--bar-inner {
+	background: #f00;
+	height: 100%;
+}
+
+.channel--rendition-progress--played-time {
+	text-align: right;
+}
+
+
