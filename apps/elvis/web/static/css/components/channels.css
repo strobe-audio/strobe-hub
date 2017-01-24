@@ -1,0 +1,311 @@
+.channels {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  display: flex;
+  flex-direction: row;
+  /* line-height: $button-size; */
+  position: fixed;
+  /* top: $button-size; */
+  top: $top-bar-height;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  /* z-index: 10000; */
+  background-color: rgba(0, 0, 0, 1);
+  /* color: #fff; */
+
+  @mixin overflowScroll;
+
+  transition: width $channels-view-animation-duration;
+  transition-timing-function: ease-in-out;
+}
+
+.channels__select-channel {
+  width: 100vw;
+  transition: width $channels-view-animation-duration;
+}
+
+.channels--channel-volume {
+  flex: 1;
+}
+
+.channels--channel-control .volume-control .channel--name {
+  font-weight: 600;
+}
+.channels-selector {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.channels--overlay {
+  width: calc(100vw - $button-size);
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  z-index: 10000;
+}
+
+.channels--view {
+	/* color: #fff; */
+	/* background: #111; */
+	width: 100vw;
+}
+.channels--toggle {
+  width: $button-size;
+  height: 100vh;
+}
+
+.channels-selector--list {
+  flex: 1;
+}
+
+$channel-select-border: rgba(0, 0, 0, 0.05);
+
+.channels-selector--channel {
+  /* flex: 0 0 $button-size; */
+  height: $button-size;
+  display: flex;
+  align-items: center;
+  /* color: #fff; */
+  cursor: pointer;
+  position: relative;
+  &:hover {
+    color: red;
+  }
+  & + & {
+    border-top: solid 1px $channel-select-border;
+  }
+  &:last-child {
+    border-bottom: solid 1px $channel-select-border;
+  }
+}
+
+.channels-selector--channel:active {
+	color: blue;
+}
+@define-mixin slideEditName {
+  transition: left 10.3s;
+}
+
+.channels--header {
+  height: $button-size;
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.channels--title {
+  flex: 1;
+  padding: 0 $padding;
+}
+
+.channels--add-btn {
+  @mixin fa-btn "\f067";
+  background-color: rgba(0, 0, 0, 0.3);
+  flex: 0 0 $button-size;
+  cursor: pointer;
+  &:hover {
+    background-color: rgba(255, 0, 0, 0.5);
+  }
+}
+
+.channels--add-btn__active {
+  &:before {
+    content: "\f0d8";
+    background-color: #000;
+  }
+}
+
+.channels-selector--separator {
+  height: calc($button-size / 2);
+  padding: 0 $padding;
+  display: flex;
+  align-items: center;
+  font-size: 0.8em;
+  /* color: #fff; */
+  text-transform: uppercase;
+  border-bottom: solid 1px $channel-select-border;
+  /* background: rgba(0, 0, 0, 0.1); */
+  /* background: #BF360C; */
+}
+
+.channels-selector--group {
+  /* padding-bottom: calc($button-size / 2); */
+  /* display: flex; */
+}
+.channels-selector--display {
+  /* @mixin slideEditName; */
+  height: $button-size;
+  flex: 0 0 calc($button-size);
+  display: flex;
+  position: relative;
+  z-index: 0;
+  flex: 1;
+  align-items: center;
+  /* color: #fff; */
+  /* left: 0; */
+  cursor: pointer;
+  position: relative;
+  &::before {
+    @mixin fa;
+    content: $channel-icon;
+    width: $button-size;
+    display: block;
+    text-align: center;
+    border-right: solid 1px rgba(0, 0, 0, 0.05);
+    color: rgba(0, 0, 0, 0.3);
+  }
+  & + & {
+    border-top: solid 1px $channel-select-border;
+  }
+  &:last-child {
+    border-bottom: solid 1px $channel-select-border;
+  }
+}
+
+.channels-selector--display__inactive {
+  /* left: -100%; */
+}
+
+
+.channels-selector--edit {
+  /* @mixin slideEditName; */
+  height: $button-size;
+  flex: 0 0 calc($button-size);
+  display: none;
+  position: absolute;
+  z-index: 10;
+  left: 100%;
+  right: 0;
+  background: #000;
+  flex: 1;
+}
+
+.channels-selector--edit__active {
+  display: block;
+  left: 0;
+}
+
+
+.channels-selector--channel__playing .channels-selector--display {
+  &:before {
+    color: rgba(0, 0, 0, 1);
+    content: "\f144";
+  }
+}
+.channels-selector--channel--name {
+  flex: 1;
+  &:hover {
+    /* color: #fff; */
+  }
+}
+.channels-selector--channel--duration {
+  padding: 0 $padding;
+}
+.channels-selector--channel--edit {
+  @mixin fa-btn "\f040";
+  flex: 0 0 $button-size;
+  background-color: rgba(255, 255, 255, 0.3);
+}
+.channels-selector--channel--receivers {
+  padding: 0 $padding;
+  margin: 0 $padding;
+  /* background-color: rgba(255, 255, 255, 0.8); */
+  background-color: #DD2C00;
+  /* color: #fff; */
+  border-radius: 2px;
+}
+.channels-selector--channel--receivers__empty {
+  background-color: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 1.0);
+  /* color: rgba(0, 0, 0, 1.0); */
+  /* background-color: #DD2C00; */
+  /* color: #DD2C00; */
+}
+.channels-selector--channel--receivers:active {
+  color: #ff0;
+}
+.channels-selector--channel__active {
+  background: #E65100;
+	color: rgba(0, 0, 0, 0.8);
+	font-weight: 600;
+	&:hover {
+		color: rgba(0, 0, 0, 1.0);
+	}
+}
+
+.channels-selector--channel__active  .channels-selector--channel__playing {
+    &:before {
+      color: rgba(255, 255, 255, 1);
+    }
+}
+
+.channel-selector--add {
+  box-sizing: border-box;
+  display: flex;
+  flex: 0 0 $button-size;
+  cursor: pointer;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.3);
+  &::before {
+    @mixin fa;
+    content: "\f067";
+    flex: 0 0 $button-size;
+    /* width: $button-size; */
+    height: $button-size;
+    line-height: $button-size;
+    display: block;
+    /* position: absolute; */
+    /* left: 0; */
+    /* top: 0; */
+    text-align: center;
+    border-right: solid 1px rgba(0, 0, 0, 0.2);
+    margin-right: $padding;
+  }
+}
+
+.channels--add-channel-input .input .input--input,
+.channels-selector--edit .input .input--input {
+  max-width: calc(100vw - (3 * $button-size));
+}
+
+.channels--channel-title {
+  height: $button-size;
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  font-weight: 500;
+  font-size: 1.2em;
+}
+.channels--channel-title .channel--name {
+  flex: 1;
+}
+.channels--show-switch-channel {
+  @mixin fa-btn "\f074";
+  flex: 0 0 $button-size;
+  background: rgba(0, 0, 0, 0.5);
+}
+.channels--view__change-channel .channels--show-switch-channel {
+  @mixin fa-btn "\f0d8";
+}
+
+.channels--receivers {
+  /* margin-top: calc($button-size / 2); */
+}
+
+@media (--desktop) {
+  .channels {
+    width: $channel-column-width;
+  }
+}
+
+
+@media (--mobile) {
+  .channels {
+    right: 0;
+  }
+}
+
+

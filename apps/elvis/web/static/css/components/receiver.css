@@ -1,0 +1,93 @@
+.receiver {
+  display: flex;
+  align-items: stretch;
+  height: $button-size;
+  flex-direction: row;
+  flex: 1;
+  position: relative;
+}
+
+.receiver__offline .receiver--view {
+  opacity: 0.5;
+}
+
+.receiver--name {
+  padding: 0 $padding;
+  line-height: $button-size;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.receiver--volume {
+  flex: 1;
+  /* max-width: calc(100vw - (2 * $button-size)); */
+}
+
+.receiver--volume .volume-level {
+  background-color: #00796B;
+}
+
+.receiver__attached {
+}
+
+.receiver__detached {
+  /* background-color: #4caf50; */
+  color: #fff;
+  cursor: pointer;
+  &:hover {
+    background-color: #00c853;
+  }
+}
+.receiver--state__detached {
+  @mixin fa-btn "\f067";
+  flex: 0 0 $button-size;
+  /* background-color: #4caf50; */
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+
+.receiver--action__edit {
+  @mixin fa-btn "\f040";
+  width: $button-size;
+}
+
+.receiver--view {
+  display: flex;
+  flex: 1;
+}
+.receiver--edit {
+  background: #000;
+  position: absolute;
+  left: 100%;
+  flex: 1;
+  z-index: 10;
+  display: none;
+  right: 0;
+}
+.receiver--edit__active {
+  left: 0;
+  display: block;
+}
+.receiver--edit .input .input--input {
+  max-width: calc(100vw - (3 * $button-size));
+}
+
+.receiver .receiver--name:after,
+.receiver .receiver--name:before {
+  @mixin fa;
+  width: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  position: relative;
+  left: -0px;
+  top: -1px;
+  font-size: 0.8em;
+}
+
+.receiver.receiver__online .receiver--name:before {
+  content: "\f111"; /* fa-circle */
+}
+.receiver.receiver__offline .receiver--name:before {
+  content: "\f1db"; /* fa-circle-thin */
+}

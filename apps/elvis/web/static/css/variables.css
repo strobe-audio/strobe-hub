@@ -1,0 +1,25 @@
+
+
+$channel-column-width: 380px;
+$channel-player-height: 120px;
+
+$mobile-max-width: calc($channel-column-width * 2);
+
+$padding: 6px;
+
+
+$button-size: 60px;
+
+$active-channel-bar-height: 14px;
+$top-bar-height: calc($button-size);
+
+$mode-selector-height: $button-size;
+
+$channel-icon: "\f140";
+
+$channels-view-animation-duration: 220ms;
+$channels-view-width: calc(100vw - $button-size);
+
+@custom-media --mobile (max-width: 800px);
+@custom-media --desktop (min-width: 801px);
+

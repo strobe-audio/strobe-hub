@@ -1,0 +1,19 @@
+#!/bin/bash
+
+export MIX_ENV=prod
+export PORT=4000
+
+echo -n "Compiling Elixir...            "
+mix compile.protocols
+echo "done"
+
+echo -n "Compiling assets...            "
+$(yarn bin)/webpack --config config/webpack.config.js -p > /dev/null
+echo "done"
+
+echo -n "Generating asset manifest...   "
+mix phoenix.digest > /dev/null
+echo "done"
+
+echo "Starting server on port ${PORT}..."
+exec elixir -pa _build/prod/consolidated -S mix phoenix.server

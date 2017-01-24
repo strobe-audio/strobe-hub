@@ -1,0 +1,203 @@
+.rendition {
+  /* flex: 0; */
+  /* background-color: rgba(255, 0, 0, 0.5);; */
+  position: relative;
+}
+
+.rendition--cover {
+  flex: 0 0 100vw;
+  width: 100%;
+  height: 100vw;
+  overflow: hidden;
+  position: relative;
+  left: 0;
+  top: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  img {
+    /* position: absolute; */
+    /* left: 0; */
+    /* top: 0; */
+    display: block;
+    width: 100%;
+  }
+}
+.rendition--cover__blank {
+
+}
+
+.rendition--song {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  padding: $padding;
+  display: flex;
+  flex-direction: row;
+  cursor: pointer;
+}
+
+.rendition--meta {
+  /* text-overflow: ellipsis; */
+  max-width: calc(100vw - 2 * ($button-size + $padding));
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 1.4rem;
+  font-weight: 100;
+  /* flex: 1; */
+  /* min-width: 0; */
+  text-overflow: ellipsis; overflow: hidden;
+}
+
+.rendition--meta--detail  {
+  display: inline;
+  white-space: nowrap;
+  min-width: 0;
+}
+.rendition--title {
+  /* @mixin h2; */
+  /* @mixin fa-btn "\f04b"; */
+  color: #fff;
+  position: relative;
+  flex: 1;
+  align-items: center;
+  /* padding: $padding 0; */
+  &:before {
+    /* @mixin fa; */
+    /* content: "\f04b"; */
+    /* text-align: center; */
+    /* cursor: pointer; */
+    /* display: inline-block; */
+    /* padding-right: calc($padding/2); */
+    /* width: calc($button-size / 2); */
+  }
+}
+
+.rendition--cover:hover {
+  .rendition--title:before {
+    color: red;
+  }
+}
+.rendition--title__playing {
+  &:before {
+    /* @mixin fa; */
+    /*    fa-pause */
+    /* content: "\f04c"; */
+  }
+}
+
+.rendition--meta {
+  /* @mixin block-group; */
+  /* margin-left: $channel-player-height; */
+  /* padding: 0 $padding; */
+  /* padding-left: $padding; */
+}
+
+.rendition--meta--artist,
+.rendition--meta--duration,
+.rendition--meta--album {
+  /* @mixin block; */
+  /* display: inline-block; */
+}
+
+.rendition--meta--artist,
+.rendition--meta--duration,
+.rendition--meta--album {
+}
+.rendition--meta--duration {
+  margin-left: $padding;
+}
+.rendition--meta--album:before {
+  content: "›";
+  margin: 0 $padding;
+}
+
+.rendition--duration {
+  padding: 0 $padding;
+  /* @mixin h1; */
+  /* font-size: 1.8rem; */
+  /* line-height: 1.9; */
+}
+
+
+/* ----------- */
+
+.rendition--control {
+  display: flex;
+  flex: 1;
+  cursor: pointer;
+  align-items: stretch;
+  flex-direction: row;
+}
+.rendition--play-pause-btn {
+  /* @mixin fa-btn "\f04b"; */
+  flex: 0 0 $button-size;
+  height: $button-size;
+  background-size: cover;
+  /* &:before { */
+  /*   border-radius: 40px; */
+  /*   background: rgba(0, 0, 0, 0.5); */
+  /*   display: block; */
+  /*   width: calc($button-size - 20); */
+  /*   height: calc($button-size - 20); */
+  /*   margin: 10px; */
+  /*   line-height: 32px; */
+  /* } */
+}
+.rendition__playing {
+  .rendition--play-pause-btn:before {
+    content: "\f04c"; /* fa-pause */
+  }
+}
+
+.rendition--details {
+  flex: 1;
+  /* white-space: nowrap; */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-left: $padding;
+}
+
+.rendition--details--top {
+  @mixin h2;
+  /* padding-left: $padding; */
+  /* display: flex; */
+  /* align-items: baseline; */
+  /* flex: 1; */
+
+}
+
+.rendition--progress {
+  flex: 0 0 $button-size;
+  position: relative;
+  &:before {
+    @mixin fa;
+    content: "\f04b";
+    position: absolute;
+    left: 4px;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    line-height: $button-size;
+    text-align: center;
+    font-size: calc($button-size / 3);
+  }
+}
+.rendition--progress__playing {
+  &:before {
+    content: "\f04c";
+    left: 0px;
+  }
+}
+.rendition--progress svg.progress-circular--root {
+  width: calc($button-size - 6);
+  height: calc($button-size - 6);
+  margin: 3px;
+  display: block;
+}
+

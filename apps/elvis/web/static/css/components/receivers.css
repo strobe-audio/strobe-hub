@@ -1,0 +1,31 @@
+.receivers {
+  /* background-color: #ccc; */
+}
+
+.receivers--head {
+  height: $button-size;
+  display: flex;
+  align-items: center;
+  border-top: dotted 1px rgba(255, 255, 255, 0.2);
+}
+
+.receivers--title {
+  flex: 1;
+  padding: 0 $padding;
+  font-weight: 400;
+}
+.receivers--add {
+  flex: 0 0 $button-size;
+  text-align: center;
+  height: $button-size;
+  line-height: $button-size;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.receivers--active-empty {
+  text-align: center;
+  color: #666;
+  line-height: $button-size;
+}
+
+

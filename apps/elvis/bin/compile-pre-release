@@ -1,0 +1,8 @@
+#!/bin/sh
+
+dir=$(dirname $0)
+base_path=$(ruby -e "puts File.expand_path(\"$dir/..\")")
+
+${base_path}/node_modules/.bin/webpack --progress --colors --config "config/webpack.config.js"
+mix phoenix.digest
+

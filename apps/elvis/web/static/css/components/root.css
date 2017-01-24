@@ -1,0 +1,271 @@
+
+.root {
+  /* padding-top: $button-size; */
+}
+.root__obscured {
+  max-height: 100vh;
+  overflow: hidden;
+}
+
+.root--wrapper {
+
+}
+.root--active-channel {
+  @mixin overflowScroll;
+  background: #fff;
+  height: 100vh;
+  width: 100vw;
+  left: 0;
+  position: relative;
+  transition: left $channels-view-animation-duration;
+}
+
+.root--active-channel__inactive {
+  left: $channels-view-width;
+  transition: left $channels-view-animation-duration;
+  pointer-events: none;
+}
+
+.root--mode {
+  display: flex;
+  flex-wrap: wrap;
+  height: $button-size;
+  align-items: stretch;
+  background: rgba(0, 0, 0, 0.5);
+  max-width: 100vw;
+}
+
+.root--mode--choice {
+  flex: 1;
+  max-width: 50%;
+  display: flex;
+  padding: 0 $padding;
+  line-height: $button-size;
+  font-weight: 200;
+  cursor: pointer;
+  align-items: baseline;
+  &:hover {
+    background-color: red;
+    color: #fff;
+  }
+  &:before {
+    @mixin fa;
+    content: $channel-icon;
+    padding-right: calc($padding/2);
+    line-height: $button-size;
+  }
+}
+.root--mode--choice__active {
+  /* background: rgba(0, 0, 0, 0.2); */
+  /* color: #fff; */
+  font-weight: 400;
+  background-color: #fff !important;
+  color: rgba(0, 0, 0, 0.9) !important;
+  &:hover {
+    /* background: rgba(0, 0, 0, 0.2); */
+  }
+}
+.root--mode--choice + .root--mode--choice {
+  /* border-left: solid 1px rgba(0, 0, 0, 0.2); */
+}
+.root--mode--library {
+  &:before {
+    content: "\f001";
+  }
+}
+.root--mode--playlist {
+  &:before {
+    /* content: $channel-icon; */
+    content: "\f0ca"; /* fa-list-ul */
+  }
+}
+.root--mode--playlist-label {
+  text-transform: uppercase;
+  font-size: 0.8em;
+  padding-right: calc($padding / 2);
+  font-weight: 100;
+}
+.root--mode--channel-name {
+  flex: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  display: block;
+}
+.root--mode--channel-duration {
+  padding-left: calc($padding/2);
+  font-size: 0.8em;
+  color: rgba(0, 0, 0, 0.6);
+  display: block;
+}
+
+.root--bar {
+  color: #fff;
+  background: #000;
+  display: flex;
+  height: $top-bar-height;
+  /* flex: 0 0 $button-size; */
+}
+
+.root--channel-select {
+  flex: 0 0 $button-size;
+  text-align: center;
+  /* line-height: $button-size; */
+  line-height: $top-bar-height;
+  cursor: pointer;
+  background: #BF360C;
+}
+
+.root--offline {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  color: #333;
+  font-size: 2rem;
+}
+
+.root--offline__message {
+	flex: 1;
+  position: relative;
+	text-align: center;
+}
+.root--offline__message svg {
+	display: block;
+	width: 33%;
+	margin: 0 auto;
+	margin-bottom: calc($button-size / 2);
+	opacity: 0.3;
+}
+
+.root--channel-state {
+  /* display: flex; */
+  flex: 1;
+  /* flex-direction: column; */
+}
+
+.root--channel-rendition {
+  height: $button-size;
+}
+
+.root--notifications {
+	position: fixed;
+  top: calc($active-channel-bar-height + $button-size + $padding);
+	width: 76vw;
+	margin: 0 12vw 0 12vw;
+	z-index: 10000;
+}
+
+
+/* ******* */
+
+#root {
+	display: flex;
+	height: 100vh;
+	max-height: 100vh;
+	flex-direction: column;
+}
+
+.root--active-rendition {
+	/* background: orange; */
+  color: #fff;
+  background: #000;
+	flex: 0 0 $button-size;
+}
+
+.root--active-view {
+	flex: 1;
+	max-width: 100vw;
+	overflow: hidden;
+	display: flex;
+	/* overflow: auto; */
+	/* overflow-x: hidden; */
+	/* overflow-y: auto; */
+	/* -webkit-overflow-scrolling: touch; */
+}
+
+.root--switch-view {
+	background: rgba(66, 66, 66, 1);
+	flex: 0 0 60px;
+	display: flex;
+	flex-direction: row;
+	align-items: stretch;
+	justify-content: center;
+}
+
+
+.root--switch-view--btn {
+	flex: 1;
+	text-align: center;
+	margin: 0 2px;
+	background: rgba(0, 0, 0, 0.1);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #fff;
+
+}
+.root--switch-view--btn__active {
+	background: rgba(255, 0, 0, 0.8);
+}
+
+.root--active-rendition {
+	display: flex;
+	flex-direction: row;
+}
+
+
+/* channel control */
+
+.root--channel-control {
+	display: flex;
+	height: 0;
+	opacity: 0;
+	background: rgba(0, 0, 0, 0.9);
+	transition: height 200ms, opacity 300ms;
+	position: fixed;
+	top: $button-size;
+	right: 0;
+	left: 0;
+	z-index: 1000000;
+  transform: translateZ(0);
+	color: #fff;
+	margin-bottom: 500px;
+}
+
+.root--channel-control__active {
+	flex-direction: column;
+	height: calc(100vh - (2 * $button-size));
+	transition: height 200ms, opacity 300ms;
+	opacity: 1;
+}
+
+.root--receiver-control  {
+	/* margin-top: calc($button-size / 2); */
+}
+.root--receiver-control-tabs {
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	height: $button-size;
+	align-items: center;
+}
+
+.root--receiver-control-tab {
+	flex: 0 0 40vw;
+	text-align: center;
+	background: #333;
+	height: calc($button-size / 2);
+	display: flex;
+	align-items: center;
+	text-align: center;
+	justify-content: center;
+}
+.root--receiver-control-tab__active {
+	font-weight: bold;
+	background: #ccc;
+}
+.root--receiver-control-tab__disabled {
+	color: #999;
+}

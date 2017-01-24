@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <meta name="format-detection" content="telephone=no">
+
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Elvis">
+
+
+    <title>Elvis</title>
+    <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <script>
+      // https://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/
+      document.addEventListener("touchstart", function() {},false);
+    </script>
+  </head>
+
+  <body>
+    <%= render @view_module, @view_template, assigns %>
+  </body>
+</html>

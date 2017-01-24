@@ -1,0 +1,69 @@
+.volume-controls{
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+	cursor: pointer;
+}
+.volume-control {
+  display: flex;
+  height: $button-size;
+  background: rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+$volume-height: $button-size;
+
+.volume-mute-btn,
+.volume-full-btn {
+	flex: 0 0 $volume-height;
+  text-align: center;
+  line-height: $button-size;
+  cursor: pointer;
+  &:hover {
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+  }
+}
+
+
+.volume {
+  /* width: calc(100% - ( 2 * $button-size )); */
+	flex: 1;
+  height: $volume-height;
+  line-height: $volume-height;
+  position: relative;
+  padding: 0 $padding;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.volume-level {
+  height: $volume-height;
+  background-color: rgba(255, 0, 0, 0.5);
+  /* background-color: rgba(255, 255, 255, 0.5); */
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  /* disable mouse & touch events */
+  pointer-events: none;
+}
+
+.volume-label {
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  position: relative;
+  z-index: 10;
+  height: $volume-height;
+	cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  /* disable mouse & touch events */
+  pointer-events: none;
+}
+
+.volume-label * {
+  /* disable mouse & touch events */
+  pointer-events: none;
+}

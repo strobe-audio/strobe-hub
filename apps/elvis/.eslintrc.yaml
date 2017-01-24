@@ -1,0 +1,13 @@
+---
+parserOptions:
+  ecmaVersion: 6
+  sourceType: module
+env:
+  browser: true
+extends: "eslint:recommended"
+rules:
+  no-console: 1
+  comma-dangle: 0
+  # semi: [2, "always"]
+
+

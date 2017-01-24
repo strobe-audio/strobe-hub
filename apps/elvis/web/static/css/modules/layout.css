@@ -1,0 +1,53 @@
+@import "breakpoints.css";
+@import "../variables.css";
+
+@media (--desktop) {
+  .elvis {
+    display: flex;
+    flex: 1;
+  }
+  .elvis {
+    flex-direction: row;
+  }
+  .channels {
+    /* width: $channel-column-width; */
+    flex: 0 0 $channel-column-width;
+    overflow: auto;
+    border-right: solid 1px #ccc;
+  }
+  #library {
+    height: 100vh;
+    overflow: auto;
+    flex: 1;
+  }
+}
+
+@media (--mobile) {
+  .elvis-mode-library {
+    #channel {
+      /* the actual display value needs to be controlled by the mode switch */
+      display: none;
+    }
+    #library {
+      display: block;
+    }
+  }
+  .elvis-mode-channel {
+    #channel {
+      /* the actual display value needs to be controlled by the mode switch */
+      display: block;
+    }
+    #library {
+      display: none;
+    }
+  }
+}
+
+.divider {
+  height: 17px;
+  line-height: 16px;
+  text-transform: uppercase;
+  padding: 0 $padding;
+  font-weight: 800;
+  font-size: 1.0rem;
+}
