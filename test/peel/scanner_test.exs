@@ -33,7 +33,7 @@ defmodule Peel.Test.ScannerTest do
       track_total: 11
     }
     paths = Enum.map [
-      "Cream/Fresh Cream/01 I Feel Free.m4a"
+      "silent.mp3"
     ], &Path.join(root, &1)
 
     {:ok, track_count: 1, root: root, path: List.first(paths), paths: paths, metadata: metadata }
@@ -182,7 +182,7 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it handles tracks with blank artists", context do
-    path = Path.join(context.root, "../broken/missing_disk_number")
+    path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
       bit_rate: 128000,
@@ -210,7 +210,7 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it handles tracks with blank titles", context do
-    path = Path.join(context.root, "../broken/missing_disk_number")
+    path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
       bit_rate: 128000,
@@ -238,7 +238,7 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it handles tracks with no disk number", context do
-    path = Path.join(context.root, "../broken/missing_disk_number")
+    path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
       bit_rate: 128000,
@@ -265,7 +265,7 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it handles tracks with an unknown artist", context do
-    path = Path.join(context.root, "../broken/unknown_artist")
+    path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "14 Classic Carols",
       bit_rate: 281594,
@@ -302,7 +302,7 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it strips whitespace from all fields", context do
-    path = Path.join(context.root, "../broken/unknown_artist")
+    path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: " Fresh Cream ",
       bit_rate: 288000,
@@ -338,7 +338,7 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it strips leading 'the' from performer names", context do
-    path = Path.join(context.root, "../broken/unknown_artist")
+    path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: " Fresh Cream ",
       bit_rate: 288000,
@@ -369,3 +369,4 @@ defmodule Peel.Test.ScannerTest do
     assert artist.normalized_name == "beatles"
   end
 end
+
