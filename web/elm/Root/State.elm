@@ -50,14 +50,23 @@ createSavedState model =
             Nothing
 
         Just channelId ->
-            Just { activeChannelId = channelId }
+            let
+                state =
+                    { activeChannelId = channelId
+                    , viewMode = State.serialiseViewMode model.viewMode
+                    }
+            in
+                Just state
 
 
 restoreSavedState : Maybe Root.SavedState -> Root.Model -> Root.Model
 restoreSavedState maybeState model =
     case maybeState of
         Just state ->
-            { model | activeChannelId = Just state.activeChannelId }
+            { model
+            | activeChannelId = Just state.activeChannelId
+            , viewMode = State.deserialiseViewMode state.viewMode
+            }
 
         Nothing ->
             model

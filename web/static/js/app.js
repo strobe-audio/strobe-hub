@@ -4,7 +4,7 @@ import {Socket} from 'phoenix'
 import Elm from 'Main'
 
 // change the state key in the case of 'schema' changes
-const savedStateKey = 'elvis-stored-state-20160124'
+const savedStateKey = 'elvis-stored-state-20160124-02'
 let storedState = localStorage.getItem(savedStateKey)
 let initialState = storedState ? JSON.parse(storedState) : null
 

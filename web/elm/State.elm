@@ -29,6 +29,11 @@ type ViewMode
     | ViewLibrary
     | ViewSettings
 
+
+type alias ViewModeString =
+    String
+
+
 viewLabel : ViewMode -> String
 viewLabel mode =
     case mode of
@@ -51,3 +56,27 @@ viewModes =
     , ViewChannelSwitch
     , ViewSettings
     ]
+
+
+serialiseViewMode : ViewMode -> ViewModeString
+serialiseViewMode mode =
+    (toString mode)
+
+
+deserialiseViewMode : ViewModeString -> ViewMode
+deserialiseViewMode modeString =
+    case modeString of
+        "ViewCurrentChannel" ->
+            ViewCurrentChannel
+
+        "ViewChannelSwitch" ->
+            ViewChannelSwitch
+
+        "ViewLibrary" ->
+            ViewLibrary
+
+        "ViewSettings" ->
+            ViewSettings
+
+        _ ->
+            ViewCurrentChannel
