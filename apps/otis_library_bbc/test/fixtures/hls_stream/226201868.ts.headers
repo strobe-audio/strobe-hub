@@ -1,0 +1,19 @@
+HTTP/1.1 200 OK
+Server: Apache/2.2.15 (CentOS)
+X-Pkgr-Instance: 8572333c
+Content-Type: video/MP2T
+Access-Control-Expose-Headers: Server, Range, Content-Length, Content-Range
+Access-Control-Allow-Origin: *
+Accept-Ranges: bytes
+ETag: "1"
+X-USP-Info1: track=audio pts=402136:39:08.800 dur=402136:39:15.200 tmin=00:00:06.400
+X-USP: version=1.7.9 (6072M)
+Last-Modified: Mon, 16 Nov 2015 16:38:42 GMT
+Access-Control-Allow-Methods: GET, HEAD, OPTIONS
+Access-Control-Allow-Headers: Origin, Range, Accept-Encoding, Referer
+Content-Length: 268088
+X-Cache-Info: cached
+Cache-Control: max-age=39491
+Expires: Tue, 17 Nov 2015 03:38:44 GMT
+Date: Mon, 16 Nov 2015 16:40:33 GMT
+Connection: keep-alive

@@ -1,0 +1,11 @@
+#EXTM3U
+#EXT-X-VERSION:2
+
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=339200,CODECS="mp4a.40.2"
+http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr_high/ak/bbc_radio_fourfm.m3u8
+
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=135680,CODECS="mp4a.40.2"
+http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr_med/ak/bbc_radio_fourfm.m3u8
+
+#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=101760,CODECS="mp4a.40.5"
+http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr_low/ak/bbc_radio_fourfm.m3u8

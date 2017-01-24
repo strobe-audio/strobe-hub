@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="22px" height="21px" viewBox="0 0 22 21" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 41.2 (35397) - http://www.bohemiancoding.com/sketch -->
+    <title>radio2.small</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="radio2.large" fill="#F47C22">
+            <path d="M11.361,0 C5.633,0 0.991,4.645 0.991,10.375 C0.991,16.105 5.634,20.751 11.361,20.751 C17.09,20.751 21.73,16.105 21.73,10.375 C21.73,4.645 17.089,0 11.361,0 L11.361,0 Z M16.927,16.855 L5.477,16.855 L11.387,9.916 C12.229,8.965 12.686,8.319 12.686,7.628 C12.686,7.006 12.259,6.335 11.571,6.335 C10.747,6.335 10.333,7.15 10.3,7.728 L10.27,8.275 L6.477,8.275 L6.508,7.666 C6.565,6.597 6.744,6.01 7.246,5.247 C8.264,3.701 9.687,2.949 11.6,2.949 C14.825,2.949 16.827,4.649 16.827,7.387 C16.827,8.541 16.431,9.474 15.514,10.489 L13.162,13.176 L16.928,13.176 L16.927,16.855 L16.927,16.855 Z" id="Shape"></path>
+        </g>
+    </g>
+</svg>
