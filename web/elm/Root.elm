@@ -33,7 +33,6 @@ type alias Model =
     , touches : Utils.Touch.Model
     , animationTime : Maybe Time
     , notifications : List (Notification.Model Msg)
-    -- NEW
     , viewMode : State.ViewMode
     , showChannelControl : Bool
     , savedState : Maybe SavedState

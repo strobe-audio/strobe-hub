@@ -37,7 +37,6 @@ initialState =
     , touches = Utils.Touch.emptyModel
     , animationTime = Nothing
     , notifications = []
-    -- NEW
     , viewMode = State.ViewCurrentChannel
     , showChannelControl = True
     , savedState = Nothing

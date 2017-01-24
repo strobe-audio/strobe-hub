@@ -38,7 +38,6 @@ type Msg
     | BrowserViewport Int
     | BrowserScroll Int
     | SingleTouch (Utils.Touch.E Msg)
-    -- new
     | ActivateView State.ViewMode
     | ToggleShowChannelControl
     | ReceiverAttachmentChange
