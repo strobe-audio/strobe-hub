@@ -298,11 +298,11 @@ update action model =
 
                         { model | showAttachReceiver = showAttachReceiver } ! []
 
-        Msg.AnimationScroll (time, position) ->
+        Msg.AnimationScroll (time, position, height) ->
             let
                 ( library, cmd ) =
                     Library.State.update
-                        (Library.AnimationFrame ( time, position ))
+                        (Library.AnimationFrame ( time, position, height ))
                         model.library
                         Nothing
 
@@ -315,15 +315,6 @@ update action model =
                     , notifications = notifications
                 }
                     ! [ (Cmd.map Msg.Library cmd) ]
-            -- let
-            --     _ =
-            --         if position /= 0 then
-            --             Debug.log "s" (time, position)
-            --         else
-            --             (time, position)
-            --
-            -- in
-            --     model ! []
 
 
 libraryVisible : Root.Model -> Bool

@@ -140,6 +140,10 @@
   margin-right: calc($padding / 2);
 }
 
+.library--contents {
+	padding-bottom: 50%;
+}
+
 @media (--mobile) {
 
 }

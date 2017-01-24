@@ -42,4 +42,4 @@ type Msg
     | ActivateView State.ViewMode
     | ToggleShowChannelControl
     | ReceiverAttachmentChange
-    | AnimationScroll (Time, Float)
+    | AnimationScroll (Time, Float, Float)

@@ -30,6 +30,7 @@ initialState =
         , touches = Utils.Touch.emptyModel
         , animationTime = Nothing
         , scrollPosition = Nothing
+        , scrollHeight = Nothing
         , levelAnimation = (Animation.static 0)
         }
 
@@ -98,9 +99,6 @@ update action model maybeChannelId =
 
                         Just folder ->
                             let
-                                _ =
-                                    Debug.log "current action" action
-
                                 model_ =
                                     setLevelContents model action folder
                             in
@@ -151,7 +149,7 @@ update action model maybeChannelId =
             in
                 ( updated, cmd )
 
-        Library.AnimationFrame (time, scrollPosition) ->
+        Library.AnimationFrame (time, scrollPosition, scrollHeight) ->
             let
                 model_ =
                     if Animation.isDone time model.levelAnimation then
@@ -162,6 +160,7 @@ update action model maybeChannelId =
                 { model_
                 | animationTime = Just time
                 , scrollPosition = Just scrollPosition
+                , scrollHeight = Just scrollHeight
                 } ! []
 
 

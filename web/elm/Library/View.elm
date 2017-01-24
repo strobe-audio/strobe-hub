@@ -11,7 +11,6 @@ import Library
 import Library.State
 import List.Extra
 import String
-import Debug
 import Utils.Css
 import Utils.Text
 import Utils.Touch exposing (onSingleTouch)
@@ -60,7 +59,7 @@ levels model =
             (List.length levels) - 1
 
         columns =
-            List.map levelColumn <| List.indexedMap (\p l -> (l, p == count)) levels
+            List.map levelColumn <| List.indexedMap (\p l -> ( l, p == count )) levels
 
         left =
             case model.animationTime of
@@ -72,28 +71,65 @@ levels model =
     in
         Html.Keyed.node
             "div"
-                [ class "library--levels", style [ ( "left", (toString left) ++ "vw" ) ] ]
-                columns
+            [ class "library--levels", style [ ( "left", (toString left) ++ "vw" ) ] ]
+            columns
 
 
 folder : Library.Model -> Library.Folder -> Bool -> Html Library.Msg
 folder model folder isCurrent =
     let
-        children =
-            if List.isEmpty folder.children then
-                div [] []
-            else
-                div [ class "library-contents" ] (List.map (node model folder) folder.children)
+        childHeight =
+            60.0
+
+        ( childrenOffset, childrenCount ) =
+            libraryChildrenViewOffset model childHeight
+
+        height =
+            (List.length folder.children) * (round childHeight)
+
+        nodes =
+            List.take childrenCount <|
+                List.drop childrenOffset <|
+                    folder.children
+
+        spacerHeight =
+            (toString (round ((toFloat childrenOffset) * childHeight))) ++ "px"
+
+        spacerNode =
+            div [ style [ ( "height", spacerHeight ) ] ] []
+
+        contents =
+            (spacerNode :: (List.map (node model folder) nodes))
 
         attrs =
             if isCurrent then
                 [ id "__scrolling__" ]
             else
-                [ ]
-
+                []
     in
-        div ( attrs ++ [ class "library--folder" ])
-            [ children ]
+        div ((class "library--folder") :: attrs)
+            [ div
+                [ class "library--contents"
+                , style
+                    [ ( "height", (toString height) ++ "px" )
+                    ]
+                ]
+                contents
+            ]
+
+
+libraryChildrenViewOffset : Library.Model -> Float -> ( Int, Int )
+libraryChildrenViewOffset model childHeight =
+    (Maybe.map2
+        (\position height ->
+            ( (floor <| (position / childHeight))
+            , ((ceiling <| (height / childHeight)) + 2)
+            )
+        )
+        model.scrollPosition
+        model.scrollHeight
+    )
+        |> Maybe.withDefault ( 0, 0 )
 
 
 metadata : Library.Node -> Maybe (List Library.Metadata) -> Html Library.Msg

@@ -84,7 +84,6 @@ channel.on('new_rendition_created', payload => {
 })
 
 channel.on('library', payload => {
-  console.log('library response', payload)
   app.ports.libraryResponse.send(payload)
 })
 
@@ -116,10 +115,13 @@ let raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame
 let frame = () => {
 	let scroller = document.getElementById('__scrolling__')
 	let scrollTop = 0
+	let height = 0
 	if (scroller) {
 		scrollTop = scroller.scrollTop
+		height = scroller.parentNode.offsetHeight
+		// console.log('height', scroller.offsetHeight)
 	}
-	app.ports.animationScroll.send([Date.now(), scrollTop])
+	app.ports.animationScroll.send([Date.now(), scrollTop, height])
 	raf(frame)
 }
 
@@ -166,7 +168,6 @@ app.ports.attachReceiverRequests.subscribe(event => {
 })
 
 app.ports.libraryRequests.subscribe(event => {
-  console.log('library action', event)
   channel.push("library", event)
   .receive("error", payload => console.log(payload.message))
 })

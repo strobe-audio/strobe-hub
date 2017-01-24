@@ -160,7 +160,7 @@ receiverRenameActions =
 
 
 
-port animationScroll : (( Time.Time, Float ) -> m) -> Sub m
+port animationScroll : (( Time.Time, Float, Float ) -> m) -> Sub m
 
 
 animationScrollActions : Sub Msg

@@ -14,7 +14,7 @@ type Msg
     | PopLevel Int
     | ActionComplete
     | Touch (Utils.Touch.E Msg)
-    | AnimationFrame (Time, Float)
+    | AnimationFrame (Time, Float, Float)
 
 
 type alias ActionURL =
@@ -64,6 +64,7 @@ type alias Model =
     , touches : Utils.Touch.Model
     , animationTime : Maybe Time
     , scrollPosition : Maybe Float
+    , scrollHeight : Maybe Float
     , levelAnimation : Animation.Animation
     }
 
