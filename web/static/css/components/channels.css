@@ -13,7 +13,7 @@
   width: 0;
   /* z-index: 10000; */
   background-color: rgba(0, 0, 0, 1);
-  color: #fff;
+  /* color: #fff; */
 
   @mixin overflowScroll;
 
@@ -48,8 +48,8 @@
 }
 
 .channels--view {
-	color: #fff;
-	background: #111;
+	/* color: #fff; */
+	/* background: #111; */
 	width: 100vw;
 }
 .channels--toggle {
@@ -61,14 +61,14 @@
   flex: 1;
 }
 
-$channel-select-border: rgba(255, 255, 255, 0.05);
+$channel-select-border: rgba(0, 0, 0, 0.05);
 
 .channels-selector--channel {
   /* flex: 0 0 $button-size; */
   height: $button-size;
   display: flex;
   align-items: center;
-  color: #fff;
+  /* color: #fff; */
   cursor: pointer;
   position: relative;
   &:hover {
@@ -124,7 +124,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   font-size: 0.8em;
-  color: #fff;
+  /* color: #fff; */
   text-transform: uppercase;
   border-bottom: solid 1px $channel-select-border;
   /* background: rgba(0, 0, 0, 0.1); */
@@ -144,7 +144,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   z-index: 0;
   flex: 1;
   align-items: center;
-  color: #fff;
+  /* color: #fff; */
   /* left: 0; */
   cursor: pointer;
   position: relative;
@@ -155,7 +155,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
     display: block;
     text-align: center;
     border-right: solid 1px rgba(0, 0, 0, 0.05);
-    color: rgba(255, 255, 255, 0.3);
+    color: rgba(0, 0, 0, 0.3);
   }
   & + & {
     border-top: solid 1px $channel-select-border;
@@ -191,14 +191,14 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 
 .channels-selector--channel__playing .channels-selector--display {
   &:before {
-    color: rgba(255, 255, 255, 1);
+    color: rgba(0, 0, 0, 1);
     content: "\f144";
   }
 }
 .channels-selector--channel--name {
   flex: 1;
   &:hover {
-    color: #fff;
+    /* color: #fff; */
   }
 }
 .channels-selector--channel--duration {
@@ -214,12 +214,12 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
   margin: 0 $padding;
   /* background-color: rgba(255, 255, 255, 0.8); */
   background-color: #DD2C00;
-  color: #fff;
+  /* color: #fff; */
   border-radius: 2px;
 }
 .channels-selector--channel--receivers__empty {
-  background-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.3);
+  background-color: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 1.0);
   /* color: rgba(0, 0, 0, 1.0); */
   /* background-color: #DD2C00; */
   /* color: #DD2C00; */
@@ -229,10 +229,10 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
 }
 .channels-selector--channel__active {
   background: #E65100;
-	color: rgba(255, 255, 255, 0.3);
+	color: rgba(0, 0, 0, 0.8);
 	font-weight: 600;
 	&:hover {
-		color: rgba(255, 255, 255, 0.5);
+		color: rgba(0, 0, 0, 1.0);
 	}
 }
 
@@ -261,7 +261,7 @@ $channel-select-border: rgba(255, 255, 255, 0.05);
     /* left: 0; */
     /* top: 0; */
     text-align: center;
-    border-right: solid 1px rgba(0, 0, 0, 0.1);
+    border-right: solid 1px rgba(0, 0, 0, 0.2);
     margin-right: $padding;
   }
 }
