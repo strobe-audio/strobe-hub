@@ -36,8 +36,13 @@ type alias Model =
     -- NEW
     , viewMode : State.ViewMode
     , showChannelControl : Bool
+    , savedState : Maybe SavedState
     }
 
+
+type alias SavedState =
+    { activeChannelId : ID.Channel
+    }
 
 type alias ReceiverStatusEvent =
     { channelId : String

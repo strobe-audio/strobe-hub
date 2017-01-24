@@ -3,7 +3,12 @@ import 'no_bounce'
 import {Socket} from 'phoenix'
 import Elm from 'Main'
 
-let app = Elm.Main.fullscreen()
+// change the state key in the case of 'schema' changes
+const savedStateKey = 'elvis-stored-state-20160124'
+let storedState = localStorage.getItem(savedStateKey)
+let initialState = storedState ? JSON.parse(storedState) : null
+
+let app = Elm.Main.fullscreen(initialState)
 
 let socketOpts = {
   params: {},
@@ -127,6 +132,11 @@ let frame = () => {
 
 raf(frame)
 
+
+app.ports.saveState.subscribe(state => {
+	console.log('saveState', state)
+	localStorage.setItem(savedStateKey, JSON.stringify(state))
+})
 
 app.ports.volumeChangeRequests.subscribe(event => {
   channel.push("change_volume", event)

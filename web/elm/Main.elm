@@ -13,33 +13,39 @@ import Navigation
 import Routing
 
 
+main : Program (Maybe Root.SavedState) Root.Model Msg
 main =
-    Navigation.program Msg.UrlChange
+    Navigation.programWithFlags Msg.UrlChange
         { init = init
         , view = Root.View.root
-        , update = Root.State.update
+        , update = Root.State.updateSavingState
         , subscriptions = subscriptions
         }
 
 
-init : Navigation.Location -> ( Root.Model, Cmd Msg )
-init location =
+init : Maybe Root.SavedState -> Navigation.Location -> ( Root.Model, Cmd Msg )
+init savedState location =
     let
         currentRoute =
             (Routing.parseLocation location)
 
+
         initialState =
             Root.State.initialState
 
-        state =
+        routeState =
             case currentRoute of
                 Routing.ChannelRoute channelId ->
                     { initialState | activeChannelId = Just channelId }
 
                 _ ->
                     initialState
+
+        startingState =
+            Root.State.restoreSavedState savedState routeState
+
     in
-        ( state, Cmd.none )
+        ( startingState, Cmd.none )
 
 
 subscriptions : Root.Model -> Sub Msg

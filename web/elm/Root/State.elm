@@ -19,6 +19,7 @@ import Routing
 import Utils.Touch
 import Notification
 import State
+import Ports
 
 
 initialState : Root.Model
@@ -39,7 +40,28 @@ initialState =
     -- NEW
     , viewMode = State.ViewCurrentChannel
     , showChannelControl = True
+    , savedState = Nothing
     }
+
+
+createSavedState : Root.Model -> Maybe Root.SavedState
+createSavedState model =
+    case model.activeChannelId of
+        Nothing ->
+            Nothing
+
+        Just channelId ->
+            Just { activeChannelId = channelId }
+
+
+restoreSavedState : Maybe Root.SavedState -> Root.Model -> Root.Model
+restoreSavedState maybeState model =
+    case maybeState of
+        Just state ->
+            { model | activeChannelId = Just state.activeChannelId }
+
+        Nothing ->
+            model
 
 
 broadcasterState : State.BroadcasterState -> List Channel.Model
@@ -65,6 +87,37 @@ updateIn update id elements =
             (List.map updateElement elements) |> List.unzip
     in
         ( updated, Cmd.batch cmds )
+
+
+updateSavingState : Msg -> Root.Model -> (Root.Model, Cmd Msg)
+updateSavingState msg model =
+    let
+        ( updatedModel, cmds ) =
+            update msg model
+
+        -- only send save state cmd if the state is different from the one we have
+        -- already saved
+        ( newModel, saveStateCmd) =
+            case createSavedState updatedModel of
+                Nothing ->
+                    ( updatedModel, Cmd.none )
+
+                Just state ->
+                    case model.savedState of
+                        Nothing ->
+                            ( { updatedModel | savedState = Just state }
+                            , Ports.saveState state
+                            )
+                        Just modelState ->
+                            if modelState /= state then
+                                ( { updatedModel | savedState = Just state }
+                                , Ports.saveState state
+                                )
+                            else
+                                ( updatedModel, Cmd.none )
+
+    in
+         newModel ! [cmds, saveStateCmd]
 
 
 update : Msg -> Root.Model -> ( Root.Model, Cmd Msg )

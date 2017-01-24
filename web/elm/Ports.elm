@@ -170,6 +170,9 @@ animationScrollActions =
 -- Outgoing Elm -> JS
 
 
+port saveState : Root.SavedState -> Cmd msg
+
+
 port volumeChangeRequests : ( String, String, Float ) -> Cmd msg
 
 
