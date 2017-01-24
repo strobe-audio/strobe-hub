@@ -4,7 +4,11 @@ defmodule HLS.Mixfile do
   def project do
     [app: :otis_library_bbc,
      version: "0.0.1",
-     elixir: "~> 1.1",
+     build_path: "../../_build",
+     config_path: "../../config/config.exs",
+     deps_path: "../../deps",
+     lockfile: "../../mix.lock",
+     elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps()]
@@ -31,8 +35,7 @@ defmodule HLS.Mixfile do
       {:gen_stage, "~> 0.1"},
       {:gproc, "~> 0.5.0"},
       {:poison, "~> 1.5.0"},
-      # {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
-      {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
+      {:otis_library, in_umbrella: true},
     ]
   end
 end

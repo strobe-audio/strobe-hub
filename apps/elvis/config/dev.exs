@@ -44,7 +44,7 @@ config :logger, :console,
 config :phoenix, :stacktrace_depth, 20
 
 config :otis, Otis.Media,
-  root: "#{__DIR__}/../_state/fs",
+  root: Path.expand("#{__DIR__}/../../../_state/fs"),
   at: "/fs"
 
 config :otis, :environment, :dev

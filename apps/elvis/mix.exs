@@ -4,6 +4,10 @@ defmodule Elvis.Mixfile do
   def project do
     [app: :elvis,
      version: "0.0.1",
+     build_path: "../../_build",
+     config_path: "../../config/config.exs",
+     deps_path: "../../deps",
+     lockfile: "../../mix.lock",
      elixir: "~> 1.0",
      elixirc_paths: elixirc_paths(Mix.env()),
      compilers: [:phoenix] ++ Mix.compilers,
@@ -28,7 +32,7 @@ defmodule Elvis.Mixfile do
        :socket,
        :pipe,
        :peel,
-       :hls,
+       :otis_library_bbc,
      ]]
   end
 
@@ -44,12 +48,9 @@ defmodule Elvis.Mixfile do
      {:phoenix_html, "~> 2.1"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:cowboy, "~> 1.0"},
-     # {:otis, path: "/Users/garry/Seafile/Peep/otis"},
-     {:otis, git: "git@gitlab.com:magnetised/otis.git"},
-     # {:peel, path: "/Users/garry/Seafile/Peep/peel"},
-     {:peel, git: "git@gitlab.com:magnetised/peel.git"},
-     # {:hls, path: "/Users/garry/Seafile/Peep/hls"},
-     {:hls, git: "git@gitlab.com:magnetised/peep_bbc.git"},
+     {:otis, in_umbrella: true},
+     {:peel, in_umbrella: true},
+     {:otis_library_bbc, in_umbrella: true},
      {:distillery, "~> 1.0"},
      {:logger_papertrail_backend, "~> 0.1.0"},
    ]

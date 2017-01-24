@@ -4,11 +4,11 @@ defmodule Peel.Mixfile do
   def project do
     [app: :peel,
      version: "0.0.1",
-     build_path: "_build",
-     config_path: "config/config.exs",
-     deps_path: "deps",
-     lockfile: "mix.lock",
-     elixir: "~> 1.2",
+     build_path: "../../_build",
+     config_path: "../../config/config.exs",
+     deps_path: "../../deps",
+     lockfile: "../../mix.lock",
+     elixir: "~> 1.4",
      consolidate_protocols: Mix.env != :test,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -39,17 +39,14 @@ defmodule Peel.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [ {:uuid, "~> 1.1"},
-      # {:sqlite_ecto, "~> 1.0.0"},
       {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
       {:ecto, "~> 1.0"},
       {:work_queue, github: "magnetised/work_queue"},
-      # {:otis_library, path: "/Users/garry/Seafile/Peep/otis_library"},
-      {:otis_library, git: "git@gitlab.com:magnetised/otis_library.git"},
+      {:otis_library, in_umbrella: true},
       {:httpoison, "~> 0.9.0"},
       {:floki, "~> 0.11.0"},
       {:poison, "~> 1.0"},
-      {:otis, path: "/Users/garry/Seafile/Peep/otis", only: :test},
-      # {:otis, }
+      {:otis, in_umbrella: true, only: :test},
     ]
   end
 end
