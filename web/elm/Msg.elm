@@ -27,6 +27,10 @@ type Msg
     | Receiver ID.Receiver Receiver.Msg
     | ReceiverPresence Receiver.State
     | Library Library.Msg
+    | SingleTouch (Utils.Touch.E Msg)
+    | ActivateView State.ViewMode
+    | ToggleShowChannelControl
+    | ReceiverAttachmentChange
       -- events from broadcaster
     | BroadcasterChannelAdded Channel.State
     | BroadcasterChannelRenamed ( ID.Channel, String )
@@ -37,8 +41,4 @@ type Msg
       -- events from browser
     | BrowserViewport Int
     | BrowserScroll Int
-    | SingleTouch (Utils.Touch.E Msg)
-    | ActivateView State.ViewMode
-    | ToggleShowChannelControl
-    | ReceiverAttachmentChange
     | AnimationScroll (Time, Float, Float)
