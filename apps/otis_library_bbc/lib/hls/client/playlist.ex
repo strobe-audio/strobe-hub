@@ -1,5 +1,4 @@
 defmodule HLS.Client.Playlist do
-  alias   Experimental.{GenStage}
   require Logger
 
   use     GenStage
