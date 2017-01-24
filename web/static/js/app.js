@@ -3,7 +3,7 @@ import 'no_bounce'
 import {Socket} from 'phoenix'
 import Elm from 'Main'
 
-let app = Elm.Main.embed(document.getElementById('elm-main'))
+let app = Elm.Main.fullscreen()
 
 let socketOpts = {
   params: {},

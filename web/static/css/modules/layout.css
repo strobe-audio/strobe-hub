@@ -2,10 +2,6 @@
 @import "../variables.css";
 
 @media (--desktop) {
-  #elm-main {
-    display: flex;
-    flex: 1;
-  }
   .elvis {
     display: flex;
     flex: 1;
