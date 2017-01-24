@@ -2,7 +2,7 @@ defmodule HLS.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :hls,
+    [app: :otis_library_bbc,
      version: "0.0.1",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
