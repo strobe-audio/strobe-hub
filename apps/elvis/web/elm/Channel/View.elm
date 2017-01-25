@@ -56,46 +56,42 @@ renditionCoverImage channel maybeRendition =
 
 renditionProgressBar : Channel.Model -> Maybe Rendition.Model -> Html Channel.Msg
 renditionProgressBar channel maybeRendition =
-    let
-        progress =
-            case maybeRendition of
-                Nothing ->
-                    []
+    case maybeRendition of
+        Nothing ->
+            div [] []
 
-                Just rendition ->
+        Just rendition ->
+            case rendition.source.duration_ms of
+                Nothing ->
+                    div [] []
+
+                Just duration ->
                     let
                         progress =
-                            case rendition.source.duration_ms of
-                                Nothing ->
-                                    0.0
-
-                                Just duration ->
-                                    100.0 * ((toFloat rendition.playbackPosition) / (toFloat duration))
+                            100.0 * ((toFloat rendition.playbackPosition) / (toFloat duration))
 
                         progressPercent =
                             (toString progress) ++ "%"
 
                     in
-                        [ div
-                            [ class "channel--rendition-progress--time channel--rendition-progress--played-time" ]
-                            [ text (Source.View.durationString (Just rendition.playbackPosition)) ]
-                        , div
-                            [ class "channel--rendition-progress--bar-outer" ]
-                            [ div
-                                [ class "channel--rendition-progress--bar-inner", style [("width", progressPercent)] ]
-                                []
+                        div
+                            [ classList
+                                [ ("channel--rendition-progress", True) ]
                             ]
-                        , div
-                            [ class "channel--rendition-progress--time channel--rendition-progress--remaining-time" ]
-                            [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
-                        ]
+                            [ div
+                                [ class "channel--rendition-progress--time channel--rendition-progress--played-time" ]
+                                [ text (Source.View.durationString (Just rendition.playbackPosition)) ]
+                            , div
+                                [ class "channel--rendition-progress--bar-outer" ]
+                                [ div
+                                    [ class "channel--rendition-progress--bar-inner", style [("width", progressPercent)] ]
+                                    []
+                                ]
+                            , div
+                                [ class "channel--rendition-progress--time channel--rendition-progress--remaining-time" ]
+                                [ text (Source.View.timeRemaining rendition.source rendition.playbackPosition) ]
+                            ]
 
-    in
-        div
-            [ classList
-                [ ("channel--rendition-progress", True) ]
-            ]
-            progress
 
 
 rewindPlaySkip : Channel.Model -> Maybe Rendition.Model -> Html Channel.Msg
