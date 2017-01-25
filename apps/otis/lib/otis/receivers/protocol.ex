@@ -52,6 +52,10 @@ defmodule Otis.Receivers.Protocol do
         {:stop, reason, state}
       end
 
+      def handle_info(:ping, state) do
+        send_ping(state)
+      end
+
       def process_message({_id, %{"pong" => _pong}}, state) do
         receiver_alive(state)
       end
