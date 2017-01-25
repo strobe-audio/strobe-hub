@@ -43,19 +43,22 @@ config :logger, :console,
 # and calculating stacktraces is usually expensive.
 config :phoenix, :stacktrace_depth, 20
 
+root_dir = Path.expand("#{__DIR__}/../../..")
+state_dir = Path.join([root_dir, "_state"])
+
 config :otis, Otis.Media,
-  root: Path.expand("#{__DIR__}/../../../_state/fs"),
+  root: Path.join([state_dir, "fs"]),
   at: "/fs"
 
 config :otis, :environment, :dev
 
 config :otis, Otis.State.Repo,
   adapter: Sqlite.Ecto,
-  database: "_state/otis.dev.sqlite3"
+  database: Path.join([state_dir, "otis.dev.sqlite3"])
 
 config :peel, Peel.Repo,
   adapter: Sqlite.Ecto,
-  database: "_state/peel.dev.sqlite3"
+  database: Path.join([state_dir, "peel.dev.sqlite3"])
 
 config :otis, Otis.SNTP,
   port: 5145
