@@ -254,7 +254,7 @@ breadcrumb model =
     in
         div [ classList
                 [ ("library--breadcrumb", True)
-                , ("library--breadcrumb__search-active", model.showSearchInput)
+                , ("library--breadcrumb__search-active", (showSearchInput model))
                 ]
             ]
             [ div
@@ -326,6 +326,20 @@ searchInput model =
     else
         div [] []
 
+
+showSearchInput : Library.Model -> Bool
+showSearchInput model =
+    case model.showSearchInput of
+        False ->
+            False
+
+        True ->
+            case (Library.State.currentFolder model) |> Maybe.andThen (\f -> f.search) of
+                Nothing ->
+                    False
+
+                Just a ->
+                    True
 
 
 onKeyDown : Library.Msg -> Library.Msg -> Attribute Library.Msg
