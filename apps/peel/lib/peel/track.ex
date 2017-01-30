@@ -95,7 +95,7 @@ defmodule Peel.Track do
   def strip_leading_dot("." <> rest), do: rest
 
   def search(query) do
-    pattern = "%#{query}%"
+    pattern = "%#{Peel.String.normalize(query)}%"
     from(track in Track, where: like(track.normalized_title, ^pattern)) |> Repo.all
   end
 end

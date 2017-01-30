@@ -73,7 +73,7 @@ defmodule Peel.Artist do
   end
 
   def search(query) do
-    pattern = "%#{query}%"
+    pattern = "%#{Peel.String.normalize(query)}%"
     from(artist in Artist, where: like(artist.normalized_name, ^pattern)) |> Repo.all
   end
 end
