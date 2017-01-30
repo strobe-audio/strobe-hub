@@ -165,7 +165,7 @@ defmodule Peel.Events.Library do
     end
   end
 
-  def route_library_request(channel_id, ["search", "root"], query, path) do
+  def route_library_request(_channel_id, ["search", "root"], query, path) do
     artists = query |> Peel.Artist.search |> Enum.map(&folder_node/1)
     albums = query |> Peel.Album.search |> Enum.map(&folder_node/1)
     tracks = query |> Peel.Track.search |> Enum.map(&folder_node/1)
@@ -178,7 +178,7 @@ defmodule Peel.Events.Library do
       children: Enum.concat([albums, tracks, artists]),
     }
   end
-  def route_library_request(channel_id, ["search", "albums"], query, path) do
+  def route_library_request(_channel_id, ["search", "albums"], query, path) do
     albums = query |> Peel.Album.search |> Enum.map(&folder_node/1)
     %{
       id: namespaced(path),
@@ -189,7 +189,7 @@ defmodule Peel.Events.Library do
       children: albums,
     }
   end
-  def route_library_request(channel_id, ["search", "artists"], query, path) do
+  def route_library_request(_channel_id, ["search", "artists"], query, path) do
     artists = query |> Peel.Artist.search |> Enum.map(&folder_node/1)
     %{
       id: namespaced(path),
@@ -200,7 +200,7 @@ defmodule Peel.Events.Library do
       children: artists,
     }
   end
-  def route_library_request(channel_id, ["search", category], query, _path) do
+  def route_library_request(_channel_id, ["search", category], _query, _path) do
     Logger.warn "Searching uknown category #{inspect category}"
     nil
   end
