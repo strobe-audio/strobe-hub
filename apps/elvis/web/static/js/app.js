@@ -14,7 +14,7 @@ let socketOpts = {
   params: {},
   // reconnect attempt every half second. this is sensible/safe behaviour for
   // an app that expects < 5 simultaneous connections
-  reconnectAfterMs: () => 500,
+  reconnectAfterMs: () => 250,
   heartbeatIntervalMs: 1000,
 }
 let socket = new Socket("/controller", socketOpts)
