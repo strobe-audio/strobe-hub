@@ -179,9 +179,9 @@
     @mixin fa;
     content: "\f04b";
     position: absolute;
-    left: 4px;
+    left: 5px;
     right: 0;
-    top: 0;
+    top: -2px;
     bottom: 0;
     line-height: $button-size;
     text-align: center;
