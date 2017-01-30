@@ -94,6 +94,9 @@
 .library--breadcrumb--dropdown.library--breadcrumb--dropdown__empty + .library--breadcrumb--sections:before {
   display: none;
 }
+.library--breadcrumb--dropdown.library--breadcrumb--dropdown__empty {
+  flex: 0 0 0;
+}
 
 .library--breadcrumb--section {
   cursor: pointer;
