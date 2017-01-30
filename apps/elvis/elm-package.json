@@ -7,6 +7,7 @@
         "web/elm"
     ],
     "exposed-modules": [],
+    "native-modules": true,
     "dependencies": {
         "elm-community/list-extra": "4.0.0 <= v < 5.0.0",
         "elm-community/maybe-extra": "3.0.0 <= v < 4.0.0",
