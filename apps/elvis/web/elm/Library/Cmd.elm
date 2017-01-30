@@ -13,9 +13,9 @@ import Ports
 import Process
 
 
-sendAction : ID.Channel -> String -> Cmd Library.Msg
-sendAction channelId action =
-    Ports.libraryRequests ( channelId, action )
+sendAction : ID.Channel -> String -> Maybe String -> Cmd Library.Msg
+sendAction channelId action query =
+    Ports.libraryRequests ( channelId, action, query )
         |> Cmd.map (always Library.NoOp)
 
 

@@ -15,11 +15,62 @@
   min-height: $button-size;
   background: rgba(0, 0, 0, 0.1);
   display: flex;
-  padding: 0 $padding;
-  align-items: center;
   font-weight: 500;
+  flex-direction: column;
+  /* transition: flex-basis 1s; */
 }
 
+
+.library--breadcrumb__search-active {
+	flex: 0 0 calc($button-size * 2);
+  /* transition: flex-basis 1s; */
+}
+
+.library--breadcrumb--dropdown {
+  flex: 1;
+}
+
+.library--breadcrumb--control {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+}
+.library--breadcrumb--navigation {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  padding: 0 $padding;
+}
+
+.library--breadcrumb--sections {
+  flex: 4;
+  display: flex;
+  justify-content: center;
+}
+
+.library--breadcrumb--search-input {
+  flex: 0 0 $button-size;
+  /* padding: $padding; */
+  box-sizing: border-box;
+  position: relative;
+}
+
+.library--search-input {
+  margin: 0;
+  outline: none;
+  display: block;
+  padding: 0 $padding;
+  height: calc($button-size - (2 * $padding));
+  line-height: calc($button-size - (2 * $padding));
+  font-size: 1.5rem;
+  border: none;
+  border-radius: 0;
+  position: absolute;
+  left: $padding;
+  right: $padding;
+  top: $padding;
+  bottom: $padding;
+}
 
 .library--breadcrumb--dropdown > .library--breadcrumb--section,
 .library--breadcrumb--dropdown > .library--breadcrumb--divider {
@@ -27,11 +78,17 @@
 }
 .library--breadcrumb--dropdown > .library--breadcrumb--section:last-child {
   display: block;
+  color: #03A9F4;
 }
 
+.library--breadcrumb--dropdown > .library--breadcrumb--section:before {
+    @mixin fa;
+    content: "\f053"; /* fa-chevron-left */
+    margin-right: 5px;
+}
 
 .library--breadcrumb--dropdown + .library--breadcrumb--sections:before {
-    content: "›";
+    /* content: "›"; */
     margin: 0 $padding;
 }
 .library--breadcrumb--dropdown.library--breadcrumb--dropdown__empty + .library--breadcrumb--sections:before {
@@ -48,9 +105,21 @@
 
 .library--breadcrumb--divider {
   &:before {
-    content: "›";
+    /* content: "›"; */
     margin: 0 $padding;
   }
+}
+
+.library--breadcrumb-search-toggle {
+  @mixin fa-btn "\f002"; /* fa-search */
+  flex: 0 0 $button-size;
+  background-color: rgba(0, 0, 0, 0.1);
+
+}
+.library--breadcrumb-search-toggle__active {
+  /* background-color: rgba(0, 0, 0, 0.2); */
+  background-color: #03A9F4;
+  color: #fff;
 }
 
 .library--node--icon {

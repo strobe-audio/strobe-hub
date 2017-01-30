@@ -93,6 +93,11 @@ defmodule Peel.Track do
     path |> Path.extname |> strip_leading_dot
   end
   def strip_leading_dot("." <> rest), do: rest
+
+  def search(query) do
+    pattern = "%#{query}%"
+    from(track in Track, where: like(track.normalized_title, ^pattern)) |> Repo.all
+  end
 end
 
 defimpl Otis.Library.Source, for: Peel.Track do

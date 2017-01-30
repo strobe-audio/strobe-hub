@@ -9,13 +9,15 @@ import Utils.Touch
 import Stack exposing (Stack)
 import Animation
 import Ease
+import Task
+import Process
 
 
 initialState : Library.Model
 initialState =
     let
         rootFolder =
-            { id = "libraries", title = "Libraries", icon = "", children = [] }
+            { id = "libraries", title = "Libraries", icon = "", children = [], search = Nothing }
 
         root =
             { action = "root", title = rootFolder.title, contents = Just rootFolder }
@@ -32,6 +34,9 @@ initialState =
         , scrollPosition = Nothing
         , scrollHeight = Nothing
         , levelAnimation = (Animation.static 0)
+        , showSearchInput = False
+        , searchQuery = ""
+        , searchBounceCount = 0
         }
 
 
@@ -48,7 +53,7 @@ update action model maybeChannelId =
             in
                 ( { model | currentRequest = Nothing }, Cmd.none )
 
-        Library.ExecuteAction a title ->
+        Library.ExecuteAction a title query ->
             case maybeChannelId of
                 Just channelId ->
                     let
@@ -72,7 +77,7 @@ update action model maybeChannelId =
                             else
                                 model
                     in
-                        { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url) ]
+                        { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url query) ]
 
                 -- disable this auto-completion as I need the currentRequest value
                 -- , (Library.Cmd.requestComplete (300 * millisecond))
@@ -85,7 +90,7 @@ update action model maybeChannelId =
                     ( model, Cmd.none )
 
                 Just libraryAction ->
-                    update (Library.ExecuteAction libraryAction title) model maybeChannelId
+                    update (Library.ExecuteAction libraryAction title Nothing) model maybeChannelId
 
         Library.Response url folderResponse ->
             case model.currentRequest of
@@ -162,6 +167,38 @@ update action model maybeChannelId =
                 , scrollPosition = Just scrollPosition
                 , scrollHeight = Just scrollHeight
                 } ! []
+
+        Library.ShowSearchInput show ->
+            { model | showSearchInput = show } ! []
+
+        Library.SearchQueryUpdate query ->
+            let
+                newCount =
+                    model.searchBounceCount + 1
+
+                cmd =
+                    Task.perform
+                        (always (Library.SearchTimeout newCount))
+                        (Process.sleep 250)
+            in
+                { model | searchQuery = query, searchBounceCount = newCount } ! [cmd]
+
+        Library.SubmitSearch ->
+            -- TODO: send search query
+            (submitSearch model maybeChannelId)
+
+        Library.CancelSearch ->
+            { model | showSearchInput = False, searchQuery = "" } ! []
+
+        Library.SearchTimeout count ->
+            let
+                (model_, cmd) =
+                    if count == model.searchBounceCount then
+                        (submitSearch model maybeChannelId)
+                    else
+                        model ! []
+            in
+                (model_, cmd)
 
 
 currentLevel : Library.Model -> Library.Level
@@ -257,3 +294,54 @@ levelAnimation model targetDepth =
         model.animationTime
     )
         |> Maybe.withDefault (Animation.static (levelOffset model.depth))
+
+
+currentFolder : Library.Model -> Maybe Library.Folder
+currentFolder model =
+    Stack.toList model.levels
+        |> List.head
+        |> Maybe.andThen (\l -> l.contents)
+
+
+
+submitSearch : Library.Model -> Maybe ID.Channel -> ( Library.Model, Cmd Library.Msg )
+submitSearch model channelId =
+    if (String.length model.searchQuery) < 4 then
+        model ! []
+    else
+        submitValidSearch model channelId
+
+
+submitValidSearch : Library.Model -> Maybe ID.Channel -> ( Library.Model, Cmd Library.Msg )
+submitValidSearch model channelId =
+    let
+        folder =
+            (currentFolder model)
+
+        searchAction =
+            folder |> Maybe.andThen (\f -> f.search)
+
+    in
+        case searchAction of
+            Nothing ->
+                model ! []
+
+            Just action ->
+                let
+
+                    addLevel =
+                        case folder of
+                            Nothing ->
+                                True
+
+                            Just f ->
+                                not <| (f.id == action.url)
+
+                    a =
+                        Library.ExecuteAction
+                            { url = action.url, level = addLevel }
+                            ("Search " ++ action.title)
+                            (Just model.searchQuery)
+                in
+                    (update a model channelId)
+

@@ -200,4 +200,4 @@ port addChannelRequests : String -> Cmd msg
 port attachReceiverRequests : ( String, String ) -> Cmd msg
 
 
-port libraryRequests : ( String, String ) -> Cmd msg
+port libraryRequests : ( String, String, Maybe String ) -> Cmd msg

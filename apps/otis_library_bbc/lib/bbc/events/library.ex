@@ -48,7 +48,7 @@ defmodule BBC.Events.Library do
     }
   end
 
-  def route_library_request(_channel_id, ["root"], _path) do
+  def route_library_request(_channel_id, ["root"], _query, _path) do
     channels = Enum.map BBC.channels(), fn(channel) ->
       play = %{ url: url(["channel", channel.id, "play"]), level: false }
       %{ id: "bbc:channel/#{channel.id}",
@@ -62,10 +62,11 @@ defmodule BBC.Events.Library do
       id: "bbc:root",
       title: "BBC",
       icon: bbc_logo(),
+      search: nil,
       children: channels,
     }
   end
-  def route_library_request(channel_id, ["channel", id, "play"], _path) do
+  def route_library_request(channel_id, ["channel", id, "play"], _query, _path) do
     id
     |> BBC.find!
     |> play(channel_id)

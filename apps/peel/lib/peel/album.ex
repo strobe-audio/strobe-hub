@@ -112,4 +112,9 @@ defmodule Peel.Album do
   def change(model, changes) do
     Ecto.Changeset.change(model, changes)
   end
+
+  def search(query) do
+    pattern = "%#{query}%"
+    from(album in Album, where: like(album.normalized_title, ^pattern)) |> Repo.all
+  end
 end

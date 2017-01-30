@@ -8,13 +8,18 @@ import Animation
 
 type Msg
     = NoOp
-    | ExecuteAction Action String
+    | ExecuteAction Action String (Maybe String)
     | MaybeExecuteAction (Maybe Action) String
     | Response ActionURL (Maybe Folder)
     | PopLevel Int
     | ActionComplete
     | Touch (Utils.Touch.E Msg)
     | AnimationFrame (Time, Float, Float)
+    | ShowSearchInput Bool
+    | SearchQueryUpdate String
+    | SubmitSearch
+    | CancelSearch
+    | SearchTimeout Int
 
 
 type alias ActionURL =
@@ -38,11 +43,17 @@ type alias Level =
     , contents : Maybe Folder
     }
 
+type alias SearchAction =
+    { url : ActionURL
+    , title : String
+    }
+
 
 type alias Folder =
     { id : String
     , title : String
     , icon : String
+    , search : Maybe SearchAction
     , children : List Node
     }
 
@@ -66,6 +77,9 @@ type alias Model =
     , scrollPosition : Maybe Float
     , scrollHeight : Maybe Float
     , levelAnimation : Animation.Animation
+    , showSearchInput : Bool
+    , searchQuery : String
+    , searchBounceCount : Int
     }
 
 

@@ -148,8 +148,8 @@ metadataClick title action =
         options =
             { preventDefault = True, stopPropagation = True }
     in
-        [ onWithOptions "click" options (Json.succeed (Library.ExecuteAction action title))
-        , onSingleTouch (Library.ExecuteAction action title)
+        [ onWithOptions "click" options (Json.succeed (Library.ExecuteAction action title Nothing))
+        , onSingleTouch (Library.ExecuteAction action title Nothing)
         ]
 
 
@@ -196,9 +196,9 @@ node library folder node =
                 , ( "library--node__active", isActive )
                 , ( "library--click-action", True )
                 ]
-            , onClick (Library.ExecuteAction node.actions.click node.title)
-            , mapTouch (Utils.Touch.touchStart (Library.ExecuteAction node.actions.click node.title))
-            , mapTouch (Utils.Touch.touchEnd (Library.ExecuteAction node.actions.click node.title))
+            , onClick (Library.ExecuteAction node.actions.click node.title Nothing)
+            , mapTouch (Utils.Touch.touchStart (Library.ExecuteAction node.actions.click node.title Nothing))
+            , mapTouch (Utils.Touch.touchEnd (Library.ExecuteAction node.actions.click node.title Nothing))
             ]
             [ div
                 [ class "library--node--icon"
@@ -248,9 +248,99 @@ breadcrumb model =
                 True
             else
                 False
+
+
+
     in
-        div [ class "library--breadcrumb" ]
-            [ div [ classList [ ( "library--breadcrumb--dropdown", True ), ( "library--breadcrumb--dropdown__empty", dropdownEmpty ) ] ] dropdown
-              -- , span [ class "library--breadcrumb--divider" ] []
-            , div [ class "library--breadcrumb--sections" ] list
+        div [ classList
+                [ ("library--breadcrumb", True)
+                , ("library--breadcrumb__search-active", model.showSearchInput)
+                ]
             ]
+            [ div
+                [ class "library--breadcrumb--control" ]
+                [ div
+                    [ class "library--breadcrumb--navigation" ]
+                    [ div [ classList [ ( "library--breadcrumb--dropdown", True ), ( "library--breadcrumb--dropdown__empty", dropdownEmpty ) ] ] dropdown
+                    -- , span [ class "library--breadcrumb--divider" ] []
+                    , div [ class "library--breadcrumb--sections" ] list
+                    ]
+                , (searchButton model)
+                ]
+            , (searchInput model)
+            ]
+
+
+searchButton : Library.Model -> Html Library.Msg
+searchButton model =
+    case Library.State.currentFolder model of
+        Nothing ->
+            div [] []
+
+        Just folder ->
+            case folder.search of
+                Nothing ->
+                    div [] []
+
+                Just action ->
+                    let
+                        mapTouch a =
+                            Html.Attributes.map Library.Touch a
+
+                        msg =
+                            (Library.ShowSearchInput (not model.showSearchInput))
+                    in
+                        div [ classList
+                                [ ("library--breadcrumb-search-toggle", True)
+                                , ("library--breadcrumb-search-toggle__active", model.showSearchInput)
+                                ]
+                            , title action.title
+                            , onClick msg
+                            , mapTouch (Utils.Touch.touchStart msg)
+                            , mapTouch (Utils.Touch.touchEnd msg)
+                            ]
+                            []
+
+
+
+searchInput : Library.Model -> Html Library.Msg
+searchInput model =
+    if model.showSearchInput then
+        case (Library.State.currentFolder model) |> Maybe.andThen (\f -> f.search) of
+            Nothing ->
+                div [] []
+
+            Just action ->
+                div
+                    [ class "library--breadcrumb--search-input" ]
+                    [ input
+                        [ class "library--search-input", type_ "text"
+                        , placeholder ("Search " ++ action.title ++ "...")
+                        , autofocus True
+                        , value model.searchQuery
+                        , onInput Library.SearchQueryUpdate
+                        , onKeyDown Library.SubmitSearch Library.CancelSearch
+                        ]
+                        []
+                    ]
+    else
+        div [] []
+
+
+
+onKeyDown : Library.Msg -> Library.Msg -> Attribute Library.Msg
+onKeyDown submitMsg cancelMsg =
+    on "keydown" (Json.andThen (submitOrCancel submitMsg cancelMsg) keyCode)
+
+
+submitOrCancel : Library.Msg -> Library.Msg -> Int -> Json.Decoder Library.Msg
+submitOrCancel submitMsg cancelMsg code =
+    case code of
+        13 ->
+            Json.succeed submitMsg
+
+        27 ->
+            Json.succeed cancelMsg
+
+        _ ->
+            Json.fail "ignored key code"

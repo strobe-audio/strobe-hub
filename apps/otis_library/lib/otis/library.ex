@@ -13,8 +13,8 @@ defmodule Otis.Library do
         {:ok, state}
       end
 
-      def handle_event({:library_request, [channel_id, (@protocol <> path) = url, socket]}, state) do
-        response = handle_request(channel_id, path)
+      def handle_event({:library_request, [channel_id, (@protocol <> path) = url, socket, query]}, state) do
+        response = handle_request(channel_id, path, query)
         Otis.State.Events.notify({:library_response, [@namespace, url, response, socket]})
         {:ok, state}
       end
@@ -33,18 +33,19 @@ defmodule Otis.Library do
           icon: "",
           actions: %{
             click: %{ url: url("root"), level: true },
-            play: nil
+            play: nil,
+            search: nil,
           },
           metadata: nil
         }
       end
 
-      def handle_request(channel_id, path) do
+      def handle_request(channel_id, path, query) do
         route = String.split(path, "/", trim: true)
-        route_library_request(channel_id, route, path)
+        route_library_request(channel_id, route, query, path)
       end
 
-      def route_library_request(_channel_id, _route, _path) do
+      def route_library_request(_channel_id, _route, _query, _path) do
         nil
       end
 
@@ -77,10 +78,12 @@ defmodule Otis.Library do
 
       def namespace, do: @namespace
 
+      def namespaced(url), do: "#{@namespace}:#{url}"
+
       defoverridable [
         setup: 1,
         library: 0,
-        route_library_request: 3,
+        route_library_request: 4,
       ]
     end
   end
