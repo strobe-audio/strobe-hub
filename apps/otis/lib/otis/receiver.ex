@@ -260,6 +260,20 @@ defmodule Otis.Receiver do
     # send_command(receiver, "stop")
   end
 
+  def ip_address({_id, receiver}), do: ip_address(receiver)
+  def ip_address(%R{ctrl: {_pid, socket}}) do
+    _ip_address(socket)
+  end
+  def ip_address(%R{data: {_pid, socket}}) do
+    _ip_address(socket)
+  end
+  def ip_address(_receiver), do: :error
+
+  defp _ip_address(socket) do
+    {:ok, {addr, _port}} = :inet.peername(socket)
+    {:ok, addr}
+  end
+
   def send_data(%{data: {pid, _socket}}, data) do
     GenServer.cast(pid, {:data, data})
   end
