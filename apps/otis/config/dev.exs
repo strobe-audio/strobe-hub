@@ -20,10 +20,6 @@ config :logger, :console,
 config :porcelain, :driver, Porcelain.Driver.Goon
 config :porcelain, :goon_driver_path, "#{__DIR__}/../bin/goon_darwin_amd64"
 
-config :otis, Otis.Media,
-  root: "#{__DIR__}/../_state/fs",
-  at: "/fs"
-
 import_config "#{Mix.env}.exs"
 
 project_root_path = Path.expand(Path.join(__DIR__, "../../.."))

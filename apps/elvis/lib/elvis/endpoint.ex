@@ -13,7 +13,9 @@ defmodule Elvis.Endpoint do
     only: ~w(css fonts images js svg favicon.ico robots.txt)
 
   plug Plug.Static,
-    at: Otis.Media.at(), from: Otis.Media.from(), gzip: false,
+    at: Otis.Media.at(),
+    from: Otis.Media.from(),
+    gzip: false,
     cache_control_for_etags: "public, max-age=31536000"
 
   # Code reloading can be explicitly enabled under the
