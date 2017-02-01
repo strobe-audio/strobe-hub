@@ -1,7 +1,7 @@
 module Library.View exposing (..)
 
 import Html exposing (..)
-import Html.Lazy exposing (lazy, lazy2)
+import Html.Lazy exposing (lazy, lazy2, lazy3)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Html.Keyed
@@ -52,7 +52,7 @@ levels model =
 
                 Just folder_ ->
                     ( l.action
-                    , (folder model folder_ isCurrent)
+                    , (folder model l folder_ isCurrent)
                     )
 
         count =
@@ -71,21 +71,27 @@ levels model =
     in
         Html.Keyed.node
             "div"
-            [ class "library--levels", style [ ( "left", (toString left) ++ "vw" ) ] ]
+            [ class "library--levels", style [ ( "transform", "translateX(" ++ (toString left) ++ "vw)" ) ] ]
             columns
 
 
-folder : Library.Model -> Library.Folder -> Bool -> Html Library.Msg
-folder model folder isCurrent =
+folder : Library.Model -> Library.Level -> Library.Folder -> Bool -> Html Library.Msg
+folder model level folder isCurrent =
     let
         childHeight =
             60.0
 
         ( childrenOffset, childrenCount ) =
-            libraryChildrenViewOffset model childHeight
+            libraryChildrenViewOffset level childHeight
 
         height =
             (List.length folder.children) * (round childHeight)
+
+        offset =
+            if isCurrent then
+                0
+            else
+                (round (level.scrollPosition)) % (round childHeight)
 
         nodes =
             List.take childrenCount <|
@@ -93,10 +99,18 @@ folder model folder isCurrent =
                     folder.children
 
         spacerHeight =
-            (toString (round ((toFloat childrenOffset) * childHeight))) ++ "px"
+            if isCurrent then
+                (round ((toFloat childrenOffset) * childHeight))
+            else
+                0
 
         spacerNode =
-            div [ style [ ( "height", spacerHeight ) ] ] []
+            div [ style
+                    [ ( "height", (toString spacerHeight) ++ "px" )
+                    , ( "marginTop", (toString -offset) ++ "px" )
+                    ]
+                ]
+                []
 
         contents =
             (spacerNode :: (List.map (node model folder) nodes))
@@ -118,18 +132,11 @@ folder model folder isCurrent =
             ]
 
 
-libraryChildrenViewOffset : Library.Model -> Float -> ( Int, Int )
-libraryChildrenViewOffset model childHeight =
-    (Maybe.map2
-        (\position height ->
-            ( (floor <| (position / childHeight))
-            , ((ceiling <| (height / childHeight)) + 2)
-            )
-        )
-        model.scrollPosition
-        model.scrollHeight
+libraryChildrenViewOffset : Library.Level -> Float -> ( Int, Int )
+libraryChildrenViewOffset level childHeight =
+    ( (floor <| (level.scrollPosition / childHeight))
+    , ((ceiling <| (level.scrollHeight / childHeight)) + 2)
     )
-        |> Maybe.withDefault ( 0, 0 )
 
 
 metadata : Library.Node -> Maybe (List Library.Metadata) -> Html Library.Msg

@@ -41,6 +41,8 @@ type alias Level =
     { action : ActionURL
     , title : String
     , contents : Maybe Folder
+    , scrollHeight : Float
+    , scrollPosition : Float
     }
 
 type alias SearchAction =

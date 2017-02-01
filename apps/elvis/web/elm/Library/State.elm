@@ -20,7 +20,7 @@ initialState =
             { id = "libraries", title = "Libraries", icon = "", children = [], search = Nothing }
 
         root =
-            { action = "root", title = rootFolder.title, contents = Just rootFolder }
+            { action = "root", title = rootFolder.title, contents = Just rootFolder, scrollPosition = 0, scrollHeight = 0 }
 
         levels =
             Stack.initialise |> Stack.push root
@@ -61,7 +61,7 @@ update action model maybeChannelId =
                             if a.level then
                                 let
                                     level =
-                                        { action = a.url, title = title, contents = Nothing }
+                                        { action = a.url, title = title, contents = Nothing, scrollHeight = 0, scrollPosition = 0 }
 
                                     levels =
                                         Stack.push level model.levels
@@ -156,11 +156,20 @@ update action model maybeChannelId =
 
         Library.AnimationFrame (time, scrollPosition, scrollHeight) ->
             let
+                levels =
+                    case Stack.toList model.levels of
+                        current::rest ->
+                            { current | scrollHeight = scrollHeight, scrollPosition = scrollPosition } :: rest
+
+                        [] ->
+                            []
+
                 model_ =
                     if Animation.isDone time model.levelAnimation then
-                        { model | unloadingLevel = Nothing }
+                        { model | levels = (Stack.fromList levels), unloadingLevel = Nothing }
                     else
                         model
+
             in
                 { model_
                 | animationTime = Just time
@@ -288,7 +297,7 @@ levelAnimation model targetDepth =
             (Animation.animation time)
                 |> (Animation.from (levelOffset model.depth))
                 |> Animation.to (levelOffset targetDepth)
-                |> Animation.duration (200 * Time.millisecond)
+                |> Animation.duration (300 * Time.millisecond)
                 |> Animation.ease Ease.inOutSine
         )
         model.animationTime
