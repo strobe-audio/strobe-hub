@@ -152,7 +152,7 @@ update action model maybeChannelId =
                                     level :: rest ->
                                         let
                                             level_ =
-                                                { level | scrollPosition = (min 0 level.scrollPosition + dy) }
+                                                { level | scrollPosition = (min 0 (level.scrollPosition + dy)) }
                                         in
                                             Stack.fromList (level_ :: rest)
 
