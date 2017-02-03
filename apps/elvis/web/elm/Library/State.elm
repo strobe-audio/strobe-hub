@@ -205,7 +205,6 @@ update action model maybeChannelId =
 
         Library.AnimationFrame (time, scrollTop, scrollHeight) ->
             let
-                _ = Debug.log "scrolltop " scrollTop
                 (levels, scrollMomentum) =
                     -- scrollTop is Nothing for mobile/touch browsers where scroll is handled by elm
                     -- and Just position for desktop browsers where scroll is done by mouse
