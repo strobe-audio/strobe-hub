@@ -8,3 +8,6 @@
 #__scrollable__ {
   transform: translateZ(0);
 }
+.no-touchevents #__scrollable__ {
+	overflow-y: auto;
+}

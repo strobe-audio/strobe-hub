@@ -14,7 +14,7 @@ type Msg
     | PopLevel Int
     | ActionComplete
     | Touch (Utils.Touch.E Msg)
-    | AnimationFrame (Time, Float, Float)
+    | AnimationFrame (Time, Maybe Float, Float)
     | ShowSearchInput Bool
     | SearchQueryUpdate String
     | SubmitSearch

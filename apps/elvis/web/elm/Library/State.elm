@@ -203,41 +203,56 @@ update action model maybeChannelId =
                         { model | touches = { touches | savedMomentum = Nothing } } ! []
 
 
-        Library.AnimationFrame (time, scrollPosition, scrollHeight) ->
+        Library.AnimationFrame (time, scrollTop, scrollHeight) ->
             let
+                _ = Debug.log "scrolltop " scrollTop
                 (levels, scrollMomentum) =
-                    case Stack.toList model.levels of
-                        current::rest ->
-                            let
-                                scrollPosition =
-                                    (Maybe.map4
-                                        Utils.Touch.scrollPosition
-                                        model.animationTime
-                                        model.scrollMomentum
-                                        (Library.levelContentHeight current)
-                                        (Just current.scrollHeight)
+                    -- scrollTop is Nothing for mobile/touch browsers where scroll is handled by elm
+                    -- and Just position for desktop browsers where scroll is done by mouse
+                    case scrollTop of
+                        Nothing ->
+                            case Stack.toList model.levels of
+                                current::rest ->
+                                    let
+                                        scrollPosition =
+                                            (Maybe.map4
+                                                Utils.Touch.scrollPosition
+                                                model.animationTime
+                                                model.scrollMomentum
+                                                (Library.levelContentHeight current)
+                                                (Just current.scrollHeight)
+                                            )
+                                    in
+                                        case scrollPosition of
+                                            Just (Utils.Touch.Scrolling momentum) ->
+                                                ( ( { current | scrollHeight = scrollHeight, scrollPosition = momentum.position } :: rest )
+                                                , Just momentum
+                                                )
+
+                                            Just (Utils.Touch.ScrollComplete position) ->
+                                                ( ( { current | scrollHeight = scrollHeight, scrollPosition = position  } :: rest )
+                                                , Nothing
+                                                )
+
+                                            Nothing ->
+                                                ( ( { current | scrollHeight = scrollHeight, scrollPosition = current.scrollPosition } :: rest )
+                                                , model.scrollMomentum
+                                                )
+
+
+
+                                [] ->
+                                    ( [], model.scrollMomentum )
+                        Just position ->
+                            case Stack.toList model.levels of
+                                current::rest ->
+                                    ( ( { current | scrollHeight = scrollHeight, scrollPosition = position  } :: rest )
+                                    , Nothing
                                     )
-                            in
-                                case scrollPosition of
-                                    Just (Utils.Touch.Scrolling momentum) ->
-                                        ( ( { current | scrollHeight = scrollHeight, scrollPosition = momentum.position } :: rest )
-                                        , Just momentum
-                                        )
 
-                                    Just (Utils.Touch.ScrollComplete position) ->
-                                        ( ( { current | scrollHeight = scrollHeight, scrollPosition = position  } :: rest )
-                                        , Nothing
-                                        )
+                                [] ->
+                                    ( [], Nothing )
 
-                                    Nothing ->
-                                        ( ( { current | scrollHeight = scrollHeight, scrollPosition = current.scrollPosition } :: rest )
-                                        , model.scrollMomentum
-                                        )
-
-
-
-                        [] ->
-                            ( [], model.scrollMomentum )
 
                 model_ =
                     if Animation.isDone time model.levelAnimation then

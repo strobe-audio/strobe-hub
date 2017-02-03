@@ -1,5 +1,6 @@
 
 import 'no_bounce'
+import 'modernizr'
 import {Socket} from 'phoenix'
 import Elm from 'Main'
 
@@ -115,14 +116,17 @@ channel.join()
 
 // channel.push('list_libraries', {})
 
+let hasTouchEvents = Modernizr.touchevents
 let raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame
+
+console.log('touchEvents', hasTouchEvents, Modernizr)
 
 let frame = () => {
 	let scroller = document.getElementById('__scrolling__') || document.getElementById('__scrollable__')
-	let scrollTop = 0
+	let scrollTop = null
 	let height = 0
 	if (scroller) {
-		scrollTop = scroller.scrollTop
+		scrollTop = hasTouchEvents ? null : scroller.scrollTop
 		height = scroller.parentNode.offsetHeight
 		// console.log('height', scroller.offsetHeight)
 	}

@@ -1,5 +1,4 @@
 module Msg exposing (..)
-
 import Time exposing (Time)
 import Library
 import Channel
@@ -41,4 +40,4 @@ type Msg
       -- events from browser
     | BrowserViewport Int
     | BrowserScroll Int
-    | AnimationScroll (Time, Float, Float)
+    | AnimationScroll (Time, Maybe Float, Float)
