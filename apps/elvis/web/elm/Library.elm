@@ -76,8 +76,6 @@ type alias Model =
     , unloadingLevel : Maybe Level
     , touches : Utils.Touch.Model
     , animationTime : Maybe Time
-    , scrollPosition : Maybe Float
-    , scrollHeight : Maybe Float
     , levelAnimation : Animation.Animation
     , showSearchInput : Bool
     , searchQuery : String

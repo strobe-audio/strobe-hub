@@ -32,8 +32,6 @@ initialState =
         , unloadingLevel = Nothing
         , touches = Utils.Touch.emptyModel
         , animationTime = Nothing
-        , scrollPosition = Nothing
-        , scrollHeight = Nothing
         , levelAnimation = (Animation.static 0)
         , showSearchInput = False
         , searchQuery = ""
@@ -250,8 +248,6 @@ update action model maybeChannelId =
             in
                 { model_
                 | animationTime = Just time
-                , scrollPosition = Just scrollPosition
-                , scrollHeight = Just scrollHeight
                 , scrollMomentum = scrollMomentum
                 } ! []
 
