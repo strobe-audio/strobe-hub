@@ -82,6 +82,7 @@ type alias Model =
     , showSearchInput : Bool
     , searchQuery : String
     , searchBounceCount : Int
+    , scrollMomentum : Maybe Utils.Touch.Momentum
     }
 
 
@@ -107,8 +108,23 @@ type alias Actions =
     , play : Maybe Action
     }
 
+nodeHeight : Float
+nodeHeight =
+    61.0
+
+levelContentHeight : Level -> Maybe Float
+levelContentHeight level =
+    level.contents |> Maybe.map (\f -> folderContentHeight f)
 
 
+folderContentHeight : Folder -> Float
+folderContentHeight folder =
+    folder.children |> List.length |> contentHeight
+
+
+contentHeight : Int -> Float
+contentHeight n =
+    n |> toFloat |> (*) nodeHeight
 {-
 
    folders:

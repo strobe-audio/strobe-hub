@@ -198,6 +198,8 @@
 
 .library--folder {
   flex: 0 0 100vw;
+	overflow: hidden;
+	/* padding-top: 60px; */
 }
 
 .library--folder__loading {

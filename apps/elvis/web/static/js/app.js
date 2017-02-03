@@ -118,7 +118,7 @@ channel.join()
 let raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame
 
 let frame = () => {
-	let scroller = document.getElementById('__scrolling__')
+	let scroller = document.getElementById('__scrolling__') || document.getElementById('__scrollable__')
 	let scrollTop = 0
 	let height = 0
 	if (scroller) {

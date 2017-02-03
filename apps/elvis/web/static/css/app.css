@@ -34,6 +34,12 @@ html {
   overflow: hidden;
   /* https://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/ */
   -webkit-tap-highlight-color: rgba(0,0,0,0);
+	-webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
 }
 body {
   -webkit-overflow-scrolling: auto;
@@ -48,6 +54,13 @@ body {
   line-height: 125%;
 }
 
+input {
+    -webkit-user-select: text;
+     -khtml-user-select: text;
+       -moz-user-select: text;
+        -ms-user-select: text;
+            user-select: text;
+}
 @media (--desktop) {
   body {
     display: flex;

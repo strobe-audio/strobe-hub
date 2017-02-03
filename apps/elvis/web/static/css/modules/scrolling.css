@@ -5,3 +5,6 @@
 	-webkit-overflow-scrolling: touch;
   transform: translateZ(0);
 }
+#__scrollable__ {
+  transform: translateZ(0);
+}

@@ -11,20 +11,28 @@ import Touch
 import SingleTouch exposing (SingleTouch)
 import MultiTouch exposing (MultiTouch, onMultiTouch)
 import Json.Decode as Decode
+import Animation exposing (Animation)
 
 
 -- Only support left/right swipes (who swipes *up*!??)
 
+type Axis
+    = X
+    | Y
 
 type Direction
     = Left
     | Right
+    | Up
+    | Down
 
 
 type Gesture msg
-    = Tap msg
+    = Touch msg
+    | Tap msg
     | LongPress msg
-    | Swipe Direction Float msg
+    | Swipe Axis Direction Float Float msg
+    | Flick (Time -> Float -> Maybe Momentum -> Momentum) msg
 
 
 type alias SwipeModel =
@@ -47,9 +55,22 @@ type alias T =
 
 type alias Model =
     { start : Maybe T
-    , actual : Maybe T
+    , actual : List T
     , end : Maybe T
+    , savedMomentum : Maybe Momentum
     }
+
+type alias Momentum =
+    { time : Time
+    , startTime : Time
+    , lifeTime : Time
+    , speed : Float
+    , position : Float
+    }
+
+type ScrollState
+    = Scrolling Momentum
+    | ScrollComplete Float
 
 
 null : Model
@@ -60,8 +81,9 @@ null =
 emptyModel : Model
 emptyModel =
     { start = Nothing
-    , actual = Nothing
+    , actual = []
     , end = Nothing
+    , savedMomentum = Nothing
     }
 
 
@@ -69,10 +91,15 @@ update : E msg -> Model -> Model
 update event model =
     case event of
         Start t m ->
-            { model | start = Just t, actual = Nothing, end = Nothing }
+            { model | start = Just t, actual = [], end = Nothing }
 
         Actual t m ->
-            { model | actual = Just t, end = Nothing }
+            let
+                actual =
+                    (t :: model.actual) |> List.take 4
+
+            in
+                { model | actual = actual, end = Nothing }
 
         End t m ->
             { model | end = Just t }
@@ -174,66 +201,192 @@ testSingleClick msg start end =
             Nothing
 
 
+-- TODO: don't need last event here, the model should have been updated
+-- before calling this, so we can just test for existance of end & actual
+-- (in that order)
 testEvent : E msg -> Model -> Maybe (Gesture msg)
 testEvent event model =
     case event of
         Start touch msg ->
-            Nothing
+            Just (Touch msg)
 
         -- this could return e.g. long-click or swipe events
         Actual touch msg ->
-            Maybe.andThen
-                (\start ->
-                    let
-                        min =
-                            50
-
-                        dx =
-                            (touch.clientX - start.clientX)
-
-                        off =
-                            abs dx
-
-                        dy =
-                            touch.clientY - start.clientY |> abs
-                    in
-                        if (off >= min) && (dy < min) then
-                            Just (Swipe (directionOf dx) off msg)
-                        else
-                            Nothing
-                )
-                model.start
+            (testStartActualEvent model)
+                |> Maybe.map (\g -> (g msg))
 
         End touch msg ->
-            Maybe.andThen
-                (\start ->
-                    let
-                        min =
-                            50
-
-                        dx =
-                            touch.clientX - start.clientX
-
-                        dy =
-                            touch.clientY - start.clientY
-
-                        dd =
-                            (sqrt (dx * dx) + (dy * dy))
-
-                        tt =
-                            (touch.time - start.time)
-                    in
-                        if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
-                            Just (Tap msg)
-                        else
-                            Nothing
-                )
-                model.start
+             model.start
+                 |> Maybe.andThen (testStartEndEvent model touch)
+                 |> Maybe.map (\g -> (g msg))
 
 
-directionOf : Float -> Direction
-directionOf dx =
+testStartActualEvent : Model -> Maybe (msg -> Gesture msg)
+testStartActualEvent model =
+    case model.start of
+        -- unlikely..
+        Nothing ->
+            Nothing
+
+        Just start ->
+            let
+                ( dx, dy ) =
+                    case model.actual of
+                        a :: b :: _ ->
+                            ( a.clientX - b.clientX, a.clientY - b.clientY )
+
+                        a :: _ ->
+                            ( a.clientX - start.clientX, a.clientY - start.clientY )
+
+                        [] ->
+                            ( 0, 0 )
+
+                ( offx, offy ) =
+                    ( abs dx, abs dy )
+
+                ( mx, my ) =
+                    (case model.actual of
+                        a :: _ ->
+                            ( a.clientX - start.clientX, a.clientY - start.clientY )
+                        [] ->
+                            ( 0, 0 )
+                    )
+
+            in
+                if offx > offy then
+                    Just (Swipe X (xDirectionOf dx) dx mx)
+
+                else
+                    if offy > offx then
+                        Just (Swipe Y (yDirectionOf dy) dy my)
+                    else
+                        Nothing
+
+
+testStartEndEvent : Model -> T -> T -> Maybe (msg -> Gesture msg)
+testStartEndEvent model end start =
+    let
+        min =
+            50
+
+        tx =
+            end.clientX - start.clientX
+
+        ty =
+            end.clientY - start.clientY
+
+        dd =
+            (sqrt (tx * tx) + (ty * ty))
+
+        tt =
+            (end.time - start.time)
+
+        ( fy, ft ) =
+            case model.actual of
+                _ :: last :: _ ->
+                    ( end.clientY - last.clientY
+                    , toFloat <| (end.time - last.time)
+                    )
+
+                _ ->
+                    (0.0, 0.0)
+
+    in
+        if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
+            Just Tap
+
+        else
+            if (fy /= 0) && ((abs fy) > 10) then
+                Just
+                    (Flick
+                        (\t p m ->
+                            let
+                                speed =
+                                    case m of
+                                        Nothing ->
+                                            (flickSpeed fy ft)
+
+                                        Just momentum ->
+                                            (momentum.speed + (flickSpeed fy ft))
+                            in
+                                { time = t
+                                , startTime = t
+                                , lifeTime = 3000.0
+                                , speed = speed
+                                , position = p
+                                }
+                        )
+                    )
+            else
+                Nothing
+
+
+xDirectionOf : Float -> Direction
+xDirectionOf dx =
     if dx < 0 then
         Left
     else
         Right
+
+
+yDirectionOf : Float -> Direction
+yDirectionOf dy =
+    if dy < 0 then
+        Up
+    else
+        Down
+
+
+flickSpeed : Float -> Float -> Float
+flickSpeed dy dt =
+    dy / dt
+
+
+scrollFriction : Float -> Float
+scrollFriction age =
+    (1.0 + (0.1 * age))
+
+
+scrollPosition : Time -> Momentum -> Float -> Float -> ScrollState
+scrollPosition time momentum length height =
+    let
+        dt =
+            time - momentum.time
+
+        age =
+            ((time - momentum.startTime) / momentum.lifeTime) |> (min 1.0)
+
+        speed =
+            momentum.speed / (scrollFriction age)
+
+        dp =
+            dt * speed
+
+        p =
+            momentum.position + dp
+
+        end =
+            -(length - (height * 0.6))
+    in
+        if (abs speed) <= 0.02 then
+            ScrollComplete p
+        else
+            if p > 0 then
+                ScrollComplete 0.0
+            else
+                if p <= end then
+                    ScrollComplete end
+                else
+                    Scrolling { momentum | position = p, time = time, speed = speed }
+
+
+slowScroll : Maybe Momentum -> Bool
+slowScroll maybeMomentum =
+    case maybeMomentum of
+        Nothing ->
+            True
+
+        -- loading any images disrupts the scroll
+        Just momentum ->
+            -- (abs momentum.speed) < 0.20
+            False

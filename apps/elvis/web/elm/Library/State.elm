@@ -11,6 +11,7 @@ import Animation
 import Ease
 import Task
 import Process
+import Maybe.Extra
 
 
 initialState : Library.Model
@@ -37,6 +38,7 @@ initialState =
         , showSearchInput = False
         , searchQuery = ""
         , searchBounceCount = 0
+        , scrollMomentum = Nothing
         }
 
 
@@ -73,6 +75,7 @@ update action model maybeChannelId =
                                         | levels = levels
                                         , depth = model.depth + 1
                                         , levelAnimation = animation
+                                        , scrollMomentum = Nothing
                                     }
                             else
                                 model
@@ -129,6 +132,7 @@ update action model maybeChannelId =
                                     , depth = (max 0 model.depth - 1)
                                     , levelAnimation = animation
                                     , unloadingLevel = maybeCurrentLevel
+                                    , scrollMomentum = Nothing
                                 }
             in
                 ( model_, Cmd.none )
@@ -136,33 +140,106 @@ update action model maybeChannelId =
         Library.Touch te ->
             let
                 touches =
-                    Debug.log "touches" (Utils.Touch.update te model.touches)
+                    (Utils.Touch.update te model.touches)
 
-                ( updated_, cmd_ ) =
-                    case Utils.Touch.testEvent te touches of
-                        _ ->
-                            { model | touches = touches } ! []
-
-                -- change to click type
-                ( updated, cmd ) =
-                    case Utils.Touch.isSingleClick te touches of
-                        Nothing ->
-                            { model | touches = touches } ! []
-
-                        Just msg ->
-                            update msg { model | touches = Utils.Touch.emptyModel } maybeChannelId
             in
-                ( updated, cmd )
+                case Utils.Touch.testEvent te touches of
+                    Just (Utils.Touch.Touch msg) ->
+                        { model | scrollMomentum = Nothing, touches = { touches | savedMomentum = model.scrollMomentum } } ! []
+
+                    Just (Utils.Touch.Swipe Utils.Touch.Y direction dy y msg) ->
+                        let
+                            levels =
+                                case Stack.toList model.levels of
+                                    level :: rest ->
+                                        let
+                                            level_ =
+                                                { level | scrollPosition = (min 0 level.scrollPosition + dy) }
+                                        in
+                                            Stack.fromList (level_ :: rest)
+
+                                    [] ->
+                                        model.levels
+                        in
+                            { model | scrollMomentum = Nothing, touches = touches, levels = levels } ! []
+
+                    Just (Utils.Touch.Tap msg) ->
+                        -- if there was a momentum scroll in progress when the
+                        -- touch started then prevent taps from doing anything:
+                        -- they should just kill the scroll
+                        case (Maybe.Extra.or model.scrollMomentum touches.savedMomentum) of
+                            Nothing ->
+                                update
+                                    msg
+                                    { model
+                                        | touches = Utils.Touch.emptyModel
+                                        , scrollMomentum = Nothing
+                                    }
+                                    maybeChannelId
+
+                            Just m ->
+                                { model
+                                    | touches = Utils.Touch.emptyModel
+                                    , scrollMomentum = Nothing
+                                } ! []
+
+                    Just (Utils.Touch.Flick newMomentum msg) ->
+                        let
+
+                            scrollMomentum =
+                                case Stack.toList model.levels of
+                                    level :: rest ->
+                                        (Just
+                                            (newMomentum
+                                                (Maybe.withDefault 0.0 model.animationTime)
+                                                level.scrollPosition
+                                                touches.savedMomentum
+                                            )
+                                        )
+                                    _ ->
+                                        Nothing
+                        in
+                            { model | touches = { touches | savedMomentum = Nothing }, scrollMomentum = scrollMomentum } ! []
+
+                    _ ->
+                        { model | touches = { touches | savedMomentum = Nothing } } ! []
+
 
         Library.AnimationFrame (time, scrollPosition, scrollHeight) ->
             let
-                levels =
+                (levels, scrollMomentum) =
                     case Stack.toList model.levels of
                         current::rest ->
-                            { current | scrollHeight = scrollHeight, scrollPosition = scrollPosition } :: rest
+                            let
+                                scrollPosition =
+                                    (Maybe.map4
+                                        Utils.Touch.scrollPosition
+                                        model.animationTime
+                                        model.scrollMomentum
+                                        (Library.levelContentHeight current)
+                                        (Just current.scrollHeight)
+                                    )
+                            in
+                                case scrollPosition of
+                                    Just (Utils.Touch.Scrolling momentum) ->
+                                        ( ( { current | scrollHeight = scrollHeight, scrollPosition = momentum.position } :: rest )
+                                        , Just momentum
+                                        )
+
+                                    Just (Utils.Touch.ScrollComplete position) ->
+                                        ( ( { current | scrollHeight = scrollHeight, scrollPosition = position  } :: rest )
+                                        , Nothing
+                                        )
+
+                                    Nothing ->
+                                        ( ( { current | scrollHeight = scrollHeight, scrollPosition = current.scrollPosition } :: rest )
+                                        , model.scrollMomentum
+                                        )
+
+
 
                         [] ->
-                            []
+                            ( [], model.scrollMomentum )
 
                 model_ =
                     if Animation.isDone time model.levelAnimation then
@@ -175,6 +252,7 @@ update action model maybeChannelId =
                 | animationTime = Just time
                 , scrollPosition = Just scrollPosition
                 , scrollHeight = Just scrollHeight
+                , scrollMomentum = scrollMomentum
                 } ! []
 
         Library.ShowSearchInput show ->
@@ -353,4 +431,5 @@ submitValidSearch model channelId =
                             (Just model.searchQuery)
                 in
                     (update a model channelId)
+
 

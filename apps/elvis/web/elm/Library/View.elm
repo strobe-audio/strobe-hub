@@ -79,62 +79,53 @@ folder : Library.Model -> Library.Level -> Library.Folder -> Bool -> Html Librar
 folder model level folder isCurrent =
     let
         childHeight =
-            60.0
+            Library.nodeHeight
 
         ( childrenOffset, childrenCount ) =
             libraryChildrenViewOffset level childHeight
 
         height =
-            (List.length folder.children) * (round childHeight)
+            childrenCount * (round childHeight)
+
+        mod =
+            (toFloat ((ceiling (level.scrollPosition / childHeight)) * (round childHeight)))
 
         offset =
-            if isCurrent then
-                0
-            else
-                (round (level.scrollPosition)) % (round childHeight)
+            level.scrollPosition - mod
 
         nodes =
             List.take childrenCount <|
                 List.drop childrenOffset <|
                     folder.children
 
-        spacerHeight =
-            if isCurrent then
-                (round ((toFloat childrenOffset) * childHeight))
-            else
-                0
-
-        spacerNode =
-            div [ style
-                    [ ( "height", (toString spacerHeight) ++ "px" )
-                    , ( "marginTop", (toString -offset) ++ "px" )
-                    ]
-                ]
-                []
-
         contents =
-            (spacerNode :: (List.map (node model folder) nodes))
+            ((List.map (\n -> (n.id, (node model folder n) ) ) nodes))
 
         attrs =
             if isCurrent then
-                [ id "__scrolling__" ]
+                [ id "__scrollable__" ]
             else
                 []
     in
-        div ((class "library--folder") :: attrs)
-            [ div
-                [ class "library--contents"
-                , style
-                    [ ( "height", (toString height) ++ "px" )
+        lazy2
+            (\ac sp ->
+                div ((class "library--folder") :: attrs)
+                    [ Html.Keyed.node
+                        "div"
+                        [ class "library--contents"
+                        , style
+                            [ ( "height", (toString height) ++ "px" )
+                            , ( "transform", "translateY(" ++ (toString (offset)) ++ "px)" )
+                            ]
+                        ]
+                        contents
                     ]
-                ]
-                contents
-            ]
+            ) level.action level.scrollPosition
 
 
 libraryChildrenViewOffset : Library.Level -> Float -> ( Int, Int )
 libraryChildrenViewOffset level childHeight =
-    ( (floor <| (level.scrollPosition / childHeight))
+    ( (floor <| ((abs level.scrollPosition) / childHeight))
     , ((ceiling <| (level.scrollHeight / childHeight)) + 2)
     )
 
@@ -196,6 +187,12 @@ node library folder node =
 
         mapTouch a =
             Html.Attributes.map Library.Touch a
+
+        nodeStyle =
+            if Utils.Touch.slowScroll library.scrollMomentum then
+                [ ( "backgroundImage", (Utils.Css.url node.icon) ) ]
+            else
+                []
     in
         div
             [ classList
@@ -205,11 +202,12 @@ node library folder node =
                 ]
             , onClick (Library.ExecuteAction node.actions.click node.title Nothing)
             , mapTouch (Utils.Touch.touchStart (Library.ExecuteAction node.actions.click node.title Nothing))
+            , mapTouch (Utils.Touch.touchMove Library.NoOp)
             , mapTouch (Utils.Touch.touchEnd (Library.ExecuteAction node.actions.click node.title Nothing))
             ]
             [ div
                 [ class "library--node--icon"
-                , style [ ( "backgroundImage", (Utils.Css.url node.icon) ) ]
+                , style nodeStyle
                 , click (Library.MaybeExecuteAction node.actions.play node.title)
                 , mapTouch (Utils.Touch.touchStart (Library.MaybeExecuteAction node.actions.play node.title))
                 , mapTouch (Utils.Touch.touchEnd (Library.MaybeExecuteAction node.actions.play node.title))
