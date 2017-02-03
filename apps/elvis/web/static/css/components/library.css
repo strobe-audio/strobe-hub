@@ -199,6 +199,7 @@
 .library--folder {
   flex: 0 0 100vw;
 	overflow: hidden;
+	position: relative;
 	/* padding-top: 60px; */
 }
 
@@ -219,6 +220,18 @@
 	overflow: hidden;
 }
 
-@media (--mobile) {
-
+.library--scroll-thumb {
+	position: absolute;
+	right: 3px;
+	background: rgba(0, 0, 0, 0.3);
+	border-radius: 3px;
+	width: 2.5px;
+}
+.library--scroll-thumb__inactive {
+	opacity: 0;
+	transition: opacity 500ms;
+}
+.library--scroll-thumb__active {
+	opacity: 1;
+	transition: opacity 500ms;
 }

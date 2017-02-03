@@ -106,6 +106,47 @@ folder model level folder isCurrent =
                 [ id "__scrollable__" ]
             else
                 []
+
+        scrollThumb height top active =
+            div
+                [ classList
+                    [ ("library--scroll-thumb", True)
+                    , ("library--scroll-thumb__active", active)
+                    , ("library--scroll-thumb__inactive", not active)
+                    ]
+                , style
+                    [ ("height", (toString height) ++ "px")
+                    , ("top", (toString top) ++ "px")
+                    ]
+                ]
+                []
+
+        thumb =
+            let
+
+                c =
+                    (folder.children |> List.length |> toFloat)
+
+                visible =
+                    childrenCount < (List.length folder.children)
+
+                height =
+                    ( (childrenCount |> toFloat) / c )
+                    |> (Basics.max 40)
+
+                position =
+                    ( ((toFloat (childrenOffset)) /  c) * (level.scrollHeight - height - 2) ) + 2
+
+            in
+                if visible then
+                    case model.scrollMomentum of
+                        Nothing ->
+                            scrollThumb height position False
+
+                        Just momentum ->
+                            scrollThumb height position True
+                else
+                    div [] []
     in
         lazy2
             (\ac sp ->
@@ -119,6 +160,7 @@ folder model level folder isCurrent =
                             ]
                         ]
                         contents
+                    , thumb
                     ]
             ) level.action level.scrollPosition
 
