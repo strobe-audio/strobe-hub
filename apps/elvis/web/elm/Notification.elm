@@ -48,7 +48,7 @@ disappearAnimation maybeTime =
     (Maybe.map
         (\time ->
             (Animation.animation time)
-                |> Animation.delay (2 * Time.second)
+                |> Animation.delay (1 * Time.second)
                 |> Animation.from 1.0
                 |> Animation.to 0.0
                 |> Animation.duration (300 * Time.millisecond)
