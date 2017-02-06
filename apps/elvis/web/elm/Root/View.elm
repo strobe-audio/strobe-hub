@@ -169,22 +169,40 @@ switchView : Root.Model -> Channel.Model -> Html Msg
 switchView model channel =
     div
         [ class "root--switch-view" ]
-        (List.map (switchViewButton model) State.viewModes)
+        (List.map (switchViewButton model channel) State.viewModes)
 
 
-switchViewButton : Root.Model -> State.ViewMode -> Html Msg
-switchViewButton model mode =
-    div
-        [ classList
-            [ ( "root--switch-view--btn", True )
-            , ( "root--switch-view--btn__active", model.viewMode == mode )
-            , ( "root--switch-view--btn__"++ (toString mode), True )
+switchViewButton : Root.Model -> Channel.Model -> State.ViewMode -> Html Msg
+switchViewButton model channel mode =
+    let
+        label =
+            case mode of
+                State.ViewCurrentChannel ->
+                    let
+                        duration =
+                                Source.View.durationString
+                                <| (Channel.playlistDuration channel)
+                    in
+                        span
+                            []
+                            [ text ((State.viewLabel State.ViewCurrentChannel))
+                            , span [ class "channel--playlist-duration" ] [ text duration ]
+                            ]
+
+                m ->
+                    text (State.viewLabel m)
+    in
+        div
+            [ classList
+                [ ( "root--switch-view--btn", True )
+                , ( "root--switch-view--btn__active", model.viewMode == mode )
+                , ( "root--switch-view--btn__"++ (toString mode), True )
+                ]
+            , onClick (Msg.ActivateView mode)
+            , mapTouch (Utils.Touch.touchStart (Msg.ActivateView mode))
+            , mapTouch (Utils.Touch.touchEnd (Msg.ActivateView mode))
             ]
-        , onClick (Msg.ActivateView mode)
-        , mapTouch (Utils.Touch.touchStart (Msg.ActivateView mode))
-        , mapTouch (Utils.Touch.touchEnd (Msg.ActivateView mode))
-        ]
-        [ text (State.viewLabel mode) ]
+            [ label ]
 
 
 mapTouch : Attribute (Utils.Touch.E Msg) -> Attribute Msg

@@ -204,17 +204,28 @@
 	align-items: center;
 	justify-content: center;
 	color: #fff;
+  cursor: pointer;
 
 }
+.root--switch-view--btn:hover {
+	background: rgba(255, 255, 255, 0.7);
+}
+
 .root--switch-view--btn__active {
-	background: rgba(255, 0, 0, 0.8);
+	background: rgba(255, 0, 0, 0.8) !important;
 }
-
 .root--active-rendition {
 	display: flex;
 	flex-direction: row;
 }
 
+.root--switch-view--btn .channel--playlist-duration {
+  display: block;
+  font-size: 0.85em;
+  margin-left: 0;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.5);
+}
 
 /* channel control */
 
