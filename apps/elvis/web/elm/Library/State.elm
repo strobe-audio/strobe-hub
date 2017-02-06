@@ -78,7 +78,7 @@ update action model maybeChannelId =
                             else
                                 model
                     in
-                        { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url query) ]
+                        { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url query)  ]
 
                 -- disable this auto-completion as I need the currentRequest value
                 -- , (Library.Cmd.requestComplete (300 * millisecond))
@@ -112,10 +112,10 @@ update action model maybeChannelId =
 
         Library.PopLevel index ->
             let
-                model_ =
+                ( model_, cmd_ ) =
                     case model.depth of
                         0 ->
-                            model
+                            ( model, Cmd.none )
 
                         _ ->
                             let
@@ -124,16 +124,18 @@ update action model maybeChannelId =
 
                                 animation =
                                     levelAnimation model (model.depth - 1)
+
                             in
-                                { model
+                                ({ model
                                     | levels = levels
                                     , depth = (max 0 model.depth - 1)
                                     , levelAnimation = animation
                                     , unloadingLevel = maybeCurrentLevel
                                     , scrollMomentum = Nothing
-                                }
+                                    , showSearchInput = False
+                                }, Library.Cmd.blurSearch True)
             in
-                ( model_, Cmd.none )
+                ( model_, cmd_ )
 
         Library.Touch te ->
             let
@@ -266,7 +268,7 @@ update action model maybeChannelId =
                 } ! []
 
         Library.ShowSearchInput show ->
-            { model | showSearchInput = show } ! []
+            { model | showSearchInput = show } ! [Library.Cmd.blurSearch (not show)]
 
         Library.SearchQueryUpdate query ->
             let
@@ -285,7 +287,7 @@ update action model maybeChannelId =
             (submitSearch model maybeChannelId)
 
         Library.CancelSearch ->
-            { model | showSearchInput = False, searchQuery = "" } ! []
+            { model | showSearchInput = False, searchQuery = "" } ! [Library.Cmd.blurSearch True]
 
         Library.SearchTimeout count ->
             let
@@ -403,7 +405,7 @@ currentFolder model =
 
 submitSearch : Library.Model -> Maybe ID.Channel -> ( Library.Model, Cmd Library.Msg )
 submitSearch model channelId =
-    if (String.length model.searchQuery) < 4 then
+    if (String.length model.searchQuery) < 3 then
         model ! []
     else
         submitValidSearch model channelId

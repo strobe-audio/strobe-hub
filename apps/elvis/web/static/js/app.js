@@ -192,5 +192,12 @@ app.ports.addChannelRequests.subscribe(name => {
   .receive("error", payload => console.log(payload.message))
 })
 
+app.ports.blurActiveElement.subscribe(blur => {
+	if (blur) {
+		// http://stackoverflow.com/a/7761438
+		document.activeElement.blur();
+	}
+})
+
 // the window size signal doesn't always get sent on startup
 app.ports.windowWidth.send(window.innerWidth)

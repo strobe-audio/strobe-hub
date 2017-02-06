@@ -201,3 +201,6 @@ port attachReceiverRequests : ( String, String ) -> Cmd msg
 
 
 port libraryRequests : ( String, String, Maybe String ) -> Cmd msg
+
+
+port blurActiveElement : Bool -> Cmd msg
