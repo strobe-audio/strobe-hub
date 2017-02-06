@@ -28,7 +28,7 @@ durationString : Maybe Int -> String
 durationString durationMs =
     case durationMs of
         Nothing ->
-            ""
+            "∞"
 
         Just duration ->
             let
