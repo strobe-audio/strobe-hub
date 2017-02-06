@@ -153,7 +153,10 @@ folder model level folder isCurrent =
                 div ((class "library--folder") :: attrs)
                     [ Html.Keyed.node
                         "div"
-                        [ class "library--contents"
+                        [ classList
+                            [ ("library--contents", True)
+                            , ("library--scrolling", model.scrollMomentum |> Maybe.map (always True) |> Maybe.withDefault False )
+                            ]
                         , style
                             [ ( "height", (toString height) ++ "px" )
                             , ( "transform", "translateY(" ++ (toString (offset)) ++ "px)" )

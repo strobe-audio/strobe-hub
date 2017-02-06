@@ -219,6 +219,11 @@
 	padding-bottom: 50%;
 	overflow: hidden;
 }
+.library--contents.library--scrolling .library--node .library--node--icon {
+	background-image: url(/images/pending.svg);
+	background-size: calc($button-size - (2 * $padding));
+	opacity: 0.5;
+}
 
 .library--scroll-thumb {
 	position: absolute;
