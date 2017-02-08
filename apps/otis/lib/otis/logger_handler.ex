@@ -20,6 +20,12 @@ defmodule Otis.LoggerHandler do
     {:ok, %{state | progress_count: state.progress_count - 1}}
   end
 
+  for evt <- [:library_request, :library_response, :add_library, :controller_join] do
+    def handle_event({unquote(evt), _request}, state) do
+      {:ok, state}
+    end
+  end
+
   def handle_event(event, state) do
     log_event(event, state)
     {:ok, state}
