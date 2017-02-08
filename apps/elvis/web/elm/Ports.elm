@@ -115,7 +115,7 @@ playListAdditionActions =
     playlistAddition Msg.BroadcasterRenditionAdded
 
 
-port libraryRegistration : (Library.Node -> m) -> Sub m
+port libraryRegistration : (Library.Section -> m) -> Sub m
 
 
 libraryRegistrationActions : Sub Msg
@@ -129,6 +129,7 @@ port libraryResponse : (Library.FolderResponse -> m) -> Sub m
 libraryResponseActions : Sub Msg
 libraryResponseActions =
     let
+        translate : Library.FolderResponse -> Msg
         translate response =
             Msg.Library (Library.Response response.url response.folder)
     in

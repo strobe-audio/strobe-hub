@@ -21,11 +21,13 @@ defmodule Peel.Events.Library do
     %{ id: Peel.library_id,
       title: "Your Music",
       icon: "",
+      size: "m",
       actions: %{
         click: %{ url: url("root"), level: true },
         play: nil,
       },
-      metadata: nil
+      metadata: nil,
+      children: [],
     }
   end
 
@@ -43,15 +45,19 @@ defmodule Peel.Events.Library do
       icon: "",
       search: %{url: search_url("root"), title: "your music" },
       children: [
-        %{ id: "peel:albums", title: "Albums", icon: "", actions: %{ click: %{ url: url("albums"), level: true }, play: nil }, metadata: nil },
-        %{ id: "peel:artists", title: "Artists", icon: "", actions: %{ click: %{ url: url("artists"), level: true }, play: nil }, metadata: nil },
-        # TODO: other top-level items
+        section(%{ id: "peel:albums", title: "Albums", size: "m", icon: "", actions: %{ click: %{ url: url("albums"), level: true }, play: nil }, metadata: nil, children: [] }),
+        section(%{ id: "peel:artists", title: "Artists", size: "m", icon: "", actions: %{ click: %{ url: url("artists"), level: true }, play: nil }, metadata: nil, children: [] }),
       ],
     }
   end
 
   def route_library_request(_channel_id, ["albums"], _query, path) do
-    albums = Album.sorted |> Enum.map(&folder_node/1)
+    albums =
+      Album.sorted
+      |> Enum.map(&folder_node/1)
+      |> Enum.group_by(&alphabetical_section/1)
+      |> Enum.map(&album_section/1)
+      |> Enum.sort_by(fn(s) -> s.title end)
     %{
       id: namespaced(path),
       title: "Albums",
@@ -63,16 +69,24 @@ defmodule Peel.Events.Library do
 
   def route_library_request(_channel_id, ["album", album_id], _query, path) do
     case Album.find(album_id) do
-      nil ->
-        nil
+      nil -> nil
       album ->
         tracks = album |> Album.tracks |> Enum.map(&folder_node/1)
+        section = %{
+          id: namespaced(path),
+          title: album.title,
+          actions: %{ click: play_action(album), play: play_action(album) },
+          size: "h",
+          icon: album.cover_image,
+          metadata: node_metadata(album),
+          children: tracks
+        } |> section()
         %{
           id: namespaced(path),
           title: album.title,
           icon: icon(album.cover_image),
           search: nil,
-          children: tracks
+          children: [section],
         }
     end
   end
@@ -87,7 +101,12 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["artists"], _query, path) do
-    artists = Artist.sorted |> Enum.map(&folder_node/1)
+    artists =
+      Artist.sorted
+      |> Enum.map(&folder_node/1)
+      |> Enum.group_by(&alphabetical_section/1)
+      |> Enum.map(&artist_section/1)
+      |> Enum.sort_by(fn(s) -> s.title end)
     %{
       id: namespaced(path),
       title: "Artists",
@@ -99,36 +118,39 @@ defmodule Peel.Events.Library do
 
   def route_library_request(_channel_id, ["artist", artist_id], _query, path) do
     case Artist.find(artist_id) do
-      nil ->
-        nil
+      nil -> nil
       artist ->
         albums = artist |> Artist.albums |> Enum.map(fn(album) ->
+          tracks = Track.album_by_artist(album.id, artist_id)
           click = click_action(album)
           %{
             id: "peel:album/#{album.id}",
             title: album.title,
             icon: icon(album.cover_image),
+            size: "m",
             actions: %{
-              click: %{ url: "#{click.url}/artist/#{artist_id}", level: true},
+              click: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
               play: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
             },
-            metadata: album_date_metadata([], album.date)
-          }
+            metadata: album_date_metadata([], album.date),
+            children: Enum.map(tracks, &folder_node/1)
+          } |> section()
         end)
+
         %{
           id: namespaced(path),
           title: artist.name,
           icon: "",
           search: nil,
-          children: albums
+          children: albums,
         }
     end
   end
 
+  # deprecated
   def route_library_request(_channel_id, ["album", album_id, "artist", artist_id], _query, path) do
     case Album.find(album_id) do
-      nil ->
-        nil
+      nil -> nil
       album ->
         tracks = Track.album_by_artist(album_id, artist_id)
         children = Enum.map(tracks, fn(track) ->
@@ -284,7 +306,7 @@ defmodule Peel.Events.Library do
 
   def folder_node(%Artist{} = artist) do
     %{
-      id: "peel:artist/#{artist.id}",
+      # id: "peel:artist/#{artist.id}",
       title: artist.name,
       icon: "",
       actions: %{ click: click_action(artist), play: nil },
@@ -293,7 +315,7 @@ defmodule Peel.Events.Library do
   end
   def folder_node(%Album{} = album) do
     %{
-      id: "peel:album/#{album.id}",
+      # id: "peel:album/#{album.id}",
       title: album.title,
       metadata: node_metadata(album),
       icon: icon(album.cover_image),
@@ -306,7 +328,7 @@ defmodule Peel.Events.Library do
 
   def folder_node(%Track{} = track) do
     %{
-      id: "peel:track/#{track.id}",
+      # id: "peel:track/#{track.id}",
       title: track.title,
       icon: icon(track.cover_image),
       actions: %{
@@ -317,5 +339,26 @@ defmodule Peel.Events.Library do
         [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
       ],
     }
+  end
+
+  def alphabetical_section(element, field \\ :title) do
+    Map.get(element, field, "") |> String.first |> String.upcase |> grouped_alphabetical
+  end
+
+  @letters 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+  def grouped_alphabetical(<<l::utf8>>) when l in @letters do
+    <<l::utf8>>
+  end
+  def grouped_alphabetical(_l) do
+    "#"
+  end
+
+  def album_section({letter, children}) do
+    %{ id: namespaced("albums:#{letter}"), title: letter, children: children } |> section
+  end
+
+  def artist_section({letter, children}) do
+    %{ id: namespaced("artists:#{letter}"), title: letter, children: children } |> section
   end
 end

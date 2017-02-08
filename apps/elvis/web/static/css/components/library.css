@@ -126,8 +126,8 @@
 }
 
 .library--node--icon {
-  width: $button-size;
-  height: $button-size;
+  width: calc($button-size - 1px);
+  height: calc($button-size - 1px);
   background-size: contain;
   background-repeat: no-repeat;
   background-position: 50% 50%;
@@ -156,7 +156,8 @@
 
 .library--node {
   position: relative;
-  height: $button-size;
+  /* height: $button-size; */
+  height: calc($button-size - 1px);
   border-bottom: solid 1px #ddd;
   cursor: pointer;
   transition: background-color 200ms;
@@ -221,7 +222,7 @@
 }
 .library--contents.library--scrolling .library--node .library--node--icon {
 	background-image: url(/images/pending.svg);
-	background-size: calc($button-size - (2 * $padding));
+	background-size: calc($button-size - 1px - (2 * $padding));
 	opacity: 0.5;
 }
 
@@ -239,4 +240,78 @@
 .library--scroll-thumb__active {
 	opacity: 1;
 	transition: opacity 500ms;
+}
+
+/* TEMP */
+
+.library--section--s {
+	height: calc($button-size / 2);
+	line-height: calc($button-size / 2);
+	font-weight: 400;
+	padding: 0 $padding;
+	background: rgba(0, 0, 0, 0.05);
+}
+
+$library-huge-size: calc($button-size * 5);
+
+.library--section--h {
+	height: $library-huge-size;
+}
+.library--section--h--icon {
+	height: $library-huge-size;
+	background-size: cover;
+	background-position: 50% 0;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+}
+
+/* .library--section--h--text:before { */
+/* 	filter: blur(5px); */
+/* 	content: " "; */
+/* 	display: block; */
+/* 	position: absolute; */
+/* 	top: 0; */
+/* 	right: 0; */
+/* 	bottom: 0; */
+/* 	left: 0; */
+/* } */
+.library--section--h--text {
+	background: rgba(255, 255, 255, 0.8);
+	position: relative;
+	display: flex;
+	flex-direction: row;
+}
+
+.library--section--h--title {
+	font-size: 2rem;
+	padding: calc($padding * 1) 0;
+}
+
+.library--section--h--metadata {
+	padding: calc($padding * 2) $padding;
+	flex: 1;
+}
+.library--section--h--metadata .library--node--metadata {
+	color: #666;
+}
+
+.library--section--h--play {
+  @mixin fa-btn "\f067"; /* fa-play */
+	flex: 0 0 $button-size;
+	background: rgba(0, 0, 0, 0.1);
+	position: relative;
+	line-height: normal;
+}
+.library--section--h--play:before {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	line-height: normal;
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	left: 0;
 }

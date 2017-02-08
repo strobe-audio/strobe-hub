@@ -160,10 +160,12 @@ defmodule Peel.Test.LibraryTest do
   end
 
   def track_node(%Track{} = track) do
-    %{actions: %{ click: "peel:track/#{track.id}/play", play: "peel:track/#{track.id}/play" },
+    %{ title: track.title,
+     actions: %{
+       click: %{level: false, url: "peel:track/#{track.id}/play"},
+       play: %{level: false, url: "peel:track/#{track.id}/play"}
+     },
      icon: track.cover_image,
-     id: "peel:track/#{track.id}",
-     title: track.title,
      metadata: [
       [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
      ]
@@ -173,9 +175,11 @@ defmodule Peel.Test.LibraryTest do
   test "track_node" do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     assert track_node(track) == %{
-     actions: %{ click: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play", play: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play" },
+     actions: %{
+       click: %{url: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play", level: false},
+       play: %{url: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play", level: false}
+     },
      icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-     id: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428",
      title: "Uh-Oh, Love Comes To Town",
      metadata: [
       [%{ title: "02:39", action: nil}]
@@ -190,11 +194,32 @@ defmodule Peel.Test.LibraryTest do
       id: "peel:root",
       title: "Your Music",
       icon: "",
+      search: %{ title: "your music", url: "peel:search/root"},
       children: [
-        %{ id: "peel:albums", title: "Albums", icon: "", actions: %{ click: "peel:albums", play: nil }, metadata: nil },
-        %{ id: "peel:artists", title: "Artists", icon: "", actions: %{ click: "peel:artists", play: nil }, metadata: nil },
-      ],
-    }
+            %{ title: "Albums",
+              id: "peel:albums",
+              size: "m",
+              icon: "",
+              actions: %{
+                click: %{url: "peel:albums", level: true},
+                play: nil
+              },
+              metadata: nil,
+              children: [],
+            },
+            %{ title: "Artists",
+              id: "peel:artists",
+              size: "m",
+              icon: "",
+              actions: %{
+                click: %{url: "peel:artists", level: true},
+                play: nil
+              },
+              metadata: nil,
+              children: [],
+            },
+          ]
+        }
   end
 
   test "peel:albums", context do
@@ -202,35 +227,52 @@ defmodule Peel.Test.LibraryTest do
     response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
-      id: path,
+      id: "peel:" <> path,
       title: "Albums",
       icon: "",
+      search: %{ title: "albums", url: "peel:search/albums"},
       children: [
-        %{ actions: %{
-            click: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
-            play:  "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play",
-          },
-         icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-         id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
-         title: "Talking Heads: 77",
-         metadata: [
-           [%{title: "Talking Heads", action: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}],
-           [%{title: "1977", action: nil}]
-         ],
-       },
-       %{ actions: %{
-           click: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
-           play: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/play",
-         },
-        icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
-        id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
-        title: "Some Compilation",
-        metadata: [
-          [ %{title: "Various Artists", action: nil} ],
-        ],
-      },
-    ],
-  }
+        %{ title: "S",
+          id: "peel:albums:S",
+          size: "s",
+          icon: nil,
+          metadata: nil,
+          actions: nil,
+          children: [
+            %{ title: "Some Compilation",
+              actions: %{
+                click: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d", level: true},
+                play: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/play", level: false},
+              },
+              icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
+              metadata: [
+                [ %{title: "Various Artists", action: nil} ],
+              ],
+            },
+          ]
+        },
+        %{ title: "T",
+          id: "peel:albums:T",
+          size: "s",
+          icon: nil,
+          metadata: nil,
+          actions: nil,
+          children: [
+              %{ title: "Talking Heads: 77",
+                actions: %{
+                  click: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898", level: true},
+                  play:  %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play", level: false},
+                },
+              icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
+              metadata: [
+                [%{title: "Talking Heads", action: %{url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", level: true}}],
+                [%{title: "1977", action: nil}]
+              ],
+            },
+          ]
+        }
+      ]
+    }
   end
 
   test "peel:album/{album_id}", context do
@@ -239,12 +281,28 @@ defmodule Peel.Test.LibraryTest do
     response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
-      id: path,
+      id: "peel:" <> path,
       title: album.title,
       icon: album.cover_image,
+      search: nil,
       children: [
-        track_node(Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")),
-        track_node(Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df")),
+        %{ title: album.title,
+          id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+          size: "h",
+          icon: album.cover_image,
+          metadata: [
+            [%{title: "Talking Heads", action: %{url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", level: true}}],
+            [%{title: "1977", action: nil}]
+          ],
+          actions: %{
+            click: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play", level: false},
+            play: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play", level: false},
+          },
+          children: [
+            track_node(Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")),
+            track_node(Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df")),
+          ],
+        }
       ],
     }
   end
@@ -253,20 +311,39 @@ defmodule Peel.Test.LibraryTest do
     path = "artists"
     response = Library.handle_request(context.channel_id, path)
     assert response == %{
-      id: path,
+      id: "peel:" <> path,
       title: "Artists",
       # icon: artist.cover_image,
       icon: "",
+      search: %{title: "artists", url: "peel:search/artists"},
       children: [
-        %{ id: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e",
-          actions: %{ click: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", play: nil },
-          icon: "", title: "Talking Heads", metadata: nil},
-        %{ id: "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090",
-          actions: %{ click: "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090", play: nil },
-          icon: "", title: "Echo and the Bunnymen", metadata: nil},
-        %{ id: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de",
-          actions: %{ click: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de", play: nil },
-          icon: "", title: "The Lurkers", metadata: nil},
+        %{ title: "E",
+          id: "peel:artists:E",
+          size: "s",
+          metadata: nil,
+          icon: nil,
+          actions: nil,
+          children: [
+            %{
+              actions: %{ click: %{level: true, url: "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090"}, play: nil },
+              icon: "", title: "Echo and the Bunnymen", metadata: nil},
+          ],
+        },
+        %{ title: "T",
+          id: "peel:artists:T",
+          size: "s",
+          icon: nil,
+          metadata: nil,
+          actions: nil,
+          children: [
+            %{
+              actions: %{ click: %{ level: true, url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e" }, play: nil },
+              icon: "", title: "Talking Heads", metadata: nil},
+            %{
+              actions: %{ click: %{level: true, url: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"}, play: nil },
+              icon: "", title: "The Lurkers", metadata: nil},
+          ],
+        },
       ],
     }
   end
@@ -277,44 +354,76 @@ defmodule Peel.Test.LibraryTest do
     response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
-      id: path,
+      id: "peel:" <> path,
       title: artist.name,
       # icon: artist.cover_image,
       icon: "",
+      search: nil,
       children: [
-        %{actions: %{ click: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", play: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play" },
-         icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-         id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
-         title: "Talking Heads: 77",
-         metadata: [
-           [%{title: "1977", action: nil}]
-         ],
-       },
-       %{actions: %{ click: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", play: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play" },
-        icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
-        id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
-        title: "Some Compilation",
-        metadata: nil,
-      }
-    ],
-    }
-  end
-
-  test "peel:album/{album_id}/artist/{artist_id}", context do
-    artist = Artist.find("fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e")
-    album = Album.find("1f74a72a-800d-443e-9bb2-4fc5e10ff43d")
-    path = "album/#{album.id}/artist/#{artist.id}"
-    response = Library.handle_request(context.channel_id, path)
-
-    assert response == %{
-      id: path,
-      title: album.title,
-      icon: album.cover_image,
-      children: [
-        track_node(Track.find("0a89f07e-0f5e-48c4-8b00-d83026a90724")),
+        %{ title: "Some Compilation",
+          id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+          size: "m",
+          icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
+          metadata: nil,
+          actions: %{
+            click: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false},
+            play: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false}
+          },
+          children: [
+            track_node(Track.find("0a89f07e-0f5e-48c4-8b00-d83026a90724")),
+          ]
+        },
+        %{ title: "Talking Heads: 77",
+          size: "m",
+          icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
+          id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+          metadata: [
+            [ %{title: "1977", action: nil} ]
+          ],
+          actions: %{
+            click: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false},
+            play: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false}
+          },
+          metadata: [
+            [%{title: "1977", action: nil}]
+          ],
+          children: [
+            track_node(Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")),
+            track_node(Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df")),
+          ]
+        },
       ],
     }
   end
+
+  # all tracks by a certain artist in the given album
+  # Deprecated
+  # test "peel:album/{album_id}/artist/{artist_id}", context do
+  #   artist = Artist.find("fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e")
+  #   album = Album.find("1f74a72a-800d-443e-9bb2-4fc5e10ff43d")
+  #   path = "album/#{album.id}/artist/#{artist.id}"
+  #   response = Library.handle_request(context.channel_id, path)
+  #
+  #   assert response == %{
+  #     id: "peel:" <> path,
+  #     search: nil,
+  #     children: [
+  #       %{ title: album.title,
+  #         id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+  #         icon: album.cover_image,
+  #         metadata: nil,
+  #         size: "l",
+  #         actions: %{
+  #           click: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false},
+  #           play: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false}
+  #         },
+  #         children: [
+  #           track_node(Track.find("0a89f07e-0f5e-48c4-8b00-d83026a90724")),
+  #         ],
+  #       }
+  #     ]
+  #   }
+  # end
 
   test "peel:track/{track_id}/play", %{channel_id: channel_id} = _context do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")

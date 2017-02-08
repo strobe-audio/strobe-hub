@@ -15,6 +15,7 @@ import Utils.Css
 import Utils.Text
 import Utils.Touch exposing (onSingleTouch)
 import Stack
+import Debug exposing (log)
 
 
 root : Library.Model -> Html Library.Msg
@@ -81,25 +82,15 @@ folder model level folder isCurrent =
         childHeight =
             Library.nodeHeight
 
-        ( childrenOffset, childrenCount ) =
-            libraryChildrenViewOffset level childHeight
+        view =
+            (folderView level folder)
 
-        height =
-            childrenCount * (round childHeight)
-
-        mod =
-            (toFloat ((ceiling (level.scrollPosition / childHeight)) * (round childHeight)))
 
         offset =
-            level.scrollPosition - mod
-
-        nodes =
-            List.take childrenCount <|
-                List.drop childrenOffset <|
-                    folder.children
+            level.scrollPosition + view.firstNodePosition
 
         contents =
-            ((List.map (\n -> (n.id, (node model folder n) ) ) nodes))
+            (List.map (renderable model folder) view.renderable)
 
         attrs =
             if isCurrent then
@@ -123,25 +114,32 @@ folder model level folder isCurrent =
 
         thumb =
             let
+                gap = 2
 
-                c =
-                    (folder.children |> List.length |> toFloat)
+                totalHeight =
+                    Library.folderContentHeight folder
+
+                totalCount =
+                    Library.folderContentCount folder
 
                 visible =
-                    childrenCount < (List.length folder.children)
+                    level.scrollHeight < totalHeight
 
                 height =
-                    ( (childrenCount |> toFloat) / c )
-                    |> (Basics.max 40)
+                    ( ((List.length view.renderable |> toFloat) / (totalCount |> toFloat)) * level.scrollHeight )
+                    |> (Basics.max 20)
+
+                scrollHeight =
+                    level.scrollHeight - 2 * gap
 
                 position =
-                    ( ((toFloat (childrenOffset)) /  c) * (level.scrollHeight - height - 2) ) + 2
+                    (( (abs level.scrollPosition) / (totalHeight - scrollHeight) ) * (scrollHeight - height)) + gap
 
             in
                 if visible then
                     case model.scrollMomentum of
                         Nothing ->
-                            scrollThumb height position False
+                            scrollThumb height position True
 
                         Just momentum ->
                             scrollThumb height position True
@@ -168,21 +166,181 @@ folder model level folder isCurrent =
             ) level.action level.scrollPosition
 
 
-libraryChildrenViewOffset : Library.Level -> Float -> ( Int, Int )
-libraryChildrenViewOffset level childHeight =
-    ( (floor <| ((abs level.scrollPosition) / childHeight))
-    , ((ceiling <| (level.scrollHeight / childHeight)) + 2)
-    )
+folderView : Library.Level -> Library.Folder -> Library.FolderView
+folderView level folder =
+    -- find section that holdds the current offest
+    let
+        (renderable, firstNodePosition) =
+            folderViewOpenWindow level folder.children 0.0
+
+        height =
+            Library.renderableHeight renderable
+
+    in
+        { renderable = renderable, height = height, firstNodePosition = firstNodePosition }
 
 
-metadata : Library.Node -> Maybe (List Library.Metadata) -> Html Library.Msg
-metadata node metadata =
+
+folderViewOpenWindow : Library.Level -> List Library.Section -> Float -> (List Library.Renderable, Float)
+folderViewOpenWindow level sections height =
+    case sections of
+        [] ->
+            -- so we've run out of sections and we're still not able to reach
+            -- the start of the scrollable offset -- BUG
+            Debug.log "library has scrolled out of view" ([], 0.0)
+
+        section :: rest ->
+            let
+                sectionHeight =
+                    Library.sectionHeight section
+
+                sectionCover =
+                    height + sectionHeight
+
+            in
+                if sectionCover < (abs level.scrollPosition) then
+                    folderViewOpenWindow level rest sectionCover
+                else
+                    folderViewFillWindow sections height ((abs level.scrollPosition) - height) level.scrollHeight []
+
+
+folderViewFillWindow : List Library.Section -> Float -> Float -> Float -> List Library.Renderable -> (List Library.Renderable, Float)
+folderViewFillWindow sections position offset height renderable =
+    case sections of
+        section :: rest ->
+            let
+
+                ( r, firstNodePosition, remainingHeight ) =
+                    (sectionRenderable section position offset height)
+
+                renderable_ =
+                    (List.append renderable r)
+
+                -- we're returning the position of the first renderable so
+                -- don't update this once we have it
+                newPosition =
+                    case renderable of
+                        [] ->
+                            firstNodePosition
+                        _ ->
+                            position
+            in
+                if remainingHeight > 0 then
+                    folderViewFillWindow rest newPosition 0.0 remainingHeight  renderable_
+                else
+                    (renderable_, newPosition)
+
+        [] ->
+            (renderable, position)
+
+
+sectionRenderable : Library.Section -> Float -> Float -> Float -> (List Library.Renderable, Float, Float)
+sectionRenderable section position offset height =
+    let
+        ( skipHead, skipChild ) =
+            sectionContentOffset section offset
+
+        headHeight =
+            Library.sectionNodeHeight section
+
+        headOverlap =
+            case skipHead of
+                False ->
+                    0
+                True ->
+                    headHeight
+
+        firstChildOffset =
+            headOverlap + ((toFloat skipChild) * Library.nodeHeight)
+
+        overlap =
+            offset - firstChildOffset
+
+        nodeHeight =
+            Library.nodeHeight
+
+        sectionOffset =
+            position + firstChildOffset
+
+
+        fillHeight =
+            height + overlap
+    in
+        if ((Library.sectionHeight section) - offset) > height then
+            -- take a subset
+            let
+
+                childNodes : Int -> Int -> List Library.Renderable
+                childNodes drop take =
+                    Library.sliceSection drop take section
+
+                renderable =
+                    case skipHead of
+                        True ->
+                            let
+                                take =
+                                    (fillHeight / nodeHeight) |> ceiling
+                            in
+                                (childNodes skipChild take)
+
+                        False ->
+                            let
+                                take =
+                                    ((fillHeight - headHeight) / nodeHeight) |> ceiling
+                            in
+                                (Library.S section) :: (childNodes skipChild take)
+
+
+            in
+                ( renderable, sectionOffset, 0.0 )
+
+        else
+            -- return all elements in section and remaining height
+            let
+                children =
+                    Library.dropSection skipChild section
+
+                renderable =
+                    case skipHead of
+                        False ->
+                            (Library.S section) :: children
+
+                        True ->
+                            children
+
+                sectionHeight =
+                    fillHeight - (Library.renderableHeight renderable)
+            in
+                ( renderable,  sectionOffset, sectionHeight )
+
+
+-- number of (head, child) nodes to skip when taking the section
+-- contents at a givein pixel offset
+sectionContentOffset : Library.Section -> Float -> (Bool, Int)
+sectionContentOffset section offset =
+    let
+        headHeight =
+            Library.sectionNodeHeight section
+
+    in
+        if offset < headHeight then
+            (False, 0)
+        else
+            let
+                nodeCount =
+                    ((offset - headHeight) / Library.nodeHeight) |> floor
+            in
+                (True, nodeCount)
+
+
+metadata : Maybe (List Library.Metadata) -> Html Library.Msg
+metadata metadata =
     case metadata of
         Nothing ->
             div [] []
 
         Just metadataGroups ->
-            div [ class "library--node--metadata" ] (List.map (metadataGroup node) metadataGroups)
+            div [ class "library--node--metadata" ] (List.map metadataGroup metadataGroups)
 
 
 metadataClick : String -> Library.Action -> List (Html.Attribute Library.Msg)
@@ -196,8 +354,8 @@ metadataClick title action =
         ]
 
 
-metadataGroup : Library.Node -> Library.Metadata -> Html Library.Msg
-metadataGroup node group =
+metadataGroup : Library.Metadata -> Html Library.Msg
+metadataGroup group =
     let
         makeLink link =
             let
@@ -207,7 +365,7 @@ metadataGroup node group =
                             [ class "library--no-action" ]
 
                         Just action ->
-                            ([ class "library--click-action" ] ++ (metadataClick node.title action))
+                            ([ class "library--click-action" ] ++ (metadataClick link.title action))
             in
                 (a attrs [ text link.title ])
 
@@ -215,6 +373,108 @@ metadataGroup node group =
             List.map makeLink group
     in
         div [ class "library--node--metadata-group" ] links
+
+
+renderable : Library.Model -> Library.Folder -> Library.Renderable -> (String, Html Library.Msg)
+renderable model folder renderable =
+    case renderable of
+        -- TODO: this should return an (id, html) pair suitable for use by keyed
+        Library.N id n ->
+            (id, node model folder n )
+
+        Library.S s ->
+            (s.id, section model folder s )
+
+
+section : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
+section model folder section =
+    case section.size of
+        "m" ->
+            let
+                n =
+                    -- { id = section.id
+                    { title = section.title
+                    , icon = Maybe.withDefault "" section.icon
+                    , actions = Maybe.withDefault Library.defaultNodeActions section.actions
+                    , metadata = section.metadata
+                    }
+            in
+                Library.sectionNode section |> node model folder
+
+        "h" ->
+            sectionHuge model folder section
+
+        "s" ->
+            sectionSmall model folder section
+
+        s ->
+            div
+                [ class ("library--section--" ++ s)
+                , mapTouch (Utils.Touch.touchStart Library.NoOp)
+                , mapTouch (Utils.Touch.touchMove Library.NoOp)
+                , mapTouch (Utils.Touch.touchEnd Library.NoOp)
+                ]
+                [ text section.title ]
+
+
+sectionSmall : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
+sectionSmall model folder section =
+    div
+        [ class ("library--section--s")
+        , mapTouch (Utils.Touch.touchStart Library.NoOp)
+        , mapTouch (Utils.Touch.touchMove Library.NoOp)
+        , mapTouch (Utils.Touch.touchEnd Library.NoOp)
+        ]
+        [ text section.title ]
+
+sectionHuge : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
+sectionHuge model folder section =
+    let
+        playMsg =
+            case section.actions of
+                Nothing ->
+                    Library.NoOp
+
+                Just actions ->
+                    (Library.MaybeExecuteAction actions.play section.title)
+
+        metadata_ =
+            div
+                [ class "library--section--h--text" ]
+                [ div
+                    [ class "library--section--h--metadata" ]
+                    [ div
+                        [ class "library--section--h--title" ]
+                        [ text section.title ]
+                    , (metadata section.metadata)
+                    ]
+                , div
+                    [ class "library--section--h--play"
+                    , onClick playMsg
+                    , mapTouch (Utils.Touch.touchStart playMsg)
+                    , mapTouch (Utils.Touch.touchEnd playMsg)
+                    ]
+                    []
+                ]
+
+        cover =
+            case section.icon of
+                Nothing ->
+                    div [] []
+
+                Just url ->
+                    div [ class "library--section--h--icon"
+                        , style [("backgroundImage", Utils.Css.url url)]
+                        ]
+                        [ metadata_ ]
+    in
+        div
+            [ class ("library--section--h")
+            , mapTouch (Utils.Touch.touchStart Library.NoOp)
+            , mapTouch (Utils.Touch.touchMove Library.NoOp)
+            , mapTouch (Utils.Touch.touchEnd Library.NoOp)
+            ]
+            [ cover ]
 
 
 node : Library.Model -> Library.Folder -> Library.Node -> Html Library.Msg
@@ -229,9 +489,6 @@ node library folder node =
 
         click msg =
             onWithOptions "click" options (Json.succeed msg)
-
-        mapTouch a =
-            Html.Attributes.map Library.Touch a
 
         nodeStyle =
             if Utils.Touch.slowScroll library.scrollMomentum then
@@ -261,7 +518,7 @@ node library folder node =
             , div [ class "library--node--inner" ]
                 [ div []
                     [ text (Utils.Text.truncateEllipsis node.title 90) ]
-                , (metadata node node.metadata)
+                , (metadata node.metadata)
                 ]
             ]
 
@@ -334,9 +591,6 @@ searchButton model =
 
                 Just action ->
                     let
-                        mapTouch a =
-                            Html.Attributes.map Library.Touch a
-
                         msg =
                             (Library.ShowSearchInput (not model.showSearchInput))
                     in
@@ -408,3 +662,8 @@ submitOrCancel submitMsg cancelMsg code =
 
         _ ->
             Json.fail "ignored key code"
+
+
+mapTouch : Attribute (Utils.Touch.E Library.Msg) -> Attribute Library.Msg
+mapTouch a =
+    Html.Attributes.map Library.Touch a

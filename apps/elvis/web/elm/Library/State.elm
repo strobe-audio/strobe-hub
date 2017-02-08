@@ -325,7 +325,7 @@ setLevelContents model action folder =
         { model | levels = (Stack.fromList levels) }
 
 
-add : Library.Model -> Library.Node -> Library.Model
+add : Library.Model -> Library.Section -> Library.Model
 add model library =
     let
         reversedLevels =
@@ -358,7 +358,7 @@ add model library =
         { model | levels = levels }
 
 
-addUniqueLibrary : Library.Node -> Library.Folder -> Library.Folder
+addUniqueLibrary : Library.Section -> Library.Folder -> Library.Folder
 addUniqueLibrary library folder =
     let
         duplicate =

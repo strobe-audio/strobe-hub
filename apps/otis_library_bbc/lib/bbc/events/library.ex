@@ -40,11 +40,13 @@ defmodule BBC.Events.Library do
     %{ id: BBC.library_id(),
       title: "BBC",
       icon: bbc_logo(),
+      size: "m",
       actions: %{
         click: %{ url: url("root"), level: true },
         play: nil
       },
-      metadata: nil
+      metadata: nil,
+      children: [],
     }
   end
 
@@ -58,12 +60,19 @@ defmodule BBC.Events.Library do
         metadata: nil
       }
     end
+    section = %{
+      id: Enum.join([BBC.library_id(), "channels"], ":"),
+      title: "BBC Radio",
+      size: "m",
+      children: channels
+    } |> section()
+
     %{
       id: "bbc:root",
       title: "BBC",
       icon: bbc_logo(),
       search: nil,
-      children: channels,
+      children: [section],
     }
   end
   def route_library_request(channel_id, ["channel", id, "play"], _query, _path) do

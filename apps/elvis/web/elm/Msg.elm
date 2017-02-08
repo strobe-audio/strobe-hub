@@ -34,7 +34,7 @@ type Msg
     | BroadcasterChannelAdded Channel.State
     | BroadcasterChannelRenamed ( ID.Channel, String )
     | BroadcasterReceiverRenamed ( ID.Receiver, String )
-    | BroadcasterLibraryRegistration Library.Node
+    | BroadcasterLibraryRegistration Library.Section
     | BroadcasterVolumeChange State.VolumeChangeEvent
     | BroadcasterRenditionAdded Rendition.State
       -- events from browser

@@ -4,6 +4,7 @@ import Time exposing (Time)
 import Utils.Touch
 import Stack exposing (Stack)
 import Animation
+import List.Extra
 
 
 type Msg
@@ -36,7 +37,6 @@ type alias Action =
 -- can serialise this as just `action` and restore as
 -- {action = "<action>", contents = Nothing}
 
-
 type alias Level =
     { action : ActionURL
     , title : String
@@ -56,13 +56,24 @@ type alias Folder =
     , title : String
     , icon : String
     , search : Maybe SearchAction
+    , children : List Section
+    }
+
+
+type alias Section =
+    { id : String
+    , title : String
+    , actions : Maybe Actions
+    , metadata : Maybe (List Metadata)
+    , icon : Maybe String
+    , size : String
     , children : List Node
     }
 
 
 type alias Node =
-    { id : String
-    , title : String
+    -- { id : String
+    { title : String
     , icon : String
     , actions : Actions
     , metadata : Maybe (List Metadata)
@@ -106,119 +117,138 @@ type alias Actions =
     , play : Maybe Action
     }
 
+type Renderable
+    = N String Node
+    | S Section
+
+
+type alias FolderView =
+    { renderable : List Renderable
+    , height : Float
+    -- , firstNodeHeight : Float
+    , firstNodePosition : Float
+    }
+
+
+defaultNodeActions : Actions
+defaultNodeActions =
+    { click = { url = "", level = False }
+    , play = Nothing
+    }
+
 nodeHeight : Float
 nodeHeight =
-    61.0
+    60.0
 
 levelContentHeight : Level -> Maybe Float
 levelContentHeight level =
     level.contents |> Maybe.map (\f -> folderContentHeight f)
 
 
+folderContentCount : Folder -> Int
+folderContentCount folder =
+    (List.map sectionCount folder.children) |> List.sum
+
 folderContentHeight : Folder -> Float
 folderContentHeight folder =
-    folder.children |> List.length |> contentHeight
+    (List.map sectionHeight folder.children) |> List.sum
 
 
 contentHeight : Int -> Float
 contentHeight n =
     n |> toFloat |> (*) nodeHeight
-{-
-
-   folders:
-
-   - album:
-     - cover art
-     - title
-     - artist
-     - year
-     - genre
-     - duration
-
-   nodes:
-
-   - album
-     - cover art
-     - title
-     - artist
-     - year
-     - track count
-
-
-   actions:
-
-   - primary (click)
-   - secondary (double click/long tap)?
-
-   - options:
-     - append
-     - next
-     - now
-
-     - edit?
-     - delete?
-
-   e.g. for song
-
-   desktop:
-   - primary action: click
-   - secondary action: double click
-   - tertiary: long click
-   - quaternary: swipe right
-   - quinary: swipe left
-
-   mobile:
-   - primary action: tap
-   - secondary action: double tap
-   - tertiary: long tap
-   - quaternary: swipe right
-   - quinary: swipe left
-
-
-   uses:
-
-   - primary: append to playlist
-   - secondary: play now
-   - tertiary: re-order?
-   - quaternary: reveal another list of actions
-   - quinary: reveal list of actions
-
-   ```
-   {
-     actions: {
-       primary: "peep:play",
-       secondary: "peep:play-now",
-       tertiary: {
-         edit: "",
-         delete: "",
-         play: ""
-       }
-     }
-   }
-   ```
-
-   question: how to encode the actions embedded behind the swipe actions? what are the generic set of things you can do?
-
-   swipe left (quaternary) - [play now, play next, append]
-   swipe right (quinary) - [edit, delete]
-
-   ui maps events (click dblclick, swipel/r) to effects (send action, reveal buttons, etc)
-   set of actions are always the same:
-
-   ```
-   {
-     play-now: "...",
-     play-next: "...",
-     play-append: "...",
-     edit: "...",
-     delete: "...",
-   }
-   ```
-
-   library entirely responsible for the action action string
 
 
 
-   in the playlist artist name & album name (& any other metadata) must have actions attached too. you should be able to click on the artist of a playlist entry & go to the library view for that artist..
+sectionNode : Section -> Node
+sectionNode section =
+    { title = section.title
+    , icon = Maybe.withDefault "" section.icon
+    , actions = Maybe.withDefault defaultNodeActions section.actions
+    , metadata = section.metadata
+    }
 
--}
+sectionCount : Section -> Int
+sectionCount section =
+    List.length section.children
+
+
+sectionHeight : Section -> Float
+sectionHeight section =
+    (sectionNodeHeight section) + (contentHeight (List.length section.children))
+
+
+sectionNodeHeight : Section -> Float
+sectionNodeHeight section =
+    case section.size of
+        "i" ->
+            0
+
+        "s" ->
+            nodeHeight / 2
+
+        "m" ->
+            nodeHeight
+
+        "l" ->
+            nodeHeight * 2
+
+        "h" ->
+            nodeHeight * 5
+
+        _ ->
+            nodeHeight
+
+
+renderableHeight : List Renderable -> Float
+renderableHeight renderable =
+    renderable |> List.map renderableNodeHeight |> List.sum
+
+
+renderableNodeHeight : Renderable -> Float
+renderableNodeHeight renderable =
+    case renderable of
+        S section ->
+            sectionNodeHeight section
+
+        N _ _ ->
+            nodeHeight
+
+
+renderableFirstNodeHeight : List Renderable -> Float
+renderableFirstNodeHeight renderable =
+    case renderable of
+        first :: rest ->
+            renderableNodeHeight first
+
+        [] ->
+            0.0
+
+renderableNodes : Int -> String -> List Node -> List Renderable
+renderableNodes offset id children =
+    List.range offset (offset + (List.length children - 1))
+        |> List.Extra.zip children
+            |> List.map (\(c, i) -> N (id ++ (toString i)) c)
+
+
+sectionRenderableNodes : Section -> List Renderable
+sectionRenderableNodes section =
+    renderableNodes 0 section.id section.children
+
+takeSection : Int -> Section -> List Renderable
+takeSection take section =
+    List.take take section.children
+        |> renderableNodes 0 section.id
+
+
+dropSection : Int -> Section -> List Renderable
+dropSection drop section =
+    List.drop drop section.children
+        |> renderableNodes drop section.id
+
+
+sliceSection : Int -> Int -> Section -> List Renderable
+sliceSection drop take section =
+    List.drop drop section.children
+        |> List.take take
+            |> renderableNodes drop section.id

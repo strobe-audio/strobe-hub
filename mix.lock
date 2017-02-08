@@ -10,6 +10,7 @@
   "erlsom": {:git, "https://github.com/willemdj/erlsom.git", "833fa057d199e0c9dc0232d560d2f742c57476b0", []},
   "esqlite": {:hex, :esqlite, "0.2.2", "e4e8b39062a075e0bd4756b894dd2aa8edbf94c9081c1fb5c72dc705bf2f2d88", [:make, :rebar], []},
   "exlibris": {:hex, :exlibris, "0.0.1", "be4c638021a4e1da950d6daf1f9a7a72c2d3715ceaf26c0f016a9cfc4ce3af13", [:mix], []},
+  "faker": {:hex, :faker, "0.7.0", "2c42deeac7be717173c78c77fb3edc749fb5d5e460e33d01fe592ae99acc2f0d", [:mix], []},
   "floki": {:hex, :floki, "0.11.0", "b4532ab64d67225f13f5626e4ba1b8cf3ee9d5bd48017075bb975e1522efd32d", [:mix], [{:mochiweb, "~> 2.15", [hex: :mochiweb, optional: false]}]},
   "fs": {:hex, :fs, "2.12.0", "ad631efacc9a5683c8eaa1b274e24fa64a1b8eb30747e9595b93bec7e492e25e", [:rebar3], []},
   "gen_stage": {:hex, :gen_stage, "0.11.0", "943bdfa85c75fa624e0a36a9d135baad20a523be040178f5a215444b45c66ea4", [:mix], []},

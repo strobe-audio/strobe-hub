@@ -40,6 +40,7 @@ defmodule Otis.Library do
         }
       end
 
+      def handle_request(channel_id, path, query \\ nil)
       def handle_request(channel_id, path, query) do
         route = String.split(path, "/", trim: true)
         route_library_request(channel_id, route, query, path)
@@ -79,6 +80,12 @@ defmodule Otis.Library do
       def namespace, do: @namespace
 
       def namespaced(url), do: "#{@namespace}:#{url}"
+
+      @section_defaults %{ title: "", actions: nil, metadata: nil, icon: nil, size: "s", children: [] }
+
+      def section(section_data) do
+        @section_defaults |> Map.merge(section_data)
+      end
 
       defoverridable [
         setup: 1,

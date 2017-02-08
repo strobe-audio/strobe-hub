@@ -24,6 +24,7 @@
   "author": "Garry Hill <garry@magnetised.net>",
   "license": "MIT",
   "dependencies": {
-    "css-loader": "^0.26.1"
+    "css-loader": "^0.26.1",
+    "elm-test": "^0.18.2"
   }
 }
