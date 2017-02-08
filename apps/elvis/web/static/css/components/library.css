@@ -27,7 +27,8 @@
 }
 
 .library--breadcrumb--dropdown {
-  flex: 1;
+  /* flex: 1; */
+	max-width: 33vw;
 }
 
 .library--breadcrumb--control {
