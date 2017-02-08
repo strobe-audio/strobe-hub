@@ -491,7 +491,11 @@ node library folder node =
 
         nodeStyle =
             if Utils.Touch.slowScroll library.scrollMomentum then
-                [ ( "backgroundImage", (Utils.Css.url node.icon) ) ]
+                case node.icon of
+                    "" ->
+                        []
+                    icon ->
+                        [ ( "backgroundImage", Utils.Css.url node.icon ) ]
             else
                 []
     in
