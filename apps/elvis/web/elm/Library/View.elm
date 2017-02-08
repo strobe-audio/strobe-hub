@@ -538,21 +538,29 @@ node library folder node =
         -- click msg =
         --     onWithOptions "click" options (Json.succeed msg)
 
-        nodeStyle =
-            if Utils.Touch.slowScroll library.scrollMomentum then
-                case node.icon of
-                    "" ->
-                        []
-                    icon ->
-                        [ ( "backgroundImage", Utils.Css.url node.icon ) ]
-            else
-                []
+
+        ( nodeStyle, hasIcon ) =
+            case node.icon of
+                Nothing ->
+                    ( [], False )
+
+                Just "" ->
+                    ( [], True )
+
+                Just icon ->
+                    if Utils.Touch.slowScroll library.scrollMomentum then
+                        ( [ ( "backgroundImage", Utils.Css.url icon ) ]
+                        , True
+                        )
+                    else
+                        ( [], True )
     in
         div
             [ classList
                 [ ( "library--node", True )
                 , ( "library--node__active", isActive )
                 , ( "library--click-action", True )
+                , ( "library--node__icon", hasIcon )
                 ]
             , onClick (Library.ExecuteAction node.actions.click node.title Nothing)
             , mapTouch (Utils.Touch.touchStart (Library.ExecuteAction node.actions.click node.title Nothing))

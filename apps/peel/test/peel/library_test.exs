@@ -165,7 +165,7 @@ defmodule Peel.Test.LibraryTest do
        click: %{level: false, url: "peel:track/#{track.id}/play"},
        play: %{level: false, url: "peel:track/#{track.id}/play"}
      },
-     icon: track.cover_image,
+     icon: nil, # track.cover_image,
      metadata: [
       [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
      ]
@@ -179,7 +179,7 @@ defmodule Peel.Test.LibraryTest do
        click: %{url: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play", level: false},
        play: %{url: "peel:track/94499562-d2c5-41f8-b07c-ecfbecf0c428/play", level: false}
      },
-     icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
+     icon: nil, # "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
      title: "Uh-Oh, Love Comes To Town",
      metadata: [
       [%{ title: "02:39", action: nil}]

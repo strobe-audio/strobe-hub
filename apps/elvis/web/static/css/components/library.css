@@ -168,14 +168,18 @@
 
 .library--node--inner {
   position: relative;
-  left: $button-size;
   top: 50%;
   transform: translateY(-50%);
   padding: 0 $padding;
   cursor: pointer;
-  max-width: calc(100vw - $button-size - (2 * $padding));
+  max-width: calc(100vw - (2 * $padding));
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.library--node__icon .library--node--inner {
+  left: $button-size;
+  max-width: calc(100vw - $button-size - (2 * $padding));
 }
 
 .library--node__active {
@@ -330,12 +334,8 @@ $library-large-size: calc($button-size * 2);
 	padding: $padding 0;
 	max-width: calc(100vw - $library-large-size - (4 * $padding));
 }
-.library--contents.library--scrolling .library--node.library--section--l .library--node--icon.library--section--l--icon {
-	background-size: calc($library-large-size - 1px - (2 * $padding));
-	opacity: 0.3;
-}
 
-.library--contents.library--scrolling .library--node .library--node--icon {
+.library--contents.library--scrolling .library--node.library--node__icon .library--node--icon {
 	background-image: url(/images/pending.svg) !important;
 	background-size: calc($button-size - 1px - (2 * $padding));
 	opacity: 0.5;

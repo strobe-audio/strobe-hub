@@ -330,7 +330,7 @@ defmodule Peel.Events.Library do
     %{
       # id: "peel:track/#{track.id}",
       title: track.title,
-      icon: icon(track.cover_image),
+      icon: nil, # icon(track.cover_image),
       actions: %{
         click: click_action(track),
         play: play_action(track)

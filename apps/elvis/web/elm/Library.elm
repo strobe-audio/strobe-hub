@@ -74,7 +74,7 @@ type alias Section =
 type alias Node =
     -- { id : String
     { title : String
-    , icon : String
+    , icon : Maybe String
     , actions : Actions
     , metadata : Maybe (List Metadata)
     }
@@ -163,7 +163,7 @@ contentHeight n =
 sectionNode : Section -> Node
 sectionNode section =
     { title = section.title
-    , icon = Maybe.withDefault "" section.icon
+    , icon = section.icon
     , actions = Maybe.withDefault defaultNodeActions section.actions
     , metadata = section.metadata
     }
