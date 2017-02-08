@@ -42,7 +42,7 @@ type alias Level =
     , contents : Maybe Folder
     , scrollHeight : Float
     , scrollPosition : Float
-    -- , visible : Bool
+    , visible : Bool
     }
 
 type alias SearchAction =

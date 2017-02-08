@@ -41,7 +41,7 @@ levels model =
                 Nothing ->
                     ( l.action
                     , div
-                        [ class "library--folder library--folder__loading" ]
+                        [ class "library--folder library--folder__loading", attribute "data-visible" (toString l.visible) ]
                         [ div
                             [ class "library--spinner" ]
                             [ i [ class "fa fa-circle-o-notch fa-spin" ] []
@@ -147,7 +147,7 @@ folder model level folder isCurrent =
     in
         lazy2
             (\ac sp ->
-                div ((class "library--folder") :: attrs)
+                div (attribute "data-visible" (toString level.visible) :: (class "library--folder") :: attrs)
                     [ Html.Keyed.node
                         "div"
                         [ classList

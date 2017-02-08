@@ -20,7 +20,7 @@ initialState =
             { id = "libraries", title = "Libraries", icon = "", children = [], search = Nothing }
 
         root =
-            { action = "root", title = rootFolder.title, contents = Just rootFolder, scrollPosition = 0, scrollHeight = 0 }
+            { action = "root", title = rootFolder.title, contents = Just rootFolder, scrollPosition = 0, scrollHeight = 0, visible = True }
 
         levels =
             [ root ]
@@ -59,11 +59,14 @@ update action model maybeChannelId =
                         model_ =
                             if a.level then
                                 let
+                                    hiddenLevels =
+                                        List.map (\l -> { l | visible = False }) model.levels
+
                                     level =
-                                        { action = a.url, title = title, contents = Nothing, scrollHeight = 0, scrollPosition = 0 }
+                                        { action = a.url, title = title, contents = Nothing, scrollHeight = 0, scrollPosition = 0, visible = True }
 
                                     levels =
-                                        level :: model.levels
+                                        level :: hiddenLevels
 
                                     animation =
                                         levelAnimation model (model.depth + 1)
@@ -120,6 +123,8 @@ update action model maybeChannelId =
                             let
                                 ( maybeCurrentLevel, levels ) =
                                     case model.levels of
+                                        l :: active :: rest ->
+                                            (Just l, ({ active | visible = True } :: rest))
                                         l :: rest ->
                                             (Just l, rest)
                                         l ->
