@@ -6,7 +6,6 @@ import Library.Cmd
 import Time exposing (millisecond)
 import Debug
 import Utils.Touch
-import Stack exposing (Stack)
 import Animation
 import Ease
 import Task
@@ -24,7 +23,7 @@ initialState =
             { action = "root", title = rootFolder.title, contents = Just rootFolder, scrollPosition = 0, scrollHeight = 0 }
 
         levels =
-            Stack.initialise |> Stack.push root
+            [ root ]
     in
         { levels = levels
         , depth = 0
@@ -64,7 +63,7 @@ update action model maybeChannelId =
                                         { action = a.url, title = title, contents = Nothing, scrollHeight = 0, scrollPosition = 0 }
 
                                     levels =
-                                        Stack.push level model.levels
+                                        level :: model.levels
 
                                     animation =
                                         levelAnimation model (model.depth + 1)
@@ -120,7 +119,11 @@ update action model maybeChannelId =
                         _ ->
                             let
                                 ( maybeCurrentLevel, levels ) =
-                                    Stack.pop model.levels
+                                    case model.levels of
+                                        l :: rest ->
+                                            (Just l, rest)
+                                        l ->
+                                            (Nothing, l)
 
                                 animation =
                                     levelAnimation model (model.depth - 1)
@@ -150,13 +153,13 @@ update action model maybeChannelId =
                     Just (Utils.Touch.Swipe Utils.Touch.Y direction dy y msg) ->
                         let
                             levels =
-                                case Stack.toList model.levels of
+                                case model.levels of
                                     level :: rest ->
                                         let
                                             level_ =
                                                 { level | scrollPosition = (min 0 (level.scrollPosition + dy)) }
                                         in
-                                            Stack.fromList (level_ :: rest)
+                                            level_ :: rest
 
                                     [] ->
                                         model.levels
@@ -187,7 +190,7 @@ update action model maybeChannelId =
                         let
 
                             scrollMomentum =
-                                case Stack.toList model.levels of
+                                case model.levels of
                                     level :: rest ->
                                         (Just
                                             (newMomentum
@@ -212,7 +215,7 @@ update action model maybeChannelId =
                     -- and Just position for desktop browsers where scroll is done by mouse
                     case scrollTop of
                         Nothing ->
-                            case Stack.toList model.levels of
+                            case model.levels of
                                 current::rest ->
                                     let
                                         scrollPosition =
@@ -245,7 +248,7 @@ update action model maybeChannelId =
                                 [] ->
                                     ( [], model.scrollMomentum )
                         Just position ->
-                            case Stack.toList model.levels of
+                            case model.levels of
                                 current::rest ->
                                     ( ( { current | scrollHeight = scrollHeight, scrollPosition = position  } :: rest )
                                     , Nothing
@@ -257,7 +260,7 @@ update action model maybeChannelId =
 
                 model_ =
                     if Animation.isDone time model.levelAnimation then
-                        { model | levels = (Stack.fromList levels), unloadingLevel = Nothing }
+                        { model | levels = levels, unloadingLevel = Nothing }
                     else
                         model
 
@@ -302,7 +305,7 @@ update action model maybeChannelId =
 
 currentLevel : Library.Model -> Library.Level
 currentLevel model =
-    case List.head <| Stack.toList model.levels of
+    case List.head <| model.levels of
         Just level ->
             level
 
@@ -320,16 +323,16 @@ setLevelContents model action folder =
                 l
 
         levels =
-            (List.map updateLevel) <| (Stack.toList model.levels)
+            (List.map updateLevel) model.levels
     in
-        { model | levels = (Stack.fromList levels) }
+        { model | levels = levels }
 
 
 add : Library.Model -> Library.Section -> Library.Model
 add model library =
     let
         reversedLevels =
-            List.reverse <| Stack.toList model.levels
+            List.reverse model.levels
 
         root =
             case (List.head reversedLevels) of
@@ -353,7 +356,7 @@ add model library =
                     []
 
         levels =
-            Stack.fromList (List.reverse (root :: others))
+            List.reverse (root :: others)
     in
         { model | levels = levels }
 
@@ -397,7 +400,7 @@ levelAnimation model targetDepth =
 
 currentFolder : Library.Model -> Maybe Library.Folder
 currentFolder model =
-    Stack.toList model.levels
+    model.levels
         |> List.head
         |> Maybe.andThen (\l -> l.contents)
 

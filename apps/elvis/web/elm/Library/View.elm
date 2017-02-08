@@ -14,7 +14,6 @@ import String
 import Utils.Css
 import Utils.Text
 import Utils.Touch exposing (onSingleTouch)
-import Stack
 import Debug exposing (log)
 
 
@@ -30,7 +29,7 @@ levels : Library.Model -> Html Library.Msg
 levels model =
     let
         levels =
-            Stack.toList model.levels
+            model.levels
                 |> (Maybe.map (\l -> [ l ]) model.unloadingLevel
                         |> Maybe.withDefault []
                         |> List.append
@@ -535,7 +534,7 @@ breadcrumb model =
                 [ text level.title ]
 
         sections =
-            (Stack.toList model.levels)
+            model.levels
                 |> List.indexedMap (breadcrumbLink "library--breadcrumb--section")
 
         ( list_, dropdown_ ) =

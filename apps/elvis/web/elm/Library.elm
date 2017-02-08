@@ -2,7 +2,6 @@ module Library exposing (..)
 
 import Time exposing (Time)
 import Utils.Touch
-import Stack exposing (Stack)
 import Animation
 import List.Extra
 
@@ -43,6 +42,7 @@ type alias Level =
     , contents : Maybe Folder
     , scrollHeight : Float
     , scrollPosition : Float
+    -- , visible : Bool
     }
 
 type alias SearchAction =
@@ -81,7 +81,7 @@ type alias Node =
 
 
 type alias Model =
-    { levels : Stack Level
+    { levels : List Level
     , depth : Int
     , currentRequest : Maybe ActionURL
     , unloadingLevel : Maybe Level
