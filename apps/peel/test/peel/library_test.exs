@@ -362,7 +362,7 @@ defmodule Peel.Test.LibraryTest do
       children: [
         %{ title: "Some Compilation",
           id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
-          size: "m",
+          size: "l",
           icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
           metadata: nil,
           actions: %{
@@ -374,7 +374,7 @@ defmodule Peel.Test.LibraryTest do
           ]
         },
         %{ title: "Talking Heads: 77",
-          size: "m",
+          size: "l",
           icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
           id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
           metadata: [

@@ -127,7 +127,7 @@ defmodule Peel.Events.Library do
             id: "peel:album/#{album.id}",
             title: album.title,
             icon: icon(album.cover_image),
-            size: "m",
+            size: "l",
             actions: %{
               click: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
               play: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},

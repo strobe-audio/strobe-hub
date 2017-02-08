@@ -388,23 +388,17 @@ renderable model folder renderable =
 section : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
 section model folder section =
     case section.size of
+        "s" ->
+            sectionSmall model folder section
+
         "m" ->
-            let
-                n =
-                    -- { id = section.id
-                    { title = section.title
-                    , icon = Maybe.withDefault "" section.icon
-                    , actions = Maybe.withDefault Library.defaultNodeActions section.actions
-                    , metadata = section.metadata
-                    }
-            in
-                Library.sectionNode section |> node model folder
+            Library.sectionNode section |> node model folder
+
+        "l" ->
+            sectionLarge model folder section
 
         "h" ->
             sectionHuge model folder section
-
-        "s" ->
-            sectionSmall model folder section
 
         s ->
             div
@@ -425,6 +419,53 @@ sectionSmall model folder section =
         , mapTouch (Utils.Touch.touchEnd Library.NoOp)
         ]
         [ text section.title ]
+
+sectionLarge : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
+sectionLarge model folder section =
+    let
+        (clickMsg, playMsg) =
+            case section.actions of
+                Nothing ->
+                    ( Library.NoOp, Library.NoOp )
+
+                Just actions ->
+                    ( (Library.ExecuteAction actions.click section.title Nothing)
+                    , (Library.MaybeExecuteAction actions.play section.title)
+                    )
+
+        coverAttrs =
+            case section.icon of
+                Nothing ->
+                    []
+
+                Just url ->
+                    [("backgroundImage", Utils.Css.url url)]
+
+        contents =
+            [ div
+                [ class "library--node--icon library--section--l--icon"
+                , style coverAttrs
+                , nodeClick playMsg
+                , mapTouch (Utils.Touch.touchStart playMsg)
+                , mapTouch (Utils.Touch.touchMove playMsg)
+                , mapTouch (Utils.Touch.touchEnd playMsg)
+                ]
+                []
+            , div [ class "library--node--inner library--section--l--inner" ]
+                [ div [ class "library--node--inner--title library--section--l--inner--title" ]
+                    [ text (Utils.Text.truncateEllipsis section.title 90) ]
+                , (metadata section.metadata)
+                ]
+            ]
+    in
+        div
+            [ class "library--node library--section--l"
+            , nodeClick clickMsg
+            , mapTouch (Utils.Touch.touchStart clickMsg)
+            , mapTouch (Utils.Touch.touchMove clickMsg)
+            , mapTouch (Utils.Touch.touchEnd clickMsg)
+            ]
+            contents
 
 sectionHuge : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
 sectionHuge model folder section =
@@ -476,6 +517,14 @@ sectionHuge model folder section =
             [ cover ]
 
 
+nodeClick : msg -> Attribute msg
+nodeClick msg =
+    let
+        options =
+            { preventDefault = True, stopPropagation = True }
+    in
+        onWithOptions "click" options (Json.succeed msg)
+
 node : Library.Model -> Library.Folder -> Library.Node -> Html Library.Msg
 node library folder node =
     let
@@ -483,11 +532,11 @@ node library folder node =
             Maybe.withDefault False
                 (Maybe.map (\action -> node.actions.click.url == action) library.currentRequest)
 
-        options =
-            { preventDefault = True, stopPropagation = True }
-
-        click msg =
-            onWithOptions "click" options (Json.succeed msg)
+        -- options =
+        --     { preventDefault = True, stopPropagation = True }
+        --
+        -- click msg =
+        --     onWithOptions "click" options (Json.succeed msg)
 
         nodeStyle =
             if Utils.Touch.slowScroll library.scrollMomentum then
@@ -513,7 +562,7 @@ node library folder node =
             [ div
                 [ class "library--node--icon"
                 , style nodeStyle
-                , click (Library.MaybeExecuteAction node.actions.play node.title)
+                , nodeClick (Library.MaybeExecuteAction node.actions.play node.title)
                 , mapTouch (Utils.Touch.touchStart (Library.MaybeExecuteAction node.actions.play node.title))
                 , mapTouch (Utils.Touch.touchEnd (Library.MaybeExecuteAction node.actions.play node.title))
                 ]

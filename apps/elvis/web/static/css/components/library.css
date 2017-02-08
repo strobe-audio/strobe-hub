@@ -221,11 +221,6 @@
 	padding-bottom: 50%;
 	overflow: hidden;
 }
-.library--contents.library--scrolling .library--node .library--node--icon {
-	background-image: url(/images/pending.svg);
-	background-size: calc($button-size - 1px - (2 * $padding));
-	opacity: 0.5;
-}
 
 .library--scroll-thumb {
 	position: absolute;
@@ -315,4 +310,33 @@ $library-huge-size: calc($button-size * 5);
 	right: 0;
 	bottom: 0;
 	left: 0;
+}
+
+$library-large-size: calc($button-size * 2);
+
+.library--section--l {
+	height: calc($library-large-size - 1px);
+}
+.library--section--l--icon {
+	height: calc($library-large-size - 1px);
+	width: calc($library-large-size - 1px);
+}
+.library--section--l--inner {
+	left: $library-large-size;
+}
+.library--section--l--inner--title {
+	font-size: 1.8rem;
+	line-height: 140%;
+	padding: $padding 0;
+	max-width: calc(100vw - $library-large-size - (4 * $padding));
+}
+.library--contents.library--scrolling .library--node.library--section--l .library--node--icon.library--section--l--icon {
+	background-size: calc($library-large-size - 1px - (2 * $padding));
+	opacity: 0.3;
+}
+
+.library--contents.library--scrolling .library--node .library--node--icon {
+	background-image: url(/images/pending.svg) !important;
+	background-size: calc($button-size - 1px - (2 * $padding));
+	opacity: 0.5;
 }
