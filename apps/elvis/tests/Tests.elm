@@ -276,6 +276,7 @@ exampleLevel =
     , contents = Just exampleFolder
     , scrollHeight = 320
     , scrollPosition = 0
+    , visible = True
     }
 
 exampleFolder : Library.Folder
@@ -297,12 +298,13 @@ generateSection id size children =
     , icon = Nothing
     , size = size
     , children = children
+    , length = List.length children
     }
 
 exampleNode : String -> Int -> Library.Node
 exampleNode label n =
     { title = label ++ (toString n)
-    , icon = ""
+    , icon = Nothing
     , actions =
         { click = { url = "", level = False }
         , play = Nothing

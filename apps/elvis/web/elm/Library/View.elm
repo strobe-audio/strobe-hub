@@ -125,7 +125,7 @@ folder model level folder isCurrent =
                     level.scrollHeight < totalHeight
 
                 height =
-                    ( ((List.length view.renderable |> toFloat) / (totalCount |> toFloat)) * level.scrollHeight )
+                    ( ((view.length |> toFloat) / (totalCount |> toFloat)) * level.scrollHeight )
                     |> (Basics.max 20)
 
                 scrollHeight =
@@ -176,7 +176,7 @@ folderView level folder =
             Library.renderableHeight renderable
 
     in
-        { renderable = renderable, height = height, firstNodePosition = firstNodePosition }
+        { renderable = renderable, height = height, firstNodePosition = firstNodePosition, length = List.length renderable }
 
 
 

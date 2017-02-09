@@ -367,10 +367,10 @@ add model library =
 
 
 addUniqueLibrary : Library.Section -> Library.Folder -> Library.Folder
-addUniqueLibrary library folder =
+addUniqueLibrary section folder =
     let
         duplicate =
-            Debug.log "Duplicate library?" (List.any (\l -> l.id == library.id) folder.children)
+            Debug.log "Duplicate library?" (List.any (\l -> l.id == section.id) folder.children)
 
         children =
             case duplicate of
@@ -378,7 +378,7 @@ addUniqueLibrary library folder =
                     folder.children
 
                 False ->
-                    library :: folder.children
+                    section :: folder.children
     in
         { folder | children = children }
 

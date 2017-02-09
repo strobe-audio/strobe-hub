@@ -68,6 +68,7 @@ type alias Section =
     , icon : Maybe String
     , size : String
     , children : List Node
+    , length : Int
     }
 
 
@@ -127,6 +128,7 @@ type alias FolderView =
     , height : Float
     -- , firstNodeHeight : Float
     , firstNodePosition : Float
+    , length : Int
     }
 
 
@@ -147,7 +149,7 @@ levelContentHeight level =
 
 folderContentCount : Folder -> Int
 folderContentCount folder =
-    (List.map sectionCount folder.children) |> List.sum
+    (List.map .length folder.children) |> List.sum
 
 folderContentHeight : Folder -> Float
 folderContentHeight folder =
@@ -170,12 +172,12 @@ sectionNode section =
 
 sectionCount : Section -> Int
 sectionCount section =
-    List.length section.children
+    section.length
 
 
 sectionHeight : Section -> Float
 sectionHeight section =
-    (sectionNodeHeight section) + (contentHeight (List.length section.children))
+    (sectionNodeHeight section) + (contentHeight section.length)
 
 
 sectionNodeHeight : Section -> Float

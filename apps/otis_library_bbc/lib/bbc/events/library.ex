@@ -47,6 +47,7 @@ defmodule BBC.Events.Library do
       },
       metadata: nil,
       children: [],
+      length: 0,
     }
   end
 

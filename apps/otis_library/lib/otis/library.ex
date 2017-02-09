@@ -83,8 +83,8 @@ defmodule Otis.Library do
 
       @section_defaults %{ title: "", actions: nil, metadata: nil, icon: nil, size: "s", children: [] }
 
-      def section(section_data) do
-        @section_defaults |> Map.merge(section_data)
+      def section(%{children: children} = section_data) do
+        @section_defaults |> Map.merge(section_data) |> Map.merge(%{ length: length(children) })
       end
 
       defoverridable [
