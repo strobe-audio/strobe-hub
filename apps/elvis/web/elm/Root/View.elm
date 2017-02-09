@@ -80,15 +80,20 @@ activeRendition model channel =
                     div [] []
 
                 Just rendition ->
-                    div
-                        [ onClick Channel.PlayPause
-                        , mapTouch (Utils.Touch.touchStart Channel.PlayPause)
-                        , mapTouch (Utils.Touch.touchEnd Channel.PlayPause)
-                        ]
-                        [ Html.map
-                            (always Channel.NoOp)
-                            (Rendition.View.progress rendition channel.playing)
-                        ]
+                    lazy2
+                        (\r p ->
+                            div
+                                [ onClick Channel.PlayPause
+                                , mapTouch (Utils.Touch.touchStart Channel.PlayPause)
+                                , mapTouch (Utils.Touch.touchEnd Channel.PlayPause)
+                                ]
+                                [ Html.map
+                                    (always Channel.NoOp)
+                                    (Rendition.View.progress r p)
+                                ]
+                        )
+                        rendition
+                        channel.playing
 
     in
         div [ class "root--active-rendition" ]
@@ -131,10 +136,7 @@ rendition model channel =
                         [ text channel.name
                         , span
                             [ class "channel--playlist-duration" ]
-                            [ text
-                                <| Source.View.durationString
-                                <| (Channel.playlistDuration channel)
-                            ]
+                            [ lazy playlistDuration channel ]
                         ]
                     ]
                 , rendition
@@ -172,22 +174,23 @@ switchView model channel =
         (List.map (switchViewButton model channel) State.viewModes)
 
 
+playlistDuration : Channel.Model -> Html Msg
+playlistDuration channel =
+    text
+        <| Source.View.durationString
+            <| (Channel.playlistDuration channel)
+
 switchViewButton : Root.Model -> Channel.Model -> State.ViewMode -> Html Msg
 switchViewButton model channel mode =
     let
         label =
             case mode of
                 State.ViewCurrentChannel ->
-                    let
-                        duration =
-                                Source.View.durationString
-                                <| (Channel.playlistDuration channel)
-                    in
-                        span
-                            []
-                            [ text ((State.viewLabel State.ViewCurrentChannel))
-                            , span [ class "channel--playlist-duration" ] [ text duration ]
-                            ]
+                    span
+                        []
+                        [ text ((State.viewLabel State.ViewCurrentChannel))
+                        , span [ class "channel--playlist-duration" ] [ lazy playlistDuration channel ]
+                        ]
 
                 m ->
                     text (State.viewLabel m)

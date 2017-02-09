@@ -379,10 +379,10 @@ renderable model folder renderable =
     case renderable of
         -- TODO: this should return an (id, html) pair suitable for use by keyed
         Library.N id n ->
-            (id, node model folder n )
+            (id, lazy (node model folder) n )
 
         Library.S s ->
-            (s.id, section model folder s )
+            (s.id, lazy (section model folder) s )
 
 
 section : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
