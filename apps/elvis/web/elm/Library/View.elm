@@ -115,9 +115,11 @@ folder model level folder isCurrent =
             let
                 gap = 2
 
+                -- FIXME: these height calculation methods are too slow
                 totalHeight =
                     Library.folderContentHeight folder
 
+                -- FIXME: these height calculation methods are too slow
                 totalCount =
                     Library.folderContentCount folder
 
@@ -152,7 +154,9 @@ folder model level folder isCurrent =
                         "div"
                         [ classList
                             [ ("library--contents", True)
-                            , ("library--scrolling", model.scrollMomentum |> Maybe.map (always True) |> Maybe.withDefault False )
+                            , ( "library--scrolling"
+                              , model.scrollMomentum |> Maybe.map (always True) |> Maybe.withDefault False
+                              )
                             ]
                         , style
                             [ ( "height", (toString height) ++ "px" )
@@ -167,7 +171,7 @@ folder model level folder isCurrent =
 
 folderView : Library.Level -> Library.Folder -> Library.FolderView
 folderView level folder =
-    -- find section that holdds the current offest
+    -- find section that holds the current offset
     let
         (renderable, firstNodePosition) =
             folderViewOpenWindow level folder.children 0.0
@@ -176,7 +180,11 @@ folderView level folder =
             Library.renderableHeight renderable
 
     in
-        { renderable = renderable, height = height, firstNodePosition = firstNodePosition, length = List.length renderable }
+        { renderable = renderable
+        , height = height
+        , firstNodePosition = firstNodePosition
+        , length = List.length renderable
+        }
 
 
 
@@ -377,7 +385,6 @@ metadataGroup group =
 renderable : Library.Model -> Library.Folder -> Library.Renderable -> (String, Html Library.Msg)
 renderable model folder renderable =
     case renderable of
-        -- TODO: this should return an (id, html) pair suitable for use by keyed
         Library.N id n ->
             (id, lazy (node model folder) n )
 
