@@ -7,7 +7,9 @@ defmodule Peel.Test.LibraryTest do
   alias Peel.Artist
   alias Peel.Events.Library
 
-  setup_all do
+  setup  do
+    channel_id = "6df968bf-3454-4514-940b-4829dfcf4d3c"
+
     Ecto.Adapters.SQL.restart_test_transaction(Peel.Repo)
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
 
@@ -124,8 +126,6 @@ defmodule Peel.Test.LibraryTest do
 
     # Otis.State.Channel.delete_all
 
-    channel_id = "6df968bf-3454-4514-940b-4829dfcf4d3c"
-
     channels = [
       %Otis.State.Channel{ id: channel_id,
         name: "Sorry I Burnt Your Nose",
@@ -143,20 +143,17 @@ defmodule Peel.Test.LibraryTest do
         # Otis.Channels.destroy!(channel.id)
       # end
     end
-
-    {:ok, channel_id: channel_id}
-  end
-
-  setup context do
     TestEventHandler.attach
+
     on_exit fn ->
-      with {:ok, channel} <- Otis.Channels.find(context.channel_id),
+      with {:ok, channel} <- Otis.Channels.find(channel_id),
            {:ok, playlist} <- Otis.Channel.playlist(channel)
       do
         Otis.Pipeline.Playlist.clear(playlist)
       end
     end
-    :ok
+
+    {:ok, channel_id: channel_id}
   end
 
   def track_node(%Track{} = track) do
@@ -449,5 +446,107 @@ defmodule Peel.Test.LibraryTest do
         %Otis.State.Rendition{position: 1, source_id: "a3c90ce4-8a98-405f-bffd-04bc744c13df", source_type: "Elixir.Peel.Track"},
       ]
     ]}
+  end
+
+  test "search all music", %{channel_id: channel_id} = _context do
+    artists = [
+      %Artist{
+        id: "fdb8a7b3-e259-4ef3-a453-833f2795dec6", name: "The Big Monkey",
+        normalized_name: "the big monkey" },
+    ]
+    Enum.map artists, &Repo.insert!/1
+
+    albums = [
+      %Album{ id: "69eff193-5808-4165-a927-b5431d7da97b",
+        date: "1977", disk_number: 1, disk_total: 1, genre: "Rock",
+        normalized_title: "monkey songs", performer: "Monkey Sings",
+        cover_image: "",
+        title: "Monkey Songs", track_total: 2 },
+      %Album{ id: "8231ab23-0c44-44b1-891c-53917f085d82",
+        date: nil, disk_number: 1, disk_total: 1, genre: "Rock",
+        normalized_title: "dance monkey dance", performer: "Various Artists",
+        cover_image: "",
+        title: "Dance Monkey Dance", track_total: 3 },
+    ]
+    tracks = [
+      %Peel.Track{ id: "118739fb-4558-4522-987d-bd3c5e805d7a",
+        album_id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+        album_title: "Talking Heads: 77",
+        artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
+        cover_image: "",
+        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 159000,
+        genre: "Rock", mime_type: "audio/mp4",
+        normalized_title: "beware the wild monkey",
+        path: "",
+        performer: "Talking Heads", title: "Beware the Wild Monkey",
+        track_number: 1, track_total: 11},
+    ]
+    Enum.map albums, &Repo.insert!/1
+    Enum.map tracks, &Repo.insert!/1
+
+    path = "search/root"
+    query = "monkey"
+    response = Library.handle_request(channel_id, path, query)
+    assert response == %{
+      id: "peel:search/root",
+      title: "Search your music",
+      icon: "",
+      search: %{ title: "your music", url: "peel:search/root"},
+      length: 3,
+      children: [
+        %{
+          title: "Albums",
+          id: "peel:search/albums",
+          size: "s",
+          icon: nil,
+          actions: nil,
+          metadata: nil,
+          length: 2,
+          children: [
+            %{ title: "Monkey Songs",
+              actions: %{
+                click: %{url: "peel:album/69eff193-5808-4165-a927-b5431d7da97b", level: true},
+                play:  %{url: "peel:album/69eff193-5808-4165-a927-b5431d7da97b/play", level: false},
+              },
+              icon: "",
+              metadata: [[%{action: nil, title: "Various Artists"}], [%{action: nil, title: "1977"}]],
+            },
+            %{ title: "Dance Monkey Dance",
+              actions: %{
+                click: %{url: "peel:album/8231ab23-0c44-44b1-891c-53917f085d82", level: true},
+                play:  %{url: "peel:album/8231ab23-0c44-44b1-891c-53917f085d82/play", level: false},
+              },
+              icon: "",
+              metadata: [[%{action: nil, title: "Various Artists"}]],
+            },
+          ],
+        },
+        %{
+          title: "Artists",
+          id: "peel:search/artists",
+          size: "s",
+          icon: nil,
+          actions: nil,
+          metadata: nil,
+          length: 1,
+          children: [
+            %{ actions: %{ click: %{ level: true, url: "peel:artist/fdb8a7b3-e259-4ef3-a453-833f2795dec6" }, play: nil },
+              icon: "", title: "The Big Monkey", metadata: nil},
+          ],
+        },
+        %{
+          title: "Tracks",
+          id: "peel:search/tracks",
+          size: "s",
+          icon: nil,
+          actions: nil,
+          metadata: nil,
+          length: 1,
+          children: [
+            track_node(Track.find("118739fb-4558-4522-987d-bd3c5e805d7a")),
+          ],
+        },
+      ]
+    }
   end
 end

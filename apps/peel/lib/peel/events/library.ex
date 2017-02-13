@@ -45,6 +45,7 @@ defmodule Peel.Events.Library do
       title: "Your Music",
       icon: "",
       search: %{url: search_url("root"), title: "your music" },
+      length: 2,
       children: [
         section(%{ id: "peel:albums", title: "Albums", size: "m", icon: "", actions: %{ click: %{ url: url("albums"), level: true }, play: nil }, metadata: nil, children: [] }),
         section(%{ id: "peel:artists", title: "Artists", size: "m", icon: "", actions: %{ click: %{ url: url("artists"), level: true }, play: nil }, metadata: nil, children: [] }),
@@ -189,16 +190,39 @@ defmodule Peel.Events.Library do
   end
 
   def route_library_request(_channel_id, ["search", "root"], query, path) do
-    artists = query |> Peel.Artist.search |> Enum.map(&folder_node/1)
-    albums = query |> Peel.Album.search |> Enum.map(&folder_node/1)
-    tracks = query |> Peel.Track.search |> Enum.map(&folder_node/1)
+    [artists, albums, tracks] =
+      [Artist, Album, Track]
+      |> Enum.map(&search_model(&1, query))
+    albums_section = %{
+      id: namespaced("search/albums"),
+      title: "Albums",
+      size: "s",
+      children: albums,
+    } |> section()
+    artists_section = %{
+      id: namespaced("search/artists"),
+      title: "Artists",
+      size: "s",
+      children: artists,
+    } |> section()
+    tracks_section = %{
+      id: namespaced("search/tracks"),
+      title: "Tracks",
+      size: "s",
+      children: tracks,
+    } |> section()
     %{
       id: namespaced(path),
       title: "Search your music",
       icon: icon(nil),
       search: nil,
       search: %{url: search_url("root"), title: "your music" },
-      children: Enum.concat([albums, tracks, artists]),
+      length: 3,
+      children: [
+        albums_section,
+        artists_section,
+        tracks_section,
+      ],
     }
   end
   def route_library_request(_channel_id, ["search", "albums"], query, path) do
@@ -231,6 +255,12 @@ defmodule Peel.Events.Library do
   def route_library_request(_channel_id, _route, path) do
     Logger.warn "Invalid path #{path}"
     nil
+  end
+
+  def search_model(model, query) do
+    query
+    |> model.search()
+    |> Enum.map(&folder_node/1)
   end
 
   def node_metadata(%Album{} = album) do
