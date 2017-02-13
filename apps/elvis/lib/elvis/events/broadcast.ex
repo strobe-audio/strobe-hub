@@ -126,7 +126,7 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event(event, state) do
+  def handle_event(_event, state) do
     # IO.inspect [:broadcast?, event]
     {:ok, state}
   end
