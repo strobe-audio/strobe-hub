@@ -52,18 +52,14 @@ rootWhenConnected model =
 
 rootWithActiveChannel : Root.Model -> Channel.Model -> Html Msg
 rootWithActiveChannel model channel =
-    let
-        contents =
-            div [] [ text "contents..." ]
-    in
-        div
-            [ id "root" ]
-            [ (activeRendition model channel)
-            , (notifications model)
-            , (channelControl model channel)
-            , (activeView model channel)
-            , (switchView model channel)
-            ]
+    div
+        [ id "root" ]
+        [ (activeRendition model channel)
+        , (notifications model)
+        , (channelControl model channel)
+        , (activeView model channel)
+        , (switchView model channel)
+        ]
 
 activeRendition : Root.Model -> Channel.Model -> Html Msg
 activeRendition model channel =
