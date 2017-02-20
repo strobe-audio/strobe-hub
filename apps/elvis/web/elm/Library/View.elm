@@ -192,9 +192,7 @@ folderViewOpenWindow : Library.Level -> List Library.Section -> Float -> (List L
 folderViewOpenWindow level sections height =
     case sections of
         [] ->
-            -- so we've run out of sections and we're still not able to reach
-            -- the start of the scrollable offset -- BUG
-            Debug.log "library has scrolled out of view" ([], 0.0)
+            ( [], 0.0 )
 
         section :: rest ->
             let
