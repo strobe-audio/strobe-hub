@@ -70,7 +70,6 @@
 }
 .channel--control {
 	color: #fff;
-  margin-top: calc($button-size / 4);
 }
 
 .channel--rewind-play-skip {
@@ -80,12 +79,12 @@
 }
 
 .channel--rendition-cover {
-	margin: $padding 0 calc($button-size / 2) 0;
+	margin: 0 0 calc($button-size / 2) 0;
 	/* background-color: rgba(255, 255, 255, 0.6); */
 	background-repeat: no-repeat;
 	background-position: center center;
 	background-size: calc(100vw) auto;
-	height: calc(100vw - $button-size);
+	height: 100vw;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;

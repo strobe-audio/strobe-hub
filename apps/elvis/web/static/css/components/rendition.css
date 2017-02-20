@@ -165,6 +165,9 @@
 
 .rendition--details--top {
   @mixin h2;
+  font-size: 1.6rem;
+  padding-top: calc($padding / 2);
+  line-height: 110%;
   /* padding-left: $padding; */
   /* display: flex; */
   /* align-items: baseline; */
