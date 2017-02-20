@@ -11,10 +11,10 @@
 
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="Elvis">
+    <meta name="apple-mobile-web-app-title" content="Strobe">
 
 
-    <title>Elvis</title>
+    <title>Strobe</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
     <script>
       // https://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/
