@@ -227,24 +227,36 @@ defmodule Peel.Events.Library do
   end
   def route_library_request(_channel_id, ["search", "albums"], query, path) do
     albums = query |> Peel.Album.search |> Enum.map(&folder_node/1)
+    albums_section = %{
+      id: namespaced("search/albums"),
+      title: "Albums matching ‘#{query}’",
+      size: "s",
+      children: albums,
+    } |> section()
     %{
       id: namespaced(path),
       title: "Search albums",
       icon: icon(nil),
-      search: nil,
       search: %{url: search_url("albums"), title: "albums" },
-      children: albums,
+      length: 1,
+      children: [albums_section],
     }
   end
   def route_library_request(_channel_id, ["search", "artists"], query, path) do
     artists = query |> Peel.Artist.search |> Enum.map(&folder_node/1)
+    artists_section = %{
+      id: namespaced("search/artists"),
+      title: "Artists matching ‘#{query}’",
+      size: "s",
+      children: artists,
+    } |> section()
     %{
       id: namespaced(path),
       title: "Search artists",
       icon: icon(nil),
-      search: nil,
       search: %{url: search_url("artists"), title: "artists" },
-      children: artists,
+      length: 1,
+      children: [artists_section],
     }
   end
   def route_library_request(_channel_id, ["search", category], _query, _path) do

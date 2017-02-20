@@ -549,4 +549,70 @@ defmodule Peel.Test.LibraryTest do
       ]
     }
   end
+
+  test "search albums", %{channel_id: channel_id} = _context do
+    path = "search/albums"
+    query = "heads"
+    response = Library.handle_request(channel_id, path, query)
+    assert response == %{
+      id: "peel:search/albums",
+      title: "Search albums",
+      icon: "",
+      search: %{ title: "albums", url: "peel:search/albums"},
+      length: 1,
+      children: [
+        %{
+          title: "Albums matching ‘heads’",
+          id: "peel:search/albums",
+          size: "s",
+          icon: nil,
+          actions: nil,
+          metadata: nil,
+          length: 1,
+          children: [
+              %{ title: "Talking Heads: 77",
+                actions: %{
+                  click: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898", level: true},
+                  play:  %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play", level: false},
+                },
+              icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
+              metadata: [
+                [%{title: "Talking Heads", action: %{url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", level: true}}],
+                [%{title: "1977", action: nil}]
+              ],
+            },
+          ],
+        },
+      ]
+    }
+  end
+
+  test "search artists", %{channel_id: channel_id} = _context do
+    path = "search/artists"
+    query = "talking"
+    response = Library.handle_request(channel_id, path, query)
+    assert response == %{
+      id: "peel:search/artists",
+      title: "Search artists",
+      icon: "",
+      search: %{ title: "artists", url: "peel:search/artists"},
+      length: 1,
+      children: [
+        %{
+          title: "Artists matching ‘talking’",
+          id: "peel:search/artists",
+          size: "s",
+          icon: nil,
+          actions: nil,
+          metadata: nil,
+          length: 1,
+          children: [
+            %{
+              actions: %{ click: %{ level: true, url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e" }, play: nil },
+              icon: "", title: "Talking Heads", metadata: nil},
+          ],
+        },
+      ]
+    }
+  end
 end
