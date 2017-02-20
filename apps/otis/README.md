@@ -1,16 +1,12 @@
-Peep
-====
+# Otis
 
-What is the aim?
-----------------
+Otis is the worker.
 
-Something to replace LMS.
+It is the core of the Strobe application that manages your channels, receivers
+and is responsible for taking Sources from the libraries, turning them into PCM
+audio streams and broadcasting it to all receivers.
 
-- Raspberry Pi oriented.
-- Download images for server & client
-- Zero config of client - disposable, re-installable
-- Plug in drives of Music
-- Extendable through plugins
+## Installation
 
 DLNA
 ====

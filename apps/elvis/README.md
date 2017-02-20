@@ -1,45 +1,39 @@
 # Elvis
 
-To start your Phoenix app:
+Elvis is all show.
 
-  1. Install dependencies with `mix deps.get`
-  2. Create and migrate your database with `mix ecto.create && mix ecto.migrate`
-  3. Start Phoenix endpoint with `mix phoenix.server`
+It's a phoenix application backed by an Elm-powered UI that links up your
+libraries to your channels to your receivers.
 
-Now you can visit [`localhost:4000`](http://localhost:4000) from your browser.
+When you run the Strobe hub, it's really Elvis that you're launching.
 
-Ready to run in production? Please [check our deployment guides](http://www.phoenixframework.org/docs/deployment).
+## TODO
 
-# TODO
-
-## Short
+### Short
 
 - [ ] Icons for top-level library items ("Albums", "Artists" etc.)
-- [ ] Fix display of library breadcrumb
 
-## Medium
-
-- [ ] Folder-level actions (e.g. play an album when viewing it)
-- [ ] Library search (a new `search` action on the folder)
-- [ ] Delete individual playlist entries
-- [ ] Upgrade to Elm 0.17
-- [ ] Use url for routing (to avoid channel switches). Wait for Elm 0.17
-  - current channel
-  - playlist/library view
+### Medium
 
 - [ ] Delete a channel
 
-## Long
+### Long
 
-- [ ] Use external api (musicbrainz) to improve track metadata (specifically
-  cover images)
 - [ ] Scroll long names (as in iOS)
 
-# Bugs
-
-- [ ] Switching library view from long list to short doesn't update the scroll
-  position
-
-# Done
+### Done
 
 - [X] Stop text overflow in to-level player
+- [X] Fix display of library breadcrumb
+- [X] Folder-level actions (e.g. play an album when viewing it)
+- [X] Library search (a new `search` action on the folder)
+- [X] Delete individual playlist entries
+- [X] Upgrade to Elm 0.17
+- [X] Use url for routing (to avoid channel switches). Wait for Elm 0.17
+  - current channel
+  - playlist/library view
+- [X] Use external api (musicbrainz) to improve track metadata (specifically
+  cover images)
+- [X] Switching library view from long list to short doesn't update the scroll
+  position
+
