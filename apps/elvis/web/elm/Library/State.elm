@@ -110,7 +110,7 @@ update action model maybeChannelId =
                                 model_ =
                                     setLevelContents model action folder
                             in
-                                ( { model_ | currentRequest = Nothing }, Cmd.none )
+                                ( { model_ | currentRequest = Nothing, scrollMomentum = Nothing }, Cmd.none )
 
         Library.PopLevel index ->
             let
