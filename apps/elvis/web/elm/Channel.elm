@@ -36,7 +36,7 @@ summary : List Receiver.Model -> Model -> Summary
 summary receivers channel =
     let
         receiverCount =
-            (Receiver.attachedToChannel receivers channel) |> List.length
+            (Receiver.attachedToChannel channel receivers) |> List.length
     in
         { channel = channel
         , id = channel.id

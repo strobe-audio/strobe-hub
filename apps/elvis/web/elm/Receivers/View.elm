@@ -22,7 +22,7 @@ receivers : Root.Model -> Channel.Model -> Html Msg
 receivers model channel =
     let
         attached =
-            Receiver.attachedReceivers model.receivers channel
+            Receiver.attachedReceivers channel model.receivers
 
         receivers =
             case model.showAttachReceiver of
@@ -36,7 +36,7 @@ receivers model channel =
             toString (List.length attached)
 
         detached =
-            Receiver.detachedReceivers model.receivers channel
+            Receiver.detachedReceivers channel model.receivers
 
         online =
             (Receiver.onlineReceivers model.receivers)
@@ -83,7 +83,7 @@ attached : Root.Model -> Channel.Model -> Html Msg
 attached model channel =
     let
         receivers =
-            Receiver.attachedReceivers model.receivers channel
+            Receiver.attachedReceivers channel model.receivers
 
         active =
             (List.length receivers) > 0
@@ -115,7 +115,7 @@ detached : Root.Model -> Channel.Model -> Html Msg
 detached model channel =
     let
         receivers =
-            Receiver.detachedReceivers model.receivers channel
+            Receiver.detachedReceivers channel model.receivers
 
         active =
             (List.length receivers) > 0

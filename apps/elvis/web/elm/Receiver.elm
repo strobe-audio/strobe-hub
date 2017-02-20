@@ -48,18 +48,18 @@ sort receivers =
     List.sortBy (\r -> r.name) receivers
 
 
-attachedReceivers : List Model -> { a | id : ID.Channel } -> List Model
-attachedReceivers receivers channel =
-    attachedToChannel receivers channel
+attachedReceivers : { a | id : ID.Channel } -> List Model -> List Model
+attachedReceivers channel receivers =
+    attachedToChannel channel receivers
 
 
-attachedToChannel : List Model -> { a | id : ID.Channel } -> List Model
-attachedToChannel receivers channel =
+attachedToChannel : { a | id : ID.Channel } -> List Model -> List Model
+attachedToChannel channel receivers =
     List.filter (\r -> r.channelId == channel.id) receivers
 
 
-detachedReceivers : List Model -> { a | id : ID.Channel } -> List Model
-detachedReceivers receivers channel =
+detachedReceivers : { a | id : ID.Channel } -> List Model -> List Model
+detachedReceivers channel receivers =
     List.filter (\r -> r.channelId /= channel.id) receivers
 
 
@@ -68,6 +68,6 @@ onlineReceivers receivers =
     List.filter .online receivers
 
 
-partitionReceivers : List Model -> { a | id : ID.Channel } -> (List Model, List Model)
-partitionReceivers receivers channel =
+partitionReceivers : { a | id : ID.Channel } -> List Model -> (List Model, List Model)
+partitionReceivers channel receivers =
     List.partition (\r -> r.channelId == channel.id) receivers

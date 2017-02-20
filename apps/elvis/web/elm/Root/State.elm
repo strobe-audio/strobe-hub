@@ -351,7 +351,7 @@ update action model =
                 Just channel ->
                     let
                         detached =
-                            Receiver.detachedReceivers model.receivers channel
+                            Receiver.detachedReceivers channel model.receivers
 
                         showAttachReceiver =
                             not <| List.isEmpty detached

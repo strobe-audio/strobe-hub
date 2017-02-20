@@ -257,7 +257,7 @@ receiverControl model channel =
             Msg.ShowAttachReceiver False
 
         ( attached, detached ) =
-            Receiver.partitionReceivers model.receivers channel
+            Receiver.partitionReceivers channel model.receivers
 
         contents =
             case model.showAttachReceiver of
