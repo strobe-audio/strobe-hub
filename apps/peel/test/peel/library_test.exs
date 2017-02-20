@@ -365,20 +365,6 @@ defmodule Peel.Test.LibraryTest do
       icon: "",
       search: nil,
       children: [
-        %{ title: "Some Compilation",
-          id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
-          size: "l",
-          icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
-          metadata: nil,
-          length: 1,
-          actions: %{
-            click: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false},
-            play: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false}
-          },
-          children: [
-            track_node(Track.find("0a89f07e-0f5e-48c4-8b00-d83026a90724")),
-          ]
-        },
         %{ title: "Talking Heads: 77",
           size: "l",
           icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
@@ -394,6 +380,20 @@ defmodule Peel.Test.LibraryTest do
           children: [
             track_node(Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")),
             track_node(Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df")),
+          ]
+        },
+        %{ title: "Some Compilation",
+          id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+          size: "l",
+          icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
+          metadata: nil,
+          length: 1,
+          actions: %{
+            click: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false},
+            play: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false}
+          },
+          children: [
+            track_node(Track.find("0a89f07e-0f5e-48c4-8b00-d83026a90724")),
           ]
         },
       ],

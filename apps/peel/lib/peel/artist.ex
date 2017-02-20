@@ -60,7 +60,7 @@ defmodule Peel.Artist do
       inner_join: album in Album, on: album.id == aa.album_id,
       select: album,
       where: artist.id == ^for_artist.id,
-      order_by: [asc: album.normalized_title]
+      order_by: [desc: album.date]
     ) |> Repo.all
   end
 
