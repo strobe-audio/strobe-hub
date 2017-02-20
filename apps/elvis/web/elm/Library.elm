@@ -140,7 +140,7 @@ defaultNodeActions =
 
 nodeHeight : Float
 nodeHeight =
-    60.0
+    55.0
 
 levelContentHeight : Level -> Maybe Float
 levelContentHeight level =
