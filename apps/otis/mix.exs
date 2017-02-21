@@ -23,7 +23,6 @@ defmodule Otis.Mixfile do
       applications: [
         :logger,
         :porcelain,
-        :dnssd,
         :monotonic,
         :sqlite_ecto,
         :ecto,
@@ -36,6 +35,9 @@ defmodule Otis.Mixfile do
         :uuid,
         :poolboy,
         # :logger_file_backend,
+      ],
+      included_applications: [
+        :dnssd,
       ],
       extra_applications: [],
       env: [
