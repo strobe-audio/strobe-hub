@@ -23,7 +23,6 @@ defmodule Otis.Mixfile do
       applications: [
         :logger,
         :porcelain,
-        :dnssd,
         :monotonic,
         :sqlite_ecto,
         :ecto,
@@ -36,6 +35,9 @@ defmodule Otis.Mixfile do
         :uuid,
         :poolboy,
         # :logger_file_backend,
+      ],
+      included_applications: [
+        :dnssd,
       ],
       extra_applications: [],
       env: [
@@ -55,7 +57,7 @@ defmodule Otis.Mixfile do
   # Type `mix help deps` for more examples and options
   defp deps do
     [ {:porcelain, github: "alco/porcelain"},
-      {:dnssd, github: "benoitc/dnssd_erlang"},
+      {:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar},
       {:poolboy, "~> 1.4"},
       {:monotonic, github: "magnetised/monotonic.ex"},
       {:erlsom, github: "willemdj/erlsom"},

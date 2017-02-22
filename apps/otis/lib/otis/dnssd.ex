@@ -9,11 +9,17 @@ defmodule Otis.DNSSD do
   end
 
   def init(pipeline_config) do
-    Process.flag(:trap_exit, true)
     state = %{ref: nil, pipeline_config: pipeline_config}
-    Logger.info "Registering #{inspect service_name(state)} on port #{service_port(state)} #{ inspect service_texts(state) }"
-    {:ok, ref} = register_service(state)
-    {:ok, %{state| ref: ref }}
+    case Application.ensure_all_started(:dnssd, :temporary) do
+      {:ok, [_app]} ->
+        Process.flag(:trap_exit, true)
+        Logger.info "DNSSD: Registering #{inspect service_name(state)} on port #{service_port(state)} #{ inspect service_texts(state) }"
+        {:ok, ref} = register_service(state)
+        {:ok, %{state| ref: ref }}
+      {:error, {_app, reason}} ->
+        Logger.warn "DNSSD: Unable to start :dnssd application: #{inspect reason}"
+        {:ok, state}
+    end
   end
 
   def handle_info({:dnssd, _ref, _msg}, state) do
@@ -25,6 +31,9 @@ defmodule Otis.DNSSD do
     :dnssd.register(service_name(state), service_port(state), service_texts(state))
   end
 
+  def terminate(_reason, %{ref: nil}) do
+    :ok
+  end
   def terminate(_reason, %{ref: ref}) do
     :dnssd.stop(ref)
     :ok
