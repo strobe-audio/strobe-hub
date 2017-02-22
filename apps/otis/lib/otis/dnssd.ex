@@ -17,7 +17,7 @@ defmodule Otis.DNSSD do
         {:ok, ref} = register_service(state)
         {:ok, %{state| ref: ref }}
       {:error, {_app, reason}} ->
-        Logger.warn "DNSSD: Unable to start :dnssd application: #{reason}"
+        Logger.warn "DNSSD: Unable to start :dnssd application: #{inspect reason}"
         {:ok, state}
     end
   end
