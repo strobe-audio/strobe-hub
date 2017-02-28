@@ -21,6 +21,7 @@ import Utils.Touch exposing (onUnifiedClick)
 import Notification.View
 import State
 import Spinner
+import Settings.View
 
 
 root : Root.Model -> Html Msg
@@ -156,7 +157,7 @@ activeView model channel =
                     Html.map Msg.Library (Library.View.root model.library)
 
                 State.ViewSettings ->
-                    text "View Settings"
+                    Settings.View.application model.settings
     in
         div
             [ class "root--active-view" ]

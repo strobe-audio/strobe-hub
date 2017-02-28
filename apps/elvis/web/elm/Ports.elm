@@ -9,6 +9,7 @@ import Root
 import State
 import Receiver
 import Time
+import Settings
 
 
 -- Incoming JS -> Elm
@@ -168,6 +169,20 @@ animationScrollActions : Sub Msg
 animationScrollActions =
     animationScroll Msg.AnimationScroll
 
+
+port applicationSettings : ( ( String, Settings.Model ) -> m ) -> Sub m
+
+
+applicationSettingsActions : Sub Msg
+applicationSettingsActions =
+    let
+        translate : (String, Settings.Model) -> Msg
+        translate (app, settings) =
+            Msg.LoadApplicationSettings app settings
+    in
+        applicationSettings translate
+
+
 -- Outgoing Elm -> JS
 
 
@@ -205,3 +220,9 @@ port libraryRequests : ( String, String, Maybe String ) -> Cmd msg
 
 
 port blurActiveElement : Bool -> Cmd msg
+
+
+port settingsRequests :  String  -> Cmd msg
+
+
+port settingsSave : Settings.Model -> Cmd msg

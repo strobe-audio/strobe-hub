@@ -126,6 +126,11 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:application_settings, [app, settings, socket]}, state) do
+    Phoenix.Channel.push(socket, "application_settings", %{application: app, settings: settings})
+    {:ok, state}
+  end
+
   def handle_event(_event, state) do
     # IO.inspect [:broadcast?, event]
     {:ok, state}

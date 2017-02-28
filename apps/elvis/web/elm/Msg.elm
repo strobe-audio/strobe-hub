@@ -9,6 +9,7 @@ import Input
 import Navigation
 import Utils.Touch
 import State
+import Settings
 
 
 type Msg
@@ -30,7 +31,10 @@ type Msg
     | ActivateView State.ViewMode
     | ToggleShowChannelControl
     | ReceiverAttachmentChange
-      -- events from broadcaster
+    -- application settings
+    | LoadApplicationSettings String Settings.Model
+    | UpdateApplicationSettings Settings.Field String
+    -- events from broadcaster
     | BroadcasterChannelAdded Channel.State
     | BroadcasterChannelRenamed ( ID.Channel, String )
     | BroadcasterReceiverRenamed ( ID.Receiver, String )

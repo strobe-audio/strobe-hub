@@ -67,6 +67,16 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("retrieve_settings", app, socket) do
+    Otis.State.Events.notify({:retrieve_settings, [app, socket]})
+    {:noreply, socket}
+  end
+
+  def handle_in("save_settings", settings, socket) do
+    Otis.State.Events.notify({:save_settings, [settings]})
+    {:noreply, socket}
+  end
+
   def handle_info(:controller_join, socket) do
     Otis.State.Events.notify({:controller_join, [socket]})
     {:noreply, socket}

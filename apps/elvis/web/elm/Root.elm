@@ -17,6 +17,7 @@ import Utils.Touch
 import Notification
 import State
 import Msg exposing (Msg)
+import Settings
 
 
 type alias Model =
@@ -36,6 +37,7 @@ type alias Model =
     , viewMode : State.ViewMode
     , showChannelControl : Bool
     , savedState : Maybe SavedState
+    , settings : Maybe Settings.Model
     }
 
 
