@@ -1,8 +1,5 @@
 defmodule OtisLibraryTest do
   use ExUnit.Case
-  doctest OtisLibrary
+  doctest Otis.Library
 
-  test "the truth" do
-    assert 1 + 1 == 2
-  end
 end
