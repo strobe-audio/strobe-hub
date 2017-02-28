@@ -206,6 +206,7 @@ app.ports.blurActiveElement.subscribe(blur => {
 })
 
 app.ports.settingsRequests.subscribe(app => {
+  channel.push("retrieve_settings", app)
   .receive("error", payload => console.log(payload.message))
 })
 
