@@ -11,7 +11,7 @@ defmodule Otis.DNSSD do
   def init(pipeline_config) do
     state = %{ref: nil, pipeline_config: pipeline_config}
     case Application.ensure_all_started(:dnssd, :temporary) do
-      {:ok, [_app]} ->
+      {:ok, _} ->
         Process.flag(:trap_exit, true)
         Logger.info "DNSSD: Registering #{inspect service_name(state)} on port #{service_port(state)} #{ inspect service_texts(state) }"
         {:ok, ref} = register_service(state)
