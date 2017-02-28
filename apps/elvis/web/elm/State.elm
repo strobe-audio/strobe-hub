@@ -51,9 +51,9 @@ viewLabel mode =
 
 viewModes : List ViewMode
 viewModes =
-    [ ViewCurrentChannel
+    [ ViewChannelSwitch
+    , ViewCurrentChannel
     , ViewLibrary
-    , ViewChannelSwitch
     , ViewSettings
     ]
 
