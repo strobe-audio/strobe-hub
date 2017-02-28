@@ -234,9 +234,10 @@
 	height: 0;
 	opacity: 0;
 	background: rgba(0, 0, 0, 0.9);
-	transition: height 200ms, opacity 300ms;
+	transition: opacity 300ms;
 	position: fixed;
-	top: $button-size;
+  top: 0;
+	bottom: $button-size;
 	right: 0;
 	left: 0;
 	z-index: 1000000;
@@ -247,8 +248,8 @@
 
 .root--channel-control__active {
 	flex-direction: column;
-	height: calc(100vh - (2 * $button-size));
-	transition: height 200ms, opacity 300ms;
+	height: calc(100vh - (1 * $button-size));
+	transition: opacity 300ms;
 	opacity: 1;
 }
 

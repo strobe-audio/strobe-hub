@@ -55,11 +55,11 @@ rootWithActiveChannel : Root.Model -> Channel.Model -> Html Msg
 rootWithActiveChannel model channel =
     div
         [ id "root" ]
-        [ (activeRendition model channel)
+        [ (switchView model channel)
         , (notifications model)
         , (channelControl model channel)
         , (activeView model channel)
-        , (switchView model channel)
+        , (activeRendition model channel)
         ]
 
 activeRendition : Root.Model -> Channel.Model -> Html Msg
