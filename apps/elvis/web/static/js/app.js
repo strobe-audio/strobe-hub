@@ -107,6 +107,12 @@ channel.on('receiver_rename', payload => {
   app.ports.receiverRenames.send([payload.receiverId, payload.name])
 })
 
+channel.on('application_settings', payload => {
+  console.log('application_settings', payload)
+  let settings = Object.assign({application: payload.application, saving: false}, {namespaces: payload.settings})
+  app.ports.applicationSettings.send([payload.application, settings])
+})
+
 channel.join()
 .receive('ok', resp => {
   app.ports.connectionStatus.send(true)
@@ -199,5 +205,20 @@ app.ports.blurActiveElement.subscribe(blur => {
 	}
 })
 
+app.ports.settingsRequests.subscribe(app => {
+  .receive("error", payload => console.log(payload.message))
+})
+
+app.ports.settingsSave.subscribe(settings => {
+  channel.push("save_settings", settings)
+  .receive("error", payload => console.log(payload.message))
+})
+
 // the window size signal doesn't always get sent on startup
 app.ports.windowWidth.send(window.innerWidth)
+
+// setTimeout(() => {
+//   channel.push("retrieve_settings", "otis")
+//   .receive("error", payload => console.log(payload.message))
+//   .receive("ok", (msg) => console.log('got settings for', 'otis', msg))
+// }, 2000)

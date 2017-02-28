@@ -20,6 +20,7 @@ import Utils.Touch
 import Notification
 import State
 import Ports
+import Settings
 
 
 initialState : Root.Model
@@ -40,6 +41,7 @@ initialState =
     , viewMode = State.ViewCurrentChannel
     , showChannelControl = True
     , savedState = Nothing
+    , settings = Nothing
     }
 
 
@@ -338,7 +340,18 @@ update action model =
                 updated ! [ cmd ]
 
         Msg.ActivateView mode ->
-            { model | showChannelControl = False, viewMode = mode } ! []
+            let
+                ( model_, cmd ) =
+                    case mode of
+                        State.ViewSettings ->
+                            ({ model | settings = Nothing }, Ports.settingsRequests "otis" )
+
+                        _ ->
+                            ( model, Cmd.none )
+
+
+            in
+                { model_ | showChannelControl = False, viewMode = mode } ! [cmd]
 
         Msg.ToggleShowChannelControl ->
             { model | showChannelControl = not model.showChannelControl } ! []
@@ -376,6 +389,36 @@ update action model =
                     , notifications = notifications
                 }
                     ! [ (Cmd.map Msg.Library cmd) ]
+
+        Msg.LoadApplicationSettings app settings ->
+            let
+                _ = Debug.log ("got settings " ++ app) settings
+                model_ =
+                    case app of
+                        "otis" ->
+                            { model | settings = Just settings }
+
+                        _ ->
+                            -- TODO: handle settings for libraries
+                            model
+            in
+                model_ ! []
+
+        Msg.UpdateApplicationSettings field value ->
+            let
+                settings =
+                    case field.application of
+                        "otis" ->
+                            Maybe.map (Settings.updateField field value) model.settings
+
+                        _ ->
+                            model.settings
+                cmd =
+                    Maybe.map Ports.settingsSave settings
+                        |> Maybe.withDefault Cmd.none
+            in
+                { model | settings = settings } ! [cmd]
+
 
 
 libraryVisible : Root.Model -> Bool

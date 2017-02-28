@@ -69,6 +69,7 @@ subscriptions model =
         , Ports.connectionStatusActions
         , viewportWidth
         , Ports.animationScrollActions
+        , Ports.applicationSettingsActions
         ]
 
 
