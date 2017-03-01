@@ -41,23 +41,6 @@
   cursor: pointer;
 }
 
-.rendition--meta {
-  /* text-overflow: ellipsis; */
-  max-width: calc(100vw - 2 * ($button-size + $padding));
-  overflow: hidden;
-  white-space: nowrap;
-  font-size: 1.4rem;
-  font-weight: 100;
-  /* flex: 1; */
-  /* min-width: 0; */
-  text-overflow: ellipsis; overflow: hidden;
-}
-
-.rendition--meta--detail  {
-  display: inline;
-  white-space: nowrap;
-  min-width: 0;
-}
 .rendition--title {
   /* @mixin h2; */
   /* @mixin fa-btn "\f04b"; */
@@ -161,18 +144,37 @@
   flex-direction: column;
   align-items: stretch;
   padding-left: $padding;
+  font-size: 1.6rem;
+  line-height: 1.2;
 }
 
 .rendition--details--top {
   @mixin h2;
-  font-size: 1.6rem;
-  padding-top: calc($padding / 2);
-  line-height: 110%;
+  font-size: 1em;
+  /* padding-top: calc($padding / 2); */
   /* padding-left: $padding; */
   /* display: flex; */
   /* align-items: baseline; */
   /* flex: 1; */
 
+}
+
+.rendition--meta {
+  /* text-overflow: ellipsis; */
+  max-width: calc(100vw - 2 * ($button-size + $padding));
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 0.8em;
+  font-weight: 100;
+  /* flex: 1; */
+  /* min-width: 0; */
+  text-overflow: ellipsis; overflow: hidden;
+}
+
+.rendition--meta--detail  {
+  display: inline;
+  white-space: nowrap;
+  min-width: 0;
 }
 
 .rendition--progress {
@@ -202,5 +204,9 @@
   height: calc($button-size - 6);
   margin: 3px;
   display: block;
+}
+
+.root--channel-control__active .rendition--details {
+  font-size: 2rem;
 }
 

@@ -304,3 +304,7 @@ $active-channel-peek-width: calc(1.5 * $button-size);
 .root--switch-view--btn__SelectChannel {
 	flex: 0 0 $active-channel-peek-width;
 }
+
+.root--channel-control__active .root--active-rendition {
+	flex: 0;
+}

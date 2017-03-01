@@ -58,6 +58,8 @@ rootWithActiveChannel model channel =
         , classList
             [ ("root--channel-select__active", model.showSelectChannel)
             , ("root--channel-select__inactive", not model.showSelectChannel)
+            , ("root--channel-control__active", model.showChannelControl)
+            , ("root--channel-control__inactive", not model.showChannelControl)
             ]
         ]
         [ (selectChannel model channel)
