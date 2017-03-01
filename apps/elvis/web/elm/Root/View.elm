@@ -92,7 +92,7 @@ channelView model channel =
         [ class "root--channel" ]
         [ (switchView model channel)
         , (notifications model)
-        , (channelControl model channel)
+        -- , (channelControl model channel)
         , (activeView model channel)
         , (activeRendition model channel)
         ]
@@ -127,10 +127,29 @@ activeRendition model channel =
                         rendition
                         channel.playing
 
+        control =
+            if model.showChannelControl then
+                (channelControl model channel)
+            else
+                div [] []
     in
-        div [ class "root--active-rendition" ]
-            [ (rendition model channel)
-            , Html.map (Msg.Channel channel.id) progress
+        div
+            [ classList
+                [ ("root--channel-control-bar", True)
+                , ("root--channel-control-bar__inactive", not model.showChannelControl)
+                , ("root--channel-control-bar__active", model.showChannelControl)
+                ]
+            ]
+            [
+                div
+                    [ class "root--channel-control-position" ]
+                    [ div
+                        [ class "root--active-rendition" ]
+                        [ (rendition model channel)
+                        , Html.map (Msg.Channel channel.id) progress
+                        ]
+                    , control
+                    ]
             ]
 
 

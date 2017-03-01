@@ -196,13 +196,6 @@ $active-channel-peek-width: calc(1.5 * $button-size);
 	flex-direction: column;
 }
 
-.root--active-rendition {
-	/* background: orange; */
-  color: #fff;
-  background: #000;
-	flex: 0 0 $button-size;
-}
-
 .root--active-view {
 	flex: 1;
 	max-width: 100vw;
@@ -237,15 +230,11 @@ $active-channel-peek-width: calc(1.5 * $button-size);
 
 }
 .root--switch-view--btn:hover {
-	background: rgba(255, 255, 255, 0.7);
+	/* background: rgba(255, 255, 255, 0.7); */
 }
 
 .root--switch-view--btn__active {
 	background: rgba(255, 0, 0, 0.8) !important;
-}
-.root--active-rendition {
-	display: flex;
-	flex-direction: row;
 }
 
 .root--switch-view--btn .channel--playlist-duration {
@@ -257,14 +246,40 @@ $active-channel-peek-width: calc(1.5 * $button-size);
 }
 
 /* channel control */
+.root--active-rendition {
+	/* background: orange; */
+  color: #fff;
+  background: #000;
+	flex: 0 0 $button-size;
+	display: flex;
+	flex-direction: row;
+}
+
+
+.root--channel-control-bar {
+	/* position: relative; */
+}
+.root--channel-control-bar__inactive {
+	position: relative;
+	height: $button-size;
+}
+.root--channel-control-bar__inactive .root--channel-control-position {
+	top: 0;
+}
+.root--channel-control-bar__active .root--channel-control-position {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+}
 
 .root--channel-control {
 	display: flex;
 	height: 0;
 	opacity: 0;
-	background: rgba(0, 0, 0, 0.9);
+	background: rgba(0, 0, 0, 1);
 	transition: opacity 300ms;
-	position: fixed;
   top: 0;
 	bottom: $button-size;
 	right: 0;
@@ -284,32 +299,6 @@ $active-channel-peek-width: calc(1.5 * $button-size);
 
 .root--receiver-control  {
 	/* margin-top: calc($button-size / 2); */
-}
-.root--receiver-control-tabs {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	height: $button-size;
-	align-items: center;
-  margin: calc($button-size / 2) 0;
-}
-
-.root--receiver-control-tab {
-	flex: 0 0 50vw;
-	text-align: center;
-	background: #333;
-	height: calc($button-size / 1);
-	display: flex;
-	align-items: center;
-	text-align: center;
-	justify-content: center;
-}
-.root--receiver-control-tab__active {
-	font-weight: bold;
-	background: #ccc;
-}
-.root--receiver-control-tab__disabled {
-	color: #999;
 }
 
 .root--switch-view--btn__SelectChannel {
