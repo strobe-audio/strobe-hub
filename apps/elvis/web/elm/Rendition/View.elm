@@ -215,6 +215,8 @@ playlist rendition =
                         , text ", "
                         , text (renditionAlbum rendition)
                         ]
+                    , div [ class "playlist--entry--duration" ]
+                        [ text (Source.View.duration source) ]
                     ]
                 , div
                     [ class "playlist--entry--skip"
@@ -226,6 +228,42 @@ playlist rendition =
             , div
                 [ class "playlist--entry--menu" ]
                 menu
+            ]
+
+
+playlistHead : Rendition.Model -> Html Rendition.Msg
+playlistHead rendition =
+    let
+        source =
+            rendition.source
+
+        coverImage =
+            source.cover_image
+
+    in
+        div
+            [ classList
+                [ ( "playlist--entry", True )
+                , ( "playlist--entry__head", True )
+                ]
+            ]
+            [ div
+                [ class "playlist--entry--contents"
+                ]
+                [ div [ class "playlist--entry--image", style [ ( "backgroundImage", "url(" ++ coverImage ++ ")" ) ] ] []
+                , div [ class "playlist--entry--inner" ]
+                    [ div [ class "playlist--entry--title" ]
+                        [ strong [] [ text (renditionTitle rendition) ] ]
+                    , div [ class "playlist--entry--album" ]
+                        [ strong []
+                            [ text (renditionPerformer rendition) ]
+                        , text ", "
+                        , text (renditionAlbum rendition)
+                        ]
+                    , div [ class "playlist--entry--duration" ]
+                        [ text (Source.View.duration source) ]
+                    ]
+                ]
             ]
 
 

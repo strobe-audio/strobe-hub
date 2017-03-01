@@ -235,17 +235,28 @@ playlist channel =
         entry rendition =
             Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlist rendition)
 
-        playlist =
-            Maybe.withDefault [] (List.tail channel.playlist)
+        (current, playlist) =
+            case channel.playlist of
+                c :: r ->
+                    ( Just c, r )
 
-        panel =
-            case List.length playlist of
+                [] ->
+                    ( Nothing, [] )
+
+            -- Maybe.withDefault [] (List.tail channel.playlist)
+
+        list =
+            case List.length channel.playlist of
                 0 ->
                     div [ class "playlist__empty" ] [ text "Playlist empty" ]
 
                 _ ->
-                    div [ class "block-group playlist" ]
-                        (List.map entry playlist)
+                    div
+                        [ class "channel--playlist--entries" ]
+                        [ div [ class "channel--playlist--head" ] [ (playlistHead channel current) ]
+                        , playlistDivision "Queued"
+                        , div [ class "channel--playlist--tail" ] (List.map entry playlist)
+                        ]
 
         actionButtons =
             case List.length playlist of
@@ -263,11 +274,29 @@ playlist channel =
                     ]
     in
         div [ id "__scrolling__", class "channel--playlist" ]
-            [ div [ class "channel--playlist-actions" ]
-                actionButtons
-            , panel
+            [ div [ class "channel--playlist-actions" ] actionButtons
+            , list
             ]
 
+
+playlistHead : Channel.Model -> Maybe Rendition.Model -> Html Channel.Msg
+playlistHead channel maybeRendition =
+    case maybeRendition of
+        Nothing ->
+            div [] []
+
+        Just rendition ->
+            div
+                []
+                [ playlistDivision "Currently playing"
+                , Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlistHead rendition)
+                ]
+
+
+
+playlistDivision : String -> Html Channel.Msg
+playlistDivision title =
+    div [ class "channel--playlist-division" ] [ text title ]
 
 mapTap : Attribute (Utils.Touch.E Channel.Msg) -> Attribute Channel.Msg
 mapTap a =

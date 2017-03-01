@@ -14,6 +14,9 @@
   cursor: pointer;
   position: relative;
 }
+.playlist--entry__head {
+  border-bottom: none;
+}
 
 .playlist--entry--image {
   width: $button-size;
@@ -37,6 +40,11 @@
 }
 .playlist--entry--album {
   color: #999;
+}
+.playlist--entry--duration {
+  color: #999;
+  font-size: 0.9em;
+  font-weight: 500;
 }
 .playlist--entry--skip {
   @mixin fa-btn "\f050";  /* play */

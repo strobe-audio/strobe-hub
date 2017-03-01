@@ -179,3 +179,13 @@ $cover-size: 60vw;
 }
 
 
+.channel--playlist-division {
+  height: calc($button-size / 2);
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  line-height: calc($button-size / 2);
+  font-weight: 700;
+  padding: 0 $padding;
+  background: #ddd;
+  color: #444;
+}
