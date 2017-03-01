@@ -30,6 +30,7 @@ type Msg
     | SingleTouch (Utils.Touch.E Msg)
     | ActivateView State.ViewMode
     | ToggleShowChannelControl
+    | ToggleShowChannelSelector
     | ReceiverAttachmentChange
     -- application settings
     | LoadApplicationSettings String Settings.Model

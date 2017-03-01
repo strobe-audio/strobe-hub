@@ -50,7 +50,7 @@
 .channels--view {
 	/* color: #fff; */
 	/* background: #111; */
-	width: 100vw;
+	/* width: 100vw; */
 }
 .channels--toggle {
   width: $button-size;

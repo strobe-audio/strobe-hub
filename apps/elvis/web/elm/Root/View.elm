@@ -54,7 +54,42 @@ rootWhenConnected model =
 rootWithActiveChannel : Root.Model -> Channel.Model -> Html Msg
 rootWithActiveChannel model channel =
     div
-        [ id "root" ]
+        [ id "root"
+        , classList
+            [ ("root--channel-select__active", model.showSelectChannel)
+            , ("root--channel-select__inactive", not model.showSelectChannel)
+            ]
+        ]
+        [ (selectChannel model channel)
+        , (channelView model channel)
+        ]
+
+
+selectChannel : Root.Model -> Channel.Model -> Html Msg
+selectChannel model channel =
+    case model.showSelectChannel of
+        True ->
+            div [ class "root--channel-list" ]
+                [ div
+                    []
+                    [ Channels.View.channel model channel ]
+                , div
+                    [ class "root--channel-list-toggle"
+                    , onClick (Msg.ToggleShowChannelSelector)
+                    , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
+                    , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
+                    ]
+                    []
+                ]
+
+        False ->
+            div [ class "root--channel-list" ] []
+
+
+channelView : Root.Model -> Channel.Model -> Html Msg
+channelView model channel =
+    div
+        [ class "root--channel" ]
         [ (switchView model channel)
         , (notifications model)
         , (channelControl model channel)
@@ -150,9 +185,6 @@ activeView model channel =
                 State.ViewCurrentChannel ->
                     Html.map (Msg.Channel channel.id) (lazy Channel.View.playlist channel)
 
-                State.ViewChannelSwitch ->
-                    Channels.View.channel model channel
-
                 State.ViewLibrary ->
                     Html.map Msg.Library (Library.View.root model.library)
 
@@ -166,9 +198,26 @@ activeView model channel =
 
 switchView : Root.Model -> Channel.Model -> Html Msg
 switchView model channel =
-    div
-        [ class "root--switch-view" ]
-        (List.map (switchViewButton model channel) State.viewModes)
+    let
+        states =
+            (List.map (switchViewButton model channel) State.viewModes)
+
+        switchChannel =
+            div
+                [ classList
+                    [ ( "root--switch-view--btn", True )
+                    , ( "root--switch-view--btn__active", model.showSelectChannel )
+                    , ( "root--switch-view--btn__SelectChannel", True )
+                    ]
+                , onClick (Msg.ToggleShowChannelSelector)
+                , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
+                , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
+                ]
+                [ text "Channels" ]
+    in
+        div
+            [ class "root--switch-view" ]
+            (switchChannel :: states)
 
 
 playlistDuration : Channel.Model -> Html Msg

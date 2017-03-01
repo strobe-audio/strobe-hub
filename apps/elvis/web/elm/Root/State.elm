@@ -42,6 +42,7 @@ initialState =
     , showChannelControl = True
     , savedState = Nothing
     , settings = Nothing
+    , showSelectChannel = False
     }
 
 
@@ -418,6 +419,9 @@ update action model =
                         |> Maybe.withDefault Cmd.none
             in
                 { model | settings = settings } ! [cmd]
+
+        Msg.ToggleShowChannelSelector ->
+            { model | showSelectChannel = not model.showSelectChannel } ! []
 
 
 
