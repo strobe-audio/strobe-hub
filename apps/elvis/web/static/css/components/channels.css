@@ -65,9 +65,9 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
 
 .channels-selector--channel {
   /* flex: 0 0 $button-size; */
-  height: $button-size;
+  /* height: $button-size; */
   display: flex;
-  align-items: center;
+  flex-direction: column;
   /* color: #fff; */
   cursor: pointer;
   position: relative;
@@ -138,11 +138,11 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
 .channels-selector--display {
   /* @mixin slideEditName; */
   height: $button-size;
-  flex: 0 0 calc($button-size);
+  /* flex: 0 0 calc($button-size); */
   display: flex;
   position: relative;
   z-index: 0;
-  flex: 1;
+  flex: 0 0 $button-size;
   align-items: center;
   /* color: #fff; */
   /* left: 0; */
@@ -295,6 +295,9 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
   /* margin-top: calc($button-size / 2); */
 }
 
+.channels-selector--channel-attach-receivers {
+  background: rgba(0, 0, 0, 0.15);
+}
 @media (--desktop) {
   .channels {
     width: $channel-column-width;
@@ -307,5 +310,7 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
     right: 0;
   }
 }
+
+
 
 

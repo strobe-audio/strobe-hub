@@ -72,7 +72,7 @@ selectChannel model channel =
             div [ class "root--channel-list" ]
                 [ div
                     []
-                    [ Channels.View.channel model channel ]
+                    [ Channels.View.channelSelector model channel ]
                 , div
                     [ class "root--channel-list-toggle"
                     , onClick (Msg.ToggleShowChannelSelector)
@@ -280,7 +280,7 @@ channelControl model channel =
                         (Msg.Channel channel.id)
                         (Channel.View.control model channel)
                       )
-                    , (receiverControl model channel)
+                    , Channels.View.channelReceivers model channel
                     -- padding
                     , (div [ style [("height", "30vh")] ] [])
                     ]
@@ -296,60 +296,3 @@ channelControl model channel =
             contents
 
 
-receiverControl : Root.Model -> Channel.Model -> Html Msg
-receiverControl model channel =
-    let
-        hideAttachMsg =
-            Msg.ShowAttachReceiver False
-
-        ( attached, detached ) =
-            Receiver.partitionReceivers channel model.receivers
-
-        contents =
-            case model.showAttachReceiver of
-                True ->
-                    Channels.View.detachedReceivers model channel
-
-                False ->
-                    Channels.View.channelReceivers model channel
-
-        showAttachMsg =
-            if List.isEmpty detached then
-                Msg.NoOp
-
-            else
-                Msg.ShowAttachReceiver True
-
-    in
-        div
-            [ class "root--receiver-control" ]
-            [ div
-                [ class "root--receiver-control-tabs" ]
-                [ div
-                    [ classList
-                        [ ("root--receiver-control-tab", True )
-                        , ("root--receiver-control-tab__active", not model.showAttachReceiver )
-                        , ("root--receiver-control--attached", True )
-                        ]
-                    , onClick hideAttachMsg
-                    , mapTouch (Utils.Touch.touchStart hideAttachMsg)
-                    , mapTouch (Utils.Touch.touchEnd hideAttachMsg)
-                    ]
-                    [ text ((toString (List.length attached)) ++ " Receivers")
-                    ]
-                , div
-                    [ classList
-                        [ ("root--receiver-control-tab", True )
-                        , ("root--receiver-control-tab__active", model.showAttachReceiver )
-                        , ("root--receiver-control--detached", True )
-                        , ("root--receiver-control-tab__disabled", (List.isEmpty detached) )
-                        ]
-                    , onClick showAttachMsg
-                    , mapTouch (Utils.Touch.touchStart showAttachMsg)
-                    , mapTouch (Utils.Touch.touchEnd showAttachMsg)
-                    ]
-                    [ text "Attach"
-                    ]
-                ]
-            , contents
-            ]

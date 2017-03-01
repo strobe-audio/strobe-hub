@@ -26,8 +26,8 @@ import Msg exposing (Msg)
 import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
 
 
-channel : Root.Model -> Channel.Model -> Html Msg
-channel model channel =
+channelSelector : Root.Model -> Channel.Model -> Html Msg
+channelSelector model channel =
     div
         [ id "__scrolling__"
         , classList
@@ -36,37 +36,6 @@ channel model channel =
         ]
         [ (changeChannel model channel)
         ]
-
--- channel : Root.Model -> Channel.Model -> Html Msg
--- channel model channel =
---     div
---         [ id "__scrolling__"
---         , classList
---             [ ( "channels--view", True )
---             ]
---         ]
---         [ div
---             [ class "channels--channel-title" ]
---             [ div
---                 [ class "channel--name"
---                 , onClick Msg.ToggleChangeChannel
---                 , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
---                 , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
---                 ]
---                 [ text channel.name ]
---             , div
---                 [ class "channels--show-switch-channel"
---                 , onClick Msg.ToggleChangeChannel
---                 , mapTouch (Utils.Touch.touchStart Msg.ToggleChangeChannel)
---                 , mapTouch (Utils.Touch.touchEnd Msg.ToggleChangeChannel)
---                 ]
---                 []
---             ]
---         , (changeChannel model channel)
---         , (channelVolume model channel)
---         , (channelReceivers model channel)
---         , (detachedReceivers model channel)
---         ]
 
 
 channelReceivers : Root.Model -> Channel.Model -> Html Msg
@@ -109,8 +78,8 @@ changeChannel model activeChannel =
         channelSummaries =
             List.map (Channel.summary receivers) channels
 
-        ( activeChannels, inactiveChannels ) =
-            List.partition Channel.isActive channelSummaries
+        -- ( activeChannels, inactiveChannels ) =
+        --     List.partition Channel.isActive channelSummaries
 
         orderChannels summaries =
             List.sortBy (\c -> c.channel.id) summaries
@@ -118,17 +87,16 @@ changeChannel model activeChannel =
     in
         div [ class "channels-selector" ]
             [ div [ class "channels-selector--list" ]
-                [ div [ class "channels-selector--separator" ] [ text "Active" ]
-                , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels activeChannels))
-                , div [ class "channels-selector--separator" ] [ text "Inactive" ]
-                , div [ class "channels-selector--group" ] (List.map (channelChoice receivers activeChannel) (orderChannels inactiveChannels))
+                [ div
+                    [ class "channels-selector--group" ]
+                    (List.map (channelChoice model receivers activeChannel) (orderChannels channelSummaries))
                 ]
             ]
 
 
 
-channelChoice : List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
-channelChoice receivers activeChannel channelSummary =
+channelChoice : Root.Model -> List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
+channelChoice model receivers activeChannel channelSummary =
     let
         channel =
             channelSummary.channel
@@ -170,36 +138,46 @@ channelChoice receivers activeChannel channelSummary =
 
                 True ->
                     Input.View.inputSubmitCancel channel.editNameInput
+
+        isActive =
+            channelSummary.id == activeChannel.id
+
+
+        receiverAttachList =
+            if isActive then
+                div [ class "channels-selector--channel-attach-receivers" ]
+                    [ Receivers.View.detached model activeChannel ]
+            else
+                div [] []
     in
         div
             [ classList
                 [ ( "channels-selector--channel", True )
-                , ( "channels-selector--channel__active", channelSummary.id == activeChannel.id )
+                , ( "channels-selector--channel__active", isActive )
                 , ( "channels-selector--channel__playing", channel.playing )
                 , ( "channels-selector--channel__edit", channel.editName )
                 ]
             ]
             [ div
-                ([ classList
+                (( classList
                     [ ( "channels-selector--display", True )
                     , ( "channels-selector--display__inactive", channel.editName )
                     ]
-                 ]
-                    ++ onClickChoose
+                 ) :: onClickChoose
                 )
-                [ div ([ class "channels-selector--channel--name" ] ++ onClickChoose) [ text channel.name ]
-                , div ([ class "channels-selector--channel--duration duration" ] ++ onClickChoose) [ text duration ]
+                [ div (( class "channels-selector--channel--name" ) :: onClickChoose) [ text channel.name ]
+                , div (( class "channels-selector--channel--duration duration" ) :: onClickChoose) [ text duration ]
                 , div
-                    ([ classList
+                    (( classList
                         [ ( "channels-selector--channel--receivers", True )
                         , ( "channels-selector--channel--receivers__empty", channelSummary.receiverCount == 0 )
                         ]
-                     ]
-                        ++ onClickChoose
+                     ) :: onClickChoose
                     )
                     [ text (toString channelSummary.receiverCount) ]
                 -- , div [ class "channels-selector--channel--edit", onClickEdit, onSingleTouch (Msg.Channel channelSummary.id (Channel.ShowEditName True)) ] []
                 ]
+            , receiverAttachList
             -- , div
             --     [ classList
             --         [ ( "channels-selector--edit", True )
