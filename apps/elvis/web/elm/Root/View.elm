@@ -54,12 +54,49 @@ rootWhenConnected model =
 rootWithActiveChannel : Root.Model -> Channel.Model -> Html Msg
 rootWithActiveChannel model channel =
     div
-        [ id "root" ]
-        [ (activeRendition model channel)
+        [ id "root"
+        , classList
+            [ ("root--channel-select__active", model.showSelectChannel)
+            , ("root--channel-select__inactive", not model.showSelectChannel)
+            , ("root--channel-control__active", model.showChannelControl)
+            , ("root--channel-control__inactive", not model.showChannelControl)
+            ]
+        ]
+        [ (selectChannel model channel)
+        , (channelView model channel)
+        ]
+
+
+selectChannel : Root.Model -> Channel.Model -> Html Msg
+selectChannel model channel =
+    case model.showSelectChannel of
+        True ->
+            div [ class "root--channel-list" ]
+                [ div
+                    []
+                    [ Channels.View.channelSelector model channel ]
+                , div
+                    [ class "root--channel-list-toggle"
+                    , onClick (Msg.ToggleShowChannelSelector)
+                    , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
+                    , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
+                    ]
+                    []
+                ]
+
+        False ->
+            div [ class "root--channel-list" ] []
+
+
+channelView : Root.Model -> Channel.Model -> Html Msg
+channelView model channel =
+    div
+        [ class "root--channel" ]
+        [ (switchView model channel)
         , (notifications model)
-        , (channelControl model channel)
+        -- , (channelControl model channel)
         , (activeView model channel)
-        , (switchView model channel)
+        , (activeRendition model channel)
         ]
 
 activeRendition : Root.Model -> Channel.Model -> Html Msg
@@ -92,10 +129,29 @@ activeRendition model channel =
                         rendition
                         channel.playing
 
+        control =
+            if model.showChannelControl then
+                (channelControl model channel)
+            else
+                div [] []
     in
-        div [ class "root--active-rendition" ]
-            [ (rendition model channel)
-            , Html.map (Msg.Channel channel.id) progress
+        div
+            [ classList
+                [ ("root--channel-control-bar", True)
+                , ("root--channel-control-bar__inactive", not model.showChannelControl)
+                , ("root--channel-control-bar__active", model.showChannelControl)
+                ]
+            ]
+            [
+                div
+                    [ class "root--channel-control-position" ]
+                    [ div
+                        [ class "root--active-rendition" ]
+                        [ (rendition model channel)
+                        , Html.map (Msg.Channel channel.id) progress
+                        ]
+                    , control
+                    ]
             ]
 
 
@@ -150,9 +206,6 @@ activeView model channel =
                 State.ViewCurrentChannel ->
                     Html.map (Msg.Channel channel.id) (lazy Channel.View.playlist channel)
 
-                State.ViewChannelSwitch ->
-                    Channels.View.channel model channel
-
                 State.ViewLibrary ->
                     Html.map Msg.Library (Library.View.root model.library)
 
@@ -166,9 +219,26 @@ activeView model channel =
 
 switchView : Root.Model -> Channel.Model -> Html Msg
 switchView model channel =
-    div
-        [ class "root--switch-view" ]
-        (List.map (switchViewButton model channel) State.viewModes)
+    let
+        states =
+            (List.map (switchViewButton model channel) State.viewModes)
+
+        switchChannel =
+            div
+                [ classList
+                    [ ( "root--switch-view--btn", True )
+                    , ( "root--switch-view--btn__active", model.showSelectChannel )
+                    , ( "root--switch-view--btn__SelectChannel", True )
+                    ]
+                , onClick (Msg.ToggleShowChannelSelector)
+                , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
+                , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
+                ]
+                [ text "Channels" ]
+    in
+        div
+            [ class "root--switch-view" ]
+            (switchChannel :: states)
 
 
 playlistDuration : Channel.Model -> Html Msg
@@ -231,7 +301,7 @@ channelControl model channel =
                         (Msg.Channel channel.id)
                         (Channel.View.control model channel)
                       )
-                    , (receiverControl model channel)
+                    , Channels.View.channelReceivers model channel
                     -- padding
                     , (div [ style [("height", "30vh")] ] [])
                     ]
@@ -247,60 +317,3 @@ channelControl model channel =
             contents
 
 
-receiverControl : Root.Model -> Channel.Model -> Html Msg
-receiverControl model channel =
-    let
-        hideAttachMsg =
-            Msg.ShowAttachReceiver False
-
-        ( attached, detached ) =
-            Receiver.partitionReceivers channel model.receivers
-
-        contents =
-            case model.showAttachReceiver of
-                True ->
-                    Channels.View.detachedReceivers model channel
-
-                False ->
-                    Channels.View.channelReceivers model channel
-
-        showAttachMsg =
-            if List.isEmpty detached then
-                Msg.NoOp
-
-            else
-                Msg.ShowAttachReceiver True
-
-    in
-        div
-            [ class "root--receiver-control" ]
-            [ div
-                [ class "root--receiver-control-tabs" ]
-                [ div
-                    [ classList
-                        [ ("root--receiver-control-tab", True )
-                        , ("root--receiver-control-tab__active", not model.showAttachReceiver )
-                        , ("root--receiver-control--attached", True )
-                        ]
-                    , onClick hideAttachMsg
-                    , mapTouch (Utils.Touch.touchStart hideAttachMsg)
-                    , mapTouch (Utils.Touch.touchEnd hideAttachMsg)
-                    ]
-                    [ text ((toString (List.length attached)) ++ " Receivers")
-                    ]
-                , div
-                    [ classList
-                        [ ("root--receiver-control-tab", True )
-                        , ("root--receiver-control-tab__active", model.showAttachReceiver )
-                        , ("root--receiver-control--detached", True )
-                        , ("root--receiver-control-tab__disabled", (List.isEmpty detached) )
-                        ]
-                    , onClick showAttachMsg
-                    , mapTouch (Utils.Touch.touchStart showAttachMsg)
-                    , mapTouch (Utils.Touch.touchEnd showAttachMsg)
-                    ]
-                    [ text "Attach"
-                    ]
-                ]
-            , contents
-            ]

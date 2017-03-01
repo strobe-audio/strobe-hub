@@ -25,7 +25,6 @@ type ChannelListMode
 
 type ViewMode
     = ViewCurrentChannel
-    | ViewChannelSwitch
     | ViewLibrary
     | ViewSettings
 
@@ -40,9 +39,6 @@ viewLabel mode =
         ViewCurrentChannel ->
             "Playlist"
 
-        ViewChannelSwitch ->
-            "Channels"
-
         ViewLibrary ->
             "Library"
 
@@ -53,7 +49,6 @@ viewModes : List ViewMode
 viewModes =
     [ ViewCurrentChannel
     , ViewLibrary
-    , ViewChannelSwitch
     , ViewSettings
     ]
 
@@ -68,9 +63,6 @@ deserialiseViewMode modeString =
     case modeString of
         "ViewCurrentChannel" ->
             ViewCurrentChannel
-
-        "ViewChannelSwitch" ->
-            ViewChannelSwitch
 
         "ViewLibrary" ->
             ViewLibrary

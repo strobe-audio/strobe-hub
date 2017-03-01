@@ -51,23 +51,40 @@
 }
 
 .channel--info--name {
+  padding-top: 2px;
   height: $active-channel-bar-height;
+  box-sizing: border-box;
   text-transform: uppercase;
   font-weight: 700;
   font-size: 1.2rem;
   line-height: $active-channel-bar-height;
   color: #E65100;
   position: relative;
+  display: flex;
+  align-items: center;
 }
 .channel--info--name .channel--name {
-  position: absolute;
-  bottom: -1px;
+  /* position: absolute; */
+  /* bottom: -1px; */
   line-height: 0;
 }
 
 .channel--info--name .channel--playlist-duration {
 	color: #BF360C;
 }
+
+$active-channel-multiplier: 1.7;
+
+.root--channel-control__active .channel--info--name {
+  padding-top: 0;
+  height: calc($active-channel-bar-height * $active-channel-multiplier);
+  font-size: 1.4rem;
+  line-height: calc($active-channel-bar-height * $active-channel-multiplier);
+}
+.root--channel-control__active .channel--info--name .channel--name:before {
+  line-height: 0;
+}
+
 .channel--control {
 	color: #fff;
 }
@@ -75,16 +92,18 @@
 .channel--rewind-play-skip {
 	display: flex;
 	flex-direction: row;
-	margin: calc($button-size / 2) calc($button-size / 2) 0;
+	margin: 0 calc($button-size / 2) 0 calc($button-size / 2);
 }
+
+$cover-size: 60vw;
 
 .channel--rendition-cover {
 	margin: 0 0 calc($button-size / 2) 0;
 	/* background-color: rgba(255, 255, 255, 0.6); */
 	background-repeat: no-repeat;
 	background-position: center center;
-	background-size: calc(100vw) auto;
-	height: 100vw;
+	background-size: $cover-size auto;
+	height: calc($cover-size + (2 * $button-size));
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
@@ -129,8 +148,9 @@
 
 
 .channel--rendition-progress {
-  margin: 0;
+  /* margin: 0; */
 	/* margin: 0 calc($button-size / 2) 0 calc($button-size / 2); */
+	margin: calc($button-size / 4) 0 0 0;
 	height: calc($button-size / 2);
 	display: flex;
 	align-items: center;
@@ -159,3 +179,13 @@
 }
 
 
+.channel--playlist-division {
+  height: calc($button-size / 2);
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  line-height: calc($button-size / 2);
+  font-weight: 700;
+  padding: 0 $padding;
+  background: #ddd;
+  color: #444;
+}

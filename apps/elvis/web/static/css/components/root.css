@@ -159,19 +159,41 @@
 
 
 /* ******* */
+$active-channel-peek-width: calc(1.5 * $button-size);
 
 #root {
 	display: flex;
 	height: 100vh;
 	max-height: 100vh;
-	flex-direction: column;
+	flex-direction: row;
 }
 
-.root--active-rendition {
-	/* background: orange; */
-  color: #fff;
-  background: #000;
-	flex: 0 0 $button-size;
+#root > .root--channel-list {
+	/* transition: flex-basis 1s; */
+}
+#root.root--channel-select__inactive > .root--channel-list {
+	flex: 0 0 0;
+}
+#root.root--channel-select__active > .root--channel-list {
+	flex: 0 0 calc(100vw - $active-channel-peek-width);
+}
+
+.root--channel-list-toggle {
+	position: absolute;
+	right: 0;
+	top: $button-size;
+	bottom: 0;
+	width: $active-channel-peek-width;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 10000;
+}
+
+.root--channel {
+	display: flex;
+	width: 100vw;
+	height: 100vh;
+	max-height: 100vh;
+	flex-direction: column;
 }
 
 .root--active-view {
@@ -187,7 +209,7 @@
 
 .root--switch-view {
 	background: rgba(66, 66, 66, 1);
-	flex: 0 0 60px;
+	flex: 0 0 $button-size;
 	display: flex;
 	flex-direction: row;
 	align-items: stretch;
@@ -198,7 +220,7 @@
 .root--switch-view--btn {
 	flex: 1;
 	text-align: center;
-	margin: 0 2px;
+	margin: 0;
 	background: rgba(0, 0, 0, 0.1);
 	display: flex;
 	align-items: center;
@@ -208,15 +230,11 @@
 
 }
 .root--switch-view--btn:hover {
-	background: rgba(255, 255, 255, 0.7);
+	/* background: rgba(255, 255, 255, 0.7); */
 }
 
 .root--switch-view--btn__active {
 	background: rgba(255, 0, 0, 0.8) !important;
-}
-.root--active-rendition {
-	display: flex;
-	flex-direction: row;
 }
 
 .root--switch-view--btn .channel--playlist-duration {
@@ -228,15 +246,42 @@
 }
 
 /* channel control */
+.root--active-rendition {
+	/* background: orange; */
+  color: #fff;
+  background: #000;
+	flex: 0 0 $button-size;
+	display: flex;
+	flex-direction: row;
+}
+
+
+.root--channel-control-bar {
+	/* position: relative; */
+}
+.root--channel-control-bar__inactive {
+	position: relative;
+	height: $button-size;
+}
+.root--channel-control-bar__inactive .root--channel-control-position {
+	top: 0;
+}
+.root--channel-control-bar__active .root--channel-control-position {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+}
 
 .root--channel-control {
 	display: flex;
 	height: 0;
 	opacity: 0;
-	background: rgba(0, 0, 0, 0.9);
-	transition: height 200ms, opacity 300ms;
-	position: fixed;
-	top: $button-size;
+	background: rgba(0, 0, 0, 1);
+	transition: opacity 300ms;
+  top: 0;
+	bottom: $button-size;
 	right: 0;
 	left: 0;
 	z-index: 1000000;
@@ -247,37 +292,19 @@
 
 .root--channel-control__active {
 	flex-direction: column;
-	height: calc(100vh - (2 * $button-size));
-	transition: height 200ms, opacity 300ms;
+	height: calc(100vh - (1 * $button-size));
+	transition: opacity 300ms;
 	opacity: 1;
 }
 
 .root--receiver-control  {
 	/* margin-top: calc($button-size / 2); */
 }
-.root--receiver-control-tabs {
-	display: flex;
-	flex-direction: row;
-	justify-content: center;
-	height: $button-size;
-	align-items: center;
-  margin: calc($button-size / 2) 0;
+
+.root--switch-view--btn__SelectChannel {
+	flex: 0 0 $active-channel-peek-width;
 }
 
-.root--receiver-control-tab {
-	flex: 0 0 50vw;
-	text-align: center;
-	background: #333;
-	height: calc($button-size / 1);
-	display: flex;
-	align-items: center;
-	text-align: center;
-	justify-content: center;
-}
-.root--receiver-control-tab__active {
-	font-weight: bold;
-	background: #ccc;
-}
-.root--receiver-control-tab__disabled {
-	color: #999;
+.root--channel-control__active .root--active-rendition {
+	flex: 0;
 }
