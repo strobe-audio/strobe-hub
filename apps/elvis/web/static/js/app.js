@@ -3,6 +3,12 @@ import 'no_bounce'
 import 'modernizr'
 import {Socket} from 'phoenix'
 import Elm from 'Main'
+import Raven from 'raven-js'
+
+if (window.SENTRY_DSN) {
+	console.log('Installing Sentry error tracking...')
+	Raven.config(window.SENTRY_DSN).install()
+}
 
 // change the state key in the case of 'schema' changes
 const savedStateKey = 'elvis-stored-state-20160124-02'

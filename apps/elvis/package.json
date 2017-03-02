@@ -25,6 +25,7 @@
   "license": "MIT",
   "dependencies": {
     "css-loader": "^0.26.1",
-    "elm-test": "^0.18.2"
+    "elm-test": "^0.18.2",
+    "raven-js": "^3.12.0"
   }
 }
