@@ -159,13 +159,16 @@ channelChoice model receivers activeChannel channelSummary =
                 ]
             ]
             [ div
-                (( classList
-                    [ ( "channels-selector--display", True )
-                    , ( "channels-selector--display__inactive", channel.editName )
+                [ class "channels-selector--display" ]
+                [ div
+                    [ classList
+                        [ ( "channels-selector--channel--play-pause", True )
+                        , ( "channels-selector--channel--play-pause__play", channel.playing )
+                        , ( "channels-selector--channel--play-pause__pause", not channel.playing )
+                        ]
                     ]
-                 ) :: onClickChoose
-                )
-                [ div (( class "channels-selector--channel--name" ) :: onClickChoose) [ text channel.name ]
+                    [ channelPlayPauseBtn model channel ]
+                , div (( class "channels-selector--channel--name" ) :: onClickChoose) [ text channel.name ]
                 , div (( class "channels-selector--channel--duration duration" ) :: onClickChoose) [ text duration ]
                 , div
                     (( classList
@@ -189,6 +192,9 @@ channelChoice model receivers activeChannel channelSummary =
 
 
 
+channelPlayPauseBtn : Root.Model -> Channel.Model -> Html Msg
+channelPlayPauseBtn model channel =
+    Html.map (Msg.Channel channel.id) (Channel.View.playPauseButton channel)
 
 mapTouch : Attribute (Utils.Touch.E Msg) -> Attribute Msg
 mapTouch a =

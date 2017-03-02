@@ -74,12 +74,12 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
   &:hover {
     color: red;
   }
-  & + & {
-    border-top: solid 1px $channel-select-border;
-  }
-  &:last-child {
-    border-bottom: solid 1px $channel-select-border;
-  }
+  /* & + & { */
+  /*   border-top: solid 1px $channel-select-border; */
+  /* } */
+  /* &:last-child { */
+  /*   border-bottom: solid 1px $channel-select-border; */
+  /* } */
 }
 
 .channels-selector--channel:active {
@@ -136,39 +136,30 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
   /* display: flex; */
 }
 .channels-selector--display {
-  /* @mixin slideEditName; */
-  height: $button-size;
-  /* flex: 0 0 calc($button-size); */
+  height: calc($button-size - 1px);
   display: flex;
   position: relative;
   z-index: 0;
-  flex: 0 0 $button-size;
+  flex: 0 0 calc($button-size - 1px);
   align-items: center;
-  /* color: #fff; */
-  /* left: 0; */
   cursor: pointer;
   position: relative;
-  &::before {
-    @mixin fa;
-    content: $channel-icon;
-    width: $button-size;
-    display: block;
-    text-align: center;
-    border-right: solid 1px rgba(0, 0, 0, 0.05);
-    color: rgba(0, 0, 0, 0.3);
-  }
-  & + & {
-    border-top: solid 1px $channel-select-border;
-  }
-  &:last-child {
-    border-bottom: solid 1px $channel-select-border;
-  }
+	border-bottom: solid 1px $channel-select-border;
 }
 
 .channels-selector--display__inactive {
-  /* left: -100%; */
 }
 
+.channels-selector--channel--play-pause {
+	flex: 0 0 $button-size;
+  height: 100%;
+	display: flex;
+	align-items: center;
+}
+.channels-selector--channel--play-pause__play {
+	background: red;
+	color: #fff;
+}
 
 .channels-selector--edit {
   /* @mixin slideEditName; */
@@ -197,6 +188,7 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
 }
 .channels-selector--channel--name {
   flex: 1;
+	padding: 0 $padding;
   &:hover {
     /* color: #fff; */
   }
