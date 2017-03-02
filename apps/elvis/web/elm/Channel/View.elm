@@ -292,6 +292,19 @@ playlistHead channel maybeRendition =
                 , Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlistHead rendition)
                 ]
 
+playPauseButton : Channel.Model -> Html Channel.Msg
+playPauseButton channel =
+    div
+        [ classList
+            [ ( "channel--play-pause-btn", True )
+            , ( "channel--play-pause-btn__play", channel.playing )
+            , ( "channel--play-pause-btn__pause", not channel.playing )
+            ]
+        , onClick Channel.PlayPause
+        , mapTap (Utils.Touch.touchStart Channel.PlayPause)
+        , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
+        ]
+        []
 
 
 playlistDivision : String -> Html Channel.Msg
