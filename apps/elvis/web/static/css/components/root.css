@@ -277,20 +277,29 @@ $active-channel-peek-width: 85px;
 
 .root--channel-control-bar {
 	/* position: relative; */
-}
-.root--channel-control-bar__inactive {
-	position: relative;
 	height: $button-size;
 }
+.root--channel-control-bar__inactive {
+	/* position: relative; */
+}
+.root--channel-control-position {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
 .root--channel-control-bar__inactive .root--channel-control-position {
-	top: 0;
+	/* top: 0; */
+  height: $button-size;
 }
 .root--channel-control-bar__active .root--channel-control-position {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100vw;
-	height: 100vh;
+  height: 100vh;
+  /* top: 0; */
+	/* position: absolute; */
+	/* top: 0; */
+	/* left: 0; */
+	/* width: 100vw; */
+	/* height: 100vh; */
 }
 
 .root--channel-control {

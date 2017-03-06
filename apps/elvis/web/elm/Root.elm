@@ -47,6 +47,7 @@ type alias Model =
 
 type alias ViewAnimations =
     { revealChannelList : Animation.Animation
+    , revealChannelControl : Animation.Animation
     }
 
 

@@ -47,6 +47,7 @@ initialState =
     , showSelectChannel = False
     , viewAnimations =
         { revealChannelList = Animation.static 0
+        , revealChannelControl = Animation.static 0
         }
     }
 
@@ -474,7 +475,7 @@ update action model =
                     Animation.animation time
                         |> Animation.from min
                         |> Animation.to max
-                        |> Animation.duration 250
+                        |> Animation.duration 200
                         |> Animation.ease Ease.inOutQuart
 
                 animation =
