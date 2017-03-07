@@ -32,7 +32,7 @@ type alias Model =
     , showPlaylistAndLibrary : Bool
     , library : Library.Model
     , touches : Utils.Touch.Model
-    , animationTime : Maybe Time
+    , animationTime : Time
     , notifications : List (Notification.Model Msg)
     , showSelectChannel : Bool
     , viewMode : State.ViewMode

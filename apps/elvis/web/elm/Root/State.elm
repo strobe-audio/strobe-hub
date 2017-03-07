@@ -36,7 +36,7 @@ initialState =
     , activeChannelId = Nothing
     , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
-    , animationTime = Nothing
+    , animationTime = 0
     , notifications = []
     , viewMode = State.ViewCurrentChannel
     , showChannelControl = True
@@ -385,7 +385,7 @@ update action model =
                     List.filter (Notification.isVisible time) model.notifications
             in
                 { model
-                    | animationTime = Just time
+                    | animationTime = time
                     , library = library
                     , notifications = notifications
                 }
