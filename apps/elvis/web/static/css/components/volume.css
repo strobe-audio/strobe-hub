@@ -1,69 +1,84 @@
-.volume-controls{
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-	cursor: pointer;
-}
-.volume-control {
-  display: flex;
-  height: $button-size;
-  background: rgba(0, 0, 0, 0.5);
+$volume-height: $button-size;
+
+.volume--control {
   position: relative;
 }
 
-$volume-height: $button-size;
+.volume--range {
+  display: flex;
+}
+.volume--slider {
+  position: relative;
+  height: $volume-height;
+  flex: 1;
+}
 
-.volume-mute-btn,
-.volume-full-btn {
-	flex: 0 0 $volume-height;
-  text-align: center;
-  line-height: $button-size;
-  cursor: pointer;
-  &:hover {
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
+.volume--state {
+  @mixin fa-btn "";
+  flex: 0 0 calc($volume-height / 1);
+}
+
+.volume--state__mute:before {
+  content: "\f026";
+}
+.volume--state__full:before {
+  content: "\f028";
+}
+
+.volume--control input[type="range"] {
+  -webkit-appearance: none;
+  background: rgba(255, 255, 255, 1);
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 2px;
+  display: block;
+  width: 100%;
+  margin: 0;
+  margin-bottom: $button-size;
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+}
+
+@define-mixin volume-track {
+}
+
+@define-mixin volume-thumb {
+  width:  calc($volume-height / 2);
+  height: calc($volume-height / 2);
+  box-sizing: border-box;
+  background-color: rgba(128, 0, 0, 1);
+  border-radius: calc($volume-height / 2);
+  border: none;
+  outline: none;
+  position: relative;
+  z-index: 3;
+  &:active {
+    background-color: rgba(255, 0, 0, 1);
   }
 }
 
-
-.volume {
-  /* width: calc(100% - ( 2 * $button-size )); */
-	flex: 1;
-  height: $volume-height;
-  line-height: $volume-height;
-  position: relative;
-  padding: 0 $padding;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.volume--control input[type="range"]::-ms-track {
+  @mixin volume-track;
 }
-.volume-level {
-  height: $volume-height;
-  background-color: rgba(255, 0, 0, 0.5);
-  /* background-color: rgba(255, 255, 255, 0.5); */
-  position: absolute;
-  left: 0;
-  top: 0;
-  z-index: 0;
-  /* disable mouse & touch events */
-  pointer-events: none;
+.volume--control input[type="range"]::-moz-range-track {
+  @mixin volume-track;
+}
+.volume--control input[type="range"]::-webkit-slider-runnable-track {
+  @mixin volume-track;
 }
 
-.volume-label {
-  -moz-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  position: relative;
-  z-index: 10;
-  height: $volume-height;
-	cursor: pointer;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  /* disable mouse & touch events */
-  pointer-events: none;
+.volume--control input[type="range"]::-ms-thumb {
+  @mixin volume-thumb;
 }
-
-.volume-label * {
-  /* disable mouse & touch events */
-  pointer-events: none;
+.volume--control input[type="range"]::-moz-range-thumb {
+  @mixin volume-thumb;
+}
+.volume--control input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  @mixin volume-thumb;
 }

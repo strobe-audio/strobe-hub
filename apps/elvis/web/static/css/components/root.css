@@ -266,9 +266,9 @@ $active-channel-peek-width: 85px;
 
 /* channel control */
 .root--active-rendition {
-	/* background: orange; */
+	border-bottom: solid 1px #222;
   color: #fff;
-  background: #000;
+	background: #111111;
 	flex: 0 0 $button-size;
 	display: flex;
 	flex-direction: row;

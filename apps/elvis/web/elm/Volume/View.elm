@@ -1,74 +1,52 @@
 module Volume.View exposing (..)
 
-import Html exposing (..)
+import Html exposing (Html, div, input)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
-import Json.Decode exposing (field)
+import Html.Events exposing (onInput)
 import Volume
 import Touch
 import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
+import String
 
 
 control : Float -> Html Volume.Msg -> Html Volume.Msg
 control volume label =
     let
-        handler buttons offset width =
-            let
-                maybeVolume =
-                    case buttons of
-                        1 ->
-                            Just ((toFloat offset) / (toFloat width))
+        scale : Float
+        scale =
+            1000.0
 
-                        _ ->
-                            Nothing
-            in
-                (Volume.Change maybeVolume)
+        decode : String -> Maybe Float
+        decode input =
+            case String.toFloat input of
+                Ok value ->
+                    Just (value / scale)
 
-        options =
-            { stopPropagation = False, preventDefault = False }
+                Err _ ->
+                    Nothing
 
-        mousemove =
-            onWithOptions "mousemove"
-                options
-                (Json.Decode.map3 handler
-                    (field "buttons" Json.Decode.int)
-                    (field "offsetX" Json.Decode.int)
-                    (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
-                )
-
-        mousedown =
-            onWithOptions "mousedown"
-                options
-                (Json.Decode.map2 (\x w -> handler 1 x w)
-                    (field "offsetX" Json.Decode.int)
-                    (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
-                )
-
-        decodeTouch label =
-            (Json.Decode.map3 (\px ol w -> handler 1 (px - ol) w)
-                (field "pageX" Json.Decode.int)
-                (Json.Decode.at [ "target", "offsetLeft" ] Json.Decode.int)
-                (Json.Decode.at [ "target", "offsetWidth" ] Json.Decode.int)
-            )
-
-        touchstart =
-            onWithOptions "touchstart"
-                Touch.preventAndStop
-                (decodeTouch "touch start")
-
-        touchmove =
-            onWithOptions "touchmove"
-                Touch.preventAndStop
-                (decodeTouch "touch move")
-
-        volumeStyle v =
-            style [ ( "width", (toString (v * 100)) ++ "%" ) ]
+        stateButton : String -> Float -> List (Html.Attribute Volume.Msg)
+        stateButton classes volume =
+            ((class classes) :: (onUnifiedClick (Volume.Change (Just volume))))
     in
-        div [ class "volume-control" ]
-            [ div ([ class "volume-mute-btn fa fa-volume-off" ] ++ (onUnifiedClick (Volume.Change (Just 0.0)))) []
-            , div [ class "volume", touchstart, touchmove, mousedown, mousemove ]
-                [ div [ class "volume-level", volumeStyle volume ] []
-                , div [ class "volume-label" ] [ label ]
+        div
+            [ class "volume--control" ]
+            [ div [ class "volume--label" ] [ label ]
+            , div
+                [ class "volume--range" ]
+                [ div (stateButton "volume--state volume--state__mute" 0.0) []
+                , div
+                    [ class "volume--slider" ]
+                    [ input
+                        [ type_ "range"
+                        , Html.Attributes.min "0"
+                        , Html.Attributes.max (scale |> floor |> toString)
+                        , value (toString (volume * scale))
+                        , step "1"
+                        , onInput (Volume.Change << decode)
+                        ]
+                        []
+                    ]
+                , div (stateButton "volume--state volume--state__full" 1.0) []
                 ]
-            , div ([ class "volume-full-btn fa fa-volume-up" ] ++ (onUnifiedClick (Volume.Change (Just 1.0)))) []
             ]
