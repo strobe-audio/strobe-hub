@@ -28,44 +28,32 @@ isVisible t n =
         || (not <| (Animation.isDone t n.disappearAnimation))
 
 
-appearAnimation : Maybe Time -> Animation.Animation
-appearAnimation maybeTime =
-    (Maybe.map
-        (\time ->
-            (Animation.animation time)
-                |> (Animation.from 0.0)
-                |> Animation.to 1.0
-                |> Animation.duration (300 * Time.millisecond)
-                |> Animation.ease Ease.inOutSine
-        )
-        maybeTime
-    )
-        |> Maybe.withDefault (Animation.static 1.0)
+appearAnimation : Time -> Animation.Animation
+appearAnimation time =
+    (Animation.animation time)
+        |> (Animation.from 0.0)
+        |> Animation.to 1.0
+        |> Animation.duration (300 * Time.millisecond)
+        |> Animation.ease Ease.inOutSine
 
 
-disappearAnimation : Maybe Time -> Animation.Animation
-disappearAnimation maybeTime =
-    (Maybe.map
-        (\time ->
-            (Animation.animation time)
-                |> Animation.delay (1 * Time.second)
-                |> Animation.from 1.0
-                |> Animation.to 0.0
-                |> Animation.duration (300 * Time.millisecond)
-                |> Animation.ease Ease.inOutSine
-        )
-        maybeTime
-    )
-        |> Maybe.withDefault (Animation.static 0.0)
+disappearAnimation : Time -> Animation.Animation
+disappearAnimation time =
+    (Animation.animation time)
+        |> Animation.delay (1 * Time.second)
+        |> Animation.from 1.0
+        |> Animation.to 0.0
+        |> Animation.duration (300 * Time.millisecond)
+        |> Animation.ease Ease.inOutSine
 
 
-forRendition : Maybe Time -> Rendition.State -> Model msg
-forRendition maybeTime rendition =
+forRendition : Time -> Rendition.State -> Model msg
+forRendition time rendition =
     { id = rendition.id
     , title = renditionNotificationTitle rendition
-    , addedTime = Maybe.withDefault 0 maybeTime
-    , appearAnimation = appearAnimation maybeTime
-    , disappearAnimation = disappearAnimation maybeTime
+    , addedTime = time
+    , appearAnimation = appearAnimation time
+    , disappearAnimation = disappearAnimation time
     }
 
 

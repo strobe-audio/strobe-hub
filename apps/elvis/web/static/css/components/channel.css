@@ -76,13 +76,13 @@
 $active-channel-multiplier: 1.7;
 
 .root--channel-control__active .channel--info--name {
-  padding-top: 0;
-  height: calc($active-channel-bar-height * $active-channel-multiplier);
-  font-size: 1.4rem;
-  line-height: calc($active-channel-bar-height * $active-channel-multiplier);
+  /* padding-top: 0; */
+  /* height: calc($active-channel-bar-height * $active-channel-multiplier); */
+  /* font-size: 1.4rem; */
+  /* line-height: calc($active-channel-bar-height * $active-channel-multiplier); */
 }
 .root--channel-control__active .channel--info--name .channel--name:before {
-  line-height: 0;
+  /* line-height: 0; */
 }
 
 .channel--control {

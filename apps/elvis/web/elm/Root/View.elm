@@ -22,7 +22,7 @@ import Notification.View
 import State
 import Spinner
 import Settings.View
-
+import Animation
 
 root : Root.Model -> Html Msg
 root model =
@@ -58,8 +58,8 @@ rootWithActiveChannel model channel =
         , classList
             [ ("root--channel-select__active", model.showSelectChannel)
             , ("root--channel-select__inactive", not model.showSelectChannel)
-            , ("root--channel-control__active", model.showChannelControl)
-            , ("root--channel-control__inactive", not model.showChannelControl)
+            , ("root--channel-control__active", showChannelControl model)
+            , ("root--channel-control__inactive", not <| showChannelControl model)
             ]
         ]
         [ (selectChannel model channel)
@@ -69,35 +69,52 @@ rootWithActiveChannel model channel =
 
 selectChannel : Root.Model -> Channel.Model -> Html Msg
 selectChannel model channel =
-    case model.showSelectChannel of
-        True ->
-            div [ class "root--channel-list" ]
-                [ div
-                    []
-                    [ Channels.View.channelSelector model channel ]
-                , div
-                    [ class "root--channel-list-toggle"
-                    , onClick (Msg.ToggleShowChannelSelector)
-                    , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
-                    , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
-                    ]
-                    []
-                ]
+    let
+        shown =
+            model.showSelectChannel
+                || (Animation.isRunning model.animationTime model.viewAnimations.revealChannelList)
 
-        False ->
-            div [ class "root--channel-list" ] []
+    in
+        case shown of
+            True ->
+                div [ class "root--channel-list" ]
+                    [ div
+                        []
+                        [ Channels.View.channelSelector model channel ]
+                    ]
+
+            False ->
+                div [ class "root--channel-list" ] []
 
 
 channelView : Root.Model -> Channel.Model -> Html Msg
 channelView model channel =
+    let
+        position =
+            (Animation.animate model.animationTime model.viewAnimations.revealChannelList)
+
+        left =
+            "calc(" ++ (toString position) ++ " * (100vw - 85px))"
+    in
+        div
+            [ class "root--channel", style [("left", left)] ]
+            [ (switchView model channel)
+            , (notifications model)
+            , (activeView model channel)
+            , (activeRendition model channel)
+            , channelViewOverlay
+            ]
+
+
+channelViewOverlay : Html Msg
+channelViewOverlay =
     div
-        [ class "root--channel" ]
-        [ (switchView model channel)
-        , (notifications model)
-        -- , (channelControl model channel)
-        , (activeView model channel)
-        , (activeRendition model channel)
+        [ class "root--channel-list-toggle"
+        , onClick (Msg.ToggleShowChannelSelector)
+        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
+        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
         ]
+        []
 
 activeRendition : Root.Model -> Channel.Model -> Html Msg
 activeRendition model channel =
@@ -129,22 +146,37 @@ activeRendition model channel =
                         rendition
                         channel.playing
 
+        shown =
+            showChannelControl model
+
+        styles =
+            if shown then
+                let
+                    position =
+                        Animation.animate model.animationTime model.viewAnimations.revealChannelControl
+
+                    top = "calc(" ++ (toString position) ++ " * (100vh - 55px))"
+                in
+                    [("top", top)]
+            else
+                []
+
         control =
-            if model.showChannelControl then
-                (channelControl model channel)
+            if shown then
+                (channelControl model channel shown)
             else
                 div [] []
     in
         div
             [ classList
                 [ ("root--channel-control-bar", True)
-                , ("root--channel-control-bar__inactive", not model.showChannelControl)
-                , ("root--channel-control-bar__active", model.showChannelControl)
+                , ("root--channel-control-bar__inactive", not shown)
+                , ("root--channel-control-bar__active", shown)
                 ]
             ]
             [
                 div
-                    [ class "root--channel-control-position" ]
+                    [ class "root--channel-control-position", style styles ]
                     [ div
                         [ class "root--active-rendition" ]
                         [ (rendition model channel)
@@ -154,6 +186,10 @@ activeRendition model channel =
                     ]
             ]
 
+showChannelControl : Root.Model -> Bool
+showChannelControl model =
+    model.showChannelControl
+        || (Animation.isRunning model.animationTime model.viewAnimations.revealChannelControl)
 
 rendition : Root.Model -> Channel.Model -> Html Msg
 rendition model channel =
@@ -288,11 +324,11 @@ notifications model =
         ]
 
 
-channelControl : Root.Model -> Channel.Model -> Html Msg
-channelControl model channel =
+channelControl : Root.Model -> Channel.Model -> Bool -> Html Msg
+channelControl model channel visible =
     let
         contents =
-            case model.showChannelControl of
+            case visible of
                 False ->
                     []
 
@@ -310,7 +346,7 @@ channelControl model channel =
         div
             [ classList
                 [ ("root--channel-control", True)
-                , ("root--channel-control__active", model.showChannelControl)
+                , ("root--channel-control__active", visible)
                 , ("scrolling", True)
                 ]
             ]

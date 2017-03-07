@@ -21,6 +21,8 @@ import Notification
 import State
 import Ports
 import Settings
+import Animation
+import Ease
 
 
 initialState : Root.Model
@@ -36,13 +38,17 @@ initialState =
     , activeChannelId = Nothing
     , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
-    , animationTime = Nothing
+    , animationTime = 0
     , notifications = []
     , viewMode = State.ViewCurrentChannel
     , showChannelControl = True
     , savedState = Nothing
     , settings = Nothing
     , showSelectChannel = False
+    , viewAnimations =
+        { revealChannelList = Animation.static 0
+        , revealChannelControl = Animation.static 0
+        }
     }
 
 
@@ -355,7 +361,38 @@ update action model =
                 { model_ | showChannelControl = False, viewMode = mode } ! [cmd]
 
         Msg.ToggleShowChannelControl ->
-            { model | showChannelControl = not model.showChannelControl } ! []
+            let
+                showChannelControl =
+                    not model.showChannelControl
+
+                -- start slightly in the past to avoid awkward moment when
+                -- animation declares itself to be not running as the time when
+                -- it starts is exactly the current time.
+                time =
+                    model.animationTime - 1
+
+                hidden = 1
+                shown = 0
+
+                makeAnimation min max =
+                    Animation.animation time
+                        |> Animation.from min
+                        |> Animation.to max
+                        |> Animation.duration 200
+                        |> Animation.ease Ease.inOutQuart
+
+                animation =
+                    if showChannelControl then
+                        makeAnimation hidden shown
+                    else
+                        makeAnimation shown hidden
+
+                viewAnimations = model.viewAnimations
+
+                viewAnimations_ =
+                    { viewAnimations | revealChannelControl = animation }
+            in
+                { model | showChannelControl = showChannelControl, viewAnimations = viewAnimations_ } ! []
 
         Msg.ReceiverAttachmentChange ->
             case Root.activeChannel model of
@@ -385,7 +422,7 @@ update action model =
                     List.filter (Notification.isVisible time) model.notifications
             in
                 { model
-                    | animationTime = Just time
+                    | animationTime = time
                     , library = library
                     , notifications = notifications
                 }
@@ -421,7 +458,39 @@ update action model =
                 { model | settings = settings } ! [cmd]
 
         Msg.ToggleShowChannelSelector ->
-            { model | showSelectChannel = not model.showSelectChannel } ! []
+            let
+                showSelectChannel =
+                    not model.showSelectChannel
+
+                -- start slightly in the past to avoid awkward moment when
+                -- animation declares itself to be not running as the time when
+                -- it starts is exactly the current time.
+                time =
+                    model.animationTime - 1
+
+                hidden = 0
+                shown = 1
+
+                makeAnimation min max =
+                    Animation.animation time
+                        |> Animation.from min
+                        |> Animation.to max
+                        |> Animation.duration 200
+                        |> Animation.ease Ease.inOutQuart
+
+                animation =
+                    if showSelectChannel then
+                        makeAnimation hidden shown
+                    else
+                        makeAnimation shown hidden
+
+                viewAnimations = model.viewAnimations
+
+                viewAnimations_ =
+                    { viewAnimations | revealChannelList = animation }
+
+            in
+                { model | showSelectChannel = showSelectChannel, viewAnimations = viewAnimations_ } ! []
 
 
 

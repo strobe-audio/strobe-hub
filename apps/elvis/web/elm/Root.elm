@@ -3,6 +3,7 @@ module Root exposing (..)
 import List.Extra
 import Json.Decode as Json
 import Time exposing (Time)
+import Animation
 
 
 --
@@ -18,6 +19,7 @@ import Notification
 import State
 import Msg exposing (Msg)
 import Settings
+import Animation
 
 
 type alias Model =
@@ -32,13 +34,20 @@ type alias Model =
     , showPlaylistAndLibrary : Bool
     , library : Library.Model
     , touches : Utils.Touch.Model
-    , animationTime : Maybe Time
+    , animationTime : Time
     , notifications : List (Notification.Model Msg)
     , showSelectChannel : Bool
     , viewMode : State.ViewMode
     , showChannelControl : Bool
     , savedState : Maybe SavedState
     , settings : Maybe Settings.Model
+    , viewAnimations : ViewAnimations
+    }
+
+
+type alias ViewAnimations =
+    { revealChannelList : Animation.Animation
+    , revealChannelControl : Animation.Animation
     }
 
 
