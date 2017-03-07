@@ -22,7 +22,7 @@ import Notification.View
 import State
 import Spinner
 import Settings.View
-
+import Animation
 
 root : Root.Model -> Html Msg
 root model =
@@ -69,35 +69,53 @@ rootWithActiveChannel model channel =
 
 selectChannel : Root.Model -> Channel.Model -> Html Msg
 selectChannel model channel =
-    case model.showSelectChannel of
-        True ->
-            div [ class "root--channel-list" ]
-                [ div
-                    []
-                    [ Channels.View.channelSelector model channel ]
-                , div
-                    [ class "root--channel-list-toggle"
-                    , onClick (Msg.ToggleShowChannelSelector)
-                    , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
-                    , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
-                    ]
-                    []
-                ]
+    let
+        shown =
+            model.showSelectChannel
+                || (Animation.isRunning model.animationTime model.viewAnimations.revealChannelList)
 
-        False ->
-            div [ class "root--channel-list" ] []
+    in
+        case shown of
+            True ->
+                div [ class "root--channel-list" ]
+                    [ div
+                        []
+                        [ Channels.View.channelSelector model channel ]
+                    ]
+
+            False ->
+                div [ class "root--channel-list" ] []
 
 
 channelView : Root.Model -> Channel.Model -> Html Msg
 channelView model channel =
+    let
+        position =
+            (Animation.animate model.animationTime model.viewAnimations.revealChannelList)
+
+        left =
+            "calc(" ++ (toString position) ++ " * (100vw - 85px))"
+    in
+        div
+            [ class "root--channel", style [("left", left)] ]
+            [ (switchView model channel)
+            , (notifications model)
+            -- , (channelControl model channel)
+            , (activeView model channel)
+            , (activeRendition model channel)
+            , channelViewOverlay
+            ]
+
+
+channelViewOverlay : Html Msg
+channelViewOverlay =
     div
-        [ class "root--channel" ]
-        [ (switchView model channel)
-        , (notifications model)
-        -- , (channelControl model channel)
-        , (activeView model channel)
-        , (activeRendition model channel)
+        [ class "root--channel-list-toggle"
+        , onClick (Msg.ToggleShowChannelSelector)
+        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
+        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
         ]
+        []
 
 activeRendition : Root.Model -> Channel.Model -> Html Msg
 activeRendition model channel =
