@@ -24,7 +24,7 @@ type alias Field =
     { application : String
     , namespace : String
     , name : String
-    , value: String
+    , value : String
     , inputType : String
     }
 

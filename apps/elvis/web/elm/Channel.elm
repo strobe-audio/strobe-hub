@@ -78,8 +78,8 @@ playlistDuration channel =
     let
         playlist =
             channel.playlist
-            -- Maybe.withDefault [] (List.tail channel.playlist)
 
+        -- Maybe.withDefault [] (List.tail channel.playlist)
         durations =
             Maybe.Extra.combine (List.map Rendition.duration playlist)
 

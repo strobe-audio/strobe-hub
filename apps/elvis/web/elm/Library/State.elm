@@ -80,7 +80,7 @@ update action model maybeChannelId =
                             else
                                 model
                     in
-                        { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url query)  ]
+                        { model_ | currentRequest = Just a.url } ! [ (Library.Cmd.sendAction channelId a.url query) ]
 
                 -- disable this auto-completion as I need the currentRequest value
                 -- , (Library.Cmd.requestComplete (300 * millisecond))
@@ -124,24 +124,27 @@ update action model maybeChannelId =
                                 ( maybeCurrentLevel, levels ) =
                                     case model.levels of
                                         l :: active :: rest ->
-                                            (Just l, ({ active | visible = True } :: rest))
+                                            ( Just l, ({ active | visible = True } :: rest) )
+
                                         l :: rest ->
-                                            (Just l, rest)
+                                            ( Just l, rest )
+
                                         l ->
-                                            (Nothing, l)
+                                            ( Nothing, l )
 
                                 animation =
                                     levelAnimation model (model.depth - 1)
-
                             in
-                                ({ model
+                                ( { model
                                     | levels = levels
                                     , depth = (max 0 model.depth - 1)
                                     , levelAnimation = animation
                                     , unloadingLevel = maybeCurrentLevel
                                     , scrollMomentum = Nothing
                                     , showSearchInput = False
-                                }, Library.Cmd.blurSearch True)
+                                  }
+                                , Library.Cmd.blurSearch True
+                                )
             in
                 ( model_, cmd_ )
 
@@ -149,13 +152,12 @@ update action model maybeChannelId =
             let
                 touches =
                     (Utils.Touch.update te model.touches)
-
             in
                 case Utils.Touch.testEvent te touches of
                     Just (Utils.Touch.Touch msg) ->
                         { model | scrollMomentum = Nothing, touches = { touches | savedMomentum = model.scrollMomentum } } ! []
 
-                    Just (Utils.Touch.Swipe Utils.Touch.Y direction dy y msg) ->
+                    Just (Utils.Touch.Swipe (Utils.Touch.Y) direction dy y msg) ->
                         let
                             levels =
                                 case model.levels of
@@ -189,11 +191,11 @@ update action model maybeChannelId =
                                 { model
                                     | touches = Utils.Touch.emptyModel
                                     , scrollMomentum = Nothing
-                                } ! []
+                                }
+                                    ! []
 
                     Just (Utils.Touch.Flick newMomentum msg) ->
                         let
-
                             scrollMomentum =
                                 case model.levels of
                                     level :: rest ->
@@ -204,6 +206,7 @@ update action model maybeChannelId =
                                                 touches.savedMomentum
                                             )
                                         )
+
                                     _ ->
                                         Nothing
                         in
@@ -212,16 +215,15 @@ update action model maybeChannelId =
                     _ ->
                         { model | touches = { touches | savedMomentum = Nothing } } ! []
 
-
-        Library.AnimationFrame (time, scrollTop, scrollHeight) ->
+        Library.AnimationFrame ( time, scrollTop, scrollHeight ) ->
             let
-                (levels, scrollMomentum) =
+                ( levels, scrollMomentum ) =
                     -- scrollTop is Nothing for mobile/touch browsers where scroll is handled by elm
                     -- and Just position for desktop browsers where scroll is done by mouse
                     case scrollTop of
                         Nothing ->
                             case model.levels of
-                                current::rest ->
+                                current :: rest ->
                                     let
                                         scrollPosition =
                                             (Maybe.map4
@@ -234,49 +236,47 @@ update action model maybeChannelId =
                                     in
                                         case scrollPosition of
                                             Just (Utils.Touch.Scrolling momentum) ->
-                                                ( ( { current | scrollHeight = scrollHeight, scrollPosition = momentum.position } :: rest )
+                                                ( ({ current | scrollHeight = scrollHeight, scrollPosition = momentum.position } :: rest)
                                                 , Just momentum
                                                 )
 
                                             Just (Utils.Touch.ScrollComplete position) ->
-                                                ( ( { current | scrollHeight = scrollHeight, scrollPosition = position  } :: rest )
+                                                ( ({ current | scrollHeight = scrollHeight, scrollPosition = position } :: rest)
                                                 , Nothing
                                                 )
 
                                             Nothing ->
-                                                ( ( { current | scrollHeight = scrollHeight, scrollPosition = current.scrollPosition } :: rest )
+                                                ( ({ current | scrollHeight = scrollHeight, scrollPosition = current.scrollPosition } :: rest)
                                                 , model.scrollMomentum
                                                 )
 
-
-
                                 [] ->
                                     ( [], model.scrollMomentum )
+
                         Just position ->
                             case model.levels of
-                                current::rest ->
-                                    ( ( { current | scrollHeight = scrollHeight, scrollPosition = position  } :: rest )
+                                current :: rest ->
+                                    ( ({ current | scrollHeight = scrollHeight, scrollPosition = position } :: rest)
                                     , Nothing
                                     )
 
                                 [] ->
                                     ( [], Nothing )
 
-
                 model_ =
                     if Animation.isDone time model.levelAnimation then
                         { model | levels = levels, unloadingLevel = Nothing }
                     else
                         model
-
             in
                 { model_
-                | animationTime = Just time
-                , scrollMomentum = scrollMomentum
-                } ! []
+                    | animationTime = Just time
+                    , scrollMomentum = scrollMomentum
+                }
+                    ! []
 
         Library.ShowSearchInput show ->
-            { model | showSearchInput = show } ! [Library.Cmd.blurSearch (not show)]
+            { model | showSearchInput = show } ! [ Library.Cmd.blurSearch (not show) ]
 
         Library.SearchQueryUpdate query ->
             let
@@ -288,24 +288,24 @@ update action model maybeChannelId =
                         (always (Library.SearchTimeout newCount))
                         (Process.sleep 250)
             in
-                { model | searchQuery = query, searchBounceCount = newCount } ! [cmd]
+                { model | searchQuery = query, searchBounceCount = newCount } ! [ cmd ]
 
         Library.SubmitSearch ->
             -- TODO: send search query
             (submitSearch model maybeChannelId)
 
         Library.CancelSearch ->
-            { model | showSearchInput = False, searchQuery = "" } ! [Library.Cmd.blurSearch True]
+            { model | showSearchInput = False, searchQuery = "" } ! [ Library.Cmd.blurSearch True ]
 
         Library.SearchTimeout count ->
             let
-                (model_, cmd) =
+                ( model_, cmd ) =
                     if count == model.searchBounceCount then
                         (submitSearch model maybeChannelId)
                     else
                         model ! []
             in
-                (model_, cmd)
+                ( model_, cmd )
 
 
 currentLevel : Library.Model -> Library.Level
@@ -410,7 +410,6 @@ currentFolder model =
         |> Maybe.andThen (\l -> l.contents)
 
 
-
 submitSearch : Library.Model -> Maybe ID.Channel -> ( Library.Model, Cmd Library.Msg )
 submitSearch model channelId =
     if (String.length model.searchQuery) < 3 then
@@ -427,7 +426,6 @@ submitValidSearch model channelId =
 
         searchAction =
             folder |> Maybe.andThen (\f -> f.search)
-
     in
         case searchAction of
             Nothing ->
@@ -435,7 +433,6 @@ submitValidSearch model channelId =
 
             Just action ->
                 let
-
                     addLevel =
                         case folder of
                             Nothing ->
@@ -451,5 +448,3 @@ submitValidSearch model channelId =
                             (Just model.searchQuery)
                 in
                     (update a model channelId)
-
-

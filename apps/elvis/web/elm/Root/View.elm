@@ -24,6 +24,7 @@ import Spinner
 import Settings.View
 import Animation
 
+
 root : Root.Model -> Html Msg
 root model =
     case model.connected of
@@ -56,10 +57,10 @@ rootWithActiveChannel model channel =
     div
         [ id "root"
         , classList
-            [ ("root--channel-select__active", model.showSelectChannel)
-            , ("root--channel-select__inactive", not model.showSelectChannel)
-            , ("root--channel-control__active", showChannelControl model)
-            , ("root--channel-control__inactive", not <| showChannelControl model)
+            [ ( "root--channel-select__active", model.showSelectChannel )
+            , ( "root--channel-select__inactive", not model.showSelectChannel )
+            , ( "root--channel-control__active", showChannelControl model )
+            , ( "root--channel-control__inactive", not <| showChannelControl model )
             ]
         ]
         [ (selectChannel model channel)
@@ -73,7 +74,6 @@ selectChannel model channel =
         shown =
             model.showSelectChannel
                 || (Animation.isRunning model.animationTime model.viewAnimations.revealChannelList)
-
     in
         case shown of
             True ->
@@ -97,7 +97,7 @@ channelView model channel =
             "calc(" ++ (toString position) ++ " * (100vw - 85px))"
     in
         div
-            [ class "root--channel", style [("left", left)] ]
+            [ class "root--channel", style [ ( "left", left ) ] ]
             [ (switchView model channel)
             , (notifications model)
             , (activeView model channel)
@@ -115,6 +115,7 @@ channelViewOverlay =
         , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
         ]
         []
+
 
 activeRendition : Root.Model -> Channel.Model -> Html Msg
 activeRendition model channel =
@@ -155,9 +156,10 @@ activeRendition model channel =
                     position =
                         Animation.animate model.animationTime model.viewAnimations.revealChannelControl
 
-                    top = "calc(" ++ (toString position) ++ " * (100vh - 55px))"
+                    top =
+                        "calc(" ++ (toString position) ++ " * (100vh - 55px))"
                 in
-                    [("top", top)]
+                    [ ( "top", top ) ]
             else
                 []
 
@@ -169,27 +171,28 @@ activeRendition model channel =
     in
         div
             [ classList
-                [ ("root--channel-control-bar", True)
-                , ("root--channel-control-bar__inactive", not shown)
-                , ("root--channel-control-bar__active", shown)
+                [ ( "root--channel-control-bar", True )
+                , ( "root--channel-control-bar__inactive", not shown )
+                , ( "root--channel-control-bar__active", shown )
                 ]
             ]
-            [
-                div
-                    [ class "root--channel-control-position", style styles ]
-                    [ div
-                        [ class "root--active-rendition" ]
-                        [ (rendition model channel)
-                        , Html.map (Msg.Channel channel.id) progress
-                        ]
-                    , control
+            [ div
+                [ class "root--channel-control-position", style styles ]
+                [ div
+                    [ class "root--active-rendition" ]
+                    [ (rendition model channel)
+                    , Html.map (Msg.Channel channel.id) progress
                     ]
+                , control
+                ]
             ]
+
 
 showChannelControl : Root.Model -> Bool
 showChannelControl model =
     model.showChannelControl
         || (Animation.isRunning model.animationTime model.viewAnimations.revealChannelControl)
+
 
 rendition : Root.Model -> Channel.Model -> Html Msg
 rendition model channel =
@@ -231,7 +234,6 @@ rendition model channel =
                 , rendition
                 ]
             ]
-
 
 
 activeView : Root.Model -> Channel.Model -> Html Msg
@@ -279,9 +281,10 @@ switchView model channel =
 
 playlistDuration : Channel.Model -> Html Msg
 playlistDuration channel =
-    text
-        <| Source.View.durationString
-            <| (Channel.playlistDuration channel)
+    text <|
+        Source.View.durationString <|
+            (Channel.playlistDuration channel)
+
 
 switchViewButton : Root.Model -> Channel.Model -> State.ViewMode -> Html Msg
 switchViewButton model channel mode =
@@ -302,7 +305,7 @@ switchViewButton model channel mode =
             [ classList
                 [ ( "root--switch-view--btn", True )
                 , ( "root--switch-view--btn__active", model.viewMode == mode )
-                , ( "root--switch-view--btn__"++ (toString mode), True )
+                , ( "root--switch-view--btn__" ++ (toString mode), True )
                 ]
             , onClick (Msg.ActivateView mode)
             , mapTouch (Utils.Touch.touchStart (Msg.ActivateView mode))
@@ -338,18 +341,15 @@ channelControl model channel visible =
                         (Channel.View.control model channel)
                       )
                     , Channels.View.channelReceivers model channel
-                    -- padding
-                    , (div [ style [("height", "30vh")] ] [])
+                      -- padding
+                    , (div [ style [ ( "height", "30vh" ) ] ] [])
                     ]
-
     in
         div
             [ classList
-                [ ("root--channel-control", True)
-                , ("root--channel-control__active", visible)
-                , ("scrolling", True)
+                [ ( "root--channel-control", True )
+                , ( "root--channel-control__active", visible )
+                , ( "scrolling", True )
                 ]
             ]
             contents
-
-

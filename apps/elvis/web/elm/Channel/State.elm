@@ -197,9 +197,8 @@ update action channel =
 
                         _ ->
                             { channel | touches = touches } ! []
-
             in
-                updated ! [cmd]
+                updated ! [ cmd ]
 
 
 updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )

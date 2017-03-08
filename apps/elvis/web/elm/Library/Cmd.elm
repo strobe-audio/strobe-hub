@@ -25,6 +25,7 @@ requestComplete delay =
         (always Library.ActionComplete)
         (Process.sleep delay)
 
+
 blurSearch : Bool -> Cmd Library.Msg
 blurSearch blur =
     Ports.blurActiveElement blur |> Cmd.map (always Library.NoOp)

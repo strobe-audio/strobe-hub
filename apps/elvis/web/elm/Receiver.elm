@@ -68,6 +68,6 @@ onlineReceivers receivers =
     List.filter .online receivers
 
 
-partitionReceivers : { a | id : ID.Channel } -> List Model -> (List Model, List Model)
+partitionReceivers : { a | id : ID.Channel } -> List Model -> ( List Model, List Model )
 partitionReceivers channel receivers =
     List.partition (\r -> r.channelId == channel.id) receivers

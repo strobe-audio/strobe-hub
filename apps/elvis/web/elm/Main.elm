@@ -29,7 +29,6 @@ init savedState location =
         currentRoute =
             (Routing.parseLocation location)
 
-
         initialState =
             Root.State.initialState
 
@@ -43,7 +42,6 @@ init savedState location =
 
         startingState =
             Root.State.restoreSavedState savedState routeState
-
     in
         ( startingState, Cmd.none )
 

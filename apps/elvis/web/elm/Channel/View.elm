@@ -33,13 +33,13 @@ control model channel =
             [ div
                 [ class "channel--rendition-cover"
                 , style
-                    [ ("backgroundImage", renditionCoverImage channel maybeRendition) ]
+                    [ ( "backgroundImage", renditionCoverImage channel maybeRendition ) ]
                 ]
                 [ (renditionProgressBar channel maybeRendition)
                 , (rewindPlaySkip channel maybeRendition)
                 ]
             , (volumeControl channel)
-            -- , (receiverControl model channel)
+              -- , (receiverControl model channel)
             ]
 
 
@@ -51,7 +51,6 @@ renditionCoverImage channel maybeRendition =
 
         Just rendition ->
             "url(" ++ rendition.source.cover_image ++ ")"
-
 
 
 renditionProgressBar : Channel.Model -> Maybe Rendition.Model -> Html Channel.Msg
@@ -72,11 +71,10 @@ renditionProgressBar channel maybeRendition =
 
                         progressPercent =
                             (toString progress) ++ "%"
-
                     in
                         div
                             [ classList
-                                [ ("channel--rendition-progress", True) ]
+                                [ ( "channel--rendition-progress", True ) ]
                             ]
                             [ div
                                 [ class "channel--rendition-progress--time channel--rendition-progress--played-time" ]
@@ -84,7 +82,7 @@ renditionProgressBar channel maybeRendition =
                             , div
                                 [ class "channel--rendition-progress--bar-outer" ]
                                 [ div
-                                    [ class "channel--rendition-progress--bar-inner", style [("width", progressPercent)] ]
+                                    [ class "channel--rendition-progress--bar-inner", style [ ( "width", progressPercent ) ] ]
                                     []
                                 ]
                             , div
@@ -93,31 +91,29 @@ renditionProgressBar channel maybeRendition =
                             ]
 
 
-
 rewindPlaySkip : Channel.Model -> Maybe Rendition.Model -> Html Channel.Msg
 rewindPlaySkip channel maybeRendition =
     let
         active =
             Maybe.map (\r -> True) maybeRendition
                 |> Maybe.withDefault False
-
     in
         div
             [ class "channel--rewind-play-skip" ]
             [ div
                 [ classList
-                    [ ("channel--play-control-btn", True)
-                    , ("channel--play-control-btn__enabled", active)
-                    , ("channel--rewind", True)
+                    [ ( "channel--play-control-btn", True )
+                    , ( "channel--play-control-btn__enabled", active )
+                    , ( "channel--rewind", True )
                     ]
                 ]
                 []
             , div
                 [ classList
-                    [ ("channel--play-control-btn", True)
-                    , ("channel--play-control-btn__enabled", active)
-                    , ("channel--pause", channel.playing)
-                    , ("channel--play", not channel.playing)
+                    [ ( "channel--play-control-btn", True )
+                    , ( "channel--play-control-btn__enabled", active )
+                    , ( "channel--pause", channel.playing )
+                    , ( "channel--play", not channel.playing )
                     ]
                 , onClick Channel.PlayPause
                 , mapTap (Utils.Touch.touchStart Channel.PlayPause)
@@ -126,9 +122,9 @@ rewindPlaySkip channel maybeRendition =
                 []
             , div
                 [ classList
-                    [ ("channel--play-control-btn", True)
-                    , ("channel--play-control-btn__enabled", active)
-                    , ("channel--skip", True)
+                    [ ( "channel--play-control-btn", True )
+                    , ( "channel--play-control-btn__enabled", active )
+                    , ( "channel--skip", True )
                     ]
                 ]
                 []
@@ -149,93 +145,13 @@ volumeControl channel =
             ]
 
 
-
-
-
--- ----------------------------------------------------------------------------
--- ----------------------------------------------------------------------------
-
-cover : Channel.Model -> Html Channel.Msg
-cover channel =
-    let
-        maybeRendition =
-            List.head channel.playlist
-    in
-        case maybeRendition of
-            Nothing ->
-                div [ class "channel--rendition" ]
-                    [ Html.map (always Channel.NoOp) (Rendition.View.empty)
-                    ]
-
-            Just rendition ->
-                div
-                    [ class "channel--rendition"
-                    , mapTap (Utils.Touch.touchStart Channel.PlayPause)
-                    , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
-                    ]
-                    [ Html.map (always Channel.PlayPause) (Rendition.View.cover rendition channel.playing)
-                    ]
-
-
-player : Channel.Model -> Html Channel.Msg
-player channel =
-    let
-        maybeRendition =
-            List.head channel.playlist
-
-        rendition =
-            case maybeRendition of
-                Nothing ->
-                    div [] [ text "No song..." ]
-
-                Just rendition ->
-                    div [ class "channel--rendition" ]
-                        [ Html.map (always Channel.NoOp) (Rendition.View.info rendition channel.playing)
-                        ]
-
-        progress =
-            case maybeRendition of
-                Nothing ->
-                    div [] []
-
-                Just rendition ->
-                    div
-                        [ onClick Channel.PlayPause
-                        -- , mapTap (Utils.Touch.touchStart Channel.PlayPause)
-                        -- , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
-                        ]
-                        [ Html.map
-                            (always Channel.PlayPause)
-                            (Rendition.View.progress rendition channel.playing)
-                        ]
-    in
-        div
-            [ class "channel--playback"
-            -- , onClick Channel.PlayPause
-            -- , mapTap (Utils.Touch.touchStart Channel.PlayPause)
-            -- , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
-            ]
-            [ div
-                [ class "channel--info" ]
-                [ div
-                    [ class "channel--info--name" ]
-                    [ div
-                        [ class "channel--name" ]
-                        [ text channel.name ]
-                    ]
-                , rendition
-                ]
-            -- , progress
-            ]
-
-
 playlist : Channel.Model -> Html Channel.Msg
 playlist channel =
     let
         entry rendition =
             Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlist rendition)
 
-        (current, playlist) =
+        ( current, playlist ) =
             case channel.playlist of
                 c :: r ->
                     ( Just c, r )
@@ -243,8 +159,7 @@ playlist channel =
                 [] ->
                     ( Nothing, [] )
 
-            -- Maybe.withDefault [] (List.tail channel.playlist)
-
+        -- Maybe.withDefault [] (List.tail channel.playlist)
         list =
             case List.length channel.playlist of
                 0 ->
@@ -292,6 +207,7 @@ playlistHead channel maybeRendition =
                 , Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlistHead rendition)
                 ]
 
+
 playPauseButton : Channel.Model -> Html Channel.Msg
 playPauseButton channel =
     div
@@ -310,6 +226,7 @@ playPauseButton channel =
 playlistDivision : String -> Html Channel.Msg
 playlistDivision title =
     div [ class "channel--playlist-division" ] [ text title ]
+
 
 mapTap : Attribute (Utils.Touch.E Channel.Msg) -> Attribute Channel.Msg
 mapTap a =

@@ -23,6 +23,7 @@ type ChannelListMode
     = LibraryMode
     | PlaylistMode
 
+
 type ViewMode
     = ViewCurrentChannel
     | ViewLibrary
@@ -44,6 +45,7 @@ viewLabel mode =
 
         ViewSettings ->
             "Settings"
+
 
 viewModes : List ViewMode
 viewModes =

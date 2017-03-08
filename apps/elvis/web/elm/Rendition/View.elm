@@ -239,7 +239,6 @@ playlistHead rendition =
 
         coverImage =
             source.cover_image
-
     in
         div
             [ classList

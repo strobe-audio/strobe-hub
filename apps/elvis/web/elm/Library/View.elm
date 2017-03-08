@@ -84,7 +84,6 @@ folder model level folder isCurrent =
         view =
             (folderView level folder)
 
-
         offset =
             level.scrollPosition + view.firstNodePosition
 
@@ -100,20 +99,21 @@ folder model level folder isCurrent =
         scrollThumb height top active =
             div
                 [ classList
-                    [ ("library--scroll-thumb", True)
-                    , ("library--scroll-thumb__active", active)
-                    , ("library--scroll-thumb__inactive", not active)
+                    [ ( "library--scroll-thumb", True )
+                    , ( "library--scroll-thumb__active", active )
+                    , ( "library--scroll-thumb__inactive", not active )
                     ]
                 , style
-                    [ ("height", (toString height) ++ "px")
-                    , ("top", (toString top) ++ "px")
+                    [ ( "height", (toString height) ++ "px" )
+                    , ( "top", (toString top) ++ "px" )
                     ]
                 ]
                 []
 
         thumb =
             let
-                gap = 2
+                gap =
+                    2
 
                 -- FIXME: these height calculation methods are too slow
                 totalHeight =
@@ -127,15 +127,14 @@ folder model level folder isCurrent =
                     level.scrollHeight < totalHeight
 
                 height =
-                    ( ((view.length |> toFloat) / (totalCount |> toFloat)) * level.scrollHeight )
-                    |> (Basics.max 20)
+                    (((view.length |> toFloat) / (totalCount |> toFloat)) * level.scrollHeight)
+                        |> (Basics.max 20)
 
                 scrollHeight =
                     level.scrollHeight - 2 * gap
 
                 position =
-                    (( (abs level.scrollPosition) / (totalHeight - scrollHeight) ) * (scrollHeight - height)) + gap
-
+                    (((abs level.scrollPosition) / (totalHeight - scrollHeight)) * (scrollHeight - height)) + gap
             in
                 if visible then
                     case model.scrollMomentum of
@@ -153,7 +152,7 @@ folder model level folder isCurrent =
                     [ Html.Keyed.node
                         "div"
                         [ classList
-                            [ ("library--contents", True)
+                            [ ( "library--contents", True )
                             , ( "library--scrolling"
                               , model.scrollMomentum |> Maybe.map (always True) |> Maybe.withDefault False
                               )
@@ -166,19 +165,20 @@ folder model level folder isCurrent =
                         contents
                     , thumb
                     ]
-            ) level.action level.scrollPosition
+            )
+            level.action
+            level.scrollPosition
 
 
 folderView : Library.Level -> Library.Folder -> Library.FolderView
 folderView level folder =
     -- find section that holds the current offset
     let
-        (renderable, firstNodePosition) =
+        ( renderable, firstNodePosition ) =
             folderViewOpenWindow level folder.children 0.0
 
         height =
             Library.renderableHeight renderable
-
     in
         { renderable = renderable
         , height = height
@@ -187,8 +187,7 @@ folderView level folder =
         }
 
 
-
-folderViewOpenWindow : Library.Level -> List Library.Section -> Float -> (List Library.Renderable, Float)
+folderViewOpenWindow : Library.Level -> List Library.Section -> Float -> ( List Library.Renderable, Float )
 folderViewOpenWindow level sections height =
     case sections of
         [] ->
@@ -201,7 +200,6 @@ folderViewOpenWindow level sections height =
 
                 sectionCover =
                     height + sectionHeight
-
             in
                 if sectionCover < (abs level.scrollPosition) then
                     folderViewOpenWindow level rest sectionCover
@@ -209,12 +207,11 @@ folderViewOpenWindow level sections height =
                     folderViewFillWindow sections height ((abs level.scrollPosition) - height) level.scrollHeight []
 
 
-folderViewFillWindow : List Library.Section -> Float -> Float -> Float -> List Library.Renderable -> (List Library.Renderable, Float)
+folderViewFillWindow : List Library.Section -> Float -> Float -> Float -> List Library.Renderable -> ( List Library.Renderable, Float )
 folderViewFillWindow sections position offset height renderable =
     case sections of
         section :: rest ->
             let
-
                 ( r, firstNodePosition, remainingHeight ) =
                     (sectionRenderable section position offset height)
 
@@ -227,19 +224,20 @@ folderViewFillWindow sections position offset height renderable =
                     case renderable of
                         [] ->
                             firstNodePosition
+
                         _ ->
                             position
             in
                 if remainingHeight > 0 then
-                    folderViewFillWindow rest newPosition 0.0 remainingHeight  renderable_
+                    folderViewFillWindow rest newPosition 0.0 remainingHeight renderable_
                 else
-                    (renderable_, newPosition)
+                    ( renderable_, newPosition )
 
         [] ->
-            (renderable, position)
+            ( renderable, position )
 
 
-sectionRenderable : Library.Section -> Float -> Float -> Float -> (List Library.Renderable, Float, Float)
+sectionRenderable : Library.Section -> Float -> Float -> Float -> ( List Library.Renderable, Float, Float )
 sectionRenderable section position offset height =
     let
         ( skipHead, skipChild ) =
@@ -252,6 +250,7 @@ sectionRenderable section position offset height =
             case skipHead of
                 False ->
                     0
+
                 True ->
                     headHeight
 
@@ -267,14 +266,12 @@ sectionRenderable section position offset height =
         sectionOffset =
             position + firstChildOffset
 
-
         fillHeight =
             height + overlap
     in
         if ((Library.sectionHeight section) - offset) > height then
             -- take a subset
             let
-
                 childNodes : Int -> Int -> List Library.Renderable
                 childNodes drop take =
                     Library.sliceSection drop take section
@@ -294,11 +291,8 @@ sectionRenderable section position offset height =
                                     ((fillHeight - headHeight) / nodeHeight) |> ceiling
                             in
                                 (Library.S section) :: (childNodes skipChild take)
-
-
             in
                 ( renderable, sectionOffset, 0.0 )
-
         else
             -- return all elements in section and remaining height
             let
@@ -316,26 +310,28 @@ sectionRenderable section position offset height =
                 sectionHeight =
                     fillHeight - (Library.renderableHeight renderable)
             in
-                ( renderable,  sectionOffset, sectionHeight )
+                ( renderable, sectionOffset, sectionHeight )
+
 
 
 -- number of (head, child) nodes to skip when taking the section
 -- contents at a givein pixel offset
-sectionContentOffset : Library.Section -> Float -> (Bool, Int)
+
+
+sectionContentOffset : Library.Section -> Float -> ( Bool, Int )
 sectionContentOffset section offset =
     let
         headHeight =
             Library.sectionNodeHeight section
-
     in
         if offset < headHeight then
-            (False, 0)
+            ( False, 0 )
         else
             let
                 nodeCount =
                     ((offset - headHeight) / Library.nodeHeight) |> floor
             in
-                (True, nodeCount)
+                ( True, nodeCount )
 
 
 metadata : Maybe (List Library.Metadata) -> Html Library.Msg
@@ -380,14 +376,14 @@ metadataGroup group =
         div [ class "library--node--metadata-group" ] links
 
 
-renderable : Library.Model -> Library.Folder -> Library.Renderable -> (String, Html Library.Msg)
+renderable : Library.Model -> Library.Folder -> Library.Renderable -> ( String, Html Library.Msg )
 renderable model folder renderable =
     case renderable of
         Library.N id n ->
-            (id, lazy (node model folder) n )
+            ( id, lazy (node model folder) n )
 
         Library.S s ->
-            (s.id, lazy (section model folder) s )
+            ( s.id, lazy (section model folder) s )
 
 
 section : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
@@ -425,10 +421,11 @@ sectionSmall model folder section =
         ]
         [ text section.title ]
 
+
 sectionLarge : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
 sectionLarge model folder section =
     let
-        (clickMsg, playMsg) =
+        ( clickMsg, playMsg ) =
             case section.actions of
                 Nothing ->
                     ( Library.NoOp, Library.NoOp )
@@ -444,7 +441,7 @@ sectionLarge model folder section =
                     []
 
                 Just url ->
-                    [("backgroundImage", Utils.Css.url url)]
+                    [ ( "backgroundImage", Utils.Css.url url ) ]
 
         contents =
             [ div
@@ -471,6 +468,7 @@ sectionLarge model folder section =
             , mapTouch (Utils.Touch.touchEnd clickMsg)
             ]
             contents
+
 
 sectionHuge : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
 sectionHuge model folder section =
@@ -508,8 +506,9 @@ sectionHuge model folder section =
                     div [] []
 
                 Just url ->
-                    div [ class "library--section--h--icon"
-                        , style [("backgroundImage", Utils.Css.url url)]
+                    div
+                        [ class "library--section--h--icon"
+                        , style [ ( "backgroundImage", Utils.Css.url url ) ]
                         ]
                         [ metadata_ ]
     in
@@ -530,6 +529,7 @@ nodeClick msg =
     in
         onWithOptions "click" options (Json.succeed msg)
 
+
 node : Library.Model -> Library.Folder -> Library.Node -> Html Library.Msg
 node library folder node =
     let
@@ -542,8 +542,6 @@ node library folder node =
         --
         -- click msg =
         --     onWithOptions "click" options (Json.succeed msg)
-
-
         ( nodeStyle, hasIcon ) =
             case node.icon of
                 Nothing ->
@@ -620,13 +618,11 @@ breadcrumb model =
                 True
             else
                 False
-
-
-
     in
-        div [ classList
-                [ ("library--breadcrumb", True)
-                , ("library--breadcrumb__search-active", (showSearchInput model))
+        div
+            [ classList
+                [ ( "library--breadcrumb", True )
+                , ( "library--breadcrumb__search-active", (showSearchInput model) )
                 ]
             ]
             [ div
@@ -634,7 +630,7 @@ breadcrumb model =
                 [ div
                     [ class "library--breadcrumb--navigation" ]
                     [ div [ classList [ ( "library--breadcrumb--dropdown", True ), ( "library--breadcrumb--dropdown__empty", dropdownEmpty ) ] ] dropdown
-                    -- , span [ class "library--breadcrumb--divider" ] []
+                      -- , span [ class "library--breadcrumb--divider" ] []
                     , div [ class "library--breadcrumb--sections" ] list
                     ]
                 , (searchButton model)
@@ -659,9 +655,10 @@ searchButton model =
                         msg =
                             (Library.ShowSearchInput (not model.showSearchInput))
                     in
-                        div [ classList
-                                [ ("library--breadcrumb-search-toggle", True)
-                                , ("library--breadcrumb-search-toggle__active", model.showSearchInput)
+                        div
+                            [ classList
+                                [ ( "library--breadcrumb-search-toggle", True )
+                                , ( "library--breadcrumb-search-toggle__active", model.showSearchInput )
                                 ]
                             , title action.title
                             , onClick msg
@@ -669,7 +666,6 @@ searchButton model =
                             , mapTouch (Utils.Touch.touchEnd msg)
                             ]
                             []
-
 
 
 searchInput : Library.Model -> Html Library.Msg
@@ -683,7 +679,8 @@ searchInput model =
                 div
                     [ class "library--breadcrumb--search-input" ]
                     [ input
-                        [ class "library--search-input", type_ "text"
+                        [ class "library--search-input"
+                        , type_ "text"
                         , placeholder ("Search " ++ action.title ++ "...")
                         , autofocus True
                         , value model.searchQuery
