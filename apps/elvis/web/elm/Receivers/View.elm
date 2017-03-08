@@ -18,7 +18,6 @@ import Msg exposing (Msg)
 import Utils.Touch exposing (onSingleTouch)
 
 
-
 attached : Root.Model -> Channel.Model -> Html Msg
 attached model channel =
     let

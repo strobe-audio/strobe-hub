@@ -16,9 +16,11 @@ import Animation exposing (Animation)
 
 -- Only support left/right swipes (who swipes *up*!??)
 
+
 type Axis
     = X
     | Y
+
 
 type Direction
     = Left
@@ -60,6 +62,7 @@ type alias Model =
     , savedMomentum : Maybe Momentum
     }
 
+
 type alias Momentum =
     { time : Time
     , startTime : Time
@@ -67,6 +70,7 @@ type alias Momentum =
     , speed : Float
     , position : Float
     }
+
 
 type ScrollState
     = Scrolling Momentum
@@ -97,7 +101,6 @@ update event model =
             let
                 actual =
                     (t :: model.actual) |> List.take 4
-
             in
                 { model | actual = actual, end = Nothing }
 
@@ -201,9 +204,12 @@ testSingleClick msg start end =
             Nothing
 
 
+
 -- TODO: don't need last event here, the model should have been updated
 -- before calling this, so we can just test for existance of end & actual
 -- (in that order)
+
+
 testEvent : E msg -> Model -> Maybe (Gesture msg)
 testEvent event model =
     case event of
@@ -216,9 +222,9 @@ testEvent event model =
                 |> Maybe.map (\g -> (g msg))
 
         End touch msg ->
-             model.start
-                 |> Maybe.andThen (testStartEndEvent model touch)
-                 |> Maybe.map (\g -> (g msg))
+            model.start
+                |> Maybe.andThen (testStartEndEvent model touch)
+                |> Maybe.map (\g -> (g msg))
 
 
 testStartActualEvent : Model -> Maybe (msg -> Gesture msg)
@@ -248,19 +254,17 @@ testStartActualEvent model =
                     (case model.actual of
                         a :: _ ->
                             ( a.clientX - start.clientX, a.clientY - start.clientY )
+
                         [] ->
                             ( 0, 0 )
                     )
-
             in
                 if offx > offy then
                     Just (Swipe X (xDirectionOf dx) dx mx)
-
+                else if offy > offx then
+                    Just (Swipe Y (yDirectionOf dy) dy my)
                 else
-                    if offy > offx then
-                        Just (Swipe Y (yDirectionOf dy) dy my)
-                    else
-                        Nothing
+                    Nothing
 
 
 testStartEndEvent : Model -> T -> T -> Maybe (msg -> Gesture msg)
@@ -289,36 +293,33 @@ testStartEndEvent model end start =
                     )
 
                 _ ->
-                    (0.0, 0.0)
-
+                    ( 0.0, 0.0 )
     in
         if (dd <= singleClickDistance) && (tt <= singleClickDuration) then
             Just Tap
+        else if (fy /= 0) && ((abs fy) > 10) then
+            Just
+                (Flick
+                    (\t p m ->
+                        let
+                            speed =
+                                case m of
+                                    Nothing ->
+                                        (flickSpeed fy ft)
 
-        else
-            if (fy /= 0) && ((abs fy) > 10) then
-                Just
-                    (Flick
-                        (\t p m ->
-                            let
-                                speed =
-                                    case m of
-                                        Nothing ->
-                                            (flickSpeed fy ft)
-
-                                        Just momentum ->
-                                            (momentum.speed + (flickSpeed fy ft))
-                            in
-                                { time = t
-                                , startTime = t
-                                , lifeTime = 3000.0
-                                , speed = speed
-                                , position = p
-                                }
-                        )
+                                    Just momentum ->
+                                        (momentum.speed + (flickSpeed fy ft))
+                        in
+                            { time = t
+                            , startTime = t
+                            , lifeTime = 3000.0
+                            , speed = speed
+                            , position = p
+                            }
                     )
-            else
-                Nothing
+                )
+        else
+            Nothing
 
 
 xDirectionOf : Float -> Direction
@@ -370,14 +371,12 @@ scrollPosition time momentum length height =
     in
         if (abs speed) <= 0.02 then
             ScrollComplete p
+        else if p > 0 then
+            ScrollComplete 0.0
+        else if p <= end then
+            ScrollComplete end
         else
-            if p > 0 then
-                ScrollComplete 0.0
-            else
-                if p <= end then
-                    ScrollComplete end
-                else
-                    Scrolling { momentum | position = p, time = time, speed = speed }
+            Scrolling { momentum | position = p, time = time, speed = speed }
 
 
 slowScroll : Maybe Momentum -> Bool

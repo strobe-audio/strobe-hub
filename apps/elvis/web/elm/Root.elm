@@ -56,6 +56,7 @@ type alias SavedState =
     , viewMode : State.ViewModeString
     }
 
+
 type alias ReceiverStatusEvent =
     { channelId : String
     , receiverId : String

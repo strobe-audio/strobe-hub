@@ -47,9 +47,9 @@ channelReceivers model channel =
 
 detachedReceivers : Root.Model -> Channel.Model -> Html Msg
 detachedReceivers model channel =
-        div
-            [ class "channels--receivers channel--receivers__detached" ]
-            [ Receivers.View.detached model channel ]
+    div
+        [ class "channels--receivers channel--receivers__detached" ]
+        [ Receivers.View.detached model channel ]
 
 
 channelVolume : Root.Model -> Channel.Model -> Html Msg
@@ -80,7 +80,6 @@ changeChannel model activeChannel =
 
         orderChannels summaries =
             List.sortBy (\c -> c.channel.id) summaries
-
     in
         div [ class "channels-selector" ]
             [ div [ class "channels-selector--list" ]
@@ -89,7 +88,6 @@ changeChannel model activeChannel =
                     (List.map (channelChoice model receivers activeChannel) (orderChannels channelSummaries))
                 ]
             ]
-
 
 
 channelChoice : Root.Model -> List Receiver.Model -> Channel.Model -> Channel.Summary -> Html Msg
@@ -139,7 +137,6 @@ channelChoice model receivers activeChannel channelSummary =
         isActive =
             channelSummary.id == activeChannel.id
 
-
         receiverAttachList =
             if isActive then
                 div [ class "channels-selector--channel-attach-receivers" ]
@@ -165,14 +162,15 @@ channelChoice model receivers activeChannel channelSummary =
                         ]
                     ]
                     [ channelPlayPauseBtn model channel ]
-                , div (( class "channels-selector--channel--name" ) :: onClickChoose) [ text channel.name ]
-                , div (( class "channels-selector--channel--duration duration" ) :: onClickChoose) [ text duration ]
+                , div ((class "channels-selector--channel--name") :: onClickChoose) [ text channel.name ]
+                , div ((class "channels-selector--channel--duration duration") :: onClickChoose) [ text duration ]
                 , div
-                    (( classList
+                    ((classList
                         [ ( "channels-selector--channel--receivers", True )
                         , ( "channels-selector--channel--receivers__empty", channelSummary.receiverCount == 0 )
                         ]
-                     ) :: onClickChoose
+                     )
+                        :: onClickChoose
                     )
                     [ text (toString channelSummary.receiverCount) ]
                 ]
@@ -180,13 +178,11 @@ channelChoice model receivers activeChannel channelSummary =
             ]
 
 
-
 channelPlayPauseBtn : Root.Model -> Channel.Model -> Html Msg
 channelPlayPauseBtn model channel =
     Html.map (Msg.Channel channel.id) (Channel.View.playPauseButton channel)
 
+
 mapTouch : Attribute (Utils.Touch.E Msg) -> Attribute Msg
 mapTouch a =
     Html.Attributes.map Msg.SingleTouch a
-
-

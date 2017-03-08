@@ -67,7 +67,7 @@ update action model =
                 cmd =
                     Task.perform identity (Task.succeed Msg.ReceiverAttachmentChange)
             in
-                { model | channelId = channelId } ! [cmd]
+                { model | channelId = channelId } ! [ cmd ]
 
         Receiver.Online channelId ->
             { model | online = True, channelId = channelId } ! []

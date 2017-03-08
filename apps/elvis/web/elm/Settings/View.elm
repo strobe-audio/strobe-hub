@@ -1,11 +1,11 @@
 module Settings.View exposing (..)
 
-
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Settings
 import Msg exposing (Msg)
+
 
 application : Maybe Settings.Model -> Html Msg
 application maybeModel =
@@ -23,6 +23,7 @@ applicationSettings model =
         [ class "settings-container" ]
         [ div [ class "settings-namespaces" ] (List.map namespace model.namespaces)
         ]
+
 
 namespace : Settings.NameSpace -> Html Msg
 namespace ns =
@@ -44,7 +45,7 @@ field : Settings.Field -> Html Msg
 field field =
     div
         [ class "settings-field" ]
-        [ (fieldInput field )]
+        [ (fieldInput field) ]
 
 
 fieldInput : Settings.Field -> Html Msg
@@ -55,7 +56,7 @@ fieldInput field =
     in
         case field.inputType of
             "password" ->
-                input [type_ "password", value field.value, name field.name, change ] []
+                input [ type_ "password", value field.value, name field.name, change ] []
 
             _ ->
-                input [type_ "text", value field.value, name field.name, change ] []
+                input [ type_ "text", value field.value, name field.name, change ] []

@@ -14,7 +14,7 @@ type Msg
     | PopLevel Int
     | ActionComplete
     | Touch (Utils.Touch.E Msg)
-    | AnimationFrame (Time, Maybe Float, Float)
+    | AnimationFrame ( Time, Maybe Float, Float )
     | ShowSearchInput Bool
     | SearchQueryUpdate String
     | SubmitSearch
@@ -36,6 +36,7 @@ type alias Action =
 -- can serialise this as just `action` and restore as
 -- {action = "<action>", contents = Nothing}
 
+
 type alias Level =
     { action : ActionURL
     , title : String
@@ -44,6 +45,7 @@ type alias Level =
     , scrollPosition : Float
     , visible : Bool
     }
+
 
 type alias SearchAction =
     { url : ActionURL
@@ -118,6 +120,7 @@ type alias Actions =
     , play : Maybe Action
     }
 
+
 type Renderable
     = N String Node
     | S Section
@@ -125,8 +128,9 @@ type Renderable
 
 type alias FolderView =
     { renderable : List Renderable
-    , height : Float
-    -- , firstNodeHeight : Float
+    , height :
+        Float
+        -- , firstNodeHeight : Float
     , firstNodePosition : Float
     , length : Int
     }
@@ -138,9 +142,11 @@ defaultNodeActions =
     , play = Nothing
     }
 
+
 nodeHeight : Float
 nodeHeight =
     55.0
+
 
 levelContentHeight : Level -> Maybe Float
 levelContentHeight level =
@@ -150,6 +156,7 @@ levelContentHeight level =
 folderContentCount : Folder -> Int
 folderContentCount folder =
     (List.map .length folder.children) |> List.sum
+
 
 folderContentHeight : Folder -> Float
 folderContentHeight folder =
@@ -161,7 +168,6 @@ contentHeight n =
     n |> toFloat |> (*) nodeHeight
 
 
-
 sectionNode : Section -> Node
 sectionNode section =
     { title = section.title
@@ -169,6 +175,7 @@ sectionNode section =
     , actions = Maybe.withDefault defaultNodeActions section.actions
     , metadata = section.metadata
     }
+
 
 sectionCount : Section -> Int
 sectionCount section =
@@ -226,16 +233,18 @@ renderableFirstNodeHeight renderable =
         [] ->
             0.0
 
+
 renderableNodes : Int -> String -> List Node -> List Renderable
 renderableNodes offset id children =
     List.range offset (offset + (List.length children - 1))
         |> List.Extra.zip children
-            |> List.map (\(c, i) -> N (id ++ (toString i)) c)
+        |> List.map (\( c, i ) -> N (id ++ (toString i)) c)
 
 
 sectionRenderableNodes : Section -> List Renderable
 sectionRenderableNodes section =
     renderableNodes 0 section.id section.children
+
 
 takeSection : Int -> Section -> List Renderable
 takeSection take section =
@@ -253,4 +262,4 @@ sliceSection : Int -> Int -> Section -> List Renderable
 sliceSection drop take section =
     List.drop drop section.children
         |> List.take take
-            |> renderableNodes drop section.id
+        |> renderableNodes drop section.id

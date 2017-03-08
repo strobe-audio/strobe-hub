@@ -1,9 +1,9 @@
 module Spinner exposing (..)
 
-
 import Svg exposing (..)
 import Svg.Attributes exposing (..)
 import Msg exposing (Msg)
+
 
 ripple : Svg Msg
 ripple =
@@ -21,7 +21,8 @@ ripple =
             , height "100"
             , fill "none"
             , class "bk"
-            ] []
+            ]
+            []
         , g []
             [ animate
                 [ attributeName "opacity"
@@ -30,7 +31,8 @@ ripple =
                 , begin "0s"
                 , keyTimes "0;0.33;1"
                 , values "1;1;0"
-                ] []
+                ]
+                []
             , circle
                 [ cx "50"
                 , cy "50"
@@ -47,7 +49,8 @@ ripple =
                     , begin "0s"
                     , keyTimes "0;0.33;1"
                     , values "0;22;44"
-                    ] []
+                    ]
+                    []
                 ]
             ]
         , g []
@@ -58,7 +61,8 @@ ripple =
                 , begin "1s"
                 , keyTimes "0;0.33;1"
                 , values "1;1;0"
-                ] []
+                ]
+                []
             , circle
                 [ cx "50"
                 , cy "50"
@@ -75,7 +79,8 @@ ripple =
                     , begin "1s"
                     , keyTimes "0;0.33;1"
                     , values "0;22;44"
-                    ] []
+                    ]
+                    []
                 ]
             ]
         ]

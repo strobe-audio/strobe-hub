@@ -1,4 +1,5 @@
 module Msg exposing (..)
+
 import Time exposing (Time)
 import Library
 import Channel
@@ -32,10 +33,10 @@ type Msg
     | ToggleShowChannelControl
     | ToggleShowChannelSelector
     | ReceiverAttachmentChange
-    -- application settings
+      -- application settings
     | LoadApplicationSettings String Settings.Model
     | UpdateApplicationSettings Settings.Field String
-    -- events from broadcaster
+      -- events from broadcaster
     | BroadcasterChannelAdded Channel.State
     | BroadcasterChannelRenamed ( ID.Channel, String )
     | BroadcasterReceiverRenamed ( ID.Receiver, String )
@@ -45,4 +46,4 @@ type Msg
       -- events from browser
     | BrowserViewport Int
     | BrowserScroll Int
-    | AnimationScroll (Time, Maybe Float, Float)
+    | AnimationScroll ( Time, Maybe Float, Float )

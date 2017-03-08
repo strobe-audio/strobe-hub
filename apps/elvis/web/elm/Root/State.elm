@@ -73,8 +73,8 @@ restoreSavedState maybeState model =
     case maybeState of
         Just state ->
             { model
-            | activeChannelId = Just state.activeChannelId
-            , viewMode = State.deserialiseViewMode state.viewMode
+                | activeChannelId = Just state.activeChannelId
+                , viewMode = State.deserialiseViewMode state.viewMode
             }
 
         Nothing ->
@@ -106,7 +106,7 @@ updateIn update id elements =
         ( updated, Cmd.batch cmds )
 
 
-updateSavingState : Msg -> Root.Model -> (Root.Model, Cmd Msg)
+updateSavingState : Msg -> Root.Model -> ( Root.Model, Cmd Msg )
 updateSavingState msg model =
     let
         ( updatedModel, cmds ) =
@@ -114,7 +114,7 @@ updateSavingState msg model =
 
         -- only send save state cmd if the state is different from the one we have
         -- already saved
-        ( newModel, saveStateCmd) =
+        ( newModel, saveStateCmd ) =
             case createSavedState updatedModel of
                 Nothing ->
                     ( updatedModel, Cmd.none )
@@ -125,6 +125,7 @@ updateSavingState msg model =
                             ( { updatedModel | savedState = Just state }
                             , Ports.saveState state
                             )
+
                         Just modelState ->
                             if modelState /= state then
                                 ( { updatedModel | savedState = Just state }
@@ -132,9 +133,8 @@ updateSavingState msg model =
                                 )
                             else
                                 ( updatedModel, Cmd.none )
-
     in
-         newModel ! [cmds, saveStateCmd]
+        newModel ! [ cmds, saveStateCmd ]
 
 
 update : Msg -> Root.Model -> ( Root.Model, Cmd Msg )
@@ -351,14 +351,12 @@ update action model =
                 ( model_, cmd ) =
                     case mode of
                         State.ViewSettings ->
-                            ({ model | settings = Nothing }, Ports.settingsRequests "otis" )
+                            ( { model | settings = Nothing }, Ports.settingsRequests "otis" )
 
                         _ ->
                             ( model, Cmd.none )
-
-
             in
-                { model_ | showChannelControl = False, viewMode = mode } ! [cmd]
+                { model_ | showChannelControl = False, viewMode = mode } ! [ cmd ]
 
         Msg.ToggleShowChannelControl ->
             let
@@ -371,8 +369,11 @@ update action model =
                 time =
                     model.animationTime - 1
 
-                hidden = 1
-                shown = 0
+                hidden =
+                    1
+
+                shown =
+                    0
 
                 makeAnimation min max =
                     Animation.animation time
@@ -387,7 +388,8 @@ update action model =
                     else
                         makeAnimation shown hidden
 
-                viewAnimations = model.viewAnimations
+                viewAnimations =
+                    model.viewAnimations
 
                 viewAnimations_ =
                     { viewAnimations | revealChannelControl = animation }
@@ -407,10 +409,9 @@ update action model =
                         showAttachReceiver =
                             not <| List.isEmpty detached
                     in
-
                         { model | showAttachReceiver = showAttachReceiver } ! []
 
-        Msg.AnimationScroll (time, position, height) ->
+        Msg.AnimationScroll ( time, position, height ) ->
             let
                 ( library, cmd ) =
                     Library.State.update
@@ -430,7 +431,9 @@ update action model =
 
         Msg.LoadApplicationSettings app settings ->
             let
-                _ = Debug.log ("got settings " ++ app) settings
+                _ =
+                    Debug.log ("got settings " ++ app) settings
+
                 model_ =
                     case app of
                         "otis" ->
@@ -451,11 +454,12 @@ update action model =
 
                         _ ->
                             model.settings
+
                 cmd =
                     Maybe.map Ports.settingsSave settings
                         |> Maybe.withDefault Cmd.none
             in
-                { model | settings = settings } ! [cmd]
+                { model | settings = settings } ! [ cmd ]
 
         Msg.ToggleShowChannelSelector ->
             let
@@ -468,8 +472,11 @@ update action model =
                 time =
                     model.animationTime - 1
 
-                hidden = 0
-                shown = 1
+                hidden =
+                    0
+
+                shown =
+                    1
 
                 makeAnimation min max =
                     Animation.animation time
@@ -484,14 +491,13 @@ update action model =
                     else
                         makeAnimation shown hidden
 
-                viewAnimations = model.viewAnimations
+                viewAnimations =
+                    model.viewAnimations
 
                 viewAnimations_ =
                     { viewAnimations | revealChannelList = animation }
-
             in
                 { model | showSelectChannel = showSelectChannel, viewAnimations = viewAnimations_ } ! []
-
 
 
 libraryVisible : Root.Model -> Bool
