@@ -53,23 +53,7 @@ attached receiver channel =
                 , div [ class "receiver--volume" ]
                     [ Html.map Receiver.Volume (Volume.View.control receiver.volume (receiverLabel receiver))
                     ]
-                -- , div [ class "receiver--action" ]
-                --     [ div
-                --         [ class "receiver--action__edit"
-                --         , onClickEdit
-                --         , mapTouch (Utils.Touch.touchStart (Receiver.ShowEditName True))
-                --         , mapTouch (Utils.Touch.touchEnd (Receiver.ShowEditName True))
-                --         ]
-                --         []
-                --     ]
                 ]
-            , div
-                [ classList
-                    [ ( "receiver--edit", True )
-                    , ( "receiver--edit__active", receiver.editName )
-                    ]
-                ]
-                [ Html.map Receiver.EditName editNameInput ]
             ]
 
 

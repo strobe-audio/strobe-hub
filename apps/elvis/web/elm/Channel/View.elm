@@ -149,86 +149,6 @@ volumeControl channel =
             ]
 
 
-
-
-
--- ----------------------------------------------------------------------------
--- ----------------------------------------------------------------------------
-
-cover : Channel.Model -> Html Channel.Msg
-cover channel =
-    let
-        maybeRendition =
-            List.head channel.playlist
-    in
-        case maybeRendition of
-            Nothing ->
-                div [ class "channel--rendition" ]
-                    [ Html.map (always Channel.NoOp) (Rendition.View.empty)
-                    ]
-
-            Just rendition ->
-                div
-                    [ class "channel--rendition"
-                    , mapTap (Utils.Touch.touchStart Channel.PlayPause)
-                    , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
-                    ]
-                    [ Html.map (always Channel.PlayPause) (Rendition.View.cover rendition channel.playing)
-                    ]
-
-
-player : Channel.Model -> Html Channel.Msg
-player channel =
-    let
-        maybeRendition =
-            List.head channel.playlist
-
-        rendition =
-            case maybeRendition of
-                Nothing ->
-                    div [] [ text "No song..." ]
-
-                Just rendition ->
-                    div [ class "channel--rendition" ]
-                        [ Html.map (always Channel.NoOp) (Rendition.View.info rendition channel.playing)
-                        ]
-
-        progress =
-            case maybeRendition of
-                Nothing ->
-                    div [] []
-
-                Just rendition ->
-                    div
-                        [ onClick Channel.PlayPause
-                        -- , mapTap (Utils.Touch.touchStart Channel.PlayPause)
-                        -- , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
-                        ]
-                        [ Html.map
-                            (always Channel.PlayPause)
-                            (Rendition.View.progress rendition channel.playing)
-                        ]
-    in
-        div
-            [ class "channel--playback"
-            -- , onClick Channel.PlayPause
-            -- , mapTap (Utils.Touch.touchStart Channel.PlayPause)
-            -- , mapTap (Utils.Touch.touchEnd Channel.PlayPause)
-            ]
-            [ div
-                [ class "channel--info" ]
-                [ div
-                    [ class "channel--info--name" ]
-                    [ div
-                        [ class "channel--name" ]
-                        [ text channel.name ]
-                    ]
-                , rendition
-                ]
-            -- , progress
-            ]
-
-
 playlist : Channel.Model -> Html Channel.Msg
 playlist channel =
     let
@@ -292,6 +212,7 @@ playlistHead channel maybeRendition =
                 , Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlistHead rendition)
                 ]
 
+
 playPauseButton : Channel.Model -> Html Channel.Msg
 playPauseButton channel =
     div
@@ -311,6 +232,9 @@ playlistDivision : String -> Html Channel.Msg
 playlistDivision title =
     div [ class "channel--playlist-division" ] [ text title ]
 
+
 mapTap : Attribute (Utils.Touch.E Channel.Msg) -> Attribute Channel.Msg
 mapTap a =
     Html.Attributes.map Channel.Tap a
+
+
