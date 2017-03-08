@@ -269,6 +269,7 @@ $active-channel-peek-width: 85px;
 	border-bottom: solid 1px #222;
   color: #fff;
 	background: #111111;
+	height: $button-size;
 	flex: 0 0 $button-size;
 	display: flex;
 	flex-direction: row;
