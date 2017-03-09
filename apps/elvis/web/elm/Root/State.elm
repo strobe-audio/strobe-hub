@@ -349,14 +349,9 @@ update action model =
         Msg.ActivateView mode ->
             let
                 ( model_, cmd ) =
-                    case mode of
-                        State.ViewSettings ->
-                            ( { model | settings = Nothing }, Ports.settingsRequests "otis" )
-
-                        _ ->
-                            ( model, Cmd.none )
+                    (loadSettings { model | viewMode = mode })
             in
-                { model_ | showChannelControl = False, viewMode = mode } ! [ cmd ]
+                { model_ | showChannelControl = False } ! [ cmd ]
 
         Msg.ToggleShowChannelControl ->
             let
@@ -545,3 +540,13 @@ processAddChannelInputAction action model =
 
                 Input.Close ->
                     ( model, Msg.ToggleAddChannel )
+
+
+loadSettings : Root.Model -> ( Root.Model, Cmd Msg )
+loadSettings model =
+    case model.viewMode of
+        State.ViewSettings ->
+            ( { model | settings = Nothing }, Ports.settingsRequests "otis" )
+
+        _ ->
+            ( model, Cmd.none )
