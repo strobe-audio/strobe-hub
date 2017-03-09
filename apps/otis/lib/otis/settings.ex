@@ -29,18 +29,24 @@ defmodule Otis.Settings do
   end
 
   defp current_settings({:ok, values}) do
-    settings =
-      Enum.map(@ns_order, fn(ns) ->
-        values = Map.merge(@default_values[ns], Map.get(values, ns, %{}))
-        fields = Enum.map(@schema[ns], fn({key, type}) ->
-          Map.merge(type, %{application: @application, namespace: ns, name: to_string(key), value: values[key]})
-        end)
-        %{application: @application, namespace: ns, title: @titles[ns], fields: fields}
-      end)
-    {:ok, settings}
+    {:ok, map_settings(values)}
   end
 
   defp current_settings(:error) do
-    {:ok, []}
+    {:ok, default_settings()}
+  end
+
+  defp default_settings do
+    map_settings(%{})
+  end
+
+  defp map_settings(settings) do
+    Enum.map(@ns_order, fn(ns) ->
+      values = Map.merge(@default_values[ns], Map.get(settings, ns, %{}))
+      fields = Enum.map(@schema[ns], fn({key, type}) ->
+        Map.merge(type, %{application: @application, namespace: ns, name: to_string(key), value: values[key]})
+      end)
+      %{application: @application, namespace: ns, title: @titles[ns], fields: fields}
+    end)
   end
 end

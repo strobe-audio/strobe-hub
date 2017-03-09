@@ -25,6 +25,21 @@ defmodule Otis.SettingsTest do
     ]
   end
 
+  test "gives sane default values" do
+    {:ok, settings} = Otis.Settings.current
+    assert settings == [
+      %{
+        application: :otis,
+        namespace: :wifi,
+        title: "Wifi settings",
+        fields: [
+          %{ application: :otis, namespace: :wifi, name: "ssid", value: "", inputType: :text },
+          %{ application: :otis, namespace: :wifi, name: "psk", value: "", inputType: :password },
+        ]
+      }
+    ]
+  end
+
   test "can save settings received from UI" do
     fields = [
       %{"application" => "otis", "inputType" => "text", "name" => "ssid", "namespace" => "wifi", "value" => "mynewnetwork"},
