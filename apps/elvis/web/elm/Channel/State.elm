@@ -43,6 +43,8 @@ newChannel channelState =
     , playlist = []
     , showAddReceiver = False
     , editName = False
+    , confirmDelete = False
+    , removalInProgress = False
     , editNameInput = Input.State.blank
     , touches = Utils.Touch.null
     }
@@ -199,6 +201,12 @@ update action channel =
                             { channel | touches = touches } ! []
             in
                 updated ! [ cmd ]
+
+        Channel.ShowConfirmDelete show ->
+            { channel | confirmDelete = show } ! []
+
+        Channel.Remove ->
+            { channel | removalInProgress = True } ! [ Channel.Cmd.remove channel.id ]
 
 
 updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )

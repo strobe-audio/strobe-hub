@@ -33,11 +33,13 @@ type Msg
     | ToggleShowChannelControl
     | ToggleShowChannelSelector
     | ReceiverAttachmentChange
+    | SetConfigurationViewModel Settings.ViewMode
       -- application settings
     | LoadApplicationSettings String Settings.Model
     | UpdateApplicationSettings Settings.Field String
       -- events from broadcaster
     | BroadcasterChannelAdded Channel.State
+    | BroadcasterChannelRemoved ID.Channel
     | BroadcasterChannelRenamed ( ID.Channel, String )
     | BroadcasterReceiverRenamed ( ID.Receiver, String )
     | BroadcasterLibraryRegistration Library.Section

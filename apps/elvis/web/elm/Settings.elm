@@ -8,9 +8,16 @@ type alias Model =
     }
 
 
+type ViewMode
+    = Settings
+    | Channels
+    | Receivers
+
+
 type alias NameSpace =
     { application : String
-    , namespace : String , title : String
+    , namespace : String
+    , title : String
     , fields : Fields
     }
 

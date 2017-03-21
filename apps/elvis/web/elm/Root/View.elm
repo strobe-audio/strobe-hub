@@ -248,7 +248,7 @@ activeView model channel =
                     Html.map Msg.Library (Library.View.root model.library)
 
                 State.ViewSettings ->
-                    Settings.View.application model.settings
+                    Settings.View.configure model
     in
         div
             [ class "root--active-view" ]

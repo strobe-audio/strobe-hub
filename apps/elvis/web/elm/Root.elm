@@ -40,7 +40,7 @@ type alias Model =
     , viewMode : State.ViewMode
     , showChannelControl : Bool
     , savedState : Maybe SavedState
-    , settings : Maybe Settings.Model
+    , configuration : Configuration
     , viewAnimations : ViewAnimations
     }
 
@@ -66,6 +66,14 @@ type alias ReceiverStatusEvent =
 type alias ChannelStatusEvent =
     { channelId : String
     , status : String
+    }
+
+
+type alias Configuration =
+    { settings : Maybe Settings.Model
+    , viewMode : Settings.ViewMode
+    , showAddChannelInput : Bool
+    , addChannelInput : Input.Model
     }
 
 

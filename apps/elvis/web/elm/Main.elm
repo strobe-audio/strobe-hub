@@ -54,6 +54,7 @@ subscriptions model =
         , Ports.receiverStatusActions
         , Ports.receiverPresenceActions
         , Ports.channelStatusActions
+        , Ports.channelRemovalActions
         , Ports.renditionProgressActions
         , Ports.renditionChangeActions
         , Ports.volumeChangeActions

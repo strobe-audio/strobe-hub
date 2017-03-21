@@ -5,6 +5,7 @@ import Channel
 import Ports
 import Volume.Cmd
 import Msg exposing (Msg)
+import ID
 
 
 playPause : Channel.Model -> Cmd Msg
@@ -30,4 +31,10 @@ rename channel =
 clearPlaylist : Channel.Model -> Cmd Msg
 clearPlaylist channel =
     Ports.channelClearPlaylist channel.id
+        |> Cmd.map (always Msg.NoOp)
+
+
+remove : ID.Channel -> Cmd Msg
+remove channelId =
+    Ports.removeChannelRequests channelId
         |> Cmd.map (always Msg.NoOp)

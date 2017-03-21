@@ -145,6 +145,14 @@ channelAdditionActions =
     channelAdditions Msg.BroadcasterChannelAdded
 
 
+port channelRemovals : (ID.Channel -> m) -> Sub m
+
+
+channelRemovalActions : Sub Msg
+channelRemovalActions =
+    channelRemovals Msg.BroadcasterChannelRemoved
+
+
 port channelRenames : (( ID.Channel, String ) -> m) -> Sub m
 
 
@@ -211,6 +219,9 @@ port playlistRemoveRequests : ( String, String ) -> Cmd msg
 
 
 port addChannelRequests : String -> Cmd msg
+
+
+port removeChannelRequests : ID.Channel -> Cmd msg
 
 
 port attachReceiverRequests : ( String, String ) -> Cmd msg
