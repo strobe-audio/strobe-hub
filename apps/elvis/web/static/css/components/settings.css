@@ -1,0 +1,33 @@
+.settings-container {
+  flex: 1;
+  padding: $padding;
+}
+.settings-namespace + .settings-namespace {
+  border-top: solid 1px #eee;
+}
+.settings-namespace__title {
+  font-weight: 500;
+}
+.settings-field {
+  margin-bottom: calc($padding * 2);
+}
+.settings-field label {
+  display: block;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #666;
+}
+
+.settings-field input {
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  padding: calc($padding) $padding;
+  border: solid 1px #eee;
+  border-radius: 0;
+  -webkit-appearance: none;
+  font-size: 1.4rem;
+  font-weight: 500;
+}

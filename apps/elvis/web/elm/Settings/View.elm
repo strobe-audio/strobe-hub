@@ -29,7 +29,7 @@ namespace : Settings.NameSpace -> Html Msg
 namespace ns =
     div
         [ class "settings-namespace" ]
-        [ h2 [ class "settings-namespace__title" ] [ text ns.title ]
+        [ h3 [ class "settings-namespace__title" ] [ text ns.title ]
         , (fields ns.fields)
         ]
 
