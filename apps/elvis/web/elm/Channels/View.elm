@@ -143,6 +143,14 @@ channelChoice model receivers activeChannel channelSummary =
                     [ Receivers.View.detached model activeChannel ]
             else
                 div [] []
+
+        channelVolumeControl =
+            if isActive then
+                Html.map
+                    (\m -> (Msg.Channel channel.id) (Channel.Volume m))
+                    (Volume.View.bareControl channel.volume)
+            else
+                div [] []
     in
         div
             [ classList
@@ -174,6 +182,7 @@ channelChoice model receivers activeChannel channelSummary =
                     )
                     [ text (toString channelSummary.receiverCount) ]
                 ]
+            , channelVolumeControl
             , receiverAttachList
             ]
 

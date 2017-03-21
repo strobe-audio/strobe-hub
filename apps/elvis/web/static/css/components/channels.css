@@ -1,3 +1,5 @@
+$channel-selector-margin: 85px;
+
 .channels {
   -moz-user-select: none;
   -webkit-user-select: none;
@@ -59,6 +61,7 @@
 
 .channels-selector--list {
   flex: 1;
+  max-width: calc(100vw - $channel-selector-margin);
 }
 
 $channel-select-border: rgba(0, 0, 0, 0.05);
@@ -289,6 +292,10 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
 
 .channels-selector--channel-attach-receivers {
   background: rgba(0, 0, 0, 0.15);
+}
+
+.channels-selector--channel .volume--control {
+  margin: 0 calc($button-size / 4);
 }
 @media (--desktop) {
   .channels {

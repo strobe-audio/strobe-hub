@@ -1,4 +1,4 @@
-module Volume.View exposing (..)
+module Volume.View exposing (control, bareControl)
 
 import Html exposing (Html, div, input)
 import Html.Attributes exposing (..)
@@ -12,19 +12,6 @@ import String
 control : Float -> Html Volume.Msg -> Html Volume.Msg
 control volume label =
     let
-        scale : Float
-        scale =
-            1000.0
-
-        decode : String -> Maybe Float
-        decode input =
-            case String.toFloat input of
-                Ok value ->
-                    Just (value / scale)
-
-                Err _ ->
-                    Nothing
-
         stateButton : String -> Float -> List (Html.Attribute Volume.Msg)
         stateButton classes volume =
             ((class classes) :: (onUnifiedClick (Volume.Change (Just volume))))
@@ -50,3 +37,40 @@ control volume label =
                 , div (stateButton "volume--state volume--state__full" 1.0) []
                 ]
             ]
+
+
+bareControl : Float -> Html Volume.Msg
+bareControl volume =
+    div
+        [ class "volume--control" ]
+        [ div
+            [ class "volume--range" ]
+            [ div
+                [ class "volume--slider" ]
+                [ input
+                    [ type_ "range"
+                    , Html.Attributes.min "0"
+                    , Html.Attributes.max (scale |> floor |> toString)
+                    , value (toString (volume * scale))
+                    , step "1"
+                    , onInput (Volume.Change << decode)
+                    ]
+                    []
+                ]
+            ]
+        ]
+
+
+scale : Float
+scale =
+    1000.0
+
+
+decode : String -> Maybe Float
+decode input =
+    case String.toFloat input of
+        Ok value ->
+            Just (value / scale)
+
+        Err _ ->
+            Nothing
