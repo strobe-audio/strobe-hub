@@ -175,22 +175,22 @@ update action model =
                 receivers =
                     loadReceivers model state
 
-                defaultChannelId =
-                    Maybe.map (\channel -> channel.id) (List.head channels)
-
+                -- defaultChannelId =
+                --     Maybe.map (\channel -> channel.id) (List.head channels)
                 cmd =
-                    case model.activeChannelId of
-                        Just id ->
-                            Cmd.none
+                    gotoDefaultChannel model
 
-                        Nothing ->
-                            case defaultChannelId of
-                                Nothing ->
-                                    Cmd.none
-
-                                Just id ->
-                                    Navigation.newUrl (Routing.channelLocation id)
-
+                -- case model.activeChannelId of
+                --     Just id ->
+                --         Cmd.none
+                --
+                --     Nothing ->
+                --         case defaultChannelId of
+                --             Nothing ->
+                --                 Cmd.none
+                --
+                --             Just id ->
+                --                 Navigation.newUrl (Routing.channelLocation id)
                 updatedModel =
                     { model
                         | channels = channels
@@ -273,8 +273,24 @@ update action model =
             let
                 channels =
                     List.filter (\channel -> channel.id /= channelId) model.channels
+
+                model_ =
+                    { model | channels = channels }
+
+                -- if the channel we were on has been deleted, then reset our
+                -- active channel id and goto the new default channel
+                updatedModel =
+                    case model.activeChannelId of
+                        Just id ->
+                            if id == channelId then
+                                { model_ | activeChannelId = Nothing }
+                            else
+                                model_
+
+                        Nothing ->
+                            model_
             in
-                { model | channels = channels } ! []
+                updatedModel ! [ gotoDefaultChannel updatedModel ]
 
         Msg.BroadcasterChannelRenamed ( channelId, newName ) ->
             update ((Msg.Channel channelId) (Channel.Renamed newName)) model
@@ -595,3 +611,22 @@ loadSettings model =
 
         _ ->
             ( model, Cmd.none )
+
+
+gotoDefaultChannel : Root.Model -> Cmd Msg
+gotoDefaultChannel model =
+    case model.activeChannelId of
+        Just id ->
+            Cmd.none
+
+        Nothing ->
+            let
+                defaultChannelId =
+                    Maybe.map (\channel -> channel.id) (List.head model.channels)
+            in
+                case defaultChannelId of
+                    Nothing ->
+                        Cmd.none
+
+                    Just id ->
+                        Navigation.newUrl (Routing.channelLocation id)
