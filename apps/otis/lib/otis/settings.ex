@@ -6,8 +6,8 @@ defmodule Otis.Settings do
   }
   @schema %{
     wifi: [
-      ssid: %{ inputType: :text },
-      psk: %{ inputType: :password },
+      ssid: %{ inputType: :text, title: "Network" },
+      psk: %{ inputType: :password, title: "Password" },
     ]
   }
   @titles %{

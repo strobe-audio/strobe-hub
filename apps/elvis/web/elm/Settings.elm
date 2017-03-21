@@ -10,8 +10,7 @@ type alias Model =
 
 type alias NameSpace =
     { application : String
-    , namespace : String
-    , title : String
+    , namespace : String , title : String
     , fields : Fields
     }
 
@@ -26,6 +25,7 @@ type alias Field =
     , name : String
     , value : String
     , inputType : String
+    , title : String
     }
 
 

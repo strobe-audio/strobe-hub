@@ -45,7 +45,9 @@ field : Settings.Field -> Html Msg
 field field =
     div
         [ class "settings-field" ]
-        [ (fieldInput field) ]
+        [ label [] [ text field.title ]
+        , (fieldInput field)
+        ]
 
 
 fieldInput : Settings.Field -> Html Msg
