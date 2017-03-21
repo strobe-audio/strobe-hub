@@ -240,6 +240,12 @@ defmodule Otis.Receiver do
   @doc ~S"""
   Configure the receiver from the db and join it to the channel
   """
+  def configure_and_join_channel(nil, _state, _channel) do
+    Logger.warn "Configuring nil receiver"
+  end
+  def configure_and_join_channel(_receiver, _state, nil) do
+    Logger.warn "Configuring receiver to join non-existant channel"
+  end
   def configure_and_join_channel(receiver, state, channel) do
     set_volume(receiver, state.volume, channel.volume)
     join_channel(receiver, channel)
