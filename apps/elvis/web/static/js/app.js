@@ -98,6 +98,11 @@ channel.on('channel_added', payload => {
   app.ports.channelAdditions.send(payload)
 })
 
+channel.on('channel_removed', ({id}) => {
+  console.log('channel removed', id)
+  app.ports.channelRemovals.send(id)
+})
+
 channel.on('channel_rename', payload => {
   console.log('channel_rename', payload)
   app.ports.channelRenames.send([payload.channelId, payload.name])
@@ -195,6 +200,12 @@ app.ports.libraryRequests.subscribe(event => {
 app.ports.addChannelRequests.subscribe(name => {
   console.log("add_channel", name)
   channel.push("add_channel", name)
+  .receive("error", payload => console.log(payload.message))
+})
+
+app.ports.removeChannelRequests.subscribe(id => {
+  console.log("add_channel", id)
+  channel.push("remove_channel", id)
   .receive("error", payload => console.log(payload.message))
 })
 

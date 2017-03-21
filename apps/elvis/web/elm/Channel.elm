@@ -20,6 +20,8 @@ type alias Model =
     , showAddReceiver : Bool
     , editName : Bool
     , editNameInput : Input.Model
+    , confirmDelete : Bool
+    , removalInProgress : Bool
     , touches : Utils.Touch.Model
     }
 
@@ -56,6 +58,8 @@ type Msg
     | RenditionChange Rendition.ChangeEvent
     | AddRendition Rendition.State
     | ShowEditName Bool
+    | ShowConfirmDelete Bool
+    | Remove
     | EditName Input.Msg
     | Rename String
     | Renamed String

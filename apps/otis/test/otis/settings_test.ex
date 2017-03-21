@@ -18,8 +18,23 @@ defmodule Otis.SettingsTest do
         namespace: :wifi,
         title: "Wifi settings",
         fields: [
-          %{ application: :otis, namespace: :wifi, name: "ssid", value: "mynetwork", inputType: :text },
-          %{ application: :otis, namespace: :wifi, name: "psk", value: "mysharedkey", inputType: :password },
+          %{ application: :otis, namespace: :wifi, name: "ssid", value: "mynetwork", inputType: :text, title: "Network" },
+          %{ application: :otis, namespace: :wifi, name: "psk", value: "mysharedkey", inputType: :password, title: "Password" },
+        ]
+      }
+    ]
+  end
+
+  test "gives sane default values" do
+    {:ok, settings} = Otis.Settings.current
+    assert settings == [
+      %{
+        application: :otis,
+        namespace: :wifi,
+        title: "Wifi settings",
+        fields: [
+          %{ application: :otis, namespace: :wifi, name: "ssid", value: "", inputType: :text, title: "Network" },
+          %{ application: :otis, namespace: :wifi, name: "psk", value: "", inputType: :password, title: "Password" },
         ]
       }
     ]

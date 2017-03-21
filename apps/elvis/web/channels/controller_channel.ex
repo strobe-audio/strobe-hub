@@ -62,6 +62,11 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("remove_channel", channel_id, socket) do
+    :ok = Otis.Channels.destroy!(channel_id)
+    {:noreply, socket}
+  end
+
   def handle_in("library", [channel_id, action, query], socket) do
     Otis.State.Events.notify({:library_request, [channel_id, action, socket, query]})
     {:noreply, socket}

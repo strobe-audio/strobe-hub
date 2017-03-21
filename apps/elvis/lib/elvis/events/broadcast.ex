@@ -34,6 +34,12 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:channel_removed, [id]}, state) do
+    broadcast!("channel_removed", %{id: id})
+    {:ok, state}
+  end
+
+
   def handle_event({:new_renditions, _}, state) do
     {:ok, state}
   end

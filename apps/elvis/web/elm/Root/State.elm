@@ -41,9 +41,14 @@ initialState =
     , animationTime = 0
     , notifications = []
     , viewMode = State.ViewCurrentChannel
-    , showChannelControl = True
+    , showChannelControl = False
     , savedState = Nothing
-    , settings = Nothing
+    , configuration =
+        { settings = Nothing
+        , viewMode = Settings.Channels
+        , showAddChannelInput = False
+        , addChannelInput = Input.State.blank
+        }
     , showSelectChannel = False
     , viewAnimations =
         { revealChannelList = Animation.static 0
@@ -257,9 +262,19 @@ update action model =
                     Channel.State.newChannel channelState
 
                 model_ =
-                    { model | channels = channel :: model.channels }
+                    { model
+                        | channels = channel :: model.channels
+                        , newChannelInput = Input.State.blank
+                    }
             in
                 update (Msg.ActivateChannel channel) model_
+
+        Msg.BroadcasterChannelRemoved channelId ->
+            let
+                channels =
+                    List.filter (\channel -> channel.id /= channelId) model.channels
+            in
+                { model | channels = channels } ! []
 
         Msg.BroadcasterChannelRenamed ( channelId, newName ) ->
             update ((Msg.Channel channelId) (Channel.Renamed newName)) model
@@ -349,14 +364,9 @@ update action model =
         Msg.ActivateView mode ->
             let
                 ( model_, cmd ) =
-                    case mode of
-                        State.ViewSettings ->
-                            ( { model | settings = Nothing }, Ports.settingsRequests "otis" )
-
-                        _ ->
-                            ( model, Cmd.none )
+                    (loadSettings { model | viewMode = mode })
             in
-                { model_ | showChannelControl = False, viewMode = mode } ! [ cmd ]
+                { model_ | showChannelControl = False } ! [ cmd ]
 
         Msg.ToggleShowChannelControl ->
             let
@@ -437,7 +447,14 @@ update action model =
                 model_ =
                     case app of
                         "otis" ->
-                            { model | settings = Just settings }
+                            let
+                                configuration =
+                                    model.configuration
+
+                                configuration_ =
+                                    { configuration | settings = Just settings }
+                            in
+                                { model | configuration = configuration_ }
 
                         _ ->
                             -- TODO: handle settings for libraries
@@ -447,19 +464,35 @@ update action model =
 
         Msg.UpdateApplicationSettings field value ->
             let
+                configuration =
+                    model.configuration
+
                 settings =
                     case field.application of
                         "otis" ->
-                            Maybe.map (Settings.updateField field value) model.settings
+                            Maybe.map (Settings.updateField field value) configuration.settings
 
                         _ ->
-                            model.settings
+                            configuration.settings
+
+                configuration_ =
+                    { configuration | settings = settings }
 
                 cmd =
                     Maybe.map Ports.settingsSave settings
                         |> Maybe.withDefault Cmd.none
             in
-                { model | settings = settings } ! [ cmd ]
+                { model | configuration = configuration_ } ! [ cmd ]
+
+        Msg.SetConfigurationViewModel mode ->
+            let
+                configuration =
+                    model.configuration
+
+                configuration_ =
+                    { configuration | viewMode = mode }
+            in
+                { model | configuration = configuration_ } ! []
 
         Msg.ToggleShowChannelSelector ->
             let
@@ -545,3 +578,20 @@ processAddChannelInputAction action model =
 
                 Input.Close ->
                     ( model, Msg.ToggleAddChannel )
+
+
+loadSettings : Root.Model -> ( Root.Model, Cmd Msg )
+loadSettings model =
+    case model.viewMode of
+        State.ViewSettings ->
+            let
+                configuration =
+                    model.configuration
+
+                configuration_ =
+                    { configuration | settings = Nothing }
+            in
+                ( { model | configuration = configuration_ }, Ports.settingsRequests "otis" )
+
+        _ ->
+            ( model, Cmd.none )

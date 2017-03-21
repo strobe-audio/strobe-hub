@@ -1,0 +1,166 @@
+.configuration-container {
+  flex: 1;
+}
+.configuration-scrollable {
+  overflow: auto;
+  max-height: calc(100vh - 3 * $button-size);
+}
+.settings-container {
+  padding: $padding;
+}
+.settings-namespace + .settings-namespace {
+  border-top: solid 1px #eee;
+}
+.settings-namespace__title {
+  font-weight: 500;
+}
+.settings-field {
+  margin-bottom: calc($padding * 2);
+}
+.settings-field label {
+  display: block;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: #666;
+}
+
+.settings-field input {
+  display: block;
+  box-sizing: border-box;
+  margin: 0;
+  width: 100%;
+  padding: calc($padding) $padding;
+  border: solid 1px #eee;
+  border-radius: 0;
+  -webkit-appearance: none;
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.settings--view-mode-tabs {
+  display: flex;
+  height: $button-size;
+  background: #eee;
+  align-items: center;
+  justify-content: stretch;
+}
+
+.settings--view-mode-tab {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: $button-size;
+}
+
+.settings--view-mode-tab__active {
+  background: rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+.settings--channel {
+  /* height: $button-size; */
+}
+.settings--channel--display {
+  display: flex;
+  align-items: center;
+  height: $button-size;
+}
+.settings--channel  + .settings--channel {
+  border-top: solid 1px #eee;
+}
+.settings--channel--name {
+  flex: 1;
+  padding: $padding;
+  font-size: 1.7rem;
+  font-weight: 500;
+}
+.settings--channel--edit,
+.settings--channel--delete {
+  flex: 0 0 $button-size;
+}
+.settings--channel--edit {
+  @mixin fa-btn "\f040"; /* fa-pencil */
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.settings--channel--delete {
+  @mixin fa-btn "\f05e"; /* fa-ban */
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
+.settings--channel--confirm-delete {
+  display: flex;
+  align-items: center;
+  height: $button-size;
+  background-color: rgba(255, 0, 0, 0.5);
+}
+.settings--channel--confirm-delete--text {
+  flex: 1;
+  padding: $padding;
+}
+.settings--channel--confirm-delete--cancel,
+.settings--channel--confirm-delete--confirm {
+  flex: 0 0 $button-size;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+.settings--channel--confirm-delete--cancel {
+  @mixin fa-btn "\f00d"; /* fa-remove */
+}
+
+.settings--channel--confirm-delete--confirm {
+  @mixin fa-btn "\f00c"; /* fa-check */
+  border-left: solid 1px #eee;
+}
+
+
+.settings--channel--edit--input {
+  display: flex;
+}
+
+.settings--channel-create {
+  background: green;
+}
+
+.settings--channel-create--button {
+  display: flex;
+  align-items: center;
+  height: $button-size;
+}
+
+.settings--channel-create--icon {
+  @mixin fa-btn "\f067"; /* fa-plus */
+  flex: 0 0 $button-size;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.settings--channel-create--title {
+  padding: $padding;
+  flex: 1;
+}
+
+.settings--receiver {
+  /* height: $button-size; */
+}
+.settings--receiver--display {
+  display: flex;
+  align-items: center;
+  height: $button-size;
+}
+.settings--receiver  + .settings--receiver {
+  border-top: solid 1px #eee;
+}
+.settings--receiver--name {
+  flex: 1;
+  padding: $padding;
+  font-size: 1.7rem;
+  font-weight: 500;
+}
+.settings--receiver--edit,
+.settings--receiver--delete {
+  flex: 0 0 $button-size;
+}
+.settings--receiver--edit {
+  @mixin fa-btn "\f040"; /* fa-pencil */
+  background-color: rgba(0, 0, 0, 0.3);
+}

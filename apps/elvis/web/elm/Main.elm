@@ -40,10 +40,11 @@ init savedState location =
                 _ ->
                     initialState
 
-        startingState =
+        ( model, cmd ) =
             Root.State.restoreSavedState savedState routeState
+                |> Root.State.loadSettings
     in
-        ( startingState, Cmd.none )
+        ( model, cmd )
 
 
 subscriptions : Root.Model -> Sub Msg
@@ -53,6 +54,7 @@ subscriptions model =
         , Ports.receiverStatusActions
         , Ports.receiverPresenceActions
         , Ports.channelStatusActions
+        , Ports.channelRemovalActions
         , Ports.renditionProgressActions
         , Ports.renditionChangeActions
         , Ports.volumeChangeActions
