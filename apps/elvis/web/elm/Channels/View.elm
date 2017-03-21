@@ -117,23 +117,6 @@ channelChoice model receivers activeChannel channelSummary =
                 , onClick msg
                 ]
 
-        onClickEdit =
-            onWithOptions "click"
-                { defaultOptions | stopPropagation = True }
-                (Json.succeed (Msg.Channel channelSummary.id (Channel.ShowEditName True)))
-
-        -- options = { defaultOptions | preventDefault = True }
-        -- this kinda works, but it triggered even after a scroll...
-        -- onTouchChoose =
-        --   onWithOptions "touchend" options Json.value (\_ -> (Channels.Choose channel))
-        editNameInput =
-            case channel.editName of
-                False ->
-                    div [] []
-
-                True ->
-                    Input.View.inputSubmitCancel channel.editNameInput
-
         isActive =
             channelSummary.id == activeChannel.id
 
