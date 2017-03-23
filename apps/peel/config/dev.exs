@@ -1,7 +1,9 @@
 use Mix.Config
 
-project_root_path = Path.expand(Path.join(__DIR__, "../../.."))
+root_dir = Path.expand("#{__DIR__}/../../..")
+state_dir = Path.join([root_dir, "_state", to_string(Mix.env)])
 
 config :peel, Peel.Repo,
   adapter: Sqlite.Ecto,
-  database: Path.join(project_root_path, "_state/peel.dev.sqlite3")
+  database: Path.join([state_dir, "peel.dev.sqlite3"])
+

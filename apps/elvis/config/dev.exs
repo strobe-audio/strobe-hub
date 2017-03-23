@@ -42,28 +42,3 @@ config :logger, :console,
 # Do not configure such in production as keeping
 # and calculating stacktraces is usually expensive.
 config :phoenix, :stacktrace_depth, 20
-
-root_dir = Path.expand("#{__DIR__}/../../..")
-state_dir = Path.join([root_dir, "_state"])
-
-config :otis, Otis.Media,
-  root: Path.join([state_dir, "fs"]),
-  at: "/fs"
-
-config :otis, :environment, :dev
-
-config :otis, Otis.State.Repo,
-  adapter: Sqlite.Ecto,
-  database: Path.join([state_dir, "otis.dev.sqlite3"])
-
-config :peel, Peel.Repo,
-  adapter: Sqlite.Ecto,
-  database: Path.join([state_dir, "peel.dev.sqlite3"])
-
-config :otis, Otis.SNTP,
-  port: 5145
-
-config :otis, Otis.Receivers,
-  data_port: 5640,
-  ctrl_port: 5641
-

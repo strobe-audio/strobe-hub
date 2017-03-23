@@ -11,6 +11,14 @@ use Mix.Config
 # Sample configuration:
 #
 
-# config :logger,
-#   backends: [:console, {LoggerFileBackend, :debug_log}]
+platform = case to_string(:erlang.system_info(:system_architecture)) do
+  <<"x86_64-apple-darwin", _version::binary>> ->
+    "x86_64-apple-darwin"
+  other ->
+    other
+end
 
+config :porcelain, :driver, Porcelain.Driver.Goon
+config :porcelain, :goon_driver_path, Path.expand("#{__DIR__}/../bin/goon-#{platform}")
+
+import_config "#{Mix.env}.exs"
