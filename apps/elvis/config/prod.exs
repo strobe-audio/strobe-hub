@@ -12,8 +12,8 @@ use Mix.Config
 # which you typically run after static files are built.
 config :elvis, Elvis.Endpoint,
   server: true,
-  # http: [port: {:system, "PORT"}],
-  http: [port: 4000],
+  http: [port: {:system, "PORT"}],
+  # http: [port: 4000],
   # url: [host: "192.168.1.67", port: 4000],
   check_origin: false,
   cache_static_manifest: "priv/static/manifest.json"
