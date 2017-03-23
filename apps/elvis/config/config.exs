@@ -27,9 +27,6 @@ config :logger, :console,
   colors: [info: :green]
 
 
-config :porcelain, :driver, Porcelain.Driver.Goon
-config :porcelain, :goon_driver_path, Path.expand("#{__DIR__}/../bin/goon-#{:erlang.system_info(:system_architecture)}")
-
 config :elvis, sentry_dsn: System.get_env("SENTRY_DSN")
 
 # Import environment specific config. This must remain at the bottom
