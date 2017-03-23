@@ -676,18 +676,23 @@ searchInput model =
                 div [] []
 
             Just action ->
-                div
+                Html.Keyed.node
+                    "div"
                     [ class "library--breadcrumb--search-input" ]
-                    [ input
-                        [ class "library--search-input"
-                        , type_ "text"
-                        , placeholder ("Search " ++ action.title ++ "...")
-                        , autofocus True
-                        , value model.searchQuery
-                        , onInput Library.SearchQueryUpdate
-                        , onKeyDown Library.SubmitSearch Library.CancelSearch
-                        ]
-                        []
+                    [ ( action.url
+                      , input
+                            [ class "library--search-input"
+                            , type_ "text"
+                            , placeholder ("Search " ++ action.title ++ "...")
+                            , autofocus True
+                            , attribute "autocorrect" "off"
+                            , attribute "autocapitalize" "none"
+                            , value model.searchQuery
+                            , onInput Library.SearchQueryUpdate
+                            , onKeyDown Library.SubmitSearch Library.CancelSearch
+                            ]
+                            []
+                      )
                     ]
     else
         div [] []
