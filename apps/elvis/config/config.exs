@@ -30,7 +30,7 @@ config :logger, :console,
 config :porcelain, :driver, Porcelain.Driver.Goon
 config :porcelain, :goon_driver_path, Path.expand("#{__DIR__}/../bin/goon-#{:erlang.system_info(:system_architecture)}")
 
-config :sentry, dsn: System.get_env("SENTRY_DSN")
+config :elvis, sentry_dsn: System.get_env("SENTRY_DSN")
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

@@ -21,7 +21,7 @@
       document.addEventListener("touchstart", function() {},false);
     </script>
     <script>
-      window.SENTRY_DSN = '<%= Application.get_env(:sentry, :dsn) %>'
+      window.SENTRY_DSN = '<%= Application.get_env(:elvis, :sentry_dsn) %>'
     </script>
   </head>
 
