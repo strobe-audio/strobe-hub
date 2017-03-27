@@ -7,7 +7,7 @@ defmodule HLS.DirReaderTest do
     {:ok, root: root, reader: reader}
   end
 
-  def fingerprint({data, _expiry}) do
+  def fingerprint({data, _headers}) do
 		fingerprint(data)
 	end
   def fingerprint(data) do

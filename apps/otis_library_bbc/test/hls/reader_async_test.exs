@@ -16,10 +16,6 @@ defmodule HLS.ReaderAsyncTest do
 
   test "it can read the given file when given a url", context do
     {:ok, _pid} = HLS.Reader.Async.read(context.reader, "http://something.io/high/226201867.ts", self(), :test)
-    assert_receive {:data, :test, _}
-  end
-  test "it can read the given file with an expiry when given a url", context do
-    {:ok, _pid} = HLS.Reader.Async.read_with_expiry(context.reader, "http://something.io/high/226201867.ts", self(), :test)
-    assert_receive {:data, :test, {_, 0}}
+    assert_receive {:test, {:ok, _body, _headers}}
   end
 end

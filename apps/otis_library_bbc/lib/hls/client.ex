@@ -45,8 +45,26 @@ defmodule HLS.Client do
   end
 
   defp read_with_timing(media, reader) do
-    {t, data} = :timer.tc(fn -> HLS.Reader.read!(reader, media.url) end)
+    {t, data} = :timer.tc(fn -> read_with_timeout(media, reader) end)
     {t / (media.duration * 1_000_000), data}
+  end
+
+  defp read_with_timeout(media, reader) do
+    task = Task.async(HLS.Reader, :read!, [reader, media.url])
+    case Task.yield(task, timeout(media)) || Task.shutdown(task) do
+      {:ok, {body, _headers}} ->
+        body
+      {:exit, reason} ->
+        Logger.warn("Error when retrieving audio segment: #{media.url}\n#{inspect reason}")
+        HLS.whitenoise()
+      nil ->
+        Logger.warn("Timeout when retrieving audio segment: #{media.url}")
+        HLS.whitenoise()
+    end
+  end
+
+  defp timeout(%M3.Media{duration: duration}) do
+    round((duration * 1000) * 0.7)
   end
 
   # TODO: upgrade/downgrade stream based on load times

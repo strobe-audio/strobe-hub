@@ -5,12 +5,12 @@ defmodule HLS.Reader.Async.Supervisor do
     Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
-  def start_reader(mode, reader, url, parent, id) do
-    start_reader(__MODULE__, mode, reader, url, parent, id)
+  def start_reader(reader, url, parent, id, deadline) do
+    start_reader(__MODULE__, reader, url, parent, id, deadline)
   end
 
-  def start_reader(supervisor, mode, reader, url, parent, id) do
-		{:ok, _pid} = Supervisor.start_child(supervisor, [mode, reader, url, parent, id])
+  def start_reader(supervisor, reader, url, parent, id, deadline) do
+		{:ok, _pid} = Supervisor.start_child(supervisor, [reader, url, parent, id, deadline])
   end
 
   def init(:ok) do

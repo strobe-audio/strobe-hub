@@ -1,37 +1,50 @@
 defmodule HLS.Reader.Async do
   use GenServer
 
-  def read_with_expiry(reader, url, parent, id) do
-    HLS.Reader.Async.Supervisor.start_reader(:read_with_expiry, reader, url, parent, id)
-  end
-  def read(reader, url, parent, id) do
-    HLS.Reader.Async.Supervisor.start_reader(:read, reader, url, parent, id)
+  import HLS, only: [now: 0]
+
+  def read(reader, url, parent, id, timeout \\ 5_000) do
+    HLS.Reader.Async.Supervisor.start_reader(reader, url, parent, id, now() + timeout)
   end
 
-  def start_link(mode, reader, url, parent, id) do
-    GenServer.start_link(__MODULE__, [mode, reader, url, parent, id], [])
+  def start_link(reader, url, parent, id, deadline) do
+    GenServer.start_link(__MODULE__, [reader, url, parent, id, deadline], [])
   end
 
   ## Callbacks
 
-  def init([mode, reader, url, parent, id]) when mode in [:read, :read_with_expiry] do
-    GenServer.cast(self(), mode)
-    {:ok, {reader, url, parent, id}}
+  def init([reader, url, parent, id, deadline]) do
+    GenServer.cast(self(), :read)
+    {:ok, {reader, url, parent, id, deadline}}
   end
 
-  def handle_cast(:read, {reader, url, parent, id} = state) do
-    response = HLS.Reader.read!(reader, url)
-    reply(Process.alive?(parent), parent, id, response)
+  def handle_cast(:read, state) do
+    perform_with_timeout(state)
     {:stop, :normal, state}
   end
-  def handle_cast(:read_with_expiry, {reader, url, parent, id} = state) do
-    response = HLS.Reader.read_with_expiry!(reader, url)
+
+  defp perform_with_timeout({reader, url, _parent, _id, deadline} = state) do
+    task = Task.async(HLS.Reader, :read!, [reader, url])
+    case Task.yield(task, timeout(deadline)) || Task.shutdown(task) do
+      {:ok, {body, headers}} ->
+        send_reply({:ok, body, headers}, state)
+      {:exit, reason} ->
+        send_reply({:error, reason}, state)
+      nil ->
+        send_reply({:error, :timeout}, state)
+    end
+  end
+
+  defp timeout(deadline) do
+    deadline - now()
+  end
+
+  defp send_reply(response, {_reader, _url, parent, id, _deadline}) do
     reply(Process.alive?(parent), parent, id, response)
-    {:stop, :normal, state}
   end
 
   defp reply(true, parent, id, response) do
-    Kernel.send(parent, {:data, id, response})
+    Kernel.send(parent, {id, response})
   end
   defp reply(false, _parent, _id, _response) do
   end
