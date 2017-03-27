@@ -1,6 +1,8 @@
-# HLS
+# Otis Library - BBC
 
-**TODO: Add description**
+An HTTP live streaming client specifically for BBC radio streams.
+
+Playlist URLs sourced from here:
 
 http://steveseear.org/high-quality-bbc-radio-streams/
 
@@ -12,22 +14,11 @@ http://a.files.bbci.co.uk/media/live/manifesto/audio/simulcast/hls/uk/sbr\_low/a
 
 Streams are MPEG-2 transports, or `mpegtsraw` in avconv/ffmpeg speak.
 
-## Use via the CLI
-```
-# From some elvis instance
-$ iex -S mix
-{:ok, c} = Otis.Channels.find "83936d2d-4f50-4dff-80a7-24a672987faa"
-radio4 = BBC.radio4
-Otis.Channel.append c, radio4
-Otis.Channel.sources c
-Otis.Channel.play_pause c
-```
-
-# White noise
+## White noise
 
 To generate the white noise segment that plays in the case of connectivity problems, here are some useful commands.
 
-## 1. Generating white noise
+### 1. Generating white noise
 
 BBC streams are AAC streams at 48,000 Hz, 320Kb/s wrapped in an MPEGTS container.
 
@@ -41,14 +32,14 @@ Enum.each(1..round(freq * channels * seconds), fn(_) -> IO.binwrite(f, << :crypt
 File.close(f)
 ```
 
-## 2. Convert white noise PCM into AAC file
+### 2. Convert white noise PCM into AAC file
 
 
     ffmpeg -f s16le -ac 2 -ar 48000 -i white.pcm  -b:a 320k -y white.m4a
 
-## 3. Wrap in an MPEGTS container
+### 3. Wrap in an MPEGTS container
 
-BBC streams have a stream id of 0x22. If you don't set the id of you stream to this
+BBC streams have an id of 0x22. If you don't set the id of you stream to this
 it gets rejected by FFMPEG.
 
     ffmpeg -i white.m4a -streamid 0:34  -acodec copy -y white.ts
@@ -57,7 +48,7 @@ or do 2 & 3 in a single go:
 
     ffmpeg -f s16le -ac 2 -ar 48000 -i white.pcm  -acodec aac -b:a 320k -streamid 0:34 -y white.ts
 
-## 4. Test
+### 4. Test
 
 Grab a chunk of BBC radio stream (e.g.):
 
@@ -67,10 +58,10 @@ Now concat this with our white noise section and see if the result plays:
 
     cat radio4.ts white.ts | ffmpeg -f mpegts -i - -y test.m4a
 
-IF all is well the resulting test.m4a file should be ~12s long and should be
+If all is well the resulting test.m4a file should be ~12s long and should be
 half white-noise and half radio 4.
 
-## 5. Improve?
+### 5. Improve?
 
 Appending 2 white noise chunks gives a blip between segments, must be something
 about the encoding.
