@@ -47,8 +47,14 @@ defmodule HLS.Client.Playlist do
     {:noreply, [], read(state)}
   end
 
-  def handle_info({:data, :playlist, {data, expiry}}, state) do
+  def handle_info({:playlist, {:error, _reason}}, state) do
+    Logger.warn "Failed to load playlist, using white-noise fallback"
+    noise = %M3.Media{duration: state.playlist.target_duration, url: HLS.whitenoise_url()}
+    handle_media([noise], 4, %S{ state | reloading: false })
+  end
+  def handle_info({:playlist, {:ok, data, headers}}, state) do
     playlist = M3.Parser.parse!(data, state.url)
+    expiry = HLS.Reader.Http.expiry(headers)
     {:ok, media} = M3.Playlist.sequence(playlist, state.playlist)
     handle_media(media, expiry, %S{state | playlist: playlist, reloading: false})
   end
@@ -80,7 +86,7 @@ defmodule HLS.Client.Playlist do
   end
 
   defp read(state) do
-    HLS.Reader.Async.read_with_expiry(state.reader, state.url, self(), :playlist)
+    HLS.Reader.Async.read(state.reader, state.url, self(), :playlist, round((state.playlist.target_duration * 1000) / 4))
     %S{state | reloading: true}
   end
 

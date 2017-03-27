@@ -4,18 +4,19 @@ defmodule HLS.Reader.Http do
 
   defstruct []
 
+  @cache_control_header "Cache-Control"
+
   def read!(url) do
     # want to raise an error if we get an error, but if we get an error we want
     # delay a bit
     {:ok, response} = read(url)
-    {:ok, response.body}
+    {:ok, response.body, response.headers}
   end
 
-  def read_with_expiry!(url) do
-    # want to raise an error if we get an error, but if we get an error we want
-    # delay a bit
-    {:ok, response} = read(url)
-    {:ok, response.body, expiry(response.headers)}
+  def expiry(headers, default \\ 3) do
+    headers
+    |> cache_control_header
+    |> read_expiry(default)
   end
 
   defp read(url, tries \\ 5, delay \\ 50)
@@ -59,51 +60,42 @@ defmodule HLS.Reader.Http do
     read(url, tries, delay)
   end
 
-  @cache_control "Cache-Control"
-
-  defp expiry(headers) do
-    headers
-    |> cache_control_header
-    |> read_expiry
+  defp read_expiry(nil, default) do
+    default
   end
-
-  defp read_expiry(nil) do
-    nil
-  end
-  defp read_expiry(header) when is_binary(header) do
+  defp read_expiry(header, default) when is_binary(header) do
     header
     |> String.split(",")
     |> Enum.map(&String.trim/1)
-    |> extract_expiry
+    |> extract_expiry(default)
   end
 
   defp cache_control_header(headers) do
-    case Enum.find(headers, fn({k, _}) -> k == @cache_control end) do
-      {@cache_control, value} ->
+    case Enum.find(headers, fn({k, _}) -> k == @cache_control_header end) do
+      {@cache_control_header, value} ->
         value
       _ ->
         nil
     end
   end
 
-  defp extract_expiry([]) do
-    nil
+  defp extract_expiry([], default) do
+    default
   end
-  defp extract_expiry(["max-age=" <> age | _parts]) do
+  defp extract_expiry(["max-age=" <> age | _parts], _default) do
     age |> String.trim() |> String.to_integer
   end
-  defp extract_expiry([_ | parts]) do
-    extract_expiry(parts)
+  defp extract_expiry([_ | parts], default) do
+    extract_expiry(parts, default)
   end
 end
 
 defimpl HLS.Reader, for: HLS.Reader.Http do
-  def read!(_reader, url) do
-    {:ok, body} = HLS.Reader.Http.read!(url)
-    body
+  def read!(_reader, "file://" <> path) do
+    {File.read!(path), []}
   end
-  def read_with_expiry!(_reader, url) do
-    {:ok, body, expiry} = HLS.Reader.Http.read_with_expiry!(url)
-    {body, expiry}
+  def read!(_reader, url) do
+    {:ok, body, headers} = HLS.Reader.Http.read!(url)
+    {body, headers}
   end
 end

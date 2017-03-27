@@ -17,16 +17,11 @@ defimpl HLS.Reader, for: HLS.Reader.Dir do
   def read!(reader, "http" <> _ = url) do
     path = HLS.Reader.Dir.path(url)
     file_path = Path.join([reader.root, path])
-    File.read!(file_path)
+    {File.read!(file_path), []}
   end
 
   def read!(reader, path) do
     file_path = Path.join([reader.root, path])
-    File.read!(file_path)
+    {File.read!(file_path), []}
   end
-
-	def read_with_expiry!(reader, path) do
-		body = read!(reader, path)
-		{body, 0}
-	end
 end

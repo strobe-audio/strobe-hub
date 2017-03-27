@@ -28,16 +28,16 @@ defmodule HLS.Reader.Programmable do
   end
 
   defp read(path, nil, state) do
-    body = HLS.Reader.read!(state.dir, path)
+    {body, []} = HLS.Reader.read!(state.dir, path)
     {{:ok, body}, state}
   end
 
   defp read(_path, [file], state) do
-    body = HLS.Reader.read!(state.dir, file)
+    {body, []} = HLS.Reader.read!(state.dir, file)
     {{:ok, body}, state}
   end
   defp read(path, [file | paths], state) do
-    body = HLS.Reader.read!(state.dir, file)
+    {body, []} = HLS.Reader.read!(state.dir, file)
     {{:ok, body}, %{ state | urls: Map.put(state.urls, path, paths) }}
   end
   defp read(_path, [], state) do
@@ -50,16 +50,11 @@ defimpl HLS.Reader, for: HLS.Reader.Programmable do
     _read(Process.alive?(reader.pid), reader.pid, url)
   end
 
-	def read_with_expiry!(reader, url) do
-		body = read!(reader, url)
-		{body, 0}
-	end
-
   defp _read(false, _pid, _url) do
-		""
+    {"", []}
   end
   defp _read(true, pid, url) do
     {:ok, body} = GenServer.call(pid, {:read, url})
-    body
+    {body, []}
   end
 end
