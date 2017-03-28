@@ -13,6 +13,8 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Strobe">
 
+    <link rel="apple-touch-icon" sizes="120x120" href="/images/touch-icon@2x.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/touch-icon@3x.png">
 
     <title>Strobe</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
