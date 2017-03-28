@@ -1,7 +1,7 @@
 defmodule HLS.Reader.Async do
   use GenServer
 
-  import HLS, only: [now: 0]
+  import HLS, only: [now: 0, read_with_timeout: 3]
 
   def read(reader, url, parent, id, timeout \\ 5_000) do
     HLS.Reader.Async.Supervisor.start_reader(reader, url, parent, id, now() + timeout)
@@ -24,8 +24,7 @@ defmodule HLS.Reader.Async do
   end
 
   defp perform_with_timeout({reader, url, _parent, _id, deadline} = state) do
-    task = Task.async(HLS.Reader, :read!, [reader, url])
-    case Task.yield(task, timeout(deadline)) || Task.shutdown(task) do
+    case read_with_timeout(reader, url, timeout(deadline)) do
       {:ok, {body, headers}} ->
         send_reply({:ok, body, headers}, state)
       {:exit, reason} ->

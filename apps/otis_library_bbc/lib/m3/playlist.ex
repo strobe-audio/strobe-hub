@@ -26,6 +26,10 @@ defmodule M3.Playlist do
     {:ok, new_playlist.media}
   end
 
+  def read_timeout(%M3.Playlist.Live{target_duration: target_duration}) do
+    round(target_duration * 1000)
+  end
+
   defp _sequence(new_msn, _new_media, old_msn) when new_msn < old_msn do
     {:ok, []}
   end

@@ -8,4 +8,9 @@ defmodule HLS do
   def whitenoise, do: File.read!(@whitenoise_path)
   def whitenoise_url, do: "file://#{@whitenoise_path}"
   def whitenoise_path, do: @whitenoise_path
+
+  def read_with_timeout(reader, url, timeout) do
+    task = Task.async(HLS.Reader, :read!, [reader, url])
+    Task.yield(task, timeout) || Task.shutdown(task)
+  end
 end
