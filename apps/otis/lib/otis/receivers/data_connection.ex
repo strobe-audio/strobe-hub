@@ -3,8 +3,19 @@ defmodule Otis.Receivers.DataConnection do
 
   @ping_interval 2_000
 
+  def handle_cast({:data, _data}, %S{muted: true} = state) do
+    {:noreply, state}
+  end
   def handle_cast({:data, data}, state) do
     send_data_handling_errors(data, state)
+  end
+
+  def handle_call({:mute, muted}, _from, state) do
+    {:reply, :ok, %S{ state | muted: muted }}
+  end
+
+  def handle_call(_msg, _from , state) do
+    {:reply, :ok, state}
   end
 
   defp initial_settings, do: %{}

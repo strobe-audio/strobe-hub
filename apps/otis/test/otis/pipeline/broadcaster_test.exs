@@ -271,11 +271,11 @@ defmodule Test.Otis.Pipeline.Broadcaster do
 
     {:ok, data} = data_recv_raw(m3)
     assert data == Receiver.stop_command()
-    Enum.each(0..4, fn(n) ->
+    Enum.each(0..2, fn(n) ->
       {:ok, data} = data_recv_raw(m3)
       packet = Packet.unmarshal(data)
-      assert packet.packet_number == (n+6)
-      assert packet.timestamp == packet_time.(n+6)
+      assert packet.packet_number == (n+8)
+      assert packet.timestamp == packet_time.(n+8)
     end)
   end
 

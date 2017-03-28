@@ -8,7 +8,7 @@ defmodule Otis.State do
   end
 
   defmodule ReceiverStatus do
-    defstruct [:id, :name, :volume, :online, :channel_id, :online]
+    defstruct [:id, :name, :volume, :online, :channel_id, :online, :muted]
   end
 
   defmodule RenditionStatus do
@@ -69,7 +69,7 @@ end
 defimpl Poison.Encoder, for: Otis.State.ReceiverStatus do
   def encode(status, opts) do
     status
-    |> Map.take([:id, :name, :volume, :online, :online])
+    |> Map.take([:id, :name, :volume, :online, :muted])
     |> Map.put(:channelId, status.channel_id)
     |> Poison.Encoder.encode(opts)
   end

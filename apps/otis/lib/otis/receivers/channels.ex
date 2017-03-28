@@ -17,6 +17,10 @@ defmodule Otis.Receivers.Channels do
     {:ok, _proxy} = Supervisor.start_child(@supervisor_name, [receiver, channel])
   end
 
+  def buffer_receiver(receiver, channel) do
+    notify_subscribers(receiver, channel, :receiver_joined)
+  end
+
   def register(receiver, channel) do
     Registry.register(@channel_registry, channel.id, receiver)
   end
@@ -35,16 +39,12 @@ defmodule Otis.Receivers.Channels do
 
   def notify_add_receiver(receiver, channel) do
     Otis.State.Events.notify({:receiver_added, [channel.id, receiver.id]})
-    Enum.each(subscribers(channel.id), fn({pid, _name}) ->
-      send pid, {:receiver_joined, [receiver.id, receiver]}
-    end)
+    buffer_receiver(receiver, channel)
   end
 
   def notify_remove_receiver(receiver, channel) do
     Otis.State.Events.notify({:receiver_removed, [channel.id, receiver.id]})
-    Enum.each(subscribers(channel.id), fn({pid, _name}) ->
-      send pid, {:receiver_left, [receiver.id, receiver]}
-    end)
+    notify_subscribers(receiver, channel, :receiver_left)
   end
 
   def send_data(channel_id, data) do
@@ -67,6 +67,12 @@ defmodule Otis.Receivers.Channels do
 
   def latency(channel_id) do
     channel_id |> lookup() |> Enum.map(&Receiver.latency!/1) |> max_latency()
+  end
+
+  defp notify_subscribers(receiver, channel, msg) do
+    Enum.each(subscribers(channel.id), fn({pid, _name}) ->
+      send pid, {msg, [receiver.id, receiver]}
+    end)
   end
 
   defp max_latency([]) do

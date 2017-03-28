@@ -65,6 +65,7 @@ subscriptions model =
         , Ports.channelAdditionActions
         , Ports.channelRenameActions
         , Ports.receiverRenameActions
+        , Ports.receiverMutingActions
         , Ports.scrollTopActions
         , Ports.connectionStatusActions
         , viewportWidth

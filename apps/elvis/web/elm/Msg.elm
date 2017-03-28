@@ -42,6 +42,7 @@ type Msg
     | BroadcasterChannelRemoved ID.Channel
     | BroadcasterChannelRenamed ( ID.Channel, String )
     | BroadcasterReceiverRenamed ( ID.Receiver, String )
+    | BroadcasterReceiverMuted ( ID.Receiver, Bool )
     | BroadcasterLibraryRegistration Library.Section
     | BroadcasterVolumeChange State.VolumeChangeEvent
     | BroadcasterRenditionAdded Rendition.State

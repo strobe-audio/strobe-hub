@@ -11,6 +11,7 @@ type alias Model =
     , name : String
     , online : Bool
     , volume : Float
+    , muted : Bool
     , channelId : ID.Channel
     , editName : Bool
     , editNameInput : Input.Model
@@ -31,6 +32,7 @@ type Msg
     | EditName Input.Msg
     | Rename String
     | Renamed String
+    | Muted Bool
     | SingleTouch (Utils.Touch.E Msg)
 
 
@@ -39,6 +41,7 @@ type alias State =
     , name : String
     , online : Bool
     , volume : Float
+    , muted : Bool
     , channelId : String
     }
 

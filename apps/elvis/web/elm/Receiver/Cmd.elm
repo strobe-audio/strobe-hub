@@ -12,6 +12,11 @@ volume receiver =
     Volume.Cmd.receiverVolumeChange receiver |> Cmd.map (always Msg.NoOp)
 
 
+mute : Receiver.Model -> Cmd Msg
+mute receiver =
+    Volume.Cmd.receiverMuteChange receiver |> Cmd.map (always Msg.NoOp)
+
+
 attach : ID.Channel -> ID.Receiver -> Cmd Msg
 attach channelId receiverId =
     Ports.attachReceiverRequests ( channelId, receiverId )

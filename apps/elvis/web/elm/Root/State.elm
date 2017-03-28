@@ -298,6 +298,9 @@ update action model =
         Msg.BroadcasterReceiverRenamed ( receiverId, newName ) ->
             update ((Msg.Receiver receiverId) (Receiver.Renamed newName)) model
 
+        Msg.BroadcasterReceiverMuted ( receiverId, muted ) ->
+            update ((Msg.Receiver receiverId) (Receiver.Muted muted)) model
+
         Msg.Library libraryAction ->
             let
                 ( library, effect ) =

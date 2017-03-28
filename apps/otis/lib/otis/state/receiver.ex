@@ -12,6 +12,7 @@ defmodule Otis.State.Receiver do
   schema "receivers" do
     field :name, :string
     field :volume, :float, default: 1.0
+    field :muted, :boolean, default: false
 
     belongs_to :channel, Otis.State.Channel, type: Ecto.UUID
   end
@@ -54,5 +55,9 @@ defmodule Otis.State.Receiver do
 
   def rename(receiver, name) do
     Changeset.change(receiver, name: name) |> Repo.update!
+  end
+
+  def mute(receiver, muted) do
+    Changeset.change(receiver, muted: muted) |> Repo.update!
   end
 end
