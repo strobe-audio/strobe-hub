@@ -7,6 +7,7 @@ defmodule Otis.ReceiverTest do
 
   setup do
     MessagingHandler.attach
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     :ok
   end
 
@@ -172,8 +173,6 @@ defmodule Otis.ReceiverTest do
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
     {:ok, receiver} = Receivers.receiver(id)
-    {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => 1.0 }
     Receiver.stop(receiver)
     {:ok, data} = data_recv_raw(mock)
     assert data == <<"STOP">>

@@ -21,7 +21,7 @@ defmodule Otis.Persistence.ReceiversTest do
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => (0.34 * context.channel_volume) }
+    assert msg == %{ "volume" => Otis.Receiver.perceptual_volume(0.34 * context.channel_volume) }
   end
 
   test "receiver volume changes get persisted to the db", context do
