@@ -21,6 +21,7 @@ initialState state =
     , name = state.name
     , online = state.online
     , volume = state.volume
+    , muted = state.muted
     , channelId = state.channelId
     , editName = False
     , editNameInput = Input.State.blank
@@ -42,6 +43,13 @@ updateVolume volumeMsg receiver =
                             { receiver | volume = volume }
                     in
                         ( updated, Receiver.Cmd.volume updated )
+
+        Volume.ToggleMute ->
+            let
+                updated =
+                    { receiver | muted = not receiver.muted }
+            in
+                ( updated, Receiver.Cmd.mute updated )
 
 
 update : Receiver.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Msg )
@@ -109,6 +117,9 @@ update action model =
                     { model | name = newName }
             in
                 model_ ! [ Receiver.Cmd.rename model_ ]
+
+        Receiver.Muted muted ->
+            { model | muted = muted } ! []
 
         Receiver.Status event channelId ->
             case event of

@@ -3,9 +3,25 @@ defmodule Otis.LoggerHandler do
   require Logger
 
   @log_progress_every 100
+  @silent_events [
+    :add_library,
+    :channel_play_pause,
+    :controller_connect,
+    :controller_join,
+    :library_request,
+    :library_response,
+    :receiver_muted,
+    :receiver_volume_change,
+  ]
 
   def init(id) do
     {:ok, %{id: id, progress_count: 0}}
+  end
+
+  for evt <- @silent_events do
+    def handle_event({unquote(evt), _request}, state) do
+      {:ok, state}
+    end
   end
 
   def handle_event({:rendition_progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
@@ -18,12 +34,6 @@ defmodule Otis.LoggerHandler do
   end
   def handle_event({:rendition_progress, _args}, state) do
     {:ok, %{state | progress_count: state.progress_count - 1}}
-  end
-
-  for evt <- [:library_request, :library_response, :add_library, :controller_join] do
-    def handle_event({unquote(evt), _request}, state) do
-      {:ok, state}
-    end
   end
 
   def handle_event(event, state) do

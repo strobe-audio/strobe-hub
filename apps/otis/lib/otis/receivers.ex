@@ -65,6 +65,13 @@ defmodule Otis.Receivers do
     GenServer.call(pid, {:is_connected, id})
   end
 
+  def mute(receiver_id, muted) do
+    mute(@name, receiver_id, muted)
+  end
+  def mute(pid, receiver_id, muted) do
+    GenServer.cast(pid, {:mute, receiver_id, muted})
+  end
+
   defp config do
     Application.get_env(:otis, __MODULE__)
   end
@@ -95,6 +102,11 @@ defmodule Otis.Receivers do
 
   def handle_cast({:disconnect, type, id, pid, reason}, state) do
     state = disconnect(type, id, pid, reason, lookup(state, id), state)
+    {:noreply, state}
+  end
+
+  def handle_cast({:mute, id, muted}, state) do
+    state = mute_receiver(lookup(state, id), id, muted, state)
     {:noreply, state}
   end
 
@@ -280,6 +292,15 @@ defmodule Otis.Receivers do
     delete(state, receiver)
   end
   def remove_dead_receiver(state, _receiver, false) do
+    state
+  end
+
+  defp mute_receiver(:error, _id, _muted, state) do
+    state
+  end
+  defp mute_receiver({:ok, receiver}, id, muted, state) do
+    state = receiver |> Receiver.mute(muted) |> update_receiver(id, state)
+    Otis.State.Events.notify({:receiver_muted, [id, muted]})
     state
   end
 end

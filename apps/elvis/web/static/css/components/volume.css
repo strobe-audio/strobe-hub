@@ -16,6 +16,7 @@ $volume-height: $button-size;
 .volume--state {
   @mixin fa-btn "";
   flex: 0 0 calc($volume-height / 1);
+  position: relative;
 }
 
 .volume--state__mute:before {
@@ -27,7 +28,7 @@ $volume-height: $button-size;
 
 .volume--control input[type="range"] {
   -webkit-appearance: none;
-  background: rgba(255, 255, 255, 1);
+  background-color: rgba(255, 255, 255, 1);
   background-position: center;
   background-repeat: no-repeat;
   height: 2px;
@@ -42,6 +43,7 @@ $volume-height: $button-size;
   bottom: 0;
   left: 0;
   margin: auto;
+  transition: background-color 100ms;
 }
 
 @define-mixin volume-track {
@@ -60,6 +62,7 @@ $volume-height: $button-size;
   &:active {
     background-color: rgba(255, 0, 0, 1);
   }
+  transition: background-color 100ms;
 }
 
 .volume--control input[type="range"]::-ms-track {
@@ -81,4 +84,31 @@ $volume-height: $button-size;
 .volume--control input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   @mixin volume-thumb;
+}
+
+/* MUTED */
+
+$muted-volume-thumb-color: #333;
+
+.volume--control.volume--control__muted input[type="range"] {
+  background-color: $muted-volume-thumb-color;
+}
+
+.volume--control.volume--control__muted input[type="range"]::-ms-thumb {
+  background-color: $muted-volume-thumb-color;
+}
+.volume--control.volume--control__muted input[type="range"]::-moz-range-thumb {
+  background-color: $muted-volume-thumb-color;
+}
+.volume--control.volume--control__muted input[type="range"]::-webkit-slider-thumb {
+  background-color: $muted-volume-thumb-color;
+}
+
+.volume--control__muted .volume--state {
+  color: $muted-volume-thumb-color;
+}
+
+.volume--control__muted .volume--state__mute {
+  background-color: $muted-volume-thumb-color;
+  color: #c00;
 }

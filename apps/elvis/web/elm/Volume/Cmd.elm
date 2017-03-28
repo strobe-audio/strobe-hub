@@ -16,6 +16,11 @@ receiverVolumeChange receiver =
     volumeChange "receiver" receiver
 
 
+receiverMuteChange : Receiver.Model -> Cmd ()
+receiverMuteChange receiver =
+    Ports.receiverMuteRequests ( receiver.id, receiver.muted )
+
+
 volumeChange : String -> { a | id : String, volume : Float } -> Cmd ()
 volumeChange kind model =
     Ports.volumeChangeRequests ( kind, model.id, model.volume )

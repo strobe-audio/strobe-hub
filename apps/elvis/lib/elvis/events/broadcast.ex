@@ -127,6 +127,11 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
+  def handle_event({:receiver_muted, [receiver_id, muted]}, state) do
+    broadcast!("receiver_muted", %{receiverId: receiver_id, muted: muted})
+    {:ok, state}
+  end
+
   def handle_event({:channel_volume_change, [id, volume]}, state) do
     broadcast!("volume_change", %{ id: id, target: "channel", volume: volume })
     {:ok, state}

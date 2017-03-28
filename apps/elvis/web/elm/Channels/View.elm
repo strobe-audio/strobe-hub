@@ -57,6 +57,7 @@ channelVolume model channel =
     let
         volumeCtrl =
             (Volume.View.control channel.volume
+                False
                 (text "Master volume")
             )
     in

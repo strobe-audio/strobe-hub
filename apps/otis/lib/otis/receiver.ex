@@ -247,6 +247,7 @@ defmodule Otis.Receiver do
     Logger.warn "Configuring receiver to join non-existant channel"
   end
   def configure_and_join_channel(receiver, state, channel) do
+    mute(receiver, state.muted)
     set_volume(receiver, state.volume, channel.volume)
     join_channel(receiver, channel)
   end
@@ -283,8 +284,24 @@ defmodule Otis.Receiver do
   def send_data(%{data: {pid, _socket}}, data) do
     GenServer.cast(pid, {:data, data})
   end
+  def send_data(%{data: nil}, _data) do
+  end
+
   def send_command(%{ctrl: {pid, _socket}}, command) do
     GenServer.cast(pid, {:command, command})
+  end
+  def send_command(%{ctrl: nil}, _command) do
+  end
+
+  def mute(%R{data: nil} = receiver, _muted) do
+    receiver
+  end
+  def mute(%R{data: {pid, _socket}} = receiver, muted) do
+    if muted do
+      stop(receiver)
+    end
+    :ok = GenServer.call(pid, {:mute, muted})
+    receiver
   end
 
   def extract_params(values) do

@@ -383,4 +383,55 @@ defmodule Otis.ReceiverTest do
     {:ok, data} = data_recv_raw(mock)
     assert data == <<"DATA HERE">>
   end
+
+  test "muting", _context do
+    channel_id = Otis.uuid
+    id = Otis.uuid
+    channel_record = Otis.State.Channel.create!(channel_id, "Something")
+    _receiver_record = Otis.State.Receiver.create!(channel_record, id: id)
+    mock = connect!(id, 143)
+    assert_receive {:receiver_connected, [^id, _]}
+    Otis.Receivers.Channels.send_data(channel_id, <<"DATA">>)
+    {:ok, data} = data_recv_raw(mock)
+    assert data == <<"DATA">>
+    Otis.Receivers.mute(id, true)
+    assert_receive {:receiver_muted, [^id, true]}
+    {:ok, data} = data_recv_raw(mock)
+    assert data == <<"STOP">>
+    Otis.Receivers.Channels.send_data(channel_id, <<"DATA2">>)
+    {:error, :timeout} = data_recv_raw(mock)
+    Otis.Receivers.mute(id, false)
+    assert_receive {:receiver_muted, [^id, false]}
+    Otis.Receivers.Channels.send_data(channel_id, <<"DATA3">>)
+    {:ok, data} = data_recv_raw(mock)
+    assert data == <<"DATA3">>
+  end
+
+  test "receiver mute state restored on connection", _context do
+    channel_id = Otis.uuid
+    id = Otis.uuid
+    channel = Otis.State.Channel.create!(channel_id, "Something")
+    Otis.State.Receiver.create!(channel, id: id, name: "Receiver", muted: true)
+    mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, [^id, _]}
+    {:ok, <<"STOP">>} = data_recv_raw(mock)
+    Otis.Receivers.Channels.send_data(channel_id, <<"DATA">>)
+    {:error, :timeout} = data_recv_raw(mock)
+  end
+
+  test "subscribers receive notifications when receiver is unmuted", _context do
+    channel_id = Otis.uuid
+    id = Otis.uuid
+    channel_record = Otis.State.Channel.create!(channel_id, "Something")
+    _receiver_record = Otis.State.Receiver.create!(channel_record, id: id)
+    Otis.Receivers.Channels.subscribe(:test, channel_id)
+    _mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, [^id, _]}
+    assert_receive {:receiver_joined, [^id, _]}
+    Otis.Receivers.mute(id, true)
+    assert_receive {:receiver_muted, [^id, true]}
+    Otis.Receivers.mute(id, false)
+    assert_receive {:receiver_muted, [^id, false]}
+    assert_receive {:receiver_joined, [^id, _]}
+  end
 end

@@ -73,4 +73,16 @@ defmodule Otis.Persistence.ReceiversTest do
     receivers = Otis.Receivers.Channels.lookup(channel2_id)
     assert receivers == [receiver]
   end
+
+  test "receiver mute state gets persisted to the db", context do
+    id = Otis.uuid
+    channel = Otis.State.Channel.find(context.channel.id)
+    _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34, muted: false)
+    _mock = connect!(id, 1234)
+    assert_receive {:receiver_connected, [^id, _]}
+    Otis.State.Events.sync_notify {:receiver_muted, [id, true]}
+    assert_receive {:receiver_muted, [^id, true]}
+    record = Otis.State.Receiver.find id
+    assert record.muted == true
+  end
 end

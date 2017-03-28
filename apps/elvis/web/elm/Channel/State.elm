@@ -224,6 +224,9 @@ updateVolume volumeMsg channel =
                 Nothing ->
                     channel ! []
 
+        Volume.ToggleMute ->
+            channel ! []
+
 
 processInputAction : Maybe Input.Action -> Channel.Model -> ( Channel.Model, Channel.Msg )
 processInputAction action model =

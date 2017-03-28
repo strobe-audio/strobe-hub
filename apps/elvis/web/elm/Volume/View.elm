@@ -9,19 +9,26 @@ import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
 import String
 
 
-control : Float -> Html Volume.Msg -> Html Volume.Msg
-control volume label =
+control : Float -> Bool -> Html Volume.Msg -> Html Volume.Msg
+control volume muted label =
     let
-        stateButton : String -> Float -> List (Html.Attribute Volume.Msg)
-        stateButton classes volume =
-            ((class classes) :: (onUnifiedClick (Volume.Change (Just volume))))
+        stateButton : List ( String, Bool ) -> Volume.Msg -> List (Html.Attribute Volume.Msg)
+        stateButton classes msg =
+            ((classList classes) :: (onUnifiedClick msg))
     in
         div
-            [ class "volume--control" ]
+            [ classList [ ( "volume--control", True ), ( "volume--control__muted", muted ) ] ]
             [ div [ class "volume--label" ] [ label ]
             , div
                 [ class "volume--range" ]
-                [ div (stateButton "volume--state volume--state__mute" 0.0) []
+                [ div
+                    (stateButton
+                        [ ( "volume--state volume--state__mute", True )
+                        , ( "volume--state__muted", muted )
+                        ]
+                        Volume.ToggleMute
+                    )
+                    []
                 , div
                     [ class "volume--slider" ]
                     [ input
@@ -34,7 +41,7 @@ control volume label =
                         ]
                         []
                     ]
-                , div (stateButton "volume--state volume--state__full" 1.0) []
+                , div (stateButton [ ( "volume--state volume--state__full", True ) ] (Volume.Change (Just 1.0))) []
                 ]
             ]
 

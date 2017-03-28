@@ -56,6 +56,12 @@ defmodule Otis.State.Persistence.Receivers do
     end
     {:ok, state}
   end
+  def handle_event({:receiver_muted, [id, muted]}, state) do
+    Repo.transaction fn ->
+      id |> receiver |> muted(id, muted)
+    end
+    {:ok, state}
+  end
   def handle_event(_evt, state) do
     {:ok, state}
   end
@@ -103,6 +109,23 @@ defmodule Otis.State.Persistence.Receivers do
   end
   defp rename(receiver, _id, name) do
     Receiver.rename(receiver, name)
+  end
+
+  defp muted(nil, id, _muted) do
+    Logger.warn "Muting of unknown receiver #{id}"
+  end
+  defp muted(receiver, id, muted) do
+    Receiver.mute(receiver, muted) |> after_muting(id, muted)
+  end
+
+  defp after_muting(receiver_state, id, false) do
+    channel = channel(receiver_state)
+    {:ok, receiver}  = Otis.Receivers.receiver(id)
+    Otis.Receivers.Channels.buffer_receiver(receiver, channel)
+    receiver_state
+  end
+  defp after_muting(receiver_state, _id, _state) do
+    receiver_state
   end
 
   defp create_receiver(nil, id) do

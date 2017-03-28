@@ -117,6 +117,10 @@ channel.on('receiver_rename', payload => {
   console.log('receiver_rename', payload)
   app.ports.receiverRenames.send([payload.receiverId, payload.name])
 })
+channel.on('receiver_muted', payload => {
+  console.log('receiver_muted', payload)
+  app.ports.receiverMuting.send([payload.receiverId, payload.muted])
+})
 
 channel.on('application_settings', payload => {
   console.log('application_settings', payload)
@@ -161,6 +165,11 @@ app.ports.saveState.subscribe(state => {
 
 app.ports.volumeChangeRequests.subscribe(event => {
   channel.push("change_volume", event)
+  .receive("error", payload => console.log(payload.message))
+})
+
+app.ports.receiverMuteRequests.subscribe(event => {
+  channel.push("mute_receiver", event)
   .receive("error", payload => console.log(payload.message))
 })
 

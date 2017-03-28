@@ -7,14 +7,19 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-@define-mixin fa-btn $icon {
-  cursor: pointer;
-  &:before {
+@define-mixin fa-icon $icon {
     @mixin fa;
     content: $icon; /* fa-plus */
     display: block;
     line-height: $button-size;
     text-align: center;
     cursor: pointer;
+}
+
+@define-mixin fa-btn $icon {
+  cursor: pointer;
+  &:before {
+    @mixin fa-icon $icon;
   }
 }
+

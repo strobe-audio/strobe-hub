@@ -169,6 +169,14 @@ receiverRenameActions =
     receiverRenames Msg.BroadcasterReceiverRenamed
 
 
+port receiverMuting : (( ID.Receiver, Bool ) -> m) -> Sub m
+
+
+receiverMutingActions : Sub Msg
+receiverMutingActions =
+    receiverMuting Msg.BroadcasterReceiverMuted
+
+
 port animationScroll : (( Time.Time, Maybe Float, Float ) -> m) -> Sub m
 
 
@@ -198,6 +206,9 @@ port saveState : Root.SavedState -> Cmd msg
 
 
 port volumeChangeRequests : ( String, String, Float ) -> Cmd msg
+
+
+port receiverMuteRequests : ( String, Bool ) -> Cmd msg
 
 
 port playPauseChanges : ( String, Bool ) -> Cmd msg

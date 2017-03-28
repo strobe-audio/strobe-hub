@@ -51,7 +51,7 @@ attached receiver channel =
             [ div [ class "receiver--view" ]
                 [ div [ class "receiver--state" ] []
                 , div [ class "receiver--volume" ]
-                    [ Html.map Receiver.Volume (Volume.View.control receiver.volume (receiverLabel receiver))
+                    [ Html.map Receiver.Volume (Volume.View.control receiver.volume receiver.muted (receiverLabel receiver))
                     ]
                 ]
             ]

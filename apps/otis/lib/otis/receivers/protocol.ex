@@ -6,7 +6,7 @@ defmodule Otis.Receivers.Protocol do
       require Logger
 
       defmodule S do
-        defstruct [:socket, :transport, :id, :supervisor, :settings, :monitor_timeout]
+        defstruct [:socket, :transport, :id, :supervisor, :settings, :monitor_timeout, muted: false]
       end
 
       def start_link(ref, socket, transport, opts) do
