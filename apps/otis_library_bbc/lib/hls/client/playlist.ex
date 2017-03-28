@@ -86,7 +86,7 @@ defmodule HLS.Client.Playlist do
   end
 
   defp read(state) do
-    HLS.Reader.Async.read(state.reader, state.url, self(), :playlist, round((state.playlist.target_duration * 1000) / 4))
+    HLS.Reader.Async.read(state.reader, state.url, self(), :playlist, M3.Playlist.read_timeout(state.playlist))
     %S{state | reloading: true}
   end
 

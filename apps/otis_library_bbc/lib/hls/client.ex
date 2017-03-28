@@ -4,6 +4,8 @@ defmodule HLS.Client do
 
   use     GenStage
 
+  import  HLS, only: [read_with_timeout: 3]
+
   def open!(stream, id, opts \\ [bandwidth: :highest])
   def open!(%HLS.Stream{} = stream, id, opts) do
     stream(stream, id, opts)
@@ -50,8 +52,7 @@ defmodule HLS.Client do
   end
 
   defp read_with_timeout(media, reader) do
-    task = Task.async(HLS.Reader, :read!, [reader, media.url])
-    case Task.yield(task, timeout(media)) || Task.shutdown(task) do
+    case read_with_timeout(reader, media.url, M3.Media.read_timeout(media)) do
       {:ok, {body, _headers}} ->
         body
       {:exit, reason} ->
@@ -61,10 +62,6 @@ defmodule HLS.Client do
         Logger.warn("Timeout when retrieving audio segment: #{media.url}")
         HLS.whitenoise()
     end
-  end
-
-  defp timeout(%M3.Media{duration: duration}) do
-    round((duration * 1000) * 0.7)
   end
 
   # TODO: upgrade/downgrade stream based on load times
