@@ -175,29 +175,13 @@ update action model =
                 receivers =
                     loadReceivers model state
 
-                -- defaultChannelId =
-                --     Maybe.map (\channel -> channel.id) (List.head channels)
-                cmd =
-                    gotoDefaultChannel model
-
-                -- case model.activeChannelId of
-                --     Just id ->
-                --         Cmd.none
-                --
-                --     Nothing ->
-                --         case defaultChannelId of
-                --             Nothing ->
-                --                 Cmd.none
-                --
-                --             Just id ->
-                --                 Navigation.newUrl (Routing.channelLocation id)
                 updatedModel =
                     { model
                         | channels = channels
                         , receivers = receivers
                     }
             in
-                updatedModel ! [ cmd ]
+                updatedModel ! [ gotoDefaultChannel updatedModel ]
 
         Msg.Receiver receiverId receiverAction ->
             let
