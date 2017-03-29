@@ -116,22 +116,23 @@
   background: #BF360C;
 }
 
-.root--offline {
+.root--loading {
   display: flex;
   height: 100vh;
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.9);
-  color: #333;
+  color: #555;
+  font-weight: 100;
   font-size: 2rem;
 }
 
-.root--offline__message {
+.root--loading__message {
 	flex: 1;
   position: relative;
 	text-align: center;
 }
-.root--offline__message svg {
+.root--loading__message svg {
 	display: block;
 	width: 70%;
 	margin: 0 auto;

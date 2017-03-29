@@ -26,6 +26,15 @@ import Animation
 import Time
 
 
+loadingAnimation : String -> Time.Time -> Html Msg
+loadingAnimation message time =
+    div
+        [ class "root--loading__message" ]
+        [ (Spinner.ripple (round <| Time.inMilliseconds <| time))
+        , text message
+        ]
+
+
 root : Root.Model -> Html Msg
 root model =
     case model.connected of
@@ -35,14 +44,10 @@ root model =
         False ->
             let
                 spinner time =
-                    div
-                        [ class "root--offline__message" ]
-                        [ (Spinner.ripple (round <| Time.inMilliseconds <| time))
-                        , text "Connecting"
-                        ]
+                    loadingAnimation "Connecting" time
             in
                 div
-                    [ class "root--offline" ]
+                    [ class "root--loading" ]
                     [ lazy spinner model.startTime
                     ]
 
@@ -51,7 +56,14 @@ rootWhenConnected : Root.Model -> Html Msg
 rootWhenConnected model =
     case (Root.State.activeChannel model) of
         Nothing ->
-            div [ class "loading" ] [ text "Loading..." ]
+            let
+                spinner time =
+                    loadingAnimation "Loading" time
+            in
+                div
+                    [ class "root--loading" ]
+                    [ lazy spinner model.startTime
+                    ]
 
         Just channel ->
             rootWithActiveChannel model channel
