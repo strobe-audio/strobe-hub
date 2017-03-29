@@ -34,6 +34,7 @@ type alias Model =
     , showPlaylistAndLibrary : Bool
     , library : Library.Model
     , touches : Utils.Touch.Model
+    , startTime : Time
     , animationTime : Time
     , notifications : List (Notification.Model Msg)
     , showSelectChannel : Bool
@@ -48,6 +49,12 @@ type alias Model =
 type alias ViewAnimations =
     { revealChannelList : Animation.Animation
     , revealChannelControl : Animation.Animation
+    }
+
+
+type alias Startup =
+    { time : Time
+    , savedState : Maybe SavedState
     }
 
 

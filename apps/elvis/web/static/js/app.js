@@ -13,9 +13,10 @@ if (window.SENTRY_DSN) {
 // change the state key in the case of 'schema' changes
 const savedStateKey = 'elvis-stored-state-20160124-02'
 let storedState = localStorage.getItem(savedStateKey)
-let initialState = storedState ? JSON.parse(storedState) : null
+let savedState = storedState ? JSON.parse(storedState) : null
+let time = Date.now()
 
-let app = Elm.Main.fullscreen(initialState)
+let app = Elm.Main.fullscreen({time, savedState})
 
 let socketOpts = {
   params: {},

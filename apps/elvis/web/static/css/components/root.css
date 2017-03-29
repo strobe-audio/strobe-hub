@@ -133,7 +133,7 @@
 }
 .root--offline__message svg {
 	display: block;
-	width: 33%;
+	width: 70%;
 	margin: 0 auto;
 	margin-bottom: calc($button-size / 2);
 	opacity: 0.3;

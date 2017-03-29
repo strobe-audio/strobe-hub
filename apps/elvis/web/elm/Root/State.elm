@@ -23,10 +23,11 @@ import Ports
 import Settings
 import Animation
 import Ease
+import Time
 
 
-initialState : Root.Model
-initialState =
+initialState : Time.Time -> Root.Model
+initialState time =
     { connected = False
     , channels = []
     , receivers = []
@@ -38,7 +39,8 @@ initialState =
     , activeChannelId = Nothing
     , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
-    , animationTime = 0
+    , startTime = time
+    , animationTime = time
     , notifications = []
     , viewMode = State.ViewCurrentChannel
     , showChannelControl = True

@@ -23,6 +23,7 @@ import State
 import Spinner
 import Settings.View
 import Animation
+import Time
 
 
 root : Root.Model -> Html Msg
@@ -32,14 +33,18 @@ root model =
             rootWhenConnected model
 
         False ->
-            div
-                [ class "root--offline" ]
-                [ div
-                    [ class "root--offline__message" ]
-                    [ Spinner.ripple
-                    , text "Connecting"
+            let
+                spinner time =
+                    div
+                        [ class "root--offline__message" ]
+                        [ (Spinner.ripple (round <| Time.inMilliseconds <| time))
+                        , text "Connecting"
+                        ]
+            in
+                div
+                    [ class "root--offline" ]
+                    [ lazy spinner model.startTime
                     ]
-                ]
 
 
 rootWhenConnected : Root.Model -> Html Msg

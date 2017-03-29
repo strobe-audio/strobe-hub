@@ -13,7 +13,7 @@ import Navigation
 import Routing
 
 
-main : Program (Maybe Root.SavedState) Root.Model Msg
+main : Program Root.Startup Root.Model Msg
 main =
     Navigation.programWithFlags Msg.UrlChange
         { init = init
@@ -23,14 +23,14 @@ main =
         }
 
 
-init : Maybe Root.SavedState -> Navigation.Location -> ( Root.Model, Cmd Msg )
-init savedState location =
+init : Root.Startup -> Navigation.Location -> ( Root.Model, Cmd Msg )
+init startup location =
     let
         currentRoute =
             (Routing.parseLocation location)
 
         initialState =
-            Root.State.initialState
+            Root.State.initialState startup.time
 
         routeState =
             case currentRoute of
@@ -41,7 +41,7 @@ init savedState location =
                     initialState
 
         ( model, cmd ) =
-            Root.State.restoreSavedState savedState routeState
+            Root.State.restoreSavedState startup.savedState routeState
                 |> Root.State.loadSettings
     in
         ( model, cmd )
