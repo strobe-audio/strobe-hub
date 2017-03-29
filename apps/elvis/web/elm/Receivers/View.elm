@@ -23,18 +23,10 @@ attached model channel =
     let
         receivers =
             Receiver.attachedReceivers channel model.receivers
-
-        active =
-            (List.length receivers) > 0
+                |> Receiver.sortByActive
 
         receiverEntry receiver =
             Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver channel)
-
-        contents =
-            if active then
-                div [ class "receivers--list" ] (List.map receiverEntry receivers)
-            else
-                div [ class "receivers--active-empty" ] [ text "Add receivers from list below" ]
     in
         div [ class "receivers--list" ] (List.map receiverEntry receivers)
 
@@ -44,9 +36,7 @@ detached model channel =
     let
         receivers =
             Receiver.detachedReceivers channel model.receivers
-
-        active =
-            (List.length receivers) > 0
+                |> Receiver.sortByActive
 
         receiverEntry receiver =
             Html.map

@@ -51,6 +51,16 @@ sort receivers =
     List.sortBy (\r -> r.name) receivers
 
 
+sortByActive : List Model -> List Model
+sortByActive receivers =
+    let
+        ( online, offline ) =
+            List.partition .online receivers
+    in
+        List.concat <|
+            List.map (List.sortBy .id) [ online, offline ]
+
+
 attachedReceivers : { a | id : ID.Channel } -> List Model -> List Model
 attachedReceivers channel receivers =
     attachedToChannel channel receivers
