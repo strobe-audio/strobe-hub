@@ -212,3 +212,10 @@ $cover-size: 60vw;
 .channel--play-pause-btn__pause:before {
 	content: "\f04b"; /* fa-play */
 }
+
+.channel--volume-label {
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.9em;
+  color: rgba(255, 255, 255, 0.7);
+}

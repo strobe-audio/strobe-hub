@@ -86,6 +86,15 @@ $volume-height: $button-size;
   @mixin volume-thumb;
 }
 
+.volume--label {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: $button-size;
+	background: rgba(255, 255, 255, 0.1);
+	font-size: 1.6rem;
+	padding: 0 $padding;
+}
 /* MUTED */
 
 $muted-volume-thumb-color: #333;

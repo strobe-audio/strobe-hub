@@ -80,7 +80,7 @@
   width: 14px;
   color: rgba(255, 255, 255, 0.5);
   position: relative;
-  left: -0px;
+  left: -2px;
   top: -1px;
   font-size: 0.8em;
 }
@@ -90,4 +90,11 @@
 }
 .receiver.receiver__offline .receiver--name:before {
   content: "\f1db"; /* fa-circle-thin */
+}
+
+
+.volume--label .receiver--name {
+  padding: 0;
+  justify-self: center;
+  text-align: center;
 }

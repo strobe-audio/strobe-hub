@@ -137,7 +137,7 @@ volumeControl channel =
         volumeCtrl =
             (Volume.View.control channel.volume
                 False
-                (text "Master volume")
+                (div [ class "channel--volume-label" ] [ text "Master volume" ])
             )
     in
         div
