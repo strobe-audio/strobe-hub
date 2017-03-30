@@ -9,6 +9,9 @@ defmodule Otis.Receivers.DataConnection do
   def handle_cast({:data, data}, state) do
     send_data_handling_errors(data, state)
   end
+  def handle_cast({:mute, muted}, state) do
+    {:noreply, %S{ state | muted: muted }}
+  end
 
   def handle_call({:mute, muted}, _from, state) do
     {:reply, :ok, %S{ state | muted: muted }}

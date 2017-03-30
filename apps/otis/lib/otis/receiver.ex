@@ -300,7 +300,7 @@ defmodule Otis.Receiver do
     if muted do
       stop(receiver)
     end
-    :ok = GenServer.call(pid, {:mute, muted})
+    GenServer.cast(pid, {:mute, muted})
     receiver
   end
 
