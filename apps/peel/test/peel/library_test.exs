@@ -164,7 +164,7 @@ defmodule Peel.Test.LibraryTest do
      },
      icon: nil, # track.cover_image,
      metadata: [
-      [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
+      [%{title: Otis.Library.Duration.hms_ms(track.duration_ms), action: nil}],
      ]
    }
   end

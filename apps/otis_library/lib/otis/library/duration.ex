@@ -11,16 +11,16 @@ defmodule Otis.Library.Duration do
     s = s - h * @h
     m = div(s, @m)
     s = s - m * @m
-		format(h, m, s)
+    format(h, m, s)
   end
 
-	def format(0, m, s) do
+  def format(0, m, s) do
     "#{pad(m)}:#{pad(s)}"
-	end
+  end
 
-	def format(h, m, s) do
+  def format(h, m, s) do
     "#{h}:#{pad(m)}:#{pad(s)}"
-	end
+  end
 
   def pad(v) when is_float(v) do
     v |> round |> pad

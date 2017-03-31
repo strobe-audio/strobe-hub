@@ -165,7 +165,7 @@ defmodule Peel.Events.Library do
               play: play_action(track)
             },
             metadata: [
-              [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
+              [%{title: Otis.Library.Duration.hms_ms(track.duration_ms), action: nil}],
             ],
           }
         end)
@@ -379,7 +379,7 @@ defmodule Peel.Events.Library do
         play: play_action(track)
       },
       metadata: [
-        [%{title: Peel.Duration.hms_ms(track.duration_ms), action: nil}],
+        [%{title: Otis.Library.Duration.hms_ms(track.duration_ms), action: nil}],
       ],
     }
   end

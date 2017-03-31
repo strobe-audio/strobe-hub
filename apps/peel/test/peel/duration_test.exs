@@ -14,7 +14,7 @@ defmodule Peel.Test.DurationTest do
 
   Enum.each @test_cases_ms, fn({ms, duration}) ->
     test "hms_ms #{ms}" do
-      assert Peel.Duration.hms_ms(unquote(ms)) == unquote(duration)
+      assert Otis.Library.Duration.hms_ms(unquote(ms)) == unquote(duration)
     end
   end
 end
