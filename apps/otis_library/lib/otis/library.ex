@@ -9,18 +9,27 @@ defmodule Otis.Library do
       end
 
       def handle_event({:controller_join, [socket]}, state) do
-        Otis.State.Events.notify({:add_library, [library(), socket]})
+        notify_event({:add_library, [library(), socket]})
         {:ok, state}
       end
 
       def handle_event({:library_request, [channel_id, (@protocol <> path) = url, socket, query]}, state) do
         response = handle_request(channel_id, path, query)
-        Otis.State.Events.notify({:library_response, [@namespace, url, response, socket]})
+        notify_event({:library_response, [@namespace, url, response, socket]})
         {:ok, state}
       end
 
       def handle_event(_event, state) do
         {:ok, state}
+      end
+
+      if Code.ensure_compiled?(Otis.State.Events) do
+        def notify_event(event) do
+          Otis.State.Events.notify(event)
+        end
+      else
+        def notify_event(event) do
+        end
       end
 
       def setup(state) do
@@ -63,17 +72,21 @@ defmodule Otis.Library do
         "#{@protocol}#{path}"
       end
 
-      def play(nil, _channel_id) do
-        nil
-      end
-      def play(tracks, channel_id) when is_list(tracks) do
-        with {:ok, channel} <- Otis.Channels.find(channel_id) do
-          Otis.Channel.append(channel, tracks)
+      if Code.ensure_compiled?(Otis.Channel) do
+        def play(nil, _channel_id) do
+          nil
         end
-        nil
-      end
-      def play(track, channel_id) do
-        play([track], channel_id)
+        def play(tracks, channel_id) when is_list(tracks) do
+          with {:ok, channel} <- Otis.Channels.find(channel_id) do
+            Otis.Channel.append(channel, tracks)
+          end
+          nil
+        end
+        def play(track, channel_id) do
+          play([track], channel_id)
+        end
+      else
+        def play(_source, _channel_id), do: nil
       end
 
 

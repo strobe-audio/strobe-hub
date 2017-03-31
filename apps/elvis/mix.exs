@@ -33,6 +33,7 @@ defmodule Elvis.Mixfile do
        :pipe,
        :peel,
        :otis_library_bbc,
+       :otis_library_upnp,
      ]]
   end
 
@@ -47,10 +48,11 @@ defmodule Elvis.Mixfile do
     [{:phoenix, "~> 1.1.4"},
      {:phoenix_html, "~> 2.1"},
      {:phoenix_live_reload, "~> 1.0", only: :dev},
-     {:cowboy, "~> 1.0"},
+     {:cowboy, "~> 1.1"},
      {:otis, in_umbrella: true},
      {:peel, in_umbrella: true},
      {:otis_library_bbc, in_umbrella: true},
+     {:otis_library_upnp, in_umbrella: true},
      {:distillery, "~> 1.0"},
      {:logger_papertrail_backend, "~> 0.1.0"},
    ]
