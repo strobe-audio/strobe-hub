@@ -43,7 +43,7 @@ defmodule Peel.Mixfile do
       {:ecto, "~> 1.0"},
       {:work_queue, github: "magnetised/work_queue"},
       {:otis_library, in_umbrella: true},
-      {:httpoison, "~> 0.9.0"},
+      {:httpoison, "~> 0.11.1"},
       {:floki, "~> 0.11.0"},
       {:poison, "~> 1.0"},
       {:otis, in_umbrella: true, only: :test},
