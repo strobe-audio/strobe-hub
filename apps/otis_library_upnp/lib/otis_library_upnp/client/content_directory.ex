@@ -70,7 +70,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
     id: ~x"./@id"s,
     parent_id: ~x"./@parentId"s,
     title: ~x"./dc:title/text()"s,
-    child_count: ~x"./@childCount"i,
+    child_count: ~x"./@childCount"I,
     album_art: ~x"./upnp:albumArtURI/text()"s,
   ]
 
@@ -88,10 +88,10 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
 
   @media_map [
     uri: ~x"./text()"s,
-    size: ~x"./@size"i,
-    bitrate: ~x"./@bitrate"i,
-    sample_freq: ~x"./@sampleFrequency"i,
-    channels: ~x"./@nrAudioChannels"i,
+    size: ~x"./@size"I,
+    bitrate: ~x"./@bitrate"I,
+    sample_freq: ~x"./@sampleFrequency"I,
+    channels: ~x"./@nrAudioChannels"I,
     info: ~x"./@protocolInfo"s,
   ]
 
