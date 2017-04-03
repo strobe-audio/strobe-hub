@@ -46,8 +46,19 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
   end
 
   def parse_browse_response({:ok, %HTTPoison.Response{status_code: 200, body: body}}, server) do
+    parse_browse_response(body, server)
+  end
+  def parse_browse_response(body, server) when is_binary(body) do
+    #http://erlang.org/pipermail/erlang-questions/2009-September/046312.html
+    safe_body =
+      body
+      |> String.codepoints
+      |> Enum.map(&escape_illegal_chars/1)
+      |> :unicode.characters_to_binary(:unicode)
+      |> :erlang.binary_to_list
+
     # SweetXml chokes on encoded xml within Result tag
-    {:ok, dom, _tail} = :erlsom.simple_form(body)
+    {:ok, dom, _tail} = :erlsom.simple_form(safe_body)
     {'{http://schemas.xmlsoap.org/soap/envelope/}Envelope', _attrs, [envelope]} = dom
     {'{http://schemas.xmlsoap.org/soap/envelope/}Body', _attrs, [body]} = envelope
     {'{urn:schemas-upnp-org:service:ContentDirectory:1}BrowseResponse', _attrs, response} = body
@@ -66,6 +77,15 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
     Logger.warn "Error response #{inspect resp}"
     {:error, resp}
   end
+
+  # http://stackoverflow.com/a/9123673
+  defp escape_illegal_chars(<<c>>) when c in [0x9, 0xa, 0xd], do: c
+  defp escape_illegal_chars(<<c>>) when c >= 0x20 and c <= 0xd7ff, do: c
+  defp escape_illegal_chars(<<c>>) when c >= 0xe000 and c <= 0xfffd, do: c
+  defp escape_illegal_chars(<<c>>) when c >= 0x10000 and c <= 0x10ffff, do: c
+  # i.e. a single byte that isn't in the allowed list above
+  defp escape_illegal_chars(<<c>>), do: ""
+  defp escape_illegal_chars(c), do: c
 
   @container_map [
     id: ~x"./@id"s,
