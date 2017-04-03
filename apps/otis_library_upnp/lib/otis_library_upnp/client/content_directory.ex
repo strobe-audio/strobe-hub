@@ -41,6 +41,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
 
   def make_soap_request(addr, action, attrs) do
     body = envelope(attrs, action)
+    Logger.info "SOAP #{addr} -> #{inspect action} -> #{inspect attrs}"
     HTTPoison.post(addr, body, headers(action))
   end
 
