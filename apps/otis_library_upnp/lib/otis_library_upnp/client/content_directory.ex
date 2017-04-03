@@ -84,7 +84,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
   defp escape_illegal_chars(<<c>>) when c >= 0xe000 and c <= 0xfffd, do: c
   defp escape_illegal_chars(<<c>>) when c >= 0x10000 and c <= 0x10ffff, do: c
   # i.e. a single byte that isn't in the allowed list above
-  defp escape_illegal_chars(<<c>>), do: ""
+  defp escape_illegal_chars(<<_c>>), do: ""
   defp escape_illegal_chars(c), do: c
 
   @container_map [
