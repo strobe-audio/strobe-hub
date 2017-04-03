@@ -3,7 +3,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
   Basic SOAP client for the UPnP ContentDirectory service.
   """
 
-  import Otis.Library.UPNP.Client, only: [envelope: 1, headers: 1]
+  import Otis.Library.UPNP.Client, only: [envelope: 2, headers: 1]
   import  SweetXml
 
   require Logger
@@ -13,7 +13,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
   alias Otis.Library.UPNP.{Container, Item, Media}
 
   @search_capabilities_action "urn:schemas-upnp-org:service:ContentDirectory:1#GetSearchCapabilities"
-  @browse_action "urn:schemas-upnp-org:service:ContentDirectory:1#Browse"
+  @browse_action {"urn:schemas-upnp-org:service:ContentDirectory:1", "Browse"}
 
   @browse_direct_children "BrowseDirectChildren"
   @browse_metadata "BrowseMetadata"
@@ -40,7 +40,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
   end
 
   def make_soap_request(addr, action, attrs) do
-    body = envelope(attrs)
+    body = envelope(attrs, action)
     HTTPoison.post(addr, body, headers(action))
   end
 
