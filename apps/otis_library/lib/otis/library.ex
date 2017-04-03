@@ -51,8 +51,7 @@ defmodule Otis.Library do
 
       def handle_request(channel_id, path, query \\ nil)
       def handle_request(channel_id, path, query) do
-        route = String.split(path, "/", trim: true)
-        route_library_request(channel_id, route, query, path)
+        route_library_request(channel_id, split(path), query, path)
       end
 
       def route_library_request(_channel_id, _route, _query, _path) do
@@ -65,12 +64,19 @@ defmodule Otis.Library do
       end
 
       def url(path) when is_list(path) do
-        path |> Path.join |> url()
+        path |> Enum.map(&encode/1) |> Path.join |> url()
       end
 
       def url(path) do
         "#{@protocol}#{path}"
       end
+
+      def split(path) do
+        path |> Path.split |> Enum.map(&decode/1)
+      end
+
+      defp encode(part), do: URI.encode(part, &URI.char_unreserved?/1)
+      defp decode(part), do: URI.decode(part)
 
       if Code.ensure_compiled?(Otis.Channel) do
         def play(nil, _channel_id) do
