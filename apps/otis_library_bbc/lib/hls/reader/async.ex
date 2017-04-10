@@ -25,8 +25,10 @@ defmodule HLS.Reader.Async do
 
   defp perform_with_timeout({reader, url, _parent, _id, deadline} = state) do
     case read_with_timeout(reader, url, timeout(deadline)) do
-      {:ok, {body, headers}} ->
+      {:ok, {:ok, body, headers}} ->
         send_reply({:ok, body, headers}, state)
+      {:ok, {:error, response}} ->
+        send_reply({:error, response}, state)
       {:exit, reason} ->
         send_reply({:error, reason}, state)
       nil ->

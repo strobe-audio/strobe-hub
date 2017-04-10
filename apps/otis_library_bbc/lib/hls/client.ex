@@ -53,8 +53,11 @@ defmodule HLS.Client do
 
   defp read_with_timeout(media, reader) do
     case read_with_timeout(reader, media.url, M3.Media.read_timeout(media)) do
-      {:ok, {body, _headers}} ->
+      {:ok, {:ok, body, _headers}} ->
         body
+      {:ok, {:error, response}} ->
+        Logger.warn("Error when retrieving audio segment: #{media.url}\n#{inspect response}")
+        HLS.whitenoise()
       {:exit, reason} ->
         Logger.warn("Error when retrieving audio segment: #{media.url}\n#{inspect reason}")
         HLS.whitenoise()

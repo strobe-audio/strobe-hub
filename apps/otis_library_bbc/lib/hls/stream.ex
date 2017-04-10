@@ -24,7 +24,7 @@ defmodule HLS.Stream do
 
       _ ->
         variant = apply(__MODULE__, bandwidth, [stream])
-        {m3, _headers} = HLS.Reader.read!(reader, variant.url)
+        {:ok, m3, _headers} = HLS.Reader.read(reader, variant.url)
         resolved = M3.Parser.parse!(m3, variant.url)
         %Stream{stream | playlist: resolved} |> resolve(opts)
     end

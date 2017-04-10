@@ -6,11 +6,13 @@ defmodule HLS.Reader.Http do
 
   @cache_control_header "Cache-Control"
 
-  def read!(url) do
-    # want to raise an error if we get an error, but if we get an error we want
-    # delay a bit
-    {:ok, response} = read(url)
-    {:ok, response.body, response.headers}
+  def read(url) do
+    case _read(url) do
+      {:ok, response} ->
+        {:ok, response.body, response.headers}
+      {:error, response} ->
+        {:error, response}
+    end
   end
 
   def expiry(headers, default \\ 3) do
@@ -19,8 +21,8 @@ defmodule HLS.Reader.Http do
     |> read_expiry(default)
   end
 
-  defp read(url, tries \\ 5, delay \\ 50)
-  defp read(url, tries, delay) do
+  defp _read(url, tries \\ 5, delay \\ 50)
+  defp _read(url, tries, delay) do
     HTTPoison.get(url, [], [])
     |> validate_response
     |> delay_errors(url)
@@ -57,7 +59,7 @@ defmodule HLS.Reader.Http do
   end
   defp retry({:error, _}, url, tries, delay) do
     Logger.warn "Retrying #{url}; attempts remaining: #{tries}"
-    read(url, tries, delay)
+    _read(url, tries, delay)
   end
 
   defp read_expiry(nil, default) do
@@ -91,11 +93,10 @@ defmodule HLS.Reader.Http do
 end
 
 defimpl HLS.Reader, for: HLS.Reader.Http do
-  def read!(_reader, "file://" <> path) do
-    {File.read!(path), []}
+  def read(_reader, "file://" <> path) do
+    {:ok, File.read!(path), []}
   end
-  def read!(_reader, url) do
-    {:ok, body, headers} = HLS.Reader.Http.read!(url)
-    {body, headers}
+  def read(_reader, url) do
+    HLS.Reader.Http.read(url)
   end
 end

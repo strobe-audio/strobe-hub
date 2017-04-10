@@ -6,7 +6,7 @@ defmodule HLS.ProgrammableReaderTest do
     {:ok, root: root}
   end
 
-  def fingerprint({data, _headers}) do
+  def fingerprint({:ok, data, _headers}) do
 		fingerprint(data)
 	end
   def fingerprint(data) do
@@ -18,7 +18,7 @@ defmodule HLS.ProgrammableReaderTest do
 
   test "it can read the given file", context do
     reader = HLS.Reader.Programmable.new(context.root, %{})
-    md5 = HLS.Reader.read!(reader, "http://something.io/high/226201867.ts") |> fingerprint
+    md5 = HLS.Reader.read(reader, "http://something.io/high/226201867.ts") |> fingerprint
     assert md5 == "c96820e0b3af1e34b8a368a23b097a57"
   end
 
@@ -30,18 +30,18 @@ defmodule HLS.ProgrammableReaderTest do
       "/high/segment-3.m3u8",
     ]}
     reader = HLS.Reader.Programmable.new(context.root, urls)
-    md5 = HLS.Reader.read!(reader, "http://something.io/high/226201867.ts") |> fingerprint
+    md5 = HLS.Reader.read(reader, "http://something.io/high/226201867.ts") |> fingerprint
     assert md5 == "c96820e0b3af1e34b8a368a23b097a57"
 
-    {playlist, _headers} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {:ok, playlist, _headers} = HLS.Reader.read(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-0.m3u8"]))
-    {playlist, _headers} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {:ok, playlist, _headers} = HLS.Reader.read(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-1.m3u8"]))
-    {playlist, _headers} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {:ok, playlist, _headers} = HLS.Reader.read(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-2.m3u8"]))
-    {playlist, _headers} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {:ok, playlist, _headers} = HLS.Reader.read(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-3.m3u8"]))
-    {playlist, _headers} = HLS.Reader.read!(reader, "http://something.io/high/segment.m3u8")
+    {:ok, playlist, _headers} = HLS.Reader.read(reader, "http://something.io/high/segment.m3u8")
     assert playlist == File.read!(Path.join([context.root, "/high/segment-3.m3u8"]))
   end
 end
