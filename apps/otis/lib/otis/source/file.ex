@@ -159,8 +159,8 @@ defimpl Otis.Library.Source, for: Otis.Source.File do
     Elixir.File.close(stream)
   end
 
-  def audio_type(%File{metadata: metadata}) do
-    {metadata.extension, metadata.mime_type}
+  def transcoder_args(%File{metadata: metadata}) do
+    ["-f", Otis.Library.strip_leading_dot(metadata.extension)]
   end
 
   def metadata(%File{metadata: metadata}) do

@@ -179,7 +179,7 @@ defimpl Otis.Library.Source, for: Otis.Test.TestSource do
     # noop
   end
 
-  def audio_type(_track) do
+  def transcoder_args(_track) do
     # noop
   end
 
@@ -306,8 +306,8 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
     :ok
   end
 
-  def audio_type(_source) do
-    {".raw", "audio/raw"}
+  def transcoder_args(_source) do
+    ["-f", "raw"]
   end
 
   def metadata(_source) do

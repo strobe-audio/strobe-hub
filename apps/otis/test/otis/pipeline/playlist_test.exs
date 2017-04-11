@@ -10,7 +10,7 @@ defimpl Otis.Library.Source, for: Test.Otis.Pipeline.Source do
   def open!(_source, _id, _packet_size_bytes), do: []
   def close(_file, _id, _source), do: nil
   def pause(_file, _id, _source), do: nil
-  def audio_type(_source), do: {"mp3", "audio/mpeg"}
+  def transcoder_args(_source), do: ["-f", "mp3"]
   def metadata(_source), do: %Otis.Source.Metadata{}
   def duration(_source) do
     {:ok, 1000}

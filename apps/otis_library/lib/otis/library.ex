@@ -1,4 +1,8 @@
 defmodule Otis.Library do
+  def strip_leading_dot(ext) do
+    String.lstrip(ext, ?.)
+  end
+
   defmacro __using__([namespace: namespace]) do
     quote location: :keep do
       @namespace "#{unquote(namespace)}"

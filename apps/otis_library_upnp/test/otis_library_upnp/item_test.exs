@@ -20,7 +20,7 @@ defmodule Otis.Library.UPNP.ItemTest do
       uri: "http://192.168.1.92:8200/MediaItems/2165.m4a"
     }
     item = %Item{media: media}
-    assert Otis.Library.Source.audio_type(item) == {".m4a", "audio/mp4"}
+    assert Otis.Library.Source.transcoder_args(item) == ["-f", "m4a"]
   end
 
   test "returns correct duration" do

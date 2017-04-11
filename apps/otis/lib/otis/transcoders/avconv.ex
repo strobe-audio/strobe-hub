@@ -8,7 +8,7 @@ defmodule Otis.Transcoders.Avconv do
   Takes an input stream of the given format type and returns
   an PCM output stream
   """
-  def transcode(inputstream, type, offset_ms, config) do
+  def transcode(inputstream, input_args, offset_ms, config) do
     opts = [out: :stream, in: inputstream]
     proc = %{out: outstream} = ExternalProcess.spawn(executable(), params(input_args, offset_ms, config), opts)
     {proc, outstream}
@@ -21,8 +21,8 @@ defmodule Otis.Transcoders.Avconv do
     ExternalProcess.stop(process)
   end
 
-  defp params(input_type, offset_ms, config) do
-    ["-f", strip_leading_dot(input_type), "-i", "-", "-ss", ms_to_s(offset_ms) | params(config)]
+  defp params(input_args, offset_ms, config) do
+    Enum.concat(input_args, ["-i", "-", "-ss", ms_to_s(offset_ms) | params(config)])
   end
 
   defp params(config) do
@@ -30,10 +30,6 @@ defmodule Otis.Transcoders.Avconv do
       "-ar", Integer.to_string(config.sample_freq),
       "-ac", Integer.to_string(config.channels),
       "-" ]
-  end
-
-  defp strip_leading_dot(ext) do
-    String.lstrip(ext, ?.)
   end
 
   defp ms_to_s(ms) do
