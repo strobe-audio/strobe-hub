@@ -56,8 +56,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [ {:porcelain, github: "alco/porcelain"},
-      {:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar},
+    [ {:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar},
       {:poolboy, "~> 1.4"},
       {:monotonic, github: "magnetised/monotonic.ex"},
       {:erlsom, github: "willemdj/erlsom"},
@@ -70,6 +69,7 @@ defmodule Otis.Mixfile do
       {:nerves_ssdp_server, "~> 0.2.1"},
       {:gproc, "~> 0.5.0"},
       {:mdns, "~> 0.1.5"},
+      {:external_process, in_umbrella: true},
     ]
   end
 end
