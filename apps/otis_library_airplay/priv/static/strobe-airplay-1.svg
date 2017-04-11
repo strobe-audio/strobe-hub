@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024px" height="1024px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 42 (36781) - http://www.bohemiancoding.com/sketch -->
+    <title>strobe-airplay-1</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <ellipse id="path-1" cx="194.798328" cy="199" rx="194.798328" ry="199"></ellipse>
+        <mask id="mask-2" maskContentUnits="userSpaceOnUse" maskUnits="objectBoundingBox" x="-19.8" y="-19.8" width="429.196656" height="437.6">
+            <rect x="-19.8" y="-19.8" width="429.196656" height="437.6" fill="white"></rect>
+            <use xlink:href="#path-1" fill="black"></use>
+        </mask>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="airply-icon">
+            <g id="Group">
+                <path d="M781.168,0 C930.134,0 1024,93.866 1024,241.95 L1024,781.175 C1024,930.133 930.134,1024 781.168,1024 L241.946,1024 C93.866,1024 0,930.133 0,781.175 L0,241.95 C0,93.866 93.866,0 241.946,0 L781.168,0 Z" id="Shape" fill="#000000" fill-rule="nonzero"></path>
+                <polygon id="Shape" fill="#FFFFFF" fill-rule="nonzero" points="258.314 830 765.686 830 512 537.429"></polygon>
+                <polygon id="Shape" fill="#FFFFFF" fill-rule="nonzero" points="364.306 633 194 633 194 274 830 274 830 633 659.694 633 686.99 665 861 665 861 243 163 243 163 665 337.01 665"></polygon>
+            </g>
+        </g>
+        <g id="Group-2" transform="translate(316.000000, 58.000000)">
+            <g id="Oval">
+                <use fill="#303F9F" fill-rule="evenodd" xlink:href="#path-1"></use>
+                <use stroke="#000000" mask="url(#mask-2)" stroke-width="39.6" xlink:href="#path-1"></use>
+            </g>
+            <text id="1" font-family="Roboto-Medium, Roboto" font-size="313.2" font-weight="400" fill="#FFFFFF">
+                <tspan x="104.792157" y="307.208145">1</tspan>
+            </text>
+        </g>
+    </g>
+</svg>

@@ -198,7 +198,7 @@ defimpl Poison.Encoder, for: Otis.Library.Airplay.Input do
       title: "Airplay Input #{input.id}",
       track_number: nil,
       track_total: nil,
-      cover_image: "",
+      cover_image: Otis.Library.Airplay.Events.Library.airplay_logo(input.id),
     } |> Poison.Encoder.encode(opts)
   end
 end
