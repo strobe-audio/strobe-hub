@@ -8,12 +8,7 @@ defmodule HLS.Client do
 
   def open!(stream, id, opts \\ [bandwidth: :highest])
   def open!(%HLS.Stream{} = stream, id, opts) do
-    stream(stream, id, opts)
-  end
-
-  defp stream(stream, id, opts) do
-    {:ok, pid} =  HLS.Client.start_link(stream, id, opts)
-    {:ok, GenStage.stream([pid])}
+    HLS.Client.Stream.open(stream, id, opts)
   end
 
   def start_link(stream, id, opts) do

@@ -70,8 +70,7 @@ defimpl Otis.Library.Source, for: BBC.Channel do
   end
 
   def open(channel, stream_id) do
-    hls = stream(channel)
-    HLS.Client.open!(hls, stream_id)
+    stream(channel) |> HLS.Client.open!(stream_id)
   end
 
   defp stream(channel) do
