@@ -3,7 +3,7 @@ defmodule Otis.Library.Airplay.Events do
   require Logger
 
   def start_link do
-    GenServer.start_link(__MODULE__, :ok)
+    GenServer.start_link(__MODULE__, :ok, name: Otis.Library.Airplay.Events)
   end
 
   @handlers [

@@ -16,7 +16,7 @@ defmodule Otis.Library.Airplay.Stream do
   end
 
   def start_link(producer_id, config) do
-    GenServer.start_link(__MODULE__, [producer_id, config])
+    GenServer.start_link(__MODULE__, [producer_id, config], name: :"Otis.Library.Airplay.Stream-#{producer_id}")
   end
 
   def init([producer_id, config]) do
