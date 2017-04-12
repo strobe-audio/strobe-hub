@@ -14,14 +14,14 @@ defmodule HLS.Reader.Dir do
 end
 
 defimpl HLS.Reader, for: HLS.Reader.Dir do
-  def read!(reader, "http" <> _ = url) do
+  def read(reader, "http" <> _ = url) do
     path = HLS.Reader.Dir.path(url)
     file_path = Path.join([reader.root, path])
-    {File.read!(file_path), []}
+    {:ok, File.read!(file_path), []}
   end
 
-  def read!(reader, path) do
+  def read(reader, path) do
     file_path = Path.join([reader.root, path])
-    {File.read!(file_path), []}
+    {:ok, File.read!(file_path), []}
   end
 end

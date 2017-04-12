@@ -3,9 +3,13 @@ defmodule BBC.Channel do
 
   alias __MODULE__
 
-  def cover_image(channel, size \\ :large)
-  def cover_image(channel, size) do
-    Otis.Media.url(BBC.library_id,logo(channel, size))
+  if Code.ensure_compiled?(Otis.Media) do
+    def cover_image(channel, size \\ :large)
+    def cover_image(channel, size) do
+      Otis.Media.url(BBC.library_id ,logo(channel, size))
+    end
+  else
+    def cover_image(_channel, _size \\ :large), do: ""
   end
 
   def logo(channel, size \\ :large)
@@ -66,8 +70,7 @@ defimpl Otis.Library.Source, for: BBC.Channel do
   end
 
   def open(channel, stream_id) do
-    hls = stream(channel)
-    HLS.Client.open!(hls, stream_id)
+    stream(channel) |> HLS.Client.open!(stream_id)
   end
 
   defp stream(channel) do

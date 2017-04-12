@@ -8,16 +8,11 @@ defmodule HLS.Client do
 
   def open!(stream, id, opts \\ [bandwidth: :highest])
   def open!(%HLS.Stream{} = stream, id, opts) do
-    stream(stream, id, opts)
-  end
-
-  defp stream(stream, id, opts) do
-    {:ok, pid} =  HLS.Client.start_link(stream, id, opts)
-    {:ok, GenStage.stream([pid])}
+    HLS.Client.Stream.open(stream, id, opts)
   end
 
   def start_link(stream, id, opts) do
-    GenStage.start_link(__MODULE__, [stream, id, opts])
+    GenStage.start_link(__MODULE__, [stream, id, opts], name: :"#{__MODULE__}-#{id}")
   end
 
   # Callbacks
@@ -26,8 +21,8 @@ defmodule HLS.Client do
     defstruct [:reader, :producer]
   end
 
-  def init([stream, _id, opts]) do
-    {:ok, producer} = GenStage.start_link(HLS.Client.Playlist, [stream, stream.reader, opts])
+  def init([stream, id, opts]) do
+    {:ok, producer} = GenStage.start_link(HLS.Client.Playlist, [stream, stream.reader, opts], name: :"HLS.Client.Playlist-#{id}")
     state = %S{reader: stream.reader, producer: producer}
     {:producer_consumer, state, subscribe_to: [{producer, [max_demand: 1]}]}
   end
@@ -53,8 +48,11 @@ defmodule HLS.Client do
 
   defp read_with_timeout(media, reader) do
     case read_with_timeout(reader, media.url, M3.Media.read_timeout(media)) do
-      {:ok, {body, _headers}} ->
+      {:ok, {:ok, body, _headers}} ->
         body
+      {:ok, {:error, response}} ->
+        Logger.warn("Error when retrieving audio segment: #{media.url}\n#{inspect response}")
+        HLS.whitenoise()
       {:exit, reason} ->
         Logger.warn("Error when retrieving audio segment: #{media.url}\n#{inspect reason}")
         HLS.whitenoise()

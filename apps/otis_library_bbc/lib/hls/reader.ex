@@ -1,3 +1,3 @@
 defprotocol HLS.Reader do
-  def read!(reader, url)
+  def read(reader, url)
 end

@@ -3,6 +3,7 @@ defmodule HLS.Reader.Programmable do
   A reader that can either map a single url to a sequence of files
   or fall back to the filesystem. Used for testing porpoises.
   """
+  use GenServer
 
   defstruct [:pid]
 
@@ -28,16 +29,16 @@ defmodule HLS.Reader.Programmable do
   end
 
   defp read(path, nil, state) do
-    {body, []} = HLS.Reader.read!(state.dir, path)
+    {:ok, body, []} = HLS.Reader.read(state.dir, path)
     {{:ok, body}, state}
   end
 
   defp read(_path, [file], state) do
-    {body, []} = HLS.Reader.read!(state.dir, file)
+    {:ok, body, []} = HLS.Reader.read(state.dir, file)
     {{:ok, body}, state}
   end
   defp read(path, [file | paths], state) do
-    {body, []} = HLS.Reader.read!(state.dir, file)
+    {:ok, body, []} = HLS.Reader.read(state.dir, file)
     {{:ok, body}, %{ state | urls: Map.put(state.urls, path, paths) }}
   end
   defp read(_path, [], state) do
@@ -46,15 +47,15 @@ defmodule HLS.Reader.Programmable do
 end
 
 defimpl HLS.Reader, for: HLS.Reader.Programmable do
-  def read!(reader, url) do
+  def read(reader, url) do
     _read(Process.alive?(reader.pid), reader.pid, url)
   end
 
   defp _read(false, _pid, _url) do
-    {"", []}
+    {:ok, "", []}
   end
   defp _read(true, pid, url) do
     {:ok, body} = GenServer.call(pid, {:read, url})
-    {body, []}
+    {:ok, body, []}
   end
 end
