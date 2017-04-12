@@ -10,7 +10,7 @@ defmodule HLS.Client.Stream do
   end
 
   def start_link(stream, id, opts) do
-    GenServer.start_link(__MODULE__, [stream, id, opts])
+    GenServer.start_link(__MODULE__, [stream, id, opts], name: :"#{__MODULE__}-#{id}")
   end
 
   def init([stream, id, opts]) do
