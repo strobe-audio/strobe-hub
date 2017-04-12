@@ -372,3 +372,26 @@
   height: calc($button-size / 1.3);
   line-height: calc($button-size / 1.3);
 }
+
+
+.root--rendition-cover-control {
+  flex: 0 0 $button-size;
+  height: $button-size;
+  overflow: hidden;
+  position: relative;
+}
+.root--rendition-cover-control--window {
+  height: calc($button-size * 2);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: $button-size;
+}
+
+.root--channel-control-bar__active .root--rendition-cover-control--window {
+  top: -$button-size;
+}
+
+.root--rendition-cover-control--window > div {
+  height: $button-size;
+}

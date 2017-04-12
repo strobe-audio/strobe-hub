@@ -13,11 +13,13 @@ import Channels.View
 import Library.View
 import Receiver
 import Receivers.View
+import Rendition
 import Rendition.View
 import Source.View
 import Json.Decode as Json
 import Msg exposing (Msg)
 import Utils.Touch exposing (onUnifiedClick)
+import Utils.Css
 import Notification.View
 import State
 import Spinner
@@ -264,18 +266,16 @@ rendition model channel =
                     div [ class "channel--rendition" ]
                         [ Html.map (always Msg.NoOp) (Rendition.View.info rendition channel.playing)
                         ]
-
-        mapTap a =
-            Html.Attributes.map Msg.SingleTouch a
     in
         div
-            [ class "channel--playback"
-            , onClick Msg.ToggleShowChannelControl
-            , mapTap (Utils.Touch.touchStart Msg.ToggleShowChannelControl)
-            , mapTap (Utils.Touch.touchEnd Msg.ToggleShowChannelControl)
-            ]
-            [ div
-                [ class "channel--info" ]
+            [ class "channel--playback" ]
+            [ (renditionCoverAndControl model maybeRendition)
+            , div
+                [ class "channel--info"
+                , onClick Msg.ToggleShowChannelControl
+                , mapTouch (Utils.Touch.touchStart Msg.ToggleShowChannelControl)
+                , mapTouch (Utils.Touch.touchEnd Msg.ToggleShowChannelControl)
+                ]
                 [ div
                     [ class "channel--info--name" ]
                     [ div
@@ -287,6 +287,34 @@ rendition model channel =
                         ]
                     ]
                 , rendition
+                ]
+            ]
+
+
+renditionCoverAndControl : Root.Model -> Maybe Rendition.Model -> Html Msg
+renditionCoverAndControl model maybeRendition =
+    let
+        shown =
+            showChannelControl model
+
+        coverImage =
+            maybeRendition
+                |> Maybe.map (\r -> r.source.cover_image)
+                |> Maybe.withDefault ""
+    in
+        div
+            [ class "root--rendition-cover-control" ]
+            [ div
+                [ class "root--rendition-cover-control--window" ]
+                [ div
+                    [ class "rendition--cover__small"
+                    , style [ ( "backgroundImage", (Utils.Css.url coverImage) ) ]
+                    , onClick Msg.ToggleShowChannelControl
+                    , mapTouch (Utils.Touch.touchStart Msg.ToggleShowChannelControl)
+                    , mapTouch (Utils.Touch.touchEnd Msg.ToggleShowChannelControl)
+                    ]
+                    []
+                , (toggleHubControlButton model)
                 ]
             ]
 
@@ -310,28 +338,30 @@ activeView model channel =
             [ view ]
 
 
+toggleHubControlButton : Root.Model -> Html Msg
+toggleHubControlButton model =
+    div
+        [ classList
+            [ ( "root--switch-view--btn", True )
+            , ( "root--switch-view--btn__active", model.showHubControl )
+            , ( "root--switch-view--btn__SelectChannel", True )
+            ]
+        , onClick (Msg.ToggleShowHubControl)
+        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowHubControl))
+        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowHubControl))
+        ]
+        []
+
+
 switchView : Root.Model -> Channel.Model -> Html Msg
 switchView model channel =
     let
         states =
             (List.map (switchViewButton model channel) State.viewModes)
-
-        switchChannel =
-            div
-                [ classList
-                    [ ( "root--switch-view--btn", True )
-                    , ( "root--switch-view--btn__active", model.showHubControl )
-                    , ( "root--switch-view--btn__SelectChannel", True )
-                    ]
-                , onClick (Msg.ToggleShowHubControl)
-                , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowHubControl))
-                , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowHubControl))
-                ]
-                []
     in
         div
             [ class "root--switch-view" ]
-            (switchChannel :: states)
+            ((toggleHubControlButton model) :: states)
 
 
 playlistDuration : Channel.Model -> Html Msg

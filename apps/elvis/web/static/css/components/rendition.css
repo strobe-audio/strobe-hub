@@ -27,6 +27,9 @@
 .rendition--cover__blank {
 
 }
+.rendition--cover__small {
+  background-size: contain;
+}
 
 .rendition--song {
   position: absolute;
@@ -115,6 +118,7 @@
   cursor: pointer;
   align-items: stretch;
   flex-direction: row;
+  height: $button-size;
 }
 .rendition--play-pause-btn {
   /* @mixin fa-btn "\f04b"; */
