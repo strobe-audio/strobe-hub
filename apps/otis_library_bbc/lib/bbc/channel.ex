@@ -85,8 +85,8 @@ defimpl Otis.Library.Source, for: BBC.Channel do
     :ok
   end
 
-  def audio_type(_bbc) do
-    {".mpegts", "audio/mp2t"}
+  def transcoder_args(_bbc) do
+    ["-f", "mpegts"]
   end
 
   def metadata(_bbc) do

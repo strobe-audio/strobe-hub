@@ -34,6 +34,7 @@ defmodule Elvis.Mixfile do
        :peel,
        :otis_library_bbc,
        :otis_library_upnp,
+       :otis_library_airplay,
      ]]
   end
 
@@ -53,6 +54,7 @@ defmodule Elvis.Mixfile do
      {:peel, in_umbrella: true},
      {:otis_library_bbc, in_umbrella: true},
      {:otis_library_upnp, in_umbrella: true},
+     {:otis_library_airplay, in_umbrella: true},
      {:distillery, "~> 1.0"},
      {:logger_papertrail_backend, "~> 0.1.0"},
    ]

@@ -32,9 +32,9 @@ defprotocol Otis.Library.Source do
   @spec close(t, binary, Enumerable.t) :: :ok | {:error, term}
   def close(file, id, stream)
 
-  @doc "Returns the audio type as a {extension, mime type} tuple"
-  @spec audio_type(t) :: {binary, binary}
-  def audio_type(source)
+  @doc "Returns arguments that must be passed to avconv for it to understand the source format."
+  @spec transcoder_args(t) :: [binary, ...] | :passthrough
+  def transcoder_args(source)
 
   @spec metadata(t) :: Map.t
   def metadata(source)

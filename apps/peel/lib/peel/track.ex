@@ -127,8 +127,8 @@ defimpl Otis.Library.Source, for: Peel.Track do
     Elixir.File.close(stream)
   end
 
-  def audio_type(track) do
-    {Track.extension(track), track.mime_type}
+  def transcoder_args(track) do
+    ["-f", Track.extension(track) |> Otis.Library.strip_leading_dot]
   end
 
   # TODO: what should this return?

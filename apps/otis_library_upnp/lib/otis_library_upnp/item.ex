@@ -46,9 +46,8 @@ defimpl Otis.Library.Source, for: Otis.Library.UPNP.Item do
   def close(%Item{}, _id, _stream) do
   end
 
-  def audio_type(%Item{media: %Media{uri: uri, info: info}}) do
-    [_, _, mime_type, _] = String.split(info, ":")
-    {Path.extname(uri), mime_type}
+  def transcoder_args(%Item{media: %Media{uri: uri, info: info}}) do
+    ["-f", Path.extname(uri) |> Otis.Library.strip_leading_dot]
   end
 
   def metadata(item) do

@@ -56,8 +56,12 @@ defmodule Otis.Pipeline.Transcoder do
   end
 
   defp start(state, config) do
-    {ext, _type} = Source.audio_type(state.source)
-    {pid, outputstream} = Avconv.transcode(state.inputstream, ext, state.playback_position, config)
-    %S{ state | transcoder: pid, outputstream: outputstream }
+    case Source.transcoder_args(state.source) do
+      :passthrough ->
+        %S{ state | transcoder: nil, outputstream: state.inputstream }
+      args ->
+        {pid, outputstream} = Avconv.transcode(state.inputstream, args, state.playback_position, config)
+        %S{ state | transcoder: pid, outputstream: outputstream }
+    end
   end
 end
