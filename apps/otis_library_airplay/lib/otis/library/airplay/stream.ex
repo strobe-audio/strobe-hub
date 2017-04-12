@@ -20,10 +20,17 @@ defmodule Otis.Library.Airplay.Stream do
   end
 
   def init([producer_id, config]) do
+    Process.flag(:trap_exit, true)
     {:ok, {producer_id, config}}
   end
 
+  def terminate(_reason, {producer_id, _config}) do
+    GenServer.cast(producer_id, :stream_stop)
+    :ok
+  end
+
   def handle_call(:stream, _from, {producer_id, _config} = state) do
+    GenServer.cast(producer_id, :stream_start)
     stream = GenStage.stream([{producer_id, [max_demand: 1]}])
     {:reply, {:ok, stream}, state}
   end

@@ -20,10 +20,11 @@ defmodule Otis.Library.Airplay.Input do
   end
 
   # TODO: get packet size from provided config
-  @packet_size round(44100 * 2 * 2 * (1000 / 1000))
-  @silence_bytes @packet_size #4 # round((44100 / 1000) * 2 * 100)
+  @bpms round(44100 * 2 * 2 * (1 / 1000))
+  @packet_size 100 * @bpms
+  @silence_bytes @packet_size
   @silence :binary.copy(<<0>>, @silence_bytes)
-  @buffer_len 5
+  @buffer_len 40
 
   def title(%__MODULE__{id: id}) do
     "Airplay Input #{id}"
@@ -44,9 +45,6 @@ defmodule Otis.Library.Airplay.Input do
   end
   def terminate(_reason, %S{process: process}) do
     Airplay.Shairport.stop(process)
-    :ok
-  end
-  def terminate(_reason, _state) do
     :ok
   end
 
@@ -70,16 +68,15 @@ defmodule Otis.Library.Airplay.Input do
     end
   end
 
-  def handle_info({_pid, :data, :out, data}, %S{queue: queue, buffer: buffer} = state) do
-    {buffer, queue} =
-      case split_packet(<< buffer <> data >>) do
-        {buffer, nil} ->
-          {buffer, queue}
-        {buffer, packet} ->
-          queue = packet |> :queue.in(queue) |> limit_queue(@buffer_len)
-          {buffer, queue}
-      end
-    {:noreply, [], %S{ state | buffer: buffer, queue: queue }}
+  def handle_cast(:stream_start, state) do
+    {:noreply, [], state}
+  end
+  def handle_cast(:stream_stop, state) do
+    {:noreply, [], %S{state | buffer: <<>>, queue: :queue.new}}
+  end
+
+  def handle_info({_pid, :data, :out, data}, state) do
+    {:noreply, [], append_data(data, state)}
   end
   def handle_info({_pid, :data, :err, _data}, state) do
     {:noreply, [], state}
@@ -96,13 +93,33 @@ defmodule Otis.Library.Airplay.Input do
     {:noreply, [], state}
   end
 
-  defp split_packet(buffer) do
+  defp append_data(data, %S{queue: queue, buffer: buffer} = state) do
+    {buffer, queue} =
+      << buffer <> data >>
+      |> split_packets()
+      |> queue_packets(queue)
+    %S{ state | buffer: buffer, queue: queue }
+  end
+
+  defp split_packets(buffer) do
+    split_packets(buffer, [])
+  end
+  defp split_packets(buffer, packets) do
     case byte_size(buffer) do
       b when b >= @packet_size ->
-        { :binary.part(buffer, @packet_size, b - @packet_size), :binary.part(buffer, 0, @packet_size) }
+        split_packets(:binary.part(buffer, @packet_size, b - @packet_size), [:binary.part(buffer, 0, @packet_size) | packets])
       _ ->
-        {buffer, nil}
+        {buffer, Enum.reverse(packets)}
     end
+  end
+
+  defp queue_packets({buffer, packets}, queue) do
+    queue = packets |> Enum.reduce(queue, &queue_packet/2)
+    {buffer, queue}
+  end
+
+  defp queue_packet(packet, queue) do
+    :queue.in(packet, queue) |> limit_queue(@buffer_len)
   end
 
   defp limit_queue(queue, max_len) do
