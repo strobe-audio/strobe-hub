@@ -23,9 +23,7 @@
                 <use fill="#303F9F" fill-rule="evenodd" xlink:href="#path-1"></use>
                 <use stroke="#000000" mask="url(#mask-2)" stroke-width="39.6" xlink:href="#path-1"></use>
             </g>
-            <text id="1" font-family="Roboto-Medium, Roboto" font-size="313.2" font-weight="400" fill="#FFFFFF">
-                <tspan x="104.792157" y="307.208145">1</tspan>
-            </text>
+            <polygon id="1" fill="#FFFFFF" points="222.089227 307.208145 185.080243 307.208145 185.080243 128.43334 130.484344 147.090762 130.484344 115.740176 217.348407 83.7778714 222.089227 83.7778714"></polygon>
         </g>
     </g>
 </svg>
