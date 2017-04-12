@@ -37,7 +37,9 @@ type alias Model =
     , startTime : Time
     , animationTime : Time
     , notifications : List (Notification.Model Msg)
-    , showSelectChannel : Bool
+    , showHubControl : Bool
+    , controlChannel : Bool
+    , controlReceiver : Bool
     , viewMode : State.ViewMode
     , showChannelControl : Bool
     , savedState : Maybe SavedState

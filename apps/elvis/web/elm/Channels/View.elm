@@ -29,8 +29,7 @@ import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
 channelSelector : Root.Model -> Channel.Model -> Html Msg
 channelSelector model channel =
     div
-        [ id "__scrolling__"
-        , classList
+        [ classList
             [ ( "channels--view", True )
             ]
         ]

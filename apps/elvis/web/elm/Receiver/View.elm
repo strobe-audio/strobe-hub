@@ -28,22 +28,9 @@ receiverClasses receiver attached =
     ]
 
 
-attached : Receiver.Model -> Channel.Model -> Html Receiver.Msg
-attached receiver channel =
+attached : Receiver.Model -> Html Receiver.Msg
+attached receiver =
     let
-        onClickEdit =
-            onWithOptions "click"
-                { defaultOptions | stopPropagation = True }
-                (Json.succeed (Receiver.ShowEditName True))
-
-        editNameInput =
-            case receiver.editName of
-                False ->
-                    div [] []
-
-                True ->
-                    Input.View.inputSubmitCancel receiver.editNameInput
-
         receiverLabel receiver =
             div [ class "receiver--name" ] [ text receiver.name ]
     in

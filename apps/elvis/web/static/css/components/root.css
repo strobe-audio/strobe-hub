@@ -107,15 +107,6 @@
   /* flex: 0 0 $button-size; */
 }
 
-.root--channel-select {
-  flex: 0 0 $button-size;
-  text-align: center;
-  /* line-height: $button-size; */
-  line-height: $top-bar-height;
-  cursor: pointer;
-  background: #BF360C;
-}
-
 .root--loading {
   display: flex;
   height: 100vh;
@@ -160,7 +151,6 @@
 
 
 /* ******* */
-$active-channel-peek-width: 85px;
 
 #root {
 	/* display: flex; */
@@ -174,9 +164,9 @@ $active-channel-peek-width: 85px;
 	/* transition: flex-basis 1s; */
 	flex: 0 0 0;
 }
-#root.root--channel-select__inactive > .root--channel-list {
+#root.root--hub-control__inactive > .root--channel-list {
 }
-#root.root--channel-select__active > .root--channel-list {
+#root.root--hub-control__active > .root--channel-list {
 	/* flex: 0 0 calc(100vw - $active-channel-peek-width); */
 	flex: 0 0 0;
 }
@@ -195,7 +185,7 @@ $active-channel-peek-width: 85px;
   transition: opacity 250ms;
 }
 
-#root.root--channel-select__active .root--channel-list-toggle {
+#root.root--hub-control__active .root--channel-list-toggle {
   opacity: 1;
   pointer-events: visible;
 }
@@ -211,7 +201,7 @@ $active-channel-peek-width: 85px;
   left: 0;
 }
 
-#root.root--channel-select__active > .root--channel {
+#root.root--hub-control__active > .root--channel {
   box-shadow: -0px 0 10px rgba(0, 0, 0, 0.3);
 }
 
@@ -332,9 +322,53 @@ $active-channel-peek-width: 85px;
 }
 
 .root--switch-view--btn__SelectChannel {
+  @mixin fa-btn "\f140"; /* fa-bullseye */
 	flex: 0 0 $active-channel-peek-width;
+}
+.root--switch-view--btn__ViewSettings {
+  @mixin fa-btn "\f013"; /* fa-cog */
+	flex: 0 0 $button-size;
 }
 
 .root--channel-control__active .root--active-rendition {
 	flex: 0;
+}
+
+.root--hub-control {
+  width: calc(100vw - $active-channel-peek-width);
+}
+
+.root--hub-control--switches {
+  display: flex;
+  align-items: center;
+}
+.root--hub-control--switch {
+  flex: 1;
+  display: flex;
+  /* text-align: center; */
+  height: $button-size;
+  align-items: center;
+  justify-content: center;
+  background: #eee;
+}
+.root--hub-control--switch + .root--hub-control--switch {
+  border-left: solid 1px #ddd;
+}
+.root--hub-control--switch__active {
+  background: #fff;
+}
+
+.root--hub-control--control {
+  height: calc(100vh - $button-size);
+}
+
+.root--receiver-control {
+  color: #fff;
+  background: #111;
+}
+
+.root--receiver-control .volume--label,
+.root--receiver-control .receiver--name {
+  height: calc($button-size / 1.3);
+  line-height: calc($button-size / 1.3);
 }

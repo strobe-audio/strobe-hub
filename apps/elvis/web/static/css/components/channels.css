@@ -1,5 +1,3 @@
-$channel-selector-margin: 85px;
-
 .channels {
   -moz-user-select: none;
   -webkit-user-select: none;
@@ -61,7 +59,7 @@ $channel-selector-margin: 85px;
 
 .channels-selector--list {
   flex: 1;
-  max-width: calc(100vw - $channel-selector-margin);
+  max-width: calc(100vw - $active-channel-peek-width);
 }
 
 $channel-select-border: rgba(0, 0, 0, 0.05);

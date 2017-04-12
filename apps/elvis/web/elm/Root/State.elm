@@ -51,7 +51,9 @@ initialState time =
         , showAddChannelInput = False
         , addChannelInput = Input.State.blank
         }
-    , showSelectChannel = False
+    , showHubControl = False
+    , controlChannel = True
+    , controlReceiver = False
     , viewAnimations =
         { revealChannelList = Animation.static 0
         , revealChannelControl = Animation.static 0
@@ -499,10 +501,10 @@ update action model =
             in
                 { model | configuration = configuration_ } ! []
 
-        Msg.ToggleShowChannelSelector ->
+        Msg.ToggleShowHubControl ->
             let
-                showSelectChannel =
-                    not model.showSelectChannel
+                showHubControl =
+                    not model.showHubControl
 
                 -- start slightly in the past to avoid awkward moment when
                 -- animation declares itself to be not running as the time when
@@ -524,7 +526,7 @@ update action model =
                         |> Animation.ease Ease.inOutQuart
 
                 animation =
-                    if showSelectChannel then
+                    if showHubControl then
                         makeAnimation hidden shown
                     else
                         makeAnimation shown hidden
@@ -535,7 +537,13 @@ update action model =
                 viewAnimations_ =
                     { viewAnimations | revealChannelList = animation }
             in
-                { model | showSelectChannel = showSelectChannel, viewAnimations = viewAnimations_ } ! []
+                { model | showHubControl = showHubControl, viewAnimations = viewAnimations_ } ! []
+
+        Msg.ActivateControlChannel ->
+            { model | controlChannel = True, controlReceiver = False } ! []
+
+        Msg.ActivateControlReceiver ->
+            { model | controlChannel = False, controlReceiver = True } ! []
 
 
 libraryVisible : Root.Model -> Bool

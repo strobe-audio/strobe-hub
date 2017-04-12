@@ -74,34 +74,72 @@ rootWithActiveChannel model channel =
     div
         [ id "root"
         , classList
-            [ ( "root--channel-select__active", model.showSelectChannel )
-            , ( "root--channel-select__inactive", not model.showSelectChannel )
+            [ ( "root--hub-control__active", model.showHubControl )
+            , ( "root--hub-control__inactive", not model.showHubControl )
             , ( "root--channel-control__active", showChannelControl model )
             , ( "root--channel-control__inactive", not <| showChannelControl model )
             ]
         ]
-        [ (selectChannel model channel)
+        [ (hubControl model channel)
         , (channelView model channel)
         ]
 
 
-selectChannel : Root.Model -> Channel.Model -> Html Msg
-selectChannel model channel =
+hubControl : Root.Model -> Channel.Model -> Html Msg
+hubControl model channel =
     let
         shown =
-            model.showSelectChannel
+            model.showHubControl
                 || (Animation.isRunning model.animationTime model.viewAnimations.revealChannelList)
+
+        switch : List ( String, Bool ) -> String -> Msg -> Html Msg
+        switch classes label msg =
+            div
+                [ classList classes
+                , onClick msg
+                , mapTouch (Utils.Touch.touchStart msg)
+                , mapTouch (Utils.Touch.touchEnd msg)
+                ]
+                [ text label ]
+
+        control =
+            if model.controlChannel then
+                div [ class "root--channel-list" ]
+                    [ Channels.View.channelSelector model channel ]
+            else
+                div [ class "root--receiver-control" ]
+                    [ (Receivers.View.control model) ]
     in
         case shown of
             True ->
-                div [ class "root--channel-list" ]
+                div
+                    [ class "root--hub-control" ]
                     [ div
-                        []
-                        [ Channels.View.channelSelector model channel ]
+                        [ class "root--hub-control--switches" ]
+                        [ (switch
+                            [ ( "root--hub-control--switch", True )
+                            , ( "root--hub-control--switch__channels", True )
+                            , ( "root--hub-control--switch__active", model.controlChannel )
+                            ]
+                            "Channels"
+                            Msg.ActivateControlChannel
+                          )
+                        , (switch
+                            [ ( "root--hub-control--switch", True )
+                            , ( "root--hub-control--switch__receivers", True )
+                            , ( "root--hub-control--switch__active", model.controlReceiver )
+                            ]
+                            "Receivers"
+                            Msg.ActivateControlReceiver
+                          )
+                        ]
+                    , div
+                        [ class "root--hub-control--control scrolling" ]
+                        [ control ]
                     ]
 
             False ->
-                div [ class "root--channel-list" ] []
+                div [ class "root--hub-control" ] []
 
 
 channelView : Root.Model -> Channel.Model -> Html Msg
@@ -111,7 +149,7 @@ channelView model channel =
             (Animation.animate model.animationTime model.viewAnimations.revealChannelList)
 
         left =
-            "calc(" ++ (toString position) ++ " * (100vw - 85px))"
+            "calc(" ++ (toString position) ++ " * (100vw - 55px))"
     in
         div
             [ class "root--channel", style [ ( "left", left ) ] ]
@@ -127,9 +165,9 @@ channelViewOverlay : Html Msg
 channelViewOverlay =
     div
         [ class "root--channel-list-toggle"
-        , onClick (Msg.ToggleShowChannelSelector)
-        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
-        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
+        , onClick (Msg.ToggleShowHubControl)
+        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowHubControl))
+        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowHubControl))
         ]
         []
 
@@ -282,14 +320,14 @@ switchView model channel =
             div
                 [ classList
                     [ ( "root--switch-view--btn", True )
-                    , ( "root--switch-view--btn__active", model.showSelectChannel )
+                    , ( "root--switch-view--btn__active", model.showHubControl )
                     , ( "root--switch-view--btn__SelectChannel", True )
                     ]
-                , onClick (Msg.ToggleShowChannelSelector)
-                , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
-                , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
+                , onClick (Msg.ToggleShowHubControl)
+                , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowHubControl))
+                , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowHubControl))
                 ]
-                [ text "Channels" ]
+                []
     in
         div
             [ class "root--switch-view" ]

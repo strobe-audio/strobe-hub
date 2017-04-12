@@ -18,6 +18,18 @@ import Msg exposing (Msg)
 import Utils.Touch exposing (onSingleTouch)
 
 
+control : Root.Model -> Html Msg
+control model =
+    let
+        receivers =
+            Receiver.sortByActive model.receivers
+
+        receiverEntry receiver =
+            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver)
+    in
+        div [] (List.map receiverEntry receivers)
+
+
 attached : Root.Model -> Channel.Model -> Html Msg
 attached model channel =
     let
@@ -26,7 +38,7 @@ attached model channel =
                 |> Receiver.sortByActive
 
         receiverEntry receiver =
-            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver channel)
+            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver)
     in
         div [ class "receivers--list" ] (List.map receiverEntry receivers)
 
