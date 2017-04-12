@@ -13,11 +13,13 @@ import Channels.View
 import Library.View
 import Receiver
 import Receivers.View
+import Rendition
 import Rendition.View
 import Source.View
 import Json.Decode as Json
 import Msg exposing (Msg)
 import Utils.Touch exposing (onUnifiedClick)
+import Utils.Css
 import Notification.View
 import State
 import Spinner
@@ -74,34 +76,72 @@ rootWithActiveChannel model channel =
     div
         [ id "root"
         , classList
-            [ ( "root--channel-select__active", model.showSelectChannel )
-            , ( "root--channel-select__inactive", not model.showSelectChannel )
+            [ ( "root--hub-control__active", model.showHubControl )
+            , ( "root--hub-control__inactive", not model.showHubControl )
             , ( "root--channel-control__active", showChannelControl model )
             , ( "root--channel-control__inactive", not <| showChannelControl model )
             ]
         ]
-        [ (selectChannel model channel)
+        [ (hubControl model channel)
         , (channelView model channel)
         ]
 
 
-selectChannel : Root.Model -> Channel.Model -> Html Msg
-selectChannel model channel =
+hubControl : Root.Model -> Channel.Model -> Html Msg
+hubControl model channel =
     let
         shown =
-            model.showSelectChannel
+            model.showHubControl
                 || (Animation.isRunning model.animationTime model.viewAnimations.revealChannelList)
+
+        switch : List ( String, Bool ) -> String -> Msg -> Html Msg
+        switch classes label msg =
+            div
+                [ classList classes
+                , onClick msg
+                , mapTouch (Utils.Touch.touchStart msg)
+                , mapTouch (Utils.Touch.touchEnd msg)
+                ]
+                [ text label ]
+
+        control =
+            if model.controlChannel then
+                div [ class "root--channel-list" ]
+                    [ Channels.View.channelSelector model channel ]
+            else
+                div [ class "root--receiver-control" ]
+                    [ (Receivers.View.control model) ]
     in
         case shown of
             True ->
-                div [ class "root--channel-list" ]
+                div
+                    [ class "root--hub-control" ]
                     [ div
-                        []
-                        [ Channels.View.channelSelector model channel ]
+                        [ class "root--hub-control--switches" ]
+                        [ (switch
+                            [ ( "root--hub-control--switch", True )
+                            , ( "root--hub-control--switch__channels", True )
+                            , ( "root--hub-control--switch__active", model.controlChannel )
+                            ]
+                            "Channels"
+                            Msg.ActivateControlChannel
+                          )
+                        , (switch
+                            [ ( "root--hub-control--switch", True )
+                            , ( "root--hub-control--switch__receivers", True )
+                            , ( "root--hub-control--switch__active", model.controlReceiver )
+                            ]
+                            "Receivers"
+                            Msg.ActivateControlReceiver
+                          )
+                        ]
+                    , div
+                        [ class "root--hub-control--control scrolling" ]
+                        [ control ]
                     ]
 
             False ->
-                div [ class "root--channel-list" ] []
+                div [ class "root--hub-control" ] []
 
 
 channelView : Root.Model -> Channel.Model -> Html Msg
@@ -111,7 +151,7 @@ channelView model channel =
             (Animation.animate model.animationTime model.viewAnimations.revealChannelList)
 
         left =
-            "calc(" ++ (toString position) ++ " * (100vw - 85px))"
+            "calc(" ++ (toString position) ++ " * (100vw - 55px))"
     in
         div
             [ class "root--channel", style [ ( "left", left ) ] ]
@@ -127,9 +167,9 @@ channelViewOverlay : Html Msg
 channelViewOverlay =
     div
         [ class "root--channel-list-toggle"
-        , onClick (Msg.ToggleShowChannelSelector)
-        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
-        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
+        , onClick (Msg.ToggleShowHubControl)
+        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowHubControl))
+        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowHubControl))
         ]
         []
 
@@ -226,18 +266,16 @@ rendition model channel =
                     div [ class "channel--rendition" ]
                         [ Html.map (always Msg.NoOp) (Rendition.View.info rendition channel.playing)
                         ]
-
-        mapTap a =
-            Html.Attributes.map Msg.SingleTouch a
     in
         div
-            [ class "channel--playback"
-            , onClick Msg.ToggleShowChannelControl
-            , mapTap (Utils.Touch.touchStart Msg.ToggleShowChannelControl)
-            , mapTap (Utils.Touch.touchEnd Msg.ToggleShowChannelControl)
-            ]
-            [ div
-                [ class "channel--info" ]
+            [ class "channel--playback" ]
+            [ (renditionCoverAndControl model maybeRendition)
+            , div
+                [ class "channel--info"
+                , onClick Msg.ToggleShowChannelControl
+                , mapTouch (Utils.Touch.touchStart Msg.ToggleShowChannelControl)
+                , mapTouch (Utils.Touch.touchEnd Msg.ToggleShowChannelControl)
+                ]
                 [ div
                     [ class "channel--info--name" ]
                     [ div
@@ -249,6 +287,34 @@ rendition model channel =
                         ]
                     ]
                 , rendition
+                ]
+            ]
+
+
+renditionCoverAndControl : Root.Model -> Maybe Rendition.Model -> Html Msg
+renditionCoverAndControl model maybeRendition =
+    let
+        shown =
+            showChannelControl model
+
+        coverImage =
+            maybeRendition
+                |> Maybe.map (\r -> r.source.cover_image)
+                |> Maybe.withDefault ""
+    in
+        div
+            [ class "root--rendition-cover-control" ]
+            [ div
+                [ class "root--rendition-cover-control--window" ]
+                [ div
+                    [ class "rendition--cover__small"
+                    , style [ ( "backgroundImage", (Utils.Css.url coverImage) ) ]
+                    , onClick Msg.ToggleShowChannelControl
+                    , mapTouch (Utils.Touch.touchStart Msg.ToggleShowChannelControl)
+                    , mapTouch (Utils.Touch.touchEnd Msg.ToggleShowChannelControl)
+                    ]
+                    []
+                , (toggleHubControlButton model)
                 ]
             ]
 
@@ -272,28 +338,30 @@ activeView model channel =
             [ view ]
 
 
+toggleHubControlButton : Root.Model -> Html Msg
+toggleHubControlButton model =
+    div
+        [ classList
+            [ ( "root--switch-view--btn", True )
+            , ( "root--switch-view--btn__active", model.showHubControl )
+            , ( "root--switch-view--btn__SelectChannel", True )
+            ]
+        , onClick (Msg.ToggleShowHubControl)
+        , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowHubControl))
+        , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowHubControl))
+        ]
+        []
+
+
 switchView : Root.Model -> Channel.Model -> Html Msg
 switchView model channel =
     let
         states =
             (List.map (switchViewButton model channel) State.viewModes)
-
-        switchChannel =
-            div
-                [ classList
-                    [ ( "root--switch-view--btn", True )
-                    , ( "root--switch-view--btn__active", model.showSelectChannel )
-                    , ( "root--switch-view--btn__SelectChannel", True )
-                    ]
-                , onClick (Msg.ToggleShowChannelSelector)
-                , mapTouch (Utils.Touch.touchStart (Msg.ToggleShowChannelSelector))
-                , mapTouch (Utils.Touch.touchEnd (Msg.ToggleShowChannelSelector))
-                ]
-                [ text "Channels" ]
     in
         div
             [ class "root--switch-view" ]
-            (switchChannel :: states)
+            ((toggleHubControlButton model) :: states)
 
 
 playlistDuration : Channel.Model -> Html Msg

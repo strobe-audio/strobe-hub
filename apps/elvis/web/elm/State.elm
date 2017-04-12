@@ -44,7 +44,7 @@ viewLabel mode =
             "Library"
 
         ViewSettings ->
-            "Settings"
+            ""
 
 
 viewModes : List ViewMode

@@ -9,6 +9,7 @@ $padding: 6px;
 
 
 $button-size: 55px;
+$active-channel-peek-width: 55px;
 
 $active-channel-bar-height: 14px;
 $top-bar-height: calc($button-size);
@@ -19,6 +20,7 @@ $channel-icon: "\f140";
 
 $channels-view-animation-duration: 220ms;
 $channels-view-width: calc(100vw - $button-size);
+
 
 @custom-media --mobile (max-width: 800px);
 @custom-media --desktop (min-width: 801px);
