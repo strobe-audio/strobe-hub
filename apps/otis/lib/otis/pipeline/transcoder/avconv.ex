@@ -1,24 +1,17 @@
-defmodule Otis.Transcoders.Avconv do
+defmodule Otis.Pipeline.Transcoder.Avconv do
   @moduledoc """
   Provides a convenient way to transcode any music input stream
-  into PCM in the approved format.
+  into PCM in the approved format using avconv.
   """
 
   @doc """
-  Takes an input stream of the given format type and returns
-  an PCM output stream
+  Takes an input stream and an argument list describing the input stream format
+  and returns an PCM output stream
   """
   def transcode(inputstream, input_args, offset_ms, config) do
     opts = [out: :stream, in: inputstream]
     proc = %{out: outstream} = ExternalProcess.spawn(executable(), params(input_args, offset_ms, config), opts)
     {proc, outstream}
-  end
-
-  def stop(nil) do
-    true
-  end
-  def stop(process) do
-    ExternalProcess.stop(process)
   end
 
   defp params(input_args, offset_ms, config) do
@@ -36,7 +29,7 @@ defmodule Otis.Transcoders.Avconv do
     to_string(ms / 1000.0)
   end
 
-  defp executable do
+  def executable do
     System.find_executable("avconv")
   end
 end
