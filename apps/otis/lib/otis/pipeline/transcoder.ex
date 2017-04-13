@@ -4,7 +4,11 @@ defmodule Otis.Pipeline.Transcoder do
   require Logger
 
   alias Otis.Library.Source
-  alias Otis.Transcoders.Avconv
+
+  @transcoders [
+    Otis.Pipeline.Transcoder.Ffmpeg,
+    Otis.Pipeline.Transcoder.Avconv,
+  ]
 
   defmodule S do
     defstruct [
@@ -51,7 +55,7 @@ defmodule Otis.Pipeline.Transcoder do
 
   def terminate(reason, state) do
     Logger.debug "#{__MODULE__} terminate #{inspect reason}"
-    Avconv.stop(state.transcoder)
+    stop_transcoder(state.transcoder)
     :ok
   end
 
@@ -60,8 +64,23 @@ defmodule Otis.Pipeline.Transcoder do
       :passthrough ->
         %S{ state | transcoder: nil, outputstream: state.inputstream }
       args ->
-        {pid, outputstream} = Avconv.transcode(state.inputstream, args, state.playback_position, config)
+        {pid, outputstream} = transcoder_module().transcode(state.inputstream, args, state.playback_position, config)
         %S{ state | transcoder: pid, outputstream: outputstream }
     end
+  end
+
+  def transcoder_module do
+    @transcoders |> Enum.find(&installed?/1)
+  end
+
+  def installed?(module) do
+    !is_nil(module.executable)
+  end
+
+  def stop_transcoder(nil) do
+    true
+  end
+  def stop_transcoder(process) do
+    ExternalProcess.stop(process)
   end
 end
