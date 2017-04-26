@@ -154,7 +154,7 @@ update action model maybeChannelId =
                     (Utils.Touch.update te model.touches)
             in
                 case Utils.Touch.testEvent te touches of
-                    Just (Utils.Touch.Touch msg) ->
+                    Just (Utils.Touch.TouchStart msg) ->
                         { model | scrollMomentum = Nothing, touches = { touches | savedMomentum = model.scrollMomentum } } ! []
 
                     Just (Utils.Touch.Swipe (Utils.Touch.Y) direction dy y msg) ->
