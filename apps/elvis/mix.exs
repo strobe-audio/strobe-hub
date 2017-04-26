@@ -57,6 +57,7 @@ defmodule Elvis.Mixfile do
      {:otis_library_airplay, in_umbrella: true},
      {:distillery, "~> 1.0"},
      {:logger_papertrail_backend, "~> 0.1.0"},
+     {:gen_stage, "~> 0.1"},
    ]
   end
 end

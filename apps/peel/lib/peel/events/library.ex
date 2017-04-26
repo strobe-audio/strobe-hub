@@ -1,5 +1,5 @@
 defmodule Peel.Events.Library do
-  use     GenEvent
+  use     GenStage
   require Logger
 
   alias Peel.Album
@@ -7,10 +7,6 @@ defmodule Peel.Events.Library do
   alias Peel.Track
 
   use  Otis.Library, namespace: "peel"
-
-  def event_handler do
-    {__MODULE__, []}
-  end
 
   def setup(state) do
     # Copy my placeholder here

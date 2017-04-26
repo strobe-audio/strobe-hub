@@ -47,6 +47,7 @@ defmodule Peel.Mixfile do
       {:floki, "~> 0.11.0"},
       {:poison, "~> 1.0"},
       {:otis, in_umbrella: true, only: :test},
+      {:gen_stage, "~> 0.1"},
     ]
   end
 end

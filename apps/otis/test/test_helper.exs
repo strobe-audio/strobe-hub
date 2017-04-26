@@ -118,14 +118,27 @@ end
 
 
 defmodule MessagingHandler do
-  use GenEvent
+  use GenStage
 
   def attach do
-    :ok = Otis.State.Events.add_mon_handler(__MODULE__, self())
+    {:ok, _pid} = start_link(self())
+    :ok
+  end
+
+  def start_link(parent) do
+    GenStage.start_link(__MODULE__, parent)
   end
 
   def init(parent) do
-    {:ok, parent}
+    {:consumer, parent, subscribe_to: Otis.Events.producer}
+  end
+
+  def handle_events([], _from, state) do
+    {:noreply, [], state}
+  end
+  def handle_events([event|events], from, state) do
+    {:ok, state} = handle_event(event, state)
+    handle_events(events, from, state)
   end
 
   def handle_event(event, parent) do
@@ -136,7 +149,7 @@ defmodule MessagingHandler do
   # Allows tests to wait for successful removal of the handler
   #
   #    on_exit fn ->
-  #      Otis.State.Events.remove_handler(MessagingHandler, self())
+  #      Otis.Events.remove_handler(MessagingHandler, self())
   #      assert_receive :remove_messaging_handler, 200
   #    end
 

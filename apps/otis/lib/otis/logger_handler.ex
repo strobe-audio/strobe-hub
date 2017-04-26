@@ -1,5 +1,5 @@
 defmodule Otis.LoggerHandler do
-  use     GenEvent
+  use     GenStage
   require Logger
 
   @log_progress_every 100
@@ -14,8 +14,20 @@ defmodule Otis.LoggerHandler do
     :receiver_volume_change,
   ]
 
+  def start_link do
+    GenStage.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
   def init(id) do
-    {:ok, %{id: id, progress_count: 0}}
+    {:consumer, %{id: id, progress_count: 0}, subscribe_to: Otis.Events.producer}
+  end
+
+  def handle_events([], _from,state) do
+    {:noreply, [], state}
+  end
+  def handle_events([event|events], from, state) do
+    {:ok, state} = handle_event(event, state)
+    handle_events(events, from, state)
   end
 
   for evt <- @silent_events do

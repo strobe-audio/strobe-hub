@@ -1,13 +1,25 @@
 
 defmodule Otis.State.Persistence.Channels do
-  use     GenEvent
+  use     GenStage
   require Logger
 
   alias Otis.State.Channel
   alias Otis.State.Repo
 
-  def register do
-    Otis.State.Events.add_mon_handler(__MODULE__, [])
+  def start_link do
+    GenStage.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def init(_opts) do
+    {:consumer, [], subscribe_to: Otis.Events.producer}
+  end
+
+  def handle_events([], _from,state) do
+    {:noreply, [], state}
+  end
+  def handle_events([event|events], from, state) do
+    {:ok, state} = handle_event(event, state)
+    handle_events(events, from, state)
   end
 
   def handle_event({:channel_added, [id, %{name: name}]}, state) do

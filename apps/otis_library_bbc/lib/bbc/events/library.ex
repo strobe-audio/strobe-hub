@@ -1,20 +1,10 @@
 defmodule BBC.Events.Library do
-  use     GenEvent
+  use     GenStage
   require Logger
   alias   BBC.Channel
 
 
   use  Otis.Library, namespace: BBC.library_id()
-
-  if Code.ensure_compiled?(Otis.State.Events) do
-    def register do
-      Otis.State.Events.add_mon_handler(__MODULE__, [])
-    end
-  else
-    def register do
-      :ok
-    end
-  end
 
   if Code.ensure_compiled?(Otis.Media) do
     def setup(state) do

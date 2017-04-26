@@ -36,7 +36,7 @@ defmodule Otis.Channels do
         nil
       pid when is_pid(pid) ->
         response = Supervisor.terminate_child(@supervisor, whereis_name(id))
-        Otis.State.Events.notify({:channel_removed, [id]})
+        Otis.Events.notify({:channel_removed, [id]})
         response
     end
   end
@@ -108,7 +108,7 @@ defmodule Otis.Channels do
   end
 
   def rename(id, name) when is_binary(id) do
-    Otis.State.Events.notify({:channel_rename, [id, name]})
+    Otis.Events.notify({:channel_rename, [id, name]})
   end
 
   def clear(id) when is_binary(id) do
@@ -123,7 +123,7 @@ defmodule Otis.Channels do
     pid
   end
   defp notify(pid, :create, channel) do
-    Otis.State.Events.notify({:channel_added, [channel.id, channel]})
+    Otis.Events.notify({:channel_added, [channel.id, channel]})
     pid
   end
 

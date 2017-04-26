@@ -30,7 +30,7 @@ defmodule Otis.Persistence.ReceiversTest do
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
-    Otis.State.Events.sync_notify {:receiver_volume_change, [id, 0.98]}
+    Otis.Events.sync_notify {:receiver_volume_change, [id, 0.98]}
     assert_receive {:receiver_volume_change, [^id, 0.98]}
     record = Otis.State.Receiver.find id
     assert record.volume == 0.98
@@ -80,7 +80,7 @@ defmodule Otis.Persistence.ReceiversTest do
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34, muted: false)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
-    Otis.State.Events.sync_notify {:receiver_muted, [id, true]}
+    Otis.Events.sync_notify {:receiver_muted, [id, true]}
     assert_receive {:receiver_muted, [^id, true]}
     record = Otis.State.Receiver.find id
     assert record.muted == true

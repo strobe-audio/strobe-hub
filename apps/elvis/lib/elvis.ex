@@ -9,7 +9,9 @@ defmodule Elvis do
     children = [
       # Start the endpoint when the application starts
       supervisor(Elvis.Endpoint, []),
-      worker(Elvis.Events, []),
+      # worker(Elvis.Events, []),
+      worker(Elvis.Events.Broadcast, []),
+      worker(Elvis.Events.Startup, []),
       # Here you could define other workers and supervisors as children
       # worker(Elvis.Worker, [arg1, arg2, arg3]),
       # XXX: Needs to be last

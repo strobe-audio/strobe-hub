@@ -1,14 +1,26 @@
 
 defmodule Otis.State.Persistence.Receivers do
-  use     GenEvent
+  use     GenStage
   require Logger
 
   alias Otis.State.Receiver
   alias Otis.State.Channel
   alias Otis.State.Repo
 
-  def register do
-    Otis.State.Events.add_mon_handler(__MODULE__, [])
+  def start_link do
+    GenStage.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def init(_opts) do
+    {:consumer, [], subscribe_to: Otis.Events.producer}
+  end
+
+  def handle_events([], _from, state) do
+    {:noreply, [], state}
+  end
+  def handle_events([event|events], from, state) do
+    {:ok, state} = handle_event(event, state)
+    handle_events(events, from, state)
   end
 
   def handle_event({:receiver_started, [id]}, state) do
@@ -74,7 +86,7 @@ defmodule Otis.State.Persistence.Receivers do
     # Can happen in tests
   end
   defp receiver_started(receiver, id) do
-    Otis.State.Events.notify({:receiver_joined, [id, receiver.channel_id, receiver]})
+    Otis.Events.notify({:receiver_joined, [id, receiver.channel_id, receiver]})
   end
 
   # if neither the receiver nor the given channel are in the db, receiver at this

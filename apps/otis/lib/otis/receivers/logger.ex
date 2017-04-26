@@ -21,8 +21,8 @@ defmodule Otis.Receivers.Logger do
   end
 
   def handle_info({:udp, _socket, addr, _port, msg}, state) do
-    ip = addr |> Tuple.to_list |> Enum.join(".")
-    Logger.log(:info, String.trim_trailing(msg), [ip: ip])
+  #   ip = addr |> Tuple.to_list |> Enum.join(".")
+  #   Logger.log(:info, String.trim_trailing(msg), [ip: ip])
     {:noreply, state}
   end
 

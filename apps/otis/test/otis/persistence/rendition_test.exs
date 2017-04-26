@@ -85,7 +85,7 @@ defmodule Otis.Persistence.RenditionTest do
   test "a source played event deletes the corresponding db record", context do
     Playlist.append(context.playlist, [TestSource.new, TestSource.new])
     {:ok, [rendition1, rendition2]} = Playlist.list(context.playlist)
-    Otis.State.Events.notify({:rendition_changed, [context.channel.id, rendition1.id, rendition2.id]})
+    Otis.Events.notify({:rendition_changed, [context.channel.id, rendition1.id, rendition2.id]})
     rendition1_id = rendition1.id
     assert_receive {:old_rendition_removed, [^rendition1_id]}
     [record2] = Otis.State.Rendition.all
@@ -98,10 +98,10 @@ defmodule Otis.Persistence.RenditionTest do
   test "a final source played event leaves the source list empty", context do
     Playlist.append(context.playlist, [TestSource.new, TestSource.new])
     {:ok, [rendition1, rendition2]} = Playlist.list(context.playlist)
-    Otis.State.Events.notify({:rendition_changed, [context.channel.id, rendition1.id, rendition2.id]})
+    Otis.Events.notify({:rendition_changed, [context.channel.id, rendition1.id, rendition2.id]})
     [rendition1_id, rendition2_id] = [rendition1.id, rendition2.id]
     assert_receive {:old_rendition_removed, [^rendition1_id]}
-    Otis.State.Events.notify({:rendition_changed, [context.channel.id, rendition2_id, nil]})
+    Otis.Events.notify({:rendition_changed, [context.channel.id, rendition2_id, nil]})
     assert_receive {:old_rendition_removed, [^rendition2_id]}
     [] = Otis.State.Rendition.all
   end
@@ -114,7 +114,7 @@ defmodule Otis.Persistence.RenditionTest do
     ids = [id1, id2, id3, id4] = [rendition1.id, rendition2.id, rendition3.id, rendition4.id]
     positions = ids |> Enum.map(fn(id) -> Otis.State.Rendition.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1, 2, 3] == positions
-    Otis.State.Events.notify({:rendition_changed, [context.channel.id, id1, id2]})
+    Otis.Events.notify({:rendition_changed, [context.channel.id, id1, id2]})
     assert_receive {:old_rendition_removed, [^id1]}
     ids = [id2, id3, id4]
     positions = ids |> Enum.map(fn(id) -> Otis.State.Rendition.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
@@ -157,7 +157,7 @@ defmodule Otis.Persistence.RenditionTest do
     renditions = sources |> Enum.with_index |> Enum.map(fn({source, position}) ->
       Playlist.make_rendition(source, position, context.channel.id)
     end)
-    Otis.State.Events.notify {:new_renditions, [context.channel.id, renditions]}
+    Otis.Events.notify {:new_renditions, [context.channel.id, renditions]}
     assert_receive {:new_rendition_created, _}
     assert_receive {:new_rendition_created, _}
     {:ok, []} = Playlist.list(context.playlist)
@@ -175,7 +175,7 @@ defmodule Otis.Persistence.RenditionTest do
     {:ok, renditions} = Playlist.list(context.playlist)
     assert [0, 0] == Enum.map renditions, fn(r) -> r.playback_position end
     [r1, _] = renditions
-    Otis.State.Events.sync_notify({:rendition_progress, [context.channel.id, r1.id, 1000, 2000]})
+    Otis.Events.sync_notify({:rendition_progress, [context.channel.id, r1.id, 1000, 2000]})
     rendition = Otis.State.Rendition.find(r1.id)
     assert rendition.playback_position == 1000
   end

@@ -10,7 +10,7 @@ defmodule BBC do
 
     children = [
       supervisor(HLS.Supervisor, [], []),
-      worker(BBC.Events, []),
+      worker(BBC.Events.Library, []),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

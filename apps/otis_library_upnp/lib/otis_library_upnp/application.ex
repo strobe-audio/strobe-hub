@@ -8,7 +8,7 @@ defmodule Otis.Library.UPNP.Application do
 
     children = [
       worker(Otis.Library.UPNP.Discovery, []),
-      worker(Otis.Library.UPNP.Events, []),
+      worker(Otis.Library.UPNP.Events.Library, []),
     ]
 
     opts = [strategy: :one_for_one, name: Otis.Library.UPNP.Supervisor]
