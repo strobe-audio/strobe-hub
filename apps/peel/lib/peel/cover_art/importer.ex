@@ -52,12 +52,12 @@ defmodule Peel.CoverArt.Importer do
   end
 
   def progress({:started, nil}) do
-    Otis.State.Events.notify({:cover_art_extraction, [:start]})
+    Otis.Events.notify({:cover_art_extraction, [:start]})
   end
   def progress({:finished, _results}) do
-    Otis.State.Events.notify({:cover_art_extraction, [:finish]})
+    Otis.Events.notify({:cover_art_extraction, [:finish]})
   end
   def progress({:progress, count}) do
-    Otis.State.Events.notify({:cover_art_extraction, [:progress, count]})
+    Otis.Events.notify({:cover_art_extraction, [:progress, count]})
   end
 end

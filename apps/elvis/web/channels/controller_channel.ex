@@ -7,7 +7,7 @@ defmodule Elvis.ControllerChannel do
     # Don't send the socket with the event because we can't send anything until
     # the channel has been joined (which happens when this function returns)
     # TODO: can use this event to send wakeup calls to the receivers
-    Otis.State.Events.notify({:controller_connect, [controller_type]})
+    Otis.Events.notify({:controller_connect, [controller_type]})
     send self(), :controller_join
     socket = assign_volume_change(socket, now())
     {:ok, socket}
@@ -73,22 +73,22 @@ defmodule Elvis.ControllerChannel do
   end
 
   def handle_in("library", [channel_id, action, query], socket) do
-    Otis.State.Events.notify({:library_request, [channel_id, action, socket, query]})
+    Otis.Events.notify({:library_request, [channel_id, action, socket, query]})
     {:noreply, socket}
   end
 
   def handle_in("retrieve_settings", app, socket) do
-    Otis.State.Events.notify({:retrieve_settings, [app, socket]})
+    Otis.Events.notify({:retrieve_settings, [app, socket]})
     {:noreply, socket}
   end
 
   def handle_in("save_settings", settings, socket) do
-    Otis.State.Events.notify({:save_settings, [settings]})
+    Otis.Events.notify({:save_settings, [settings]})
     {:noreply, socket}
   end
 
   def handle_info(:controller_join, socket) do
-    Otis.State.Events.notify({:controller_join, [socket]})
+    Otis.Events.notify({:controller_join, [socket]})
     {:noreply, socket}
   end
 

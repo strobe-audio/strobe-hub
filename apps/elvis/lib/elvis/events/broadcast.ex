@@ -4,24 +4,26 @@ defmodule Elvis.Events.Broadcast do
   controllers in the necessary format.
   """
 
-  use     GenEvent
+  use     GenStage
   require Logger
 
   # Send progress updates every @progress_interval times
   @progress_interval 5 # * 100 ms intervals
 
-  if Code.ensure_loaded?(Otis.State.Events) do
-    def register do
-      Otis.State.Events.add_mon_handler(__MODULE__, %{ progress_count: %{} })
-    end
-  else
-    def register do
-      :ok
-    end
+  def start_link do
+    GenStage.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def handle_event({:library_request, _}, state) do
-    {:ok, state}
+  def init(_opts) do
+    {:consumer, %{progress_count: %{}}, subscribe_to: Otis.Library.Events.producer}
+  end
+
+  def handle_events([], _from,state) do
+    {:noreply, [], state}
+  end
+  def handle_events([event|events], from, state) do
+    {:ok, state} = handle_event(event, state)
+    handle_events(events, from, state)
   end
 
   def handle_event({:library_response, [id, url, response, socket]}, state) do

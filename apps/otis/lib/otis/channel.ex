@@ -204,7 +204,7 @@ defmodule Otis.Channel do
   end
 
   defp event!(state, name, params) do
-    Otis.State.Events.notify({name, [state.id, params]})
+    Otis.Events.notify({name, [state.id, params]})
   end
 
   defp toggle_state(%S{state: :play} = state) do

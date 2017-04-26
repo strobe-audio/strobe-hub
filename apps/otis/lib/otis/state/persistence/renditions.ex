@@ -1,12 +1,24 @@
 defmodule Otis.State.Persistence.Renditions do
-  use     GenEvent
+  use     GenStage
   require Logger
 
   alias Otis.State.Rendition
   alias Otis.State.Repo
 
-  def register do
-    Otis.State.Events.add_mon_handler(__MODULE__, [])
+  def start_link do
+    GenStage.start_link(__MODULE__, [], name: __MODULE__)
+  end
+
+  def init(_opts) do
+    {:consumer, [], subscribe_to: Otis.Events.producer}
+  end
+
+  def handle_events([], _from, state) do
+    {:noreply, [], state}
+  end
+  def handle_events([event|events], from, state) do
+    {:ok, state} = handle_event(event, state)
+    handle_events(events, from, state)
   end
 
   def handle_event({:new_renditions, [_channel_id, renditions]}, state) do
@@ -110,7 +122,7 @@ defmodule Otis.State.Persistence.Renditions do
   end
 
   defp notify(rendition, event) do
-    Otis.State.Events.notify({event, [rendition]})
+    Otis.Events.notify({event, [rendition]})
     rendition
   end
 end

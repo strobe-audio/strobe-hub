@@ -9,7 +9,7 @@ defmodule Otis.Library.Airplay.Application do
     inputs = Enum.map(Airplay.ids(), &input(&1))
 
     other_children = [
-      worker(Otis.Library.Airplay.Events, []),
+      worker(Otis.Library.Airplay.Events.Library, []),
     ]
 
     opts = [strategy: :one_for_one, name: Airplay.Supervisor]

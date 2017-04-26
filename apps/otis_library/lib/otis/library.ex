@@ -8,6 +8,22 @@ defmodule Otis.Library do
       @namespace "#{unquote(namespace)}"
       @protocol "#{unquote(namespace)}:"
 
+      def start_link do
+        GenStage.start_link(__MODULE__, [], name: __MODULE__)
+      end
+
+      def init(_opts) do
+        {:consumer, [], subscribe_to: Otis.Library.Events.producer}
+      end
+
+      def handle_events([], _from, state) do
+        {:noreply, [], state}
+      end
+      def handle_events([event|events], from, state) do
+        {:ok, state} = handle_event(event, state)
+        handle_events(events, from, state)
+      end
+
       def handle_event({:otis_started, _args}, state) do
         {:ok, setup(state)}
       end
@@ -27,9 +43,9 @@ defmodule Otis.Library do
         {:ok, state}
       end
 
-      if Code.ensure_compiled?(Otis.State.Events) do
+      if Code.ensure_compiled?(Otis.Events) do
         def notify_event(event) do
-          Otis.State.Events.notify(event)
+          Otis.Events.notify(event)
         end
       else
         def notify_event(event) do

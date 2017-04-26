@@ -11,8 +11,7 @@ defmodule Otis.Startup do
     Application.get_env(:otis, Otis.State.Repo) |> Keyword.get(:database) |> ensure_db_path()
     :ok = state |> start_channels(channels_supervisor)
     :ok = state |> restore_source_lists(channels_supervisor)
-    Otis.State.Events.add_handler(Otis.LoggerHandler, :events)
-    Otis.State.Events.notify({:otis_started, []})
+    Otis.Events.notify({:otis_started, []})
     :ignore
   end
 

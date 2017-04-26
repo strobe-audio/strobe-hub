@@ -1,15 +1,11 @@
 defmodule Otis.Library.Airplay.Events.Library do
-  use     GenEvent
+  use     GenStage
   require Logger
 
   @ns "airplay"
 
   use  Otis.Library, namespace: @ns
   alias Otis.Library.Airplay
-
-  def event_handler do
-    {__MODULE__, []}
-  end
 
   if Code.ensure_compiled?(Otis.Media) do
     def setup(state) do

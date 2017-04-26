@@ -5,7 +5,7 @@ defmodule Otis.Pipeline.Playlist do
   """
 
   alias Otis.State.Rendition
-  alias Otis.State.Events
+  alias Otis.Events
 
   def next(pid) do
     GenServer.call(pid, :next)

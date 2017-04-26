@@ -70,6 +70,7 @@ defmodule Otis.Mixfile do
       {:gproc, "~> 0.5.0"},
       {:mdns, "~> 0.1.5"},
       {:external_process, in_umbrella: true},
+      {:gen_stage, "~> 0.1"},
     ]
   end
 end

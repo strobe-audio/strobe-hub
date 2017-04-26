@@ -38,12 +38,12 @@ defmodule Otis.Receivers.Channels do
   end
 
   def notify_add_receiver(receiver, channel) do
-    Otis.State.Events.notify({:receiver_added, [channel.id, receiver.id]})
+    Otis.Events.notify({:receiver_added, [channel.id, receiver.id]})
     buffer_receiver(receiver, channel)
   end
 
   def notify_remove_receiver(receiver, channel) do
-    Otis.State.Events.notify({:receiver_removed, [channel.id, receiver.id]})
+    Otis.Events.notify({:receiver_removed, [channel.id, receiver.id]})
     notify_subscribers(receiver, channel, :receiver_left)
   end
 

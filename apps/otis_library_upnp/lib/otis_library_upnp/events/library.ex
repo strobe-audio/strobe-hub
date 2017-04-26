@@ -1,5 +1,5 @@
 defmodule Otis.Library.UPNP.Events.Library do
-  use     GenEvent
+  use     GenStage
   require Logger
 
   @ns "upnp"
@@ -7,10 +7,6 @@ defmodule Otis.Library.UPNP.Events.Library do
   use  Otis.Library, namespace: @ns
   alias Otis.Library.UPNP
   alias Otis.Library.UPNP.{Container, Item, Media}
-
-  def event_handler do
-    {__MODULE__, []}
-  end
 
   def setup(state) do
     state
