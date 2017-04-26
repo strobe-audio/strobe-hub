@@ -187,6 +187,10 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
     content: "\f144";
   }
 }
+.channels-selector--channel-info {
+  flex: 1;
+  display: flex;
+}
 .channels-selector--channel--name {
   flex: 1;
 	padding: 0 $padding;

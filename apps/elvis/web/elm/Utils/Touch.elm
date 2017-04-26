@@ -30,7 +30,7 @@ type Direction
 
 
 type Gesture msg
-    = Touch msg
+    = TouchStart msg
     | Tap msg
     | LongPress msg
     | Swipe Axis Direction Float Float msg
@@ -214,7 +214,7 @@ testEvent : E msg -> Model -> Maybe (Gesture msg)
 testEvent event model =
     case event of
         Start touch msg ->
-            Just (Touch msg)
+            Just (TouchStart msg)
 
         -- this could return e.g. long-click or swipe events
         Actual touch msg ->

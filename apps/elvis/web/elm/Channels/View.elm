@@ -107,15 +107,8 @@ channelChoice model receivers activeChannel channelSummary =
                 time ->
                     Source.View.durationString time
 
-        onClickChoose =
-            let
-                msg =
-                    (Msg.ActivateChannel channel)
-            in
-                [ mapTouch (Utils.Touch.touchStart msg)
-                , mapTouch (Utils.Touch.touchEnd msg)
-                , onClick msg
-                ]
+        msg =
+            (Msg.ActivateChannel channel)
 
         isActive =
             channelSummary.id == activeChannel.id
@@ -153,17 +146,22 @@ channelChoice model receivers activeChannel channelSummary =
                         ]
                     ]
                     [ channelPlayPauseBtn model channel ]
-                , div ((class "channels-selector--channel--name") :: onClickChoose) [ text channel.name ]
-                , div ((class "channels-selector--channel--duration duration") :: onClickChoose) [ text duration ]
                 , div
-                    ((classList
-                        [ ( "channels-selector--channel--receivers", True )
-                        , ( "channels-selector--channel--receivers__empty", channelSummary.receiverCount == 0 )
+                    [ class "channels-selector--channel-info"
+                    , mapTouch (Utils.Touch.touchStart msg)
+                    , mapTouch (Utils.Touch.touchEnd msg)
+                    , onClick msg
+                    ]
+                    [ div [ class "channels-selector--channel--name" ] [ text channel.name ]
+                    , div [ class "channels-selector--channel--duration duration" ] [ text duration ]
+                    , div
+                        [ classList
+                            [ ( "channels-selector--channel--receivers", True )
+                            , ( "channels-selector--channel--receivers__empty", channelSummary.receiverCount == 0 )
+                            ]
                         ]
-                     )
-                        :: onClickChoose
-                    )
-                    [ text (toString channelSummary.receiverCount) ]
+                        [ text (toString channelSummary.receiverCount) ]
+                    ]
                 ]
             , channelVolumeControl
             , receiverAttachList
