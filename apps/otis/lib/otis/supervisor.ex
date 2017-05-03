@@ -15,6 +15,7 @@ defmodule Otis.Supervisor do
       worker(Otis.State.Repo, []),
       worker(Otis.Events, []),
       worker(Otis.LoggerHandler, []),
+      worker(Otis.State.RenditionProgress, []),
       worker(Otis.State.Persistence.Channels, []),
       worker(Otis.State.Persistence.Receivers, []),
       worker(Otis.State.Persistence.Renditions, []),
