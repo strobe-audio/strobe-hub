@@ -30,6 +30,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     mock2 = connect!(id2, @receiver_latency)
     assert_receive {:receiver_connected, [^id1, _]}
     assert_receive {:receiver_connected, [^id2, _]}
+    assert {:ok, "STOP"} == data_recv_raw(mock1)
+    assert {:ok, "STOP"} == data_recv_raw(mock2)
     receivers = Otis.Receivers.Channels.lookup(channel_id)
     r1 = Enum.find(receivers, fn(r) -> r.id == id1 end)
     r2 = Enum.find(receivers, fn(r) -> r.id == id2 end)
@@ -485,11 +487,14 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Broadcaster.pause(bc)
+    assert_receive {:clock, {:stop}}
 
     Enum.each([m1, m2], fn(m) ->
       {:ok, data} = data_recv_raw(m)
       assert data == Receiver.stop_command()
     end)
+    time = 2_000_000
+    GenServer.call(clock, {:set_time, time})
 
     Broadcaster.start(bc)
     assert_receive {:clock, {:start, _, 20}}
@@ -722,6 +727,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     end)
 
     Broadcaster.pause(bc)
+    assert_receive {:clock, {:stop}}
 
     # Replace source so next packet must be different
     CycleSource.save(r1.id, s2)
@@ -730,6 +736,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       {:ok, data} = data_recv_raw(m)
       assert data == Receiver.stop_command()
     end)
+    time = 2_000_000
+    GenServer.call(clock, {:set_time, time})
 
     Broadcaster.start(bc)
     assert_receive {:clock, {:start, _, 20}}

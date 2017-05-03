@@ -167,7 +167,7 @@ defmodule Test.Otis.Pipeline.Playlist do
     [s1, _, _, _] = context.sources
     {:ok, pl} = Playlist.start_link(channel_id)
     :ok = Playlist.append(pl, s1)
-    assert_receive {:new_rendition_created, _}
+    assert_receive {:new_rendition_created, _}, 500
     {:ok, _} = Playlist.next(pl)
     :done = Playlist.next(pl)
     assert {:ok, []} == Playlist.list(pl)

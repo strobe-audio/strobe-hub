@@ -193,7 +193,7 @@ defimpl Otis.Library.Source, for: Otis.Test.TestSource do
   end
 
   def transcoder_args(_track) do
-    []
+    # noop
   end
 
   def metadata(_track) do
@@ -320,7 +320,7 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
   end
 
   def transcoder_args(_source) do
-    ["-f", "raw"]
+    :passthrough
   end
 
   def metadata(_source) do
