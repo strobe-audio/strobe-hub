@@ -193,7 +193,7 @@ defimpl Otis.Library.Source, for: Otis.Test.TestSource do
   end
 
   def transcoder_args(_track) do
-    # noop
+    []
   end
 
   def metadata(_track) do
