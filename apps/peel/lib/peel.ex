@@ -13,6 +13,7 @@ defmodule Peel do
       # Define workers and child supervisors to be supervised
       # worker(Peel.Worker, [arg1, arg2, arg3]),
       worker(Peel.Repo, []),
+      worker(Peel.Migrator, [], restart: :transient),
       worker(Peel.Events.Library, []),
       worker(Peel.CoverArt, []),
       worker(Peel.CoverArt.Importer, []),
