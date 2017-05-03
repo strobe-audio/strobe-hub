@@ -62,7 +62,7 @@ defmodule BBC do
   defp _validate_find!(result, _key), do: result
 
   def playlist(%Channel{id: id}) when id in @channel_names do
-    path = Path.join([__DIR__, "bbc/channels/#{id}.m3u8"]) |> Path.expand
+    path = Path.join([:code.priv_dir(:otis_library_bbc), "channels/#{id}.m3u8"]) |> Path.expand
     file = File.read!(path)
     M3.Parser.parse!(file, "http://www.bbc.co.uk")
   end
