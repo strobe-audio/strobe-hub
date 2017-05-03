@@ -8,9 +8,8 @@ defmodule BBC.Events.Library do
 
   if Code.ensure_compiled?(Otis.Media) do
     def setup(state) do
-      image_dir = [__DIR__, ".."] |> Path.join |> Path.expand
+      image_dir = [:code.priv_dir(:otis_library_bbc), "static"] |> Path.join |> Path.expand
       Otis.Media.copy!(BBC.library_id(), "bbc.svg", Path.join([image_dir, "bbc.svg"]))
-      image_dir = [__DIR__, "../channels"] |> Path.join |> Path.expand
       Enum.each BBC.channels(), fn(channel) ->
         Enum.each ["small", "large"], fn(size) ->
           logo = Channel.logo(channel, size)
