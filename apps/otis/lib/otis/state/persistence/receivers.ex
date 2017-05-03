@@ -27,23 +27,9 @@ defmodule Otis.State.Persistence.Receivers do
     id |> receiver |> receiver_started(id)
     {:ok, state}
   end
-  # = so we have a connection from a receiver
-  # = see if we have the given id in the db
-  # if yes:
-  #   - find id of channel it belongs to
-  # if no:
-  #   - choose some default channel from the db (first when order by position..)
-  # = map id to channel pid
-  # = start receiver process using given id & channel etc
-  #   - this should be a :create call if the receiver is new
-  #   - or a :start call if the receiver existed
-  # = once receiver has started it broadcasts an event which arrives back here
-  #   and allows us to persist any changes
-  # def handle_event({:receiver_connected, [id, channel, connection_info]}, state) do
+
   def handle_event({:receiver_connected, [id, recv]}, state) do
-    Repo.transaction(fn ->
-      id |> receiver |> receiver_connected(id, recv)
-    end)
+    id |> receiver |> receiver_connected(id, recv)
     {:ok, state}
   end
   def handle_event({:receiver_volume_change, [id, volume]}, state) do
@@ -94,7 +80,9 @@ defmodule Otis.State.Persistence.Receivers do
   defp receiver_connected(:error, _id, _recv) do
   end
   defp receiver_connected(nil, id, receiver) do
-    receiver_state = create_receiver(channel(), id)
+    {:ok, receiver_state} = Repo.transaction(fn ->
+      create_receiver(channel(), id)
+    end)
     receiver_connected(receiver_state, id, receiver)
   end
   defp receiver_connected(receiver_state, _id, receiver) do
