@@ -66,9 +66,8 @@ defmodule Otis.Pipeline.Broadcaster do
   def handle_info({:receiver_joined, [_id, receiver]}, state) do
     {:ok, time} = Clock.time(state.clock)
     playable = playable_packets(time, state)
-    data = Enum.map(playable, &Packet.marshal/1)
     Receiver.stop(receiver)
-    Receiver.send_data(receiver, data)
+    Receiver.send_packets(receiver, playable)
     {:noreply, state}
   end
 
@@ -208,8 +207,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp broadcast_packets({state, packets}) do
-    data = Enum.map(packets, &Packet.marshal/1)
-    Otis.Receivers.Channels.send_data(state.id, data)
+    Otis.Receivers.Channels.send_packets(state.id, packets)
     {state, packets}
   end
 

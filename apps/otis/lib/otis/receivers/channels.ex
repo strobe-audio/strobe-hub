@@ -47,6 +47,12 @@ defmodule Otis.Receivers.Channels do
     notify_subscribers(receiver, channel, :receiver_left)
   end
 
+  def send_packets(channel_id, packets) do
+    Enum.each(lookup(channel_id), fn(r) ->
+      Receiver.send_packets(r, packets)
+    end)
+  end
+
   def send_data(channel_id, data) do
     Enum.each(lookup(channel_id), fn(r) ->
       Receiver.send_data(r, data)

@@ -281,6 +281,12 @@ defmodule Otis.Receiver do
     {:ok, addr}
   end
 
+  def send_packets(%R{data: {pid, _socket}}, packets) do
+    GenServer.cast(pid, {:packets, packets})
+  end
+  def send_packets(%R{data: nil}, _packets) do
+  end
+
   def send_data(%{data: {pid, _socket}}, data) do
     GenServer.cast(pid, {:data, data})
   end

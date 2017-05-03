@@ -6,7 +6,7 @@ defmodule Otis.Receivers.Protocol do
       require Logger
 
       defmodule S do
-        defstruct [:socket, :transport, :id, :supervisor, :settings, :monitor_timeout, muted: false]
+        defstruct [:socket, :transport, :id, :supervisor, :settings, :monitor_timeout, muted: false, progress: {"", 0}]
       end
 
       def start_link(ref, socket, transport, opts) do
@@ -24,7 +24,7 @@ defmodule Otis.Receivers.Protocol do
           supervisor: opts[:supervisor],
           settings: initial_settings(),
         }
-        state = state |> monitor_connection
+        state = state |> start |> monitor_connection
         :gen_server.enter_loop(__MODULE__, [], state)
       end
 
@@ -54,6 +54,11 @@ defmodule Otis.Receivers.Protocol do
 
       def handle_info(:ping, state) do
         send_ping(state)
+      end
+
+      defp start(state) do
+        GenServer.cast(self(), :start)
+        state
       end
 
       def process_message({_id, %{"pong" => _pong}}, state) do
