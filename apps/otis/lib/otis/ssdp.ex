@@ -1,6 +1,7 @@
 defmodule Otis.SSDP do
-  use   GenServer
-  alias Nerves.SSDPServer
+  use     GenServer
+  alias   Nerves.SSDPServer
+  require Logger
 
   @service_uuid "ba31231a-5aee-11e6-8407-002500f418fc"
 
@@ -9,8 +10,20 @@ defmodule Otis.SSDP do
   end
 
   def init(pipeline_config) do
-    register_service(pipeline_config)
-    {:ok, %{}}
+    send(self(), :start)
+    {:ok, pipeline_config}
+  end
+
+  def handle_info(:start, pipeline_config) do
+    Logger.info "Starting SSDP server #{service_name(pipeline_config)}"
+    case register_service(pipeline_config) do
+      {:ok, _pid} ->
+        Logger.info "Started SSDP server #{service_name(pipeline_config)}"
+      other ->
+        Logger.warn "Failed to start SSDP service #{service_name(pipeline_config)}: #{inspect other}"
+        Process.send_after(self(), :start, 1_000)
+    end
+    {:noreply, pipeline_config}
   end
 
   defp register_service(pipeline_config) do
