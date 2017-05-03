@@ -21,15 +21,8 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
-platform = case to_string(:erlang.system_info(:system_architecture)) do
-  <<"x86_64-apple-darwin", _version::binary>> ->
-    "x86_64-apple-darwin"
-  other ->
-    other
-end
-
-config :porcelain, :driver, Porcelain.Driver.Goon
-config :porcelain, :goon_driver_path, Path.expand("#{__DIR__}/../priv/goon-#{platform}")
+# The goon driver is configured dynamically
+config :porcelain, :driver, Porcelain.Driver.Basic
 
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
