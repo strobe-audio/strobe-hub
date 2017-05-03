@@ -190,6 +190,8 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
 .channels-selector--channel-info {
   flex: 1;
   display: flex;
+  height: $button-size;
+  align-items: center;
 }
 .channels-selector--channel--name {
   flex: 1;
