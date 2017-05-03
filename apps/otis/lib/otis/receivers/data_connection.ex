@@ -3,14 +3,28 @@ defmodule Otis.Receivers.DataConnection do
 
   @ping_interval 2_000
 
-  def handle_cast({:data, _data}, %S{muted: true} = state) do
+  def handle_cast({:packets, _packets}, %S{muted: true} = state) do
     {:noreply, state}
+  end
+  def handle_cast({:packets, packets}, state) do
+    data =
+      packets
+      |> Enum.filter(&unplayed_packet?(&1, state))
+      |> Enum.map(&Otis.Packet.marshal/1)
+    progress =
+      packets
+      |> Enum.reduce({"", 0}, fn(packet, _) -> {packet.rendition_id, packet.timestamp} end)
+    send_data_handling_errors(data, %S{state | progress: progress})
   end
   def handle_cast({:data, data}, state) do
     send_data_handling_errors(data, state)
   end
   def handle_cast({:mute, muted}, state) do
     {:noreply, %S{ state | muted: muted }}
+  end
+  def handle_cast(:start, state) do
+    send_data("STOP", state)
+    {:noreply, state}
   end
 
   def handle_call({:mute, muted}, _from, state) do
@@ -19,6 +33,10 @@ defmodule Otis.Receivers.DataConnection do
 
   def handle_call(_msg, _from , state) do
     {:reply, :ok, state}
+  end
+
+  defp unplayed_packet?(packet, %S{progress: {rendition_id, timestamp}}) do
+    packet.rendition_id != rendition_id || packet.timestamp > timestamp
   end
 
   defp initial_settings, do: %{}

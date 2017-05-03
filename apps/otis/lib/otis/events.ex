@@ -30,12 +30,10 @@ defmodule Otis.Events do
   end
 
   def handle_call({:notify, event}, _from, state) do
-    Logger.debug "EVENT #{__MODULE__}"
     {:reply, :ok, [event], state}
   end
 
   def handle_cast({:notify, event}, state) do
-    Logger.debug "EVENT #{__MODULE__}"
     {:noreply, [event], state}
   end
 end

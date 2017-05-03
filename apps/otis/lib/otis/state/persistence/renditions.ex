@@ -51,9 +51,7 @@ defmodule Otis.State.Persistence.Renditions do
     {:ok, state}
   end
   def handle_event({:rendition_progress, [_channel_id, rendition_id, position, _duration]}, state) do
-    Repo.transaction fn ->
-      rendition_id |> load_rendition |> rendition_progress(rendition_id, position)
-    end
+    :ok = Otis.State.RenditionProgress.update(rendition_id, position)
     {:ok, state}
   end
   def handle_event(_evt, state) do
@@ -111,14 +109,6 @@ defmodule Otis.State.Persistence.Renditions do
   defp renditions_deleted([rendition | renditions], channel_id) do
     rendition |> Rendition.delete!
     renditions_deleted(renditions, channel_id)
-  end
-
-  defp rendition_progress(nil, id, position) do
-    Logger.warn "Progress event for unknown rendition #{ inspect id } (#{ position })"
-    nil
-  end
-  defp rendition_progress(rendition, _id, position) do
-    Rendition.playback_position(rendition, position)
   end
 
   defp notify(rendition, event) do

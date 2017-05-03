@@ -235,6 +235,7 @@ defmodule Otis.Receiver do
   """
   def join_channel(receiver, channel) do
     Otis.Receivers.Channels.add_receiver(receiver, channel)
+    Otis.Events.notify({:receiver_online, [receiver.id, receiver]})
   end
 
   @doc ~S"""
@@ -279,6 +280,12 @@ defmodule Otis.Receiver do
   defp _ip_address(socket) do
     {:ok, {addr, _port}} = :inet.peername(socket)
     {:ok, addr}
+  end
+
+  def send_packets(%R{data: {pid, _socket}}, packets) do
+    GenServer.cast(pid, {:packets, packets})
+  end
+  def send_packets(%R{data: nil}, _packets) do
   end
 
   def send_data(%{data: {pid, _socket}}, data) do
