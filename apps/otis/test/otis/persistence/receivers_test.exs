@@ -30,8 +30,11 @@ defmodule Otis.Persistence.ReceiversTest do
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
+    assert_receive {:receiver_online, [^id, _]}
+    assert_receive {:"$__receiver_volume_change", [^id]}
     Otis.Events.sync_notify {:receiver_volume_change, [id, 0.98]}
     assert_receive {:receiver_volume_change, [^id, 0.98]}
+    assert_receive {:"$__receiver_volume_change", [^id]}
     record = Otis.State.Receiver.find id
     assert record.volume == 0.98
   end
@@ -42,6 +45,7 @@ defmodule Otis.Persistence.ReceiversTest do
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
+    assert_receive {:receiver_online, [^id, _]}
     {:ok, receiver} = Receivers.receiver(id)
     receivers = Otis.Receivers.Channels.lookup(context.channel.id)
     assert receivers == [receiver]
@@ -53,6 +57,7 @@ defmodule Otis.Persistence.ReceiversTest do
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
+    assert_receive {:receiver_online, [^id, _]}
     {:ok, receiver} = Receivers.receiver(id)
     receivers = Otis.Receivers.Channels.lookup(context.channel.id)
     assert receivers == [receiver]
@@ -65,6 +70,7 @@ defmodule Otis.Persistence.ReceiversTest do
     Otis.Receivers.attach id, channel2_id
     assert_receive {:receiver_removed, [^channel1_id, ^id]}
     assert_receive {:receiver_added, [^channel2_id, ^id]}
+    assert_receive {:receiver_online, [^id, _]}
     record = Otis.State.Receiver.find id
     assert record.channel_id == channel2_id
     {:ok, receiver} = Receivers.receiver(id)
@@ -80,8 +86,10 @@ defmodule Otis.Persistence.ReceiversTest do
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34, muted: false)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
+    assert_receive {:receiver_online, [^id, _]}
     Otis.Events.sync_notify {:receiver_muted, [id, true]}
     assert_receive {:receiver_muted, [^id, true]}
+    assert_receive {:"$__receiver_muted", [^id]}
     record = Otis.State.Receiver.find id
     assert record.muted == true
   end

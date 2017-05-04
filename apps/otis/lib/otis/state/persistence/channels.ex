@@ -32,18 +32,21 @@ defmodule Otis.State.Persistence.Channels do
     Repo.transaction fn ->
       Channel.find(id) |> remove_channel(id)
     end
+    Otis.Events.notify({:"$__channel_remove", [id]})
     {:ok, state}
   end
   def handle_event({:channel_volume_change, [id, volume]}, state) do
     Repo.transaction fn ->
       id |> Channel.find |> volume_change(id, volume)
     end
+    Otis.Events.notify({:"$__channel_volume_change", [id]})
     {:ok, state}
   end
   def handle_event({:channel_rename, [id, name]}, state) do
     Repo.transaction fn ->
       id |> Channel.find |> rename(id, name)
     end
+    Otis.Events.notify({:"$__channel_rename", [id]})
     {:ok, state}
   end
   def handle_event(_evt, state) do

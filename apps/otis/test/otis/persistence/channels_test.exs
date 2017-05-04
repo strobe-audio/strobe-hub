@@ -34,7 +34,8 @@ defmodule Otis.Persistence.ChannelsTest do
     assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
 
     :ok = Otis.Channels.destroy!(id)
-    assert_receive {:channel_removed, [^id]}, 200
+    assert_receive {:channel_removed, [^id]}
+    assert_receive {:"$__channel_remove", [^id]}
 
     channels = Otis.State.Channel.all
     assert length(channels) == 0
@@ -79,6 +80,7 @@ defmodule Otis.Persistence.ChannelsTest do
 
     Otis.Channel.volume(channel, 0.33)
     assert_receive {:channel_volume_change, [^id, 0.33]}
+    assert_receive {:"$__channel_volume_change", [^id]}
 
     channel = Otis.State.Channel.find(id)
 
@@ -92,6 +94,7 @@ defmodule Otis.Persistence.ChannelsTest do
     assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
     Otis.Channels.rename(id, "Believe in whales")
     assert_receive {:channel_rename, [^id, "Believe in whales"]}
+    assert_receive {:"$__channel_rename", [^id]}
 
     channel = Otis.State.Channel.find(id)
 

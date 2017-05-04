@@ -36,6 +36,7 @@ defmodule Otis.State.Persistence.Receivers do
     Repo.transaction(fn ->
       id |> receiver |> volume_change(id, volume)
     end)
+    Otis.Events.notify({:"$__receiver_volume_change", [id]})
     {:ok, state}
   end
   def handle_event({:reattach_receiver, [id, channel_id, receiver]}, state) do
@@ -52,12 +53,14 @@ defmodule Otis.State.Persistence.Receivers do
     Repo.transaction fn ->
       id |> receiver |> rename(id, name)
     end
+    Otis.Events.notify({:"$__receiver_rename", [id]})
     {:ok, state}
   end
   def handle_event({:receiver_muted, [id, muted]}, state) do
     Repo.transaction fn ->
       id |> receiver |> muted(id, muted)
     end
+    Otis.Events.notify({:"$__receiver_muted", [id]})
     {:ok, state}
   end
   def handle_event(_evt, state) do

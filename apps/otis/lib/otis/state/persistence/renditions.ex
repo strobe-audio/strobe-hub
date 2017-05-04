@@ -39,12 +39,14 @@ defmodule Otis.State.Persistence.Renditions do
     Repo.transaction fn ->
       skipped_ids |> Enum.map(&load_rendition/1) |> renditions_skipped(channel_id)
     end
+    Otis.Events.notify({:"$__rendition_skip", [channel_id]})
     {:ok, state}
   end
   def handle_event({:rendition_deleted, [id, channel_id]}, state) do
     Repo.transaction fn ->
       [id] |> Enum.map(&load_rendition/1) |> compact_renditions() |> renditions_deleted(channel_id)
     end
+    Otis.Events.notify({:"$__rendition_delete", [channel_id]})
     {:ok, state}
   end
   def handle_event({:rendition_progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
@@ -52,6 +54,7 @@ defmodule Otis.State.Persistence.Renditions do
   end
   def handle_event({:rendition_progress, [_channel_id, rendition_id, position, _duration]}, state) do
     :ok = Otis.State.RenditionProgress.update(rendition_id, position)
+    Otis.Events.notify({:"$__rendition_progress", [rendition_id]})
     {:ok, state}
   end
   def handle_event(_evt, state) do

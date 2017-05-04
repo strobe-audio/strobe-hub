@@ -15,6 +15,10 @@ defmodule Otis.State.RenditionProgress do
     GenServer.call(@name, {:progress, rendition_id, progress})
   end
 
+  def save do
+    GenServer.call(@name, :save)
+  end
+
   def init(_opts) do
     schedule()
     Process.flag(:trap_exit, true)

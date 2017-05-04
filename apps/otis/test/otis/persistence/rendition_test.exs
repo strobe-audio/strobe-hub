@@ -133,6 +133,7 @@ defmodule Otis.Persistence.RenditionTest do
     :ok = Playlist.skip(context.playlist, skip_to)
     channel_id = context.channel.id
     assert_receive {:renditions_skipped, [^channel_id, ^skipped_ids]}
+    assert_receive {:"$__rendition_skip", [^channel_id]}
     assert [nil, nil, nil] = skipped_ids |> Enum.map(&Otis.State.Rendition.find/1)
     positions = kept_ids |> Enum.map(fn(id) -> Otis.State.Rendition.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1] == positions
@@ -174,8 +175,10 @@ defmodule Otis.Persistence.RenditionTest do
     assert_receive {:new_rendition_created, _}, 200
     {:ok, renditions} = Playlist.list(context.playlist)
     assert [0, 0] == Enum.map renditions, fn(r) -> r.playback_position end
-    [r1, _] = renditions
+    [%{id: r1id} = r1, _] = renditions
     Otis.Events.sync_notify({:rendition_progress, [context.channel.id, r1.id, 1000, 2000]})
+    assert_receive {:"$__rendition_progress", [^r1id]}
+    Otis.State.RenditionProgress.save()
     rendition = Otis.State.Rendition.find(r1.id)
     assert rendition.playback_position == 1000
   end
