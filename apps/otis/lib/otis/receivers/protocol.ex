@@ -57,7 +57,6 @@ defmodule Otis.Receivers.Protocol do
       end
 
       defp start(state) do
-        GenServer.cast(self(), :start)
         state
       end
 

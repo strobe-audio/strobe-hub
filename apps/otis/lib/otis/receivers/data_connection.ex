@@ -16,15 +16,14 @@ defmodule Otis.Receivers.DataConnection do
       |> Enum.reduce({"", 0}, fn(packet, _) -> {packet.rendition_id, packet.timestamp} end)
     send_data_handling_errors(data, %S{state | progress: progress})
   end
+  def handle_cast({:data, _data}, %S{muted: true} = state) do
+    {:noreply, state}
+  end
   def handle_cast({:data, data}, state) do
     send_data_handling_errors(data, state)
   end
   def handle_cast({:mute, muted}, state) do
     {:noreply, %S{ state | muted: muted }}
-  end
-  def handle_cast(:start, state) do
-    send_data("STOP", state)
-    {:noreply, state}
   end
 
   def handle_call({:mute, muted}, _from, state) do

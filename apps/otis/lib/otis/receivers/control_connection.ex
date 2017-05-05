@@ -52,9 +52,6 @@ defmodule Otis.Receivers.ControlConnection do
     %{configure: settings} |> send_command(state)
     {:noreply, state}
   end
-  def handle_cast(:start, state) do
-    {:noreply, state}
-  end
 
   def handle_call(:get_volume, _from, state) do
     {:reply, Map.fetch(state.settings, :volume), state}

@@ -6,6 +6,8 @@ defmodule Otis.Persistence.RenditionTest do
   alias Otis.Channel
 
   setup_all do
+    Otis.State.Rendition.delete_all
+    Otis.State.Channel.delete_all
     on_exit fn ->
       Otis.State.Rendition.delete_all
       Otis.State.Channel.delete_all
@@ -87,6 +89,8 @@ defmodule Otis.Persistence.RenditionTest do
     {:ok, [rendition1, rendition2]} = Playlist.list(context.playlist)
     Otis.Events.notify({:rendition_changed, [context.channel.id, rendition1.id, rendition2.id]})
     rendition1_id = rendition1.id
+    channel_id = context.channel.id
+    assert_receive {:"$__rendition_changed", [^channel_id]}
     assert_receive {:old_rendition_removed, [^rendition1_id]}
     [record2] = Otis.State.Rendition.all
     assert record2.id == rendition2.id

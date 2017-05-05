@@ -19,6 +19,7 @@ defmodule Otis.Receivers.Channels do
 
   def buffer_receiver(receiver, channel) do
     notify_subscribers(receiver, channel, :receiver_joined)
+    Otis.Events.notify({:"$__receiver_joined", [receiver.id]})
   end
 
   def register(receiver, channel) do

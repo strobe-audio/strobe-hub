@@ -33,6 +33,7 @@ defmodule Otis.State.Persistence.Renditions do
     Repo.transaction fn ->
       old_rendition_id |> load_rendition |> rendition_changed(old_rendition_id, channel_id)
     end
+    Otis.Events.notify({:"$__rendition_changed", [channel_id]})
     {:ok, state}
   end
   def handle_event({:renditions_skipped, [channel_id, skipped_ids]}, state) do
