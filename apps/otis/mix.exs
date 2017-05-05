@@ -22,7 +22,6 @@ defmodule Otis.Mixfile do
     [ mod: {Otis, []},
       applications: [
         :logger,
-        :porcelain,
         :monotonic,
         :sqlite_ecto,
         :ecto,
