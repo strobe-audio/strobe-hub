@@ -6,12 +6,6 @@ defmodule Otis.Persistence.RenditionTest do
   alias Otis.Channel
 
   setup_all do
-    Otis.State.Rendition.delete_all
-    Otis.State.Channel.delete_all
-    on_exit fn ->
-      Otis.State.Rendition.delete_all
-      Otis.State.Channel.delete_all
-    end
     {:ok, channel_id: Otis.uuid }
   end
 

@@ -1,13 +1,6 @@
 defmodule Otis.Persistence.ChannelsTest do
   use   ExUnit.Case
 
-  setup_all do
-    on_exit fn ->
-      Otis.State.Channel.delete_all
-    end
-    :ok
-  end
-
   setup do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach

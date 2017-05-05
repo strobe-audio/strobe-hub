@@ -4,6 +4,7 @@ defmodule Otis.Persistence.ReceiversTest do
   import MockReceiver
 
   setup do
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach
     id = Otis.uuid
     {:ok, channel} = Otis.Channels.create(id, "Fishy")
