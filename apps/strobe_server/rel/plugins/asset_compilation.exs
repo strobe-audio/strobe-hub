@@ -40,10 +40,10 @@ defmodule Strobe.Server.Release.AssetCompilation do
       "--config",
       "config/webpack.config.js",
       "-p",
-    ], opts)
+    ], opts) |> raise_on_cmd_failure("webpack compile")
 
     IO.puts "Generating asset digest..."
-    System.cmd(mix(), ["phoenix.digest"], opts)
+    System.cmd(mix(), ["phoenix.digest"], opts) |> raise_on_cmd_failure("mix phoenix.digest")
   end
 
   defp yarn do
@@ -51,5 +51,10 @@ defmodule Strobe.Server.Release.AssetCompilation do
   end
   defp mix do
     System.find_executable("mix")
+  end
+
+  defp raise_on_cmd_failure({_, 0}, _cmd), do: nil
+  defp raise_on_cmd_failure(result, cmd) do
+    raise "#{cmd} returned #{inspect result}"
   end
 end
