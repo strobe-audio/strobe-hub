@@ -114,11 +114,13 @@ defmodule Peel.CoverArt do
     end
   end
 
-  if Code.ensure_loaded?(Otis.Media) do
-    @placeholder_path  Path.expand("./cover_art/placeholder.jpg", __DIR__)
+  def placeholder_path do
+    Path.join([:code.priv_dir(:peel), "cover_art/placeholder.jpg"])
+  end
 
+  if Code.ensure_loaded?(Otis.Media) do
     def placeholder_image_path do
-      Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
+      Otis.Media.copy!(Peel.library_id, "placeholder.jpg", placeholder_path())
     end
   else
     def placeholder_image_path do
