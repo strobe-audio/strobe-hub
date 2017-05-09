@@ -20,8 +20,24 @@ defmodule Peel.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :sqlite_ecto, :ecto, :work_queue, :otis_library, :uuid, :httpoison, :floki, :poison],
-     mod: {Peel, []}]
+    [ mod: {Peel, []},
+      applications: [
+        :logger,
+        :ecto,
+        :erlsom,
+        :floki,
+        :gen_stage,
+        :httpoison,
+        :otis_library,
+        :poison,
+        :sqlite_ecto,
+        :uuid,
+        :work_queue,
+      ],
+      included_applications: [
+        :yaws,
+      ],
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -38,16 +54,19 @@ defmodule Peel.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [ {:uuid, "~> 1.1"},
-      {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
-      {:ecto, "~> 1.0"},
-      {:work_queue, github: "magnetised/work_queue"},
-      {:otis_library, in_umbrella: true},
-      {:httpoison, "~> 0.11.1"},
+    [ {:ecto, "~> 1.0"},
+      {:erlsom, github: "willemdj/erlsom"},
       {:floki, "~> 0.11.0"},
-      {:poison, "~> 1.0"},
-      {:otis, in_umbrella: true, only: :test},
+      {:flow, "~> 0.11"},
       {:gen_stage, "~> 0.1"},
+      {:httpoison, "~> 0.11.1"},
+      {:otis, in_umbrella: true, only: :test},
+      {:otis_library, in_umbrella: true},
+      {:poison, "~> 1.0"},
+      {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
+      {:uuid, "~> 1.1"},
+      {:work_queue, github: "magnetised/work_queue"},
+      {:yaws, github: "klacke/yaws", manager: :rebar},
     ]
   end
 end

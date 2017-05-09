@@ -24,7 +24,7 @@ defmodule Peel.Album do
 
     field :cover_image, :string
 
-    has_many :album_artists, Peel.AlbumArtist
+    has_many :album_artists, Peel.AlbumArtist, on_delete: :delete_all
     has_many :tracks, Peel.Track
   end
 

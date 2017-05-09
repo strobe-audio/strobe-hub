@@ -7,3 +7,6 @@ config :peel, Peel.Repo,
   adapter: Sqlite.Ecto,
   database: Path.join([state_dir, "peel.dev.sqlite3"])
 
+config :peel, Peel.Webdav,
+  root: "/tmp/strobe-dav",
+  port: 8080

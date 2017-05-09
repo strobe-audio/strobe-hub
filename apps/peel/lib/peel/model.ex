@@ -51,6 +51,10 @@ defmodule Peel.Model do
         M |> Repo.delete_all
       end
 
+      def delete(m) do
+        m |> Repo.delete!
+      end
+
       # def search(title) do
         # match = "%#{title}%"
         # query = from(c in M,

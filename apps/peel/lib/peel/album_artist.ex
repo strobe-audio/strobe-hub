@@ -11,6 +11,10 @@ defmodule Peel.AlbumArtist do
     belongs_to :album, Peel.Album, type: Ecto.UUID
   end
 
+  def all do
+    AlbumArtist |> Repo.all
+  end
+
   def for_track(%Track{album_id: album_id, artist_id: artist_id} = track) do
     AlbumArtist
     |> where(artist_id: ^artist_id, album_id: ^album_id)

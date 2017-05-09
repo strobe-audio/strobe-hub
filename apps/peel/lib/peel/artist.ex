@@ -14,7 +14,7 @@ defmodule Peel.Artist do
 
     field :normalized_name, :string
 
-    has_many :album_artists, AlbumArtist
+    has_many :album_artists, AlbumArtist, on_delete: :delete_all
     has_many :tracks, Track
   end
 
@@ -62,6 +62,11 @@ defmodule Peel.Artist do
       where: artist.id == ^for_artist.id,
       order_by: [desc: album.date]
     ) |> Repo.all
+  end
+
+  def tracks(artist) do
+    artist = artist |> Repo.preload(:tracks)
+    artist.tracks
   end
 
   def renormalize do

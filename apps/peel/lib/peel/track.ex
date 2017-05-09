@@ -6,6 +6,7 @@ defmodule Peel.Track do
   alias  Peel.Album
   alias  Peel.Artist
   alias  Peel.AlbumArtist
+  alias  Ecto.Changeset
 
   schema "tracks" do
     # Musical info
@@ -75,6 +76,19 @@ defmodule Peel.Track do
     |> where(path: ^path)
     |> limit(1)
     |> Repo.one
+  end
+
+  def under_root(root) do
+    pattern = "#{root}/%"
+    from(t in Track, where: like(t.path, ^pattern)) |> Repo.all
+  end
+
+  def move(track, path) do
+    Changeset.change(track, path: path) |> Repo.update!
+  end
+
+  def artist(track) do
+    track.artist_id |> Artist.find
   end
 
   def album(track) do

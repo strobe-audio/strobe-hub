@@ -9,14 +9,20 @@ defmodule Peel do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    webdav_conf = Application.get_env(:peel, Peel.Webdav)
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Peel.Worker, [arg1, arg2, arg3]),
       worker(Peel.Repo, []),
       worker(Peel.Migrator, [], restart: :transient),
       worker(Peel.Events.Library, []),
+      supervisor(Peel.Webdav.Supervisor, [webdav_conf]),
       worker(Peel.CoverArt, []),
+      worker(Peel.CoverArt.EventHandler, []),
       worker(Peel.CoverArt.Importer, []),
+      worker(Peel.Modifications.Delete, []),
+      worker(Peel.Modifications.Move, []),
+      worker(Peel.Modifications.Create, []),
       worker(MusicBrainz.Client, []),
     ]
 

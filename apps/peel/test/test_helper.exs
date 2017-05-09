@@ -1,17 +1,17 @@
 defmodule TestEventHandler do
   use GenStage
 
-  def attach do
-    {:ok, _pid} = start_link(self())
+  def attach(producer \\ Otis.Library.Events.producer) do
+    {:ok, _pid} = start_link(self(), producer)
     :ok
   end
 
-  def start_link(parent) do
-    GenStage.start_link(__MODULE__, parent)
+  def start_link(parent, producer) do
+    GenStage.start_link(__MODULE__, {parent, producer})
   end
 
-  def init(parent) do
-    {:consumer, parent, subscribe_to: Otis.Library.Events.producer}
+  def init({parent, producer}) do
+    {:consumer, parent, subscribe_to: List.wrap(producer)}
   end
 
   def handle_events([], _from, state) do
