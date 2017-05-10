@@ -2,6 +2,7 @@
 defmodule Peel.Test.ScannerTest do
   use   ExUnit.Case
 
+  alias Peel.Importer
   alias Peel.Track
   alias Peel.Album
   alias Peel.Artist
@@ -40,20 +41,20 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it creates a track for each song file", context do
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     tracks = Track.all
     assert length(tracks) == context.track_count
   end
 
   test "it assigns a UUID as the primary key", context do
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     [track] = Track.all
     assert is_binary(track.id)
     assert String.length(track.id) == 36
   end
 
   test "it sets the track data from the file", context do
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     [track] = Track.all
     assert track.title == "I Feel Free"
     assert track.normalized_title == "i feel free"
@@ -65,7 +66,7 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it sets the mtime from the file", context do
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     [track] = Track.all
     [path | _] = context.paths
     %{mtime: mtime} = File.stat!(path)
@@ -73,20 +74,20 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it correctly sets the track duration", context do
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     [track] = Track.all
     assert track.duration_ms == 173662
   end
 
   test "it correctly sets the track mime type", context do
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     [track] = Track.all
     assert track.mime_type == "audio/mp4"
   end
 
   test "it creates an album when one isn't available", context do
     assert length(Album.all) == 0
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Album.all) == 1
     track = List.first(context.paths)
             |> Track.by_path
@@ -106,12 +107,12 @@ defmodule Peel.Test.ScannerTest do
 
   test "it uses an existing album", context do
     assert length(Album.all) == 0
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Album.all) == 1
     album = Album.first
     album_id = album.id
     Track.delete_all
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Album.all) == 1
     track = List.first(context.paths)
             |> Track.by_path
@@ -124,12 +125,12 @@ defmodule Peel.Test.ScannerTest do
 
   test "it uses an existing album based on normalized title", context do
     assert length(Album.all) == 0
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Album.all) == 1
     album = Album.first
     album_id = album.id
     Track.delete_all
-    Peel.Scanner.create_track(context.path, %Metadata{context.metadata | album: "fresh  cream"})
+    Importer.create_track(context.path, %Metadata{context.metadata | album: "fresh  cream"})
     assert length(Album.all) == 1
     track = List.first(context.paths)
             |> Track.by_path
@@ -142,7 +143,7 @@ defmodule Peel.Test.ScannerTest do
 
   test "it creates an artist when one isn't available", context do
     assert length(Artist.all) == 0
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Artist.all) == 1
     track = List.first(context.paths)
             |> Track.by_path
@@ -156,12 +157,12 @@ defmodule Peel.Test.ScannerTest do
 
   test "it uses an existing artist", context do
     assert length(Artist.all) == 0
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Artist.all) == 1
     artist = Artist.first
     Track.delete_all
     Album.delete_all
-    Peel.Scanner.create_track(context.path, %Metadata{ context.metadata | title: "White Room", track_number: 2 })
+    Importer.create_track(context.path, %Metadata{ context.metadata | title: "White Room", track_number: 2 })
     assert length(Artist.all) == 1
     album = Album.first |> Repo.preload(:tracks)
     assert Album.artists(album) == [artist]
@@ -169,12 +170,12 @@ defmodule Peel.Test.ScannerTest do
 
   test "it uses an existing artist based on normalized name", context do
     assert length(Artist.all) == 0
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Artist.all) == 1
     artist = Artist.first
     Track.delete_all
     # Album.delete_all
-    Peel.Scanner.create_track(context.path, %Metadata{ context.metadata | performer: "cream", title: "White Room", track_number: 2 })
+    Importer.create_track(context.path, %Metadata{ context.metadata | performer: "cream", title: "White Room", track_number: 2 })
     assert length(Artist.all) == 1
     assert length(Album.all) == 1
     album = Album.first |> Repo.preload(:tracks)
@@ -202,7 +203,7 @@ defmodule Peel.Test.ScannerTest do
       title: "Spem in alium",
       track_number: 1,
       track_total: 11 }
-    Peel.Scanner.create_track(path, metadata)
+    Importer.create_track(path, metadata)
     tracks = Track.all
     assert length(tracks) == 1
     [track] = tracks
@@ -230,7 +231,7 @@ defmodule Peel.Test.ScannerTest do
       title: nil,
       track_number: 1,
       track_total: 11 }
-    Peel.Scanner.create_track(path, metadata)
+    Importer.create_track(path, metadata)
     tracks = Track.all
     assert length(tracks) == 1
     [track] = tracks
@@ -258,7 +259,7 @@ defmodule Peel.Test.ScannerTest do
       title: "Spem in alium",
       track_number: 1,
       track_total: 11 }
-    Peel.Scanner.create_track(path, metadata)
+    Importer.create_track(path, metadata)
     assert length(Track.all) == 1
     track = Track.first |> Repo.preload(:album)
     assert track.album.disk_number == 1
@@ -279,7 +280,7 @@ defmodule Peel.Test.ScannerTest do
       title: "Once in Royal David’s City",
       track_number: 1,
       track_total: 14 }
-    Peel.Scanner.create_track(path, metadata)
+    Importer.create_track(path, metadata)
     assert length(Track.all) == 1
     track = Track.first |> Repo.preload(:album)
     album = track.album
@@ -290,11 +291,11 @@ defmodule Peel.Test.ScannerTest do
   end
 
   test "it assigns the album cover image to new tracks", context do
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     album = Album.first
     Album.change(album, %{cover_image: "/path/to/cover.jpg"}) |> Peel.Repo.update
     Track.delete_all
-    Peel.Scanner.create_track(context.path, context.metadata)
+    Importer.create_track(context.path, context.metadata)
     assert length(Album.all) == 1
     track = List.first(context.paths)
             |> Track.by_path
@@ -323,7 +324,7 @@ defmodule Peel.Test.ScannerTest do
       track_number: 1,
       track_total: 11
     }
-    Peel.Scanner.create_track(path, metadata)
+    Importer.create_track(path, metadata)
     assert length(Track.all) == 1
     track = Track.first |> Repo.preload(:album)
     assert track.performer == "Cream"
@@ -359,7 +360,7 @@ defmodule Peel.Test.ScannerTest do
       track_number: 1,
       track_total: 11
     }
-    Peel.Scanner.create_track(path, metadata)
+    Importer.create_track(path, metadata)
     assert length(Track.all) == 1
     track = Track.first |> Repo.preload(:album)
     assert track.performer == "The Beatles"

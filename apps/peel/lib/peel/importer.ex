@@ -9,22 +9,27 @@ defmodule Peel.Importer do
   end
 
   defp _track(nil, path) do
-    create_track(path, metadata(path))
+    path |> filetype_filter |> validate_filepath(path)
   end
   defp _track(%Track{} = track, _path) do
     {:existing, track}
   end
 
-  defp create_track(path, metadata) do
+  defp validate_filepath(true, path) do
+    create_track(path, metadata(path))
+  end
+  defp validate_filepath(false, _path), do: nil
+
+  def create_track(path, metadata) do
     track =
       path
-      |> Track.new(metadata)
+      |> Track.new(clean_metadata(metadata))
       |> Track.create!
     {:created, track}
   end
 
   def metadata(path) do
-    path |> Peel.File.metadata! |> clean_metadata
+    path |> Peel.File.metadata!
   end
 
   defp clean_metadata(metadata) do

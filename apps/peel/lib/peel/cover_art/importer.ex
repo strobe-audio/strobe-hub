@@ -12,10 +12,6 @@ defmodule Peel.CoverArt.Importer do
     GenServer.start_link(__MODULE__, [], name: @name)
   end
 
-  def event_handler do
-    {Peel.CoverArt.EventHandler, []}
-  end
-
   def init([]) do
     {:ok, {}}
   end
@@ -51,13 +47,17 @@ defmodule Peel.CoverArt.Importer do
     Peel.CoverArt.extract_and_assign(album)
   end
 
-  def progress({:started, nil}) do
-    Otis.Events.notify({:cover_art_extraction, [:start]})
-  end
-  def progress({:finished, _results}) do
-    Otis.Events.notify({:cover_art_extraction, [:finish]})
-  end
-  def progress({:progress, count}) do
-    Otis.Events.notify({:cover_art_extraction, [:progress, count]})
+  if Code.ensure_compiled?(Otis.Events) do
+    def progress({:started, nil}) do
+      Otis.Events.notify({:cover_art_extraction, [:start]})
+    end
+    def progress({:finished, _results}) do
+      Otis.Events.notify({:cover_art_extraction, [:finish]})
+    end
+    def progress({:progress, count}) do
+      Otis.Events.notify({:cover_art_extraction, [:progress, count]})
+    end
+  else
+    def progress(_evt), do: nil
   end
 end
