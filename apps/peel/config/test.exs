@@ -13,5 +13,6 @@ config :peel, Peel.Repo,
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :peel, Peel.Webdav,
+  enabled: false,
   root: "/tmp/strobe-dav",
   port: 8080

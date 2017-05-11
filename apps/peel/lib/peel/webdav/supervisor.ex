@@ -6,8 +6,12 @@ defmodule Peel.Webdav.Supervisor do
     Supervisor.start_link(__MODULE__, opts)
   end
 
+  def enabled?(opts) do
+    Keyword.get(opts, :enabled, true)
+  end
+
   def init(opts) do
-    dav = case webdav_spec(Mix.env, opts) do
+    dav = case webdav_spec(opts) do
       {:ok, sc, gc, yaws_child_specs} ->
         yaws_child_specs ++ [
           worker(Peel.Webdav.Config, [sc, gc, opts], restart: :transient),
@@ -21,8 +25,12 @@ defmodule Peel.Webdav.Supervisor do
     supervise(children, strategy: :one_for_one, name: __MODULE__)
   end
 
-  defp webdav_spec(:test, _opts), do: :ignore
-  defp webdav_spec(_env, opts) do
+  defp webdav_spec(opts) do
+    opts |> enabled? |> _webdav_spec(opts)
+  end
+
+  defp _webdav_spec(false, _opts), do: :ignore
+  defp _webdav_spec(true, opts) do
     docroot = Keyword.get(opts, :root) |> ensure_docroot() |> to_charlist
     port = Keyword.get(opts, :port, 8080)
 
@@ -50,7 +58,13 @@ defmodule Peel.Webdav.Supervisor do
     ]
     global_conf = [
       runmods: [:yaws_runmod_lock],
-      flags: [copy_error_log: false], # tty_trace: true, debug: true
+      flags: [
+        copy_error_log: false,
+        use_erlang_sendfile: true,
+        use_yaws_sendfile: false,
+        # tty_trace: true,
+        # debug: true,
+      ],
     ]
     server_id = 'peel-webdav'
 

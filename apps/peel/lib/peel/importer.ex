@@ -29,7 +29,7 @@ defmodule Peel.Importer do
   end
 
   def metadata(path) do
-    path |> Peel.File.metadata!
+    path |>  Peel.Importer.Ffprobe.read
   end
 
   defp clean_metadata(metadata) do

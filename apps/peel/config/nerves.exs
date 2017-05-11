@@ -5,5 +5,5 @@ config :peel, Peel.Repo,
   database: "/state/db/current/peel.sqlite"
 
 config :peel, Peel.Webdav,
-  root: "/_state/data/peel",
+  root: "/state/data/peel",
   port: 8080
