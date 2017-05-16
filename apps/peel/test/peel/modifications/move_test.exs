@@ -7,7 +7,7 @@ defmodule Peel.Modifications.MoveTest do
   @milkman  [
     "01 Milk Man",
     "02 Giga Dance",
-    "03 Desapareceré",
+    "03 Desaparecere",
   ] |> Enum.map(&Path.join([@fixtures, "Deerhoof/Milk Man/#{&1}.mp3"]))
 
   setup do
@@ -42,9 +42,9 @@ defmodule Peel.Modifications.MoveTest do
     dst = ["/tmp", "Deerhoof"] |> Path.join
     Peel.Webdav.Modifications.notify({:move, [:directory, src, dst]})
     assert_receive {:complete, {:move, [:directory, ^src, ^dst]}}, 500
-    [track1, track2, track3] = Track.all
+    [track1, track2, track3] = Track.all |> Enum.sort_by(fn(t) -> t.path end)
     assert track1.path == [dst, "Milk Man/01 Milk Man.mp3"] |> Path.join
     assert track2.path == [dst, "Milk Man/02 Giga Dance.mp3"] |> Path.join
-    assert track3.path == [dst, "Milk Man/03 Desapareceré.mp3"] |> Path.join
+    assert track3.path == [dst, "Milk Man/03 Desaparecere.mp3"] |> Path.join
   end
 end

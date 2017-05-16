@@ -15,7 +15,7 @@ defmodule Peel.Modifications.CreateTest do
   @milkman  [
     "01 Milk Man",
     "02 Giga Dance",
-    "03 Desapareceré",
+    "03 Desaparecere",
   ] |> Enum.map(&Path.join([@fixtures, "Deerhoof/Milk Man/#{&1}.mp3"]))
 
   test "create track with new artist & album" do

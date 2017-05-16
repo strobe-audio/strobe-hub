@@ -10,7 +10,7 @@ defmodule Peel.Modifications.DeleteTest do
   @milkman  [
     "01 Milk Man",
     "02 Giga Dance",
-    "03 Desapareceré",
+    "03 Desaparecere",
   ] |> Enum.map(&Path.join([@fixtures, "Deerhoof/Milk Man/#{&1}.mp3"]))
 
   setup do
