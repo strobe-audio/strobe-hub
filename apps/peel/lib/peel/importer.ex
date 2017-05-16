@@ -24,12 +24,15 @@ defmodule Peel.Importer do
     create_track(path, metadata(path))
   end
 
-  def create_track(path, {:ok, metadata}) do
+  def create_track(path, metadata) when is_map(metadata) do
     Repo.transaction fn ->
       path
       |> Track.new(clean_metadata(metadata))
       |> Track.create!
     end
+  end
+  def create_track(path, {:ok, metadata}) do
+    create_track(path, metadata)
   end
   def create_track(_path, err) do
     err
