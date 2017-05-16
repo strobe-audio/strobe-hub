@@ -28,4 +28,7 @@ config :otis, Otis.Media,
   root: "/state/fs/current",
   at: "/fs"
 
-
+config :otis, Otis.State.Persistence, [
+  # save receiver volumes every this ms...
+  volume_save_period: 1_000,
+]
