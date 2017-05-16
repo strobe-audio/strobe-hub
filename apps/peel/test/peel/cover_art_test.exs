@@ -7,6 +7,7 @@ defmodule Peel.Test.CoverArtTest do
   alias Peel.Repo
 
   setup do
+    Ecto.Adapters.SQL.restart_test_transaction(Peel.Repo)
     album = %Album{} |> Repo.insert!
     tracks = Enum.map 1..3, fn(n) ->
       Ecto.build_assoc(album, :tracks, title: "Track #{n+1}") |> Repo.insert!

@@ -48,6 +48,7 @@ defmodule Peel.Modifications.DeleteTest do
     assert  length(Album.all) == 1
     assert  length(Artist.all) == 1
     Peel.Webdav.Modifications.notify({:delete, [path1]})
+    assert_receive {:complete, {:delete, [^path1]}}, 500
     assert  length(Track.all) == 0
     assert  length(AlbumArtist.all) == 0
     assert  length(Album.all) == 0
