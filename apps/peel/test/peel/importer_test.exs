@@ -1,5 +1,5 @@
 
-defmodule Peel.Test.ScannerTest do
+defmodule Peel.Test.ImporterTest do
   use   ExUnit.Case
 
   alias Peel.Importer
