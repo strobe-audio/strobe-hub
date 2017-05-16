@@ -52,12 +52,19 @@ defmodule Peel.Webdav.Handler do
   def handle_request(:MOVE, _type, _arg) do
   end
 
-  def handle_request(:PUT, {:file, path}, arg(clidata: clidata)) do
+  def handle_request(:PUT, {type, path}, arg(clidata: clidata))
+  when type in [:new, :file] do
     case clidata do
       {:partial, _data} ->
         nil
       data when is_binary(data) ->
-        # Only emit the event when the upload is complete
+        # Only emit the event when the upload is complete Some client behaviour
+        # results in a final message with type :new but the file has been
+        # created (e.g. Forklift on macOS), but with others (e.g. PathFinder)
+        # when the non-partial request comes in the type is :file. This event
+        # may be emitted before the file exists, or when it exists but is empty
+        # -- we deal with that in the Modifications.Create path using a
+        # GenStage "middleware" to wait for the OS to finish writing the file.
         emit_event({:create, [path]})
     end
   end
@@ -77,7 +84,7 @@ defmodule Peel.Webdav.Handler do
   end
 
   def emit_event(event) do
-    Peel.Webdav.Modifications.notify(event)
+    event |> Peel.Webdav.Modifications.notify
   end
 
   defp normalize_method(method) when is_atom(method), do: method

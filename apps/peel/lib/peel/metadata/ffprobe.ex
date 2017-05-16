@@ -5,6 +5,11 @@ defmodule Peel.Importer.Ffprobe do
 
   @args ~w(-show_format -show_streams -print_format json -v quiet)
 
+  def read!(path) do
+    {:ok, metadata} = read(path)
+    metadata
+  end
+
   def read(path) do
     with {:ok, data} <- read_metadata(path),
       {:ok, format} <- Map.fetch(data, "format"),
@@ -12,7 +17,7 @@ defmodule Peel.Importer.Ffprobe do
       {:ok, stream} <- audio_stream(streams),
       {:ok, tags} <- Map.fetch(format, "tags")
     do
-      %Peel.Metadata{
+      {:ok, %Peel.Metadata{
         bit_rate: to_int(format["bit_rate"]),
         channels: stream["channels"],
         duration_ms: round(String.to_float(stream["duration"]) * 1000),
@@ -29,7 +34,7 @@ defmodule Peel.Importer.Ffprobe do
         title: tags["title"],
         track_number: number(tags["track"]),
         # track_total: total(tags[""]),
-      }
+      }}
     else
       err -> err
     end
@@ -39,8 +44,8 @@ defmodule Peel.Importer.Ffprobe do
     case cmd(path) do
       {json, 0} ->
         parse(json)
-      _ ->
-        {:error, "Unable to extract metdata from #{path}"}
+      err ->
+        {:error, "Unable to extract metdata from #{path}: #{inspect err}"}
     end
   end
 

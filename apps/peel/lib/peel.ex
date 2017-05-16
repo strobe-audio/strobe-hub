@@ -22,6 +22,7 @@ defmodule Peel do
       worker(Peel.CoverArt.Importer, []),
       worker(Peel.Modifications.Delete, []),
       worker(Peel.Modifications.Move, []),
+      worker(Peel.Modifications.Create.FileStatusCheck, []),
       worker(Peel.Modifications.Create, []),
       worker(MusicBrainz.Client, []),
     ]
