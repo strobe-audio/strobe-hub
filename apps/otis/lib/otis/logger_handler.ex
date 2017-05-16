@@ -54,6 +54,6 @@ defmodule Otis.LoggerHandler do
   end
 
   def log_event(event, _state) do
-    Logger.info "EVENT: #{ inspect event }"
+    Logger.debug "EVENT: #{ inspect event }"
   end
 end
