@@ -9,7 +9,7 @@ defmodule Peel.Scanner do
     path
     |> List.wrap
     |> Peel.DirWalker.stream
-    |> Stream.filter(&Peel.Importer.filetype_filter/1)
+    |> Stream.filter(&Peel.Importer.is_audio?/1)
   end
 
   def scan(path) do

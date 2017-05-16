@@ -1,37 +1,47 @@
 defmodule Peel.Importer do
   alias Peel.Track
   alias Peel.Repo
+
   def track(path) do
-    {:ok, result} = Repo.transaction fn ->
-      path |> Track.by_path |> _track(path)
-    end
-    result
+    track(path, is_audio?(path))
+  end
+
+  def track(path, false) do
+    {:ignored, :not_audio}
+  end
+  def track(path, true) do
+    path |> Track.by_path |> _track(path)
   end
 
   defp _track(nil, path) do
-    path |> filetype_filter |> validate_filepath(path)
+    create_track(path)
   end
-  defp _track(%Track{} = track, _path) do
-    {:existing, track}
+  defp _track(%Track{}, path) do
+    {:ignored, :duplicate}
   end
 
-  defp validate_filepath(true, path) do
+  def create_track(path) do
     create_track(path, metadata(path))
   end
-  defp validate_filepath(false, _path), do: nil
 
-  def create_track(path, metadata) do
-    track =
+  def create_track(path, {:ok, metadata}) do
+    Repo.transaction fn ->
       path
       |> Track.new(clean_metadata(metadata))
       |> Track.create!
-    {:created, track}
+    end
+  end
+  def create_track(_path, err) do
+    err
   end
 
   def metadata(path) do
-    path |>  Peel.Importer.Ffprobe.read
+    Peel.Importer.Ffprobe.read(path)
   end
 
+  defp clean_metadata(nil) do
+    nil
+  end
   defp clean_metadata(metadata) do
     metadata
     |> Map.from_struct
@@ -50,13 +60,14 @@ defmodule Peel.Importer do
   end
   defp strip_whitespace(term), do: term
 
-  def filetype_filter(path) do
-    path |> Path.extname |> is_accepted_format
+  def is_audio?(path) do
+    path |> Path.extname |> is_audio_format?
   end
 
-  def is_accepted_format(".mp3"), do: true
-  def is_accepted_format(".m4a"), do: true
-  def is_accepted_format(".flac"), do: true
-  def is_accepted_format(".ogg"), do: true
-  def is_accepted_format(_), do: false
+  @audio_exts ~w(.aac .flac .m4a .mp3 .oga .ogg)
+
+  for e <- @audio_exts do
+    def is_audio_format?(unquote(e)), do: true
+  end
+  def is_audio_format?(_), do: false
 end
