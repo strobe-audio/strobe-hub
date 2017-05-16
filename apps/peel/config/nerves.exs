@@ -13,3 +13,8 @@ config :peel, Peel.Repo,
 config :peel, Peel.Webdav,
   root: "/state/data/peel",
   port: 8080
+
+config :peel, Peel.Modifications.Create, [
+  # wait between getting event and testing the file status (ms)
+  queue_delay: 2_000,
+]

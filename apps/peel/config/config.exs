@@ -30,4 +30,9 @@ use Mix.Config
 # http://yaws.hyber.org/embed.yaws
 config :yaws, [embedded: true]
 
+config :peel, Peel.Modifications.Create, [
+  # wait between getting event and testing the file status (ms)
+  queue_delay: 0,
+]
+
 import_config "#{Mix.env}.exs"

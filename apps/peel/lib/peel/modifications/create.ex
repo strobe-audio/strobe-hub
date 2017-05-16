@@ -9,6 +9,10 @@ defmodule Peel.Modifications.Create do
   defmodule FileStatusCheck do
     use GenStage
 
+    @config Application.get_env(:peel, Peel.Modifications.Create, [])
+
+    @queue_delay Keyword.get(@config, :queue_delay, 0)
+
     def start_link do
       GenStage.start_link(__MODULE__, [], name: __MODULE__)
     end
@@ -53,15 +57,12 @@ defmodule Peel.Modifications.Create do
       do
         {:ok, evt}
       else
-
-        err ->
-          IO.inspect [:wait, path]
-          err
+        err -> {:wait, evt}
       end
     end
 
     defp start_timer(timer) when timer in [nil, true] do
-      Process.send_after(self(), :test_pending, 2_000)
+      Process.send_after(self(), :test_pending, @queue_delay)
     end
     defp start_timer(false) do
       nil
