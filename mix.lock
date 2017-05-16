@@ -51,7 +51,7 @@
   "porcelain": {:git, "https://github.com/strobe-audio/porcelain.git", "534a3cb9bfa661d7b017da0ef742d900e6b2a5cc", []},
   "ranch": {:hex, :ranch, "1.3.2", "e4965a144dc9fbe70e5c077c65e73c57165416a901bd02ea899cfd95aa890986", [:rebar3], [], "hexpm"},
   "socket": {:hex, :socket, "0.3.7", "68c029a8449fc6efc5f4c3bdf6d8b19ca94d3304e419f364c5cfc8b716f7c219", [:mix], [], "hexpm"},
-  "sqlite_ecto": {:git, "https://github.com/magnetised/sqlite_ecto.git", "3d6030c292fe2122c11516c3f37960217725df69", []},
+  "sqlite_ecto": {:git, "https://github.com/magnetised/sqlite_ecto.git", "ceef283ac770447298cb62e3116973c949215840", []},
   "sqlitex": {:hex, :sqlitex, "0.8.0", "e0013cc7b70723db22c2ac8d318fa434d062242075296499c4c76469b7c22e78", [:mix], [{:decimal, "~> 1.1.0", [hex: :decimal, repo: "hexpm", optional: false]}, {:esqlite, "~> 0.2.0", [hex: :esqlite, repo: "hexpm", optional: false]}, {:pipe, "~> 0.0.2", [hex: :pipe, repo: "hexpm", optional: false]}], "hexpm"},
   "ssl_verify_fun": {:hex, :ssl_verify_fun, "1.1.1", "28a4d65b7f59893bc2c7de786dec1e1555bd742d336043fe644ae956c3497fbe", [:make, :rebar], [], "hexpm"},
   "sweet_xml": {:hex, :sweet_xml, "0.6.5", "dd9cde443212b505d1b5f9758feb2000e66a14d3c449f04c572f3048c66e6697", [:mix], [], "hexpm"},
