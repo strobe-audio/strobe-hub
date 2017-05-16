@@ -101,7 +101,7 @@ defmodule Peel.CoverArt do
   end
 
   defp executable do
-    System.find_executable("avconv")
+    System.find_executable("ffmpeg")
   end
 
   def placeholder_image do
