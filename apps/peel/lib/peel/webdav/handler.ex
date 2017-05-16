@@ -91,21 +91,18 @@ defmodule Peel.Webdav.Handler do
   def path_type(path) when is_binary(path) do
     type =
       cond do
+        # Test for hidden first because we just want to skip them based on
+        # their path, irrespective of their actual file status
+        is_hidden?(path) ->
+          :hidden
+        !File.exists?(path) ->
+          :new
+        File.regular?(path) ->
+          :file
         File.dir?(path) ->
           :directory
-        File.regular?(path) ->
-          case Path.basename(path) do
-            # macOS creates special `._file.ext` files to track metadata (or
-            # something). We want to ignore those...
-            <<".", _::binary>> ->
-              :hidden
-            _ ->
-              :file
-          end
-        File.exists?(path) ->
-          :special
         true ->
-          :new
+          :special
       end
     {type, path}
   end
@@ -114,5 +111,14 @@ defmodule Peel.Webdav.Handler do
   end
   def path_type(arg(docroot: docroot, pathinfo: pathinfo)) do
     [to_string(docroot), to_string(pathinfo)] |> Path.join |> path_type
+  end
+
+  defp is_hidden?(path) do
+    case Path.basename(path) do
+      <<".", _::binary>> ->
+        true
+      _ ->
+        false
+    end
   end
 end

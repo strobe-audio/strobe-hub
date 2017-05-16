@@ -30,6 +30,11 @@ defmodule Peel.Webdav.HandlerTest do
     assert Handler.path_type(arg(root, "/.hidden")) == {:hidden, hidden}
   end
 
+  test "path_type :hidden with non-existing file", %{root: root} = _context do
+    hidden = [root, ".hidden-again"] |> Path.join
+    assert Handler.path_type(arg(root, "/.hidden-again")) == {:hidden, hidden}
+  end
+
   test "path_type :file", %{root: root} = _context do
     regular = [root, "regular.mp3"] |> Path.join
     File.write!(regular, "hello", [:binary, :write])
