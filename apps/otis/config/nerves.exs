@@ -15,7 +15,8 @@ config :otis, :environment, :prod
 
 config :otis, Otis.State.Repo,
   adapter: Sqlite.Ecto,
-  database: "/state/db/current/otis.sqlite"
+  database: "/state/db/current/otis.sqlite",
+  pragma: ["PRAGMA temp_store = 2", "PRAGMA temp_store_directory = '/state/tmp'"]
 
 config :otis, Otis.SNTP,
   port: 5145
