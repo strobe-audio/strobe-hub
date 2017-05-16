@@ -75,7 +75,7 @@ defmodule Strobe.Server.Fs do
       "-o",
       # https://www.kernel.org/doc/Documentation/filesystems/ext4.txt
       # Be slow but careful -- we want to avoid data corruption at all costs
-      "noatime,noexec,nosuid,data=journal,barrier=1",
+      "noatime,noexec,nosuid,data=ordered,barrier=1",
       device,
       mount_point,
     ]
