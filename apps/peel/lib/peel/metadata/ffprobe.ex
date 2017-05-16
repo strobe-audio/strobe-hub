@@ -27,13 +27,13 @@ defmodule Peel.Importer.Ffprobe do
         album: tags["album"],
         composer: tags["composer"] || tags["artist"],
         date: tags["date"],
-        # disk_number: number(tags[""]),
-        # disk_total: total(tags[""]),
+        disk_number: number(tags["disc"]),
+        disk_total: total(tags["disc"]),
         genre: tags["genre"],
         performer: tags["artist"],
         title: tags["title"],
         track_number: number(tags["track"]),
-        # track_total: total(tags[""]),
+        track_total: total(tags["track"]),
       }}
     else
       err -> err
