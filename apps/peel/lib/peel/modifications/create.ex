@@ -33,23 +33,18 @@ defmodule Peel.Modifications.Create do
       {:noreply, emit, {timer, queue}}
     end
 
-    defp test_pending(test_queue, start_timer, pending_queue, events, wait \\ 0)
-    defp test_pending(test_queue, start_timer, pending_queue, events, 0) do
+    defp test_pending(test_queue, start_timer, pending_queue, events) do
       case :queue.out(test_queue) do
         {{:value, evt}, test_queue} ->
           case test_event(evt) do
             {:ok, evt} ->
-              test_pending(test_queue, start_timer, pending_queue, [evt|events], 100)
-            r ->
-              test_pending(test_queue, true, :queue.in(evt, pending_queue), events, 100)
+              test_pending(test_queue, start_timer, pending_queue, [evt|events])
+            {:wait, evt} ->
+              test_pending(test_queue, true, :queue.in(evt, pending_queue), events)
           end
         {:empty, _test_queue} ->
           {start_timer(start_timer), pending_queue, events}
       end
-    end
-    defp test_pending(test_queue, start_timer, pending_queue, events, wait) do
-      Process.sleep(wait)
-      test_pending(test_queue, start_timer, pending_queue, events, 0)
     end
 
     defp test_event({:modification, {:create, [path]}} = evt) do
