@@ -8,7 +8,8 @@ config :logger, :console,
 
 config :peel, Peel.Repo,
   adapter: Sqlite.Ecto,
-  database: "/state/db/current/peel.sqlite"
+  database: "/state/db/current/peel.sqlite",
+  pragma: [temp_store: 2]
 
 config :peel, Peel.Webdav,
   root: "/state/data/peel",
