@@ -59,6 +59,7 @@ defmodule Strobe.Server.Fs do
   end
 
   defp make_structure({_, 0} = status) do
+    [mount_point(), "tmp"] |> Path.join |> IO.inspect |> File.mkdir_p
     Enum.each(["fs", "db"], fn(m) ->
       [mount_point(), m, "current"] |> Path.join |> IO.inspect |> File.mkdir_p()
     end)
