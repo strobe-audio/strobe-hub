@@ -15,7 +15,7 @@ defmodule Peel.CoverArt.EventHandler do
   defp selector({:complete, {:create, _args}}), do: true
   defp selector(_evt), do: false
 
-  def handle_events(events, _from, state) do
+  def handle_events(_events, _from, state) do
     {:noreply, [], kick(state)}
   end
 

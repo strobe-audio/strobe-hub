@@ -57,7 +57,7 @@ defmodule Peel.Modifications.Create do
       do
         {:ok, evt}
       else
-        err -> {:wait, evt}
+        _ -> {:wait, evt}
       end
     end
 

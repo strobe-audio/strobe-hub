@@ -6,7 +6,7 @@ defmodule Peel.Importer do
     track(path, is_audio?(path))
   end
 
-  def track(path, false) do
+  def track(_path, false) do
     {:ignored, :not_audio}
   end
   def track(path, true) do
@@ -16,7 +16,7 @@ defmodule Peel.Importer do
   defp _track(nil, path) do
     create_track(path)
   end
-  defp _track(%Track{}, path) do
+  defp _track(%Track{}, _path) do
     {:ignored, :duplicate}
   end
 
