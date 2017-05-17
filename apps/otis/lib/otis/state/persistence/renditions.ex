@@ -58,6 +58,11 @@ defmodule Otis.State.Persistence.Renditions do
     Otis.Events.notify({:"$__rendition_progress", [rendition_id]})
     {:ok, state}
   end
+  def handle_event({:source_deleted, [type, id]}, state) do
+    renditions = Rendition.for_source(type, id)
+    Enum.each(renditions, &Otis.Events.notify({:rendition_deleted, [&1.id, &1.channel_id]}))
+    {:ok, state}
+  end
   def handle_event(_evt, state) do
     {:ok, state}
   end

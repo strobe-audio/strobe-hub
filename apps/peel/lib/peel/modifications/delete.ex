@@ -50,7 +50,7 @@ defmodule Peel.Modifications.Delete do
 
   def handle_event({:modification, {:delete, [path]} = evt}, state) do
     {:ok, _result} = Repo.transaction fn ->
-      path |> Track.by_path |> delete_track(path)
+      path |> Track.by_path |> delete_track(path) |> notify_deletion()
     end
     Peel.Webdav.Modifications.complete(evt)
     {:ok, state}
@@ -84,5 +84,14 @@ defmodule Peel.Modifications.Delete do
         nil
     end
     track
+  end
+
+  if Code.ensure_compiled?(Otis.Events) do
+    defp notify_deletion(nil), do: nil
+    defp notify_deletion(track) do
+      Otis.Events.notify({:source_deleted, [Otis.Library.Source.type(track), Otis.Library.Source.id(track)]})
+    end
+  else
+    defp notify_deletion(_track), do: nil
   end
 end

@@ -2,6 +2,7 @@ defmodule Otis.Persistence.RenditionTest do
   use   ExUnit.Case
 
   alias Otis.Test.TestSource
+  alias Otis.State.Rendition
   alias Otis.Pipeline.Playlist
   alias Otis.Channel
 
@@ -210,5 +211,16 @@ defmodule Otis.Persistence.RenditionTest do
     Playlist.remove(context.playlist, rendition1.id)
     assert_receive {:rendition_deleted, _}
     assert nil == Otis.State.Rendition.find(rendition1.id)
+  end
+
+  test "removing a source removes all associated renditions", context do
+    source = TestSource.new
+    Playlist.append(context.playlist, [source])
+    assert_receive {:new_rendition_created, _}
+    {:ok, [rendition]} = Playlist.list(context.playlist)
+    Otis.Events.notify({:source_deleted, [Otis.Library.Source.type(source), Otis.Library.Source.id(source)]})
+    evt = {:rendition_deleted, [rendition.id, context.channel.id]}
+    assert_receive ^evt
+    assert nil == Rendition.find(rendition.id)
   end
 end
