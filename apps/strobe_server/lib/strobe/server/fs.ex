@@ -28,9 +28,26 @@ defmodule Strobe.Server.Fs do
   defp mount_point, do: "/state"
 
   defp scan(state) do
-    device() |> File.stat |> try_mount(state)
+    device() |> File.stat |> test_fs(state) |> try_mount(state)
   end
 
+  defp test_fs({:error, :enoent} = err, state) do
+    err
+  end
+  defp test_fs({:ok, %File.Stat{type: :device} = stat}, state) do
+    case partition_type(device()) do
+      {:ok, %{"TYPE" => type}} ->
+        IO.inspect [:type, type]
+        case reformat(type, device()) do
+          :ok -> {:ok, stat}
+          err -> err
+        end
+      {:ok, info} ->
+        IO.inspect [:WEIRD, info]
+        {:err, "Unable to determine partition type: #{inspect info}"}
+      err -> IO.inspect err
+    end
+  end
   defp try_mount({:error, :enoent}, state) do
     # TODO: give up after 30s
     IO.inspect [__MODULE__, :wait, device()]
@@ -80,5 +97,50 @@ defmodule Strobe.Server.Fs do
       device,
       mount_point,
     ]
+  end
+
+  defp partition_type(device) do
+    case probe_type(device) do
+      {result, 0} ->
+        {:ok, parse_blkid_response(result)}
+      {err, n} ->
+        {:error, err}
+    end
+  end
+
+  @doc ~S"""
+  Parses the result of blkid <device> and returns a hash of the info.
+
+      iex> Strobe.Server.Fs.parse_blkid_response(~s{/dev/sdb1: LABEL="BOO" UUID="83A2-1C0E" TYPE="vfat"\n})
+      %{"LABEL" => "BOO", "UUID" => "83A2-1C0E", "TYPE" => "vfat" }
+
+      iex> Strobe.Server.Fs.parse_blkid_response(~s{/dev/sdb1: LABEL="BOO HOO" UUID="83A2-1C0E" TYPE="vfat"\n})
+      %{"LABEL" => "BOO HOO", "UUID" => "83A2-1C0E", "TYPE" => "vfat" }
+
+  """
+  def parse_blkid_response(response) do
+    [_dev, info] = response |> String.trim |> String.split(":")
+    matches = Regex.scan(~r{([A-Z]+)="([^"]+)"}, info)
+    matches |> Enum.map(fn([_, k, v]) -> {k, v} end) |> Enum.into(%{})
+  end
+  defp probe_type(device) do
+    System.cmd(blkid(), [device])
+  end
+
+  defp blkid do
+    System.find_executable("blkid")
+  end
+
+  defp reformat("ext4", _device), do: :ok
+  defp reformat(type, device) do
+    IO.inspect [:reformatting, device, type]
+    case mkfs(device) do
+      {_, 0} -> :ok
+      {err, _} -> {:error, err}
+    end
+  end
+
+  defp mkfs(device) do
+    "mkfs.ext4" |> System.find_executable |> System.cmd([device])
   end
 end
