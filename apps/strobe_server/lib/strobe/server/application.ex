@@ -12,6 +12,7 @@ defmodule Strobe.Server.Application do
       worker(Strobe.Server.Events, []),
       worker(Strobe.Server.Startup, []),
       worker(Strobe.Server.Ethernet, ["eth0"]),
+      worker(Strobe.Server.Ntp, []),
       worker(Strobe.Server.Fs, [["/dev/sda1", "/state"]], restart: :transient),
       worker(Strobe.Server.Dbus, []),
       worker(Strobe.Server.Avahi, ["eth0"]),

@@ -5,7 +5,7 @@ defmodule Strobe.Server.Startup do
     @moduledoc false
 
     defstruct [
-      run: %{ mount: false, avahi: false, dbus: false }
+      run: %{ mount: false, avahi: false, dbus: false, ntpd: false }
     ]
   end
 
@@ -46,6 +46,9 @@ defmodule Strobe.Server.Startup do
   end
   defp running([:avahi], %S{run: run} = state) do
     %S{ state | run: %{ run | avahi: true } }
+  end
+  defp running([:ntpd], %S{run: run} = state) do
+    %S{ state | run: %{ run | ntpd: true } }
   end
 
   defp ready?(state) do
