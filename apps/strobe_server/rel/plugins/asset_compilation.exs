@@ -33,6 +33,7 @@ defmodule Strobe.Server.Release.AssetCompilation do
     opts = [
       stderr_to_stdout: true,
       into: IO.stream(:stdio, :line),
+      env: env(),
     ]
 
     IO.puts "Compiling JS & CSS..."
@@ -57,4 +58,9 @@ defmodule Strobe.Server.Release.AssetCompilation do
   defp raise_on_cmd_failure(result, cmd) do
     raise "#{cmd} returned #{inspect result}"
   end
+
+  defp env do
+    [ {"MIX_TARGET", System.get_env("MIX_TARGET")},
+      {"YAWS_DISABLE_PAM", "y"}
+    ]
 end
