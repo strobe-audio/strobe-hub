@@ -11,8 +11,9 @@ config :peel, Peel.Repo,
   database: "/state/db/current/peel.sqlite",
   pragma: [temp_store: 2]
 
-config :peel, Peel.Webdav,
-  root: "/state/data/peel",
+config :peel, Peel.Collection,
+  dav_root: "/state/data/peel/dav",
+  collection_root: "/state/data/peel/collections",
   port: 8080
 
 config :peel, Peel.Modifications.Create, [

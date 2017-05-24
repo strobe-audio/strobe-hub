@@ -12,7 +12,11 @@ config :peel, Peel.Repo,
   # database: Path.join(project_root_path, "_state/dev.sqlite3"),
   pool: Ecto.Adapters.SQL.Sandbox
 
-config :peel, Peel.Webdav,
-  enabled: false,
-  root: "/tmp/strobe-dav",
-  port: 8080
+tmp_root =
+  [System.tmp_dir!, DateTime.utc_now |> DateTime.to_unix |> to_string]
+  |> Path.join
+
+config :peel, Peel.Collection,
+  dav_root: "#{tmp_root}/dav",
+  collection_root: "#{tmp_root}/collections",
+  port: 8090

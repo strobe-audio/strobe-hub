@@ -9,7 +9,7 @@ defmodule Peel do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    webdav_conf = Application.get_env(:peel, Peel.Webdav)
+    webdav_conf = Application.get_env(:peel, Peel.Collection)
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Peel.Worker, [arg1, arg2, arg3]),

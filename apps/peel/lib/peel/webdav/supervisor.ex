@@ -31,7 +31,7 @@ defmodule Peel.Webdav.Supervisor do
 
   defp _webdav_spec(false, _opts), do: :ignore
   defp _webdav_spec(true, opts) do
-    docroot = Keyword.get(opts, :root) |> ensure_docroot() |> to_charlist
+    docroot = Keyword.get(opts, :dav_root) |> ensure_docroot() |> to_charlist
     port = Keyword.get(opts, :port, 8080)
 
     Logger.info "Configuring WebDAV server at #{to_string(docroot) |> inspect} on port #{port}"
