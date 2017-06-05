@@ -18,7 +18,6 @@ defmodule Plug.WebDav.Handler.Put do
     end
   end
   defp put(false, conn, _path, _opts) do
-        IO.inspect [:put, :conflict, _path]
     {:error, 409, "Conflict", conn}
   end
 
@@ -32,18 +31,15 @@ defmodule Plug.WebDav.Handler.Put do
       :ok ->
         write(conn, file, read(conn), path, opts)
       {:error, :enospc} ->
-        IO.inspect [:put, :error, "NO SPACE"]
         File.close(file)
         {:error, 507, "Insufficient Storage", conn}
       {:error, reason} ->
-        IO.inspect [:put, :error, reason]
         File.close(file)
         {:error, 500, to_string(reason), conn}
     end
   end
   defp write(conn, file, {:error, reason}, _path, _opts) do
     File.close(file)
-    IO.inspect [:put, :error, reason]
     {:error, 500, to_string(reason), conn}
   end
 

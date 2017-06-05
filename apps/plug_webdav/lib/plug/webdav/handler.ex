@@ -12,7 +12,6 @@ defmodule Plug.WebDav.Handler do
   require Logger
 
   def init(opts) do
-    IO.inspect [:init, opts]
     case Keyword.pop(opts, :root) do
       {nil, _opts} ->
         raise ArgumentError, "WebDav options must include a :root key"
@@ -23,14 +22,16 @@ defmodule Plug.WebDav.Handler do
 
   @allow ~w(
     OPTIONS
-    GET
-    HEAD
-    PUT
-    DELETE
-    COPY
-    MOVE
     PROPFIND
     MKCOL
+    PUT
+    GET
+
+    MOVE
+
+    HEAD
+    DELETE
+    COPY
   )
   # Unsupported?
   # POST
@@ -42,7 +43,7 @@ defmodule Plug.WebDav.Handler do
   @allow_header Enum.join(@allow, ",")
 
   def call(conn, opts) do
-    IO.inspect [conn.method, conn.request_path]
+    IO.inspect [__MODULE__, conn.method, conn.request_path, conn.path_info]
     conn |> dav_headers(opts) |> match(conn.method, file_path(conn, opts), opts)
   end
 
@@ -82,7 +83,7 @@ defmodule Plug.WebDav.Handler do
   end
 
   # Don't allow MKCOL at the same level as the root
-  defp match(conn, "MKCOL", {:ok, _file_path, 0}, opts) do
+  defp match(conn, "MKCOL", {:ok, _file_path, 0}, _opts) do
     Logger.warn "MKCOL error forbidden"
     send_resp(conn, 403, "Forbidden")
   end
@@ -96,7 +97,7 @@ defmodule Plug.WebDav.Handler do
     end
   end
 
-  defp match(conn, "PUT", {:ok, _file_path, 0}, opts) do
+  defp match(conn, "PUT", {:ok, _file_path, 0}, _opts) do
     send_resp(conn, 403, "Forbidden")
   end
   defp match(conn, "PUT", {:ok, file_path, _depth}, opts) do

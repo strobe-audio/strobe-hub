@@ -61,9 +61,9 @@ defmodule Peel.Modifications.Create do
       do
         {:ok, evt}
       else
-        {:error, :invalid_collection} = err ->
+        {:error, :invalid_collection} ->
           :discard
-        err ->
+        _err ->
           {:wait, evt}
       end
     end

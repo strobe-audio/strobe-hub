@@ -13,7 +13,7 @@ defmodule Plug.WebDav.Handler.Mkcol do
   defp mkcol_safe(conn, _path, {true, _}, _opts) do
     {:error, 409, "Conflict", conn}
   end
-  defp mkcol_safe(conn, path, {false, _}, {root, _} = opts) do
+  defp mkcol_safe(conn, path, {false, _}, opts) do
     mkcol_read_body(read_body(conn), path, opts)
   end
 

@@ -1,6 +1,4 @@
 defmodule Peel.Webdav.Events do
-  alias  Plug.Conn
-
   def init(opts) do
     case Keyword.pop(opts, :root) do
       {nil, _opts} ->
@@ -29,7 +27,7 @@ defmodule Peel.Webdav.Events do
     emit_event({:move, [conn.assigns[:type], path(path_info), conn.assigns[:destination]]})
   end
 
-  defp handle_request(conn, _path_info, _method, _status, _opts) do
+  defp handle_request(_conn, _path_info, _method, _status, _opts) do
   end
 
   defp emit_event(event) do

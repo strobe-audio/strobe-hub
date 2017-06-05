@@ -60,7 +60,6 @@ defmodule Plug.WebDav.Handler.Propfind do
     propfind_response([Path.basename(file)], dir, propfind, opts)
   end
   defp propfind_depth(_depth, _path, _dir, _propfind, _opts) do
-    IO.inspect [:depth, _depth, _path, _dir]
     {:error, 403, [
       ~s(<?xml version="1.0" encoding="UTF-8"?>),
       ~s(<d:error xmlns:d="DAV:">),
