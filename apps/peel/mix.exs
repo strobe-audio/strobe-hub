@@ -35,7 +35,6 @@ defmodule Peel.Mixfile do
         :work_queue,
       ],
       included_applications: [
-        :yaws,
       ],
     ]
   end
@@ -66,7 +65,8 @@ defmodule Peel.Mixfile do
       {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
       {:uuid, "~> 1.1"},
       {:work_queue, github: "magnetised/work_queue"},
-      {:yaws, github: "klacke/yaws", manager: :rebar},
+      {:plug, "~> 1.3.0"},
+      {:plug_webdav, in_umbrella: true},
     ]
   end
 end
