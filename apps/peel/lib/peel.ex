@@ -2,7 +2,7 @@ defmodule Peel do
   use     Application
   require Logger
 
-  @library_id "d2e91614-135a-11e6-9170-002500f418fc"
+  @library_id "peel"
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
@@ -20,10 +20,10 @@ defmodule Peel do
       worker(Peel.CoverArt, []),
       worker(Peel.CoverArt.EventHandler, []),
       worker(Peel.CoverArt.Importer, []),
-      worker(Peel.Modifications.Delete, []),
-      worker(Peel.Modifications.Move, []),
-      worker(Peel.Modifications.Create.FileStatusCheck, []),
-      worker(Peel.Modifications.Create, []),
+      worker(Peel.Modifications.Delete, [webdav_conf]),
+      worker(Peel.Modifications.Move, [webdav_conf]),
+      worker(Peel.Modifications.Create.FileStatusCheck, [webdav_conf]),
+      worker(Peel.Modifications.Create, [webdav_conf]),
       worker(MusicBrainz.Client, []),
     ]
 

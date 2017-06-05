@@ -1,6 +1,7 @@
 defmodule Peel.Modifications.Delete do
   use GenStage
 
+  alias Peel.Collection
   alias Peel.Track
   alias Peel.Album
   alias Peel.Artist
@@ -8,12 +9,13 @@ defmodule Peel.Modifications.Delete do
 
   require Logger
 
-  def start_link do
-    GenStage.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(opts) do
+    GenStage.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def init(_opts) do
-    {:consumer, [], subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
+  def init(opts) do
+    IO.inspect [__MODULE__, :init, opts]
+    {:consumer, opts, subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
   end
 
   defp selector({:modification, {:delete, _args}}), do: true
@@ -48,19 +50,25 @@ defmodule Peel.Modifications.Delete do
     handle_events(events, from, state)
   end
 
-  def handle_event({:modification, {:delete, [path]} = evt}, state) do
-    {:ok, _result} = Repo.transaction fn ->
-      path |> Track.by_path |> delete_track(path) |> notify_deletion()
+  def handle_event({:modification, {:delete, [:file, path]} = evt}, state) do
+    case Collection.from_path(path) do
+      {:ok, collection, track_path} ->
+        {:ok, _result} = Repo.transaction fn ->
+          track_path |> Track.by_path(collection) |> delete_track(collection, track_path) |> notify_deletion()
+        end
+        Peel.Webdav.Modifications.complete(evt)
+      :error ->
+        Logger.warn "Attempt to delete file in unknown collection #{inspect path}"
     end
-    Peel.Webdav.Modifications.complete(evt)
     {:ok, state}
   end
 
-  defp delete_track(nil, path)  do
-    Logger.warn "Deleted file with no matching track #{path}"
+  defp delete_track(nil, collection, path)  do
+    Logger.warn "Deleted file with no matching track collection: #{collection.id} #{inspect collection.name}: #{path}"
+    nil
   end
 
-  defp delete_track(track, _path) do
+  defp delete_track(track, _collection, _path) do
     Track.delete(track) |> cleanup_album() |> cleanup_artist()
   end
 

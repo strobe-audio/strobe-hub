@@ -69,6 +69,8 @@ defmodule Peel.Model do
       def validate_record(m, id) do
         m
       end
+
+      defoverridable [all: 0]
     end
   end
 end

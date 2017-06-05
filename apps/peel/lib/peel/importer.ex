@@ -1,45 +1,46 @@
 defmodule Peel.Importer do
-  alias Peel.Track
+  alias Peel.Collection
   alias Peel.Repo
+  alias Peel.Track
 
-  def track(path) do
-    track(path, is_audio?(path))
+  def track(collection, path) do
+    track(collection, path, is_audio?(path))
   end
 
-  def track(_path, false) do
+  def track(_collection, _path, false) do
     {:ignored, :not_audio}
   end
-  def track(path, true) do
-    path |> Track.by_path |> _track(path)
+  def track(collection, path, true) do
+    path |> Track.by_path(collection) |> _track(collection, path)
   end
 
-  defp _track(nil, path) do
-    create_track(path)
+  defp _track(nil, collection, path) do
+    create_track(collection, path)
   end
-  defp _track(%Track{}, _path) do
+  defp _track(%Track{}, _collection, _path) do
     {:ignored, :duplicate}
   end
 
-  def create_track(path) do
-    create_track(path, metadata(path))
+  def create_track(collection, path) do
+    create_track(collection, path, metadata(collection, path))
   end
 
-  def create_track(path, metadata) when is_map(metadata) do
+  def create_track(collection, path, metadata) when is_map(metadata) do
     Repo.transaction fn ->
       path
-      |> Track.new(clean_metadata(metadata))
+      |> Track.new(collection, clean_metadata(metadata))
       |> Track.create!
     end
   end
-  def create_track(path, {:ok, metadata}) do
-    create_track(path, metadata)
+  def create_track(collection, path, {:ok, metadata}) do
+    create_track(collection, path, metadata)
   end
-  def create_track(_path, err) do
+  def create_track(_collection, _path, err) do
     err
   end
 
-  def metadata(path) do
-    Peel.Importer.Ffprobe.read(path)
+  def metadata(collection, path) do
+    collection |> Collection.abs_path(path) |> Peel.Importer.Ffprobe.read()
   end
 
   defp clean_metadata(nil) do

@@ -2,11 +2,12 @@ defmodule Peel.Events.Library do
   use     GenStage
   require Logger
 
+  alias Peel.Collection
   alias Peel.Album
   alias Peel.Artist
   alias Peel.Track
 
-  use  Otis.Library, namespace: "peel"
+  use  Otis.Library, namespace: Peel.library_id()
 
   def setup(state) do
     # Copy my placeholder here
@@ -14,18 +15,32 @@ defmodule Peel.Events.Library do
   end
 
   def library do
-    %{ id: Peel.library_id,
-      title: "Your Music",
+    collections = collections() |> IO.inspect
+    %{id: Peel.library_id,
+      title: "Local Music",
       icon: "",
-      size: "m",
-      actions: %{
-        click: %{ url: url("root"), level: true },
-        play: nil,
-      },
+      size: "s",
+      actions: nil,
       metadata: nil,
-      children: [],
-      length: 0,
+      children: collections,
+      length: length(collections),
     }
+  end
+
+  defp collections do
+    Collection.all |> Enum.map(&collection/1)
+  end
+
+  defp collection(%Collection{id: id, name: name}) do
+    %{ id: "peel:collection/#{id}",
+      title: name,
+      size: "m",
+      icon: "",
+      actions: %{
+        click: %{ url: url(["collection", id]), level: true },
+        play: nil,
+      }
+    } |> section()
   end
 
   def route_library_request(channel_id, ["track", track_id, "play"], _query, _path) do Track.find(track_id) |> play(channel_id)
@@ -35,23 +50,39 @@ defmodule Peel.Events.Library do
   end
 
 
-  def route_library_request(_channel_id, ["root"], _query, _path) do
-    %{
-      id: "peel:root",
-      title: "Your Music",
+  def route_library_request(_channel_id, ["collection", collection_id], _query, _path) do
+    collection = Collection.find!(collection_id)
+    url = ["collection", collection.id] |> Path.join
+    %{id: "peel:#{url}",
+      title: collection.name,
       icon: "",
-      search: %{url: search_url("root"), title: "your music" },
+      search: %{url: search_url([collection_id]), title: collection.name },
       length: 2,
       children: [
-        section(%{ id: "peel:albums", title: "Albums", size: "m", icon: "", actions: %{ click: %{ url: url("albums"), level: true }, play: nil }, metadata: nil, children: [] }),
-        section(%{ id: "peel:artists", title: "Artists", size: "m", icon: "", actions: %{ click: %{ url: url("artists"), level: true }, play: nil }, metadata: nil, children: [] }),
+        %{id: url(["collection", collection.id, "albums"]),
+          title: "Albums",
+          size: "m",
+          icon: "",
+          actions: %{ click: %{ url: url(["collection", collection.id, "albums"]), level: true }, play: nil },
+          metadata: nil, children: []
+        } |> section(),
+        %{id: url(["collection", collection.id, "artists"]),
+          title: "Artists",
+          size: "m",
+          icon: "",
+          actions: %{ click: %{ url: url(["collection", collection.id, "artists"]), level: true }, play: nil },
+          metadata: nil,
+          children: []
+        } |> section(),
       ],
     }
   end
 
-  def route_library_request(_channel_id, ["albums"], _query, path) do
+  def route_library_request(_channel_id, ["collection", collection_id, "albums"], _query, path) do
+    collection = Collection.find!(collection_id)
     albums =
-      Album.sorted
+      collection
+      |> Album.sorted()
       |> Enum.map(&folder_node/1)
       |> Enum.group_by(&alphabetical_section/1)
       |> Enum.map(&album_section/1)
@@ -60,7 +91,7 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Albums",
       icon: "",
-      search: %{url: search_url("albums"), title: "albums" },
+      search: %{url: search_url([collection_id, "albums"]), title: "albums" },
       children: albums
     }
   end
@@ -98,9 +129,11 @@ defmodule Peel.Events.Library do
     end
   end
 
-  def route_library_request(_channel_id, ["artists"], _query, path) do
+  def route_library_request(_channel_id, ["collection", collection_id, "artists"], _query, path) do
+    collection = Collection.find!(collection_id)
     artists =
-      Artist.sorted
+      collection
+      |> Artist.sorted()
       |> Enum.map(&folder_node/1)
       |> Enum.group_by(&alphabetical_section/1)
       |> Enum.map(&artist_section/1)
@@ -109,7 +142,7 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Artists",
       icon: "",
-      search: %{url: search_url("artists"), title: "artists" },
+      search: %{url: search_url([collection_id, "artists"]), title: "artists" },
       children: artists
     }
   end
@@ -185,34 +218,35 @@ defmodule Peel.Events.Library do
     end
   end
 
-  def route_library_request(_channel_id, ["search", "root"], query, path) do
+  def route_library_request(_channel_id, ["search", collection_id], query, path) do
+    collection = Collection.find!(collection_id)
     [artists, albums, tracks] =
       [Artist, Album, Track]
-      |> Enum.map(&search_model(&1, query))
+      |> Enum.map(&search_model(&1, collection, query))
     albums_section = %{
-      id: namespaced("search/albums"),
+      id: namespaced("search/#{collection_id}/albums"),
       title: "Albums",
       size: "s",
       children: albums,
     } |> section()
     artists_section = %{
-      id: namespaced("search/artists"),
+      id: namespaced("search/#{collection_id}/artists"),
       title: "Artists",
       size: "s",
       children: artists,
     } |> section()
     tracks_section = %{
-      id: namespaced("search/tracks"),
+      id: namespaced("search/#{collection_id}/tracks"),
       title: "Tracks",
       size: "s",
       children: tracks,
     } |> section()
     %{
       id: namespaced(path),
-      title: "Search your music",
+      title: "Search #{collection.name}",
       icon: icon(nil),
       search: nil,
-      search: %{url: search_url("root"), title: "your music" },
+      search: %{url: search_url([collection_id]), title: collection.name },
       length: 3,
       children: [
         albums_section,
@@ -221,10 +255,11 @@ defmodule Peel.Events.Library do
       ],
     }
   end
-  def route_library_request(_channel_id, ["search", "albums"], query, path) do
-    albums = query |> Peel.Album.search |> Enum.map(&folder_node/1)
+  def route_library_request(_channel_id, ["search", collection_id, "albums"], query, path) do
+    collection = Collection.find!(collection_id)
+    albums = query |> Peel.Album.search(collection) |> Enum.map(&folder_node/1)
     albums_section = %{
-      id: namespaced("search/albums"),
+      id: namespaced("search/#{collection_id}/albums"),
       title: "Albums matching ‘#{query}’",
       size: "s",
       children: albums,
@@ -233,15 +268,16 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Search albums",
       icon: icon(nil),
-      search: %{url: search_url("albums"), title: "albums" },
+      search: %{url: search_url([collection_id, "albums"]), title: "albums" },
       length: 1,
       children: [albums_section],
     }
   end
-  def route_library_request(_channel_id, ["search", "artists"], query, path) do
-    artists = query |> Peel.Artist.search |> Enum.map(&folder_node/1)
+  def route_library_request(_channel_id, ["search", collection_id, "artists"], query, path) do
+    collection = Collection.find!(collection_id)
+    artists = query |> Peel.Artist.search(collection) |> Enum.map(&folder_node/1)
     artists_section = %{
-      id: namespaced("search/artists"),
+      id: namespaced("search/#{collection_id}/artists"),
       title: "Artists matching ‘#{query}’",
       size: "s",
       children: artists,
@@ -250,13 +286,13 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Search artists",
       icon: icon(nil),
-      search: %{url: search_url("artists"), title: "artists" },
+      search: %{url: search_url([collection_id, "artists"]), title: "artists" },
       length: 1,
       children: [artists_section],
     }
   end
-  def route_library_request(_channel_id, ["search", category], _query, _path) do
-    Logger.warn "Searching uknown category #{inspect category}"
+  def route_library_request(_channel_id, ["search", _collection_id, category], _query, _path) do
+    Logger.warn "Searching unknown category #{inspect category}"
     nil
   end
 
@@ -265,9 +301,9 @@ defmodule Peel.Events.Library do
     nil
   end
 
-  def search_model(model, query) do
+  def search_model(model, collection, query) do
     query
-    |> model.search()
+    |> model.search(collection)
     |> Enum.map(&folder_node/1)
   end
 
@@ -339,8 +375,11 @@ defmodule Peel.Events.Library do
   def icon(nil), do: ""
   def icon(icon), do: icon
 
-  def search_url(category) do
-    url(["search", category])
+  def search_url(path) when is_binary(path) do
+    search_url([path])
+  end
+  def search_url(path) when is_list(path) do
+    url(["search" | path])
   end
 
   def folder_node(%Artist{} = artist) do

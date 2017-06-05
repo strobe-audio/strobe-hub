@@ -8,7 +8,11 @@ config :peel, Peel.Repo,
   database: Path.join([state_dir, "peel.dev.sqlite3"])
 
 config :peel, Peel.Collection,
-  dav_root: "/tmp/strobe-peel/dav",
-  collection_root: "/tmp/strobe-peel/collections",
-  port: 8080
+  root: "/tmp/strobe-peel/collections",
+  port: 8888
 
+config :logger, :console,
+  level: :info,
+  format: "$date $time [$level] $metadata$message\n",
+  metadata: [],
+  colors: [info: :green]

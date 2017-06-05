@@ -17,6 +17,5 @@ tmp_root =
   |> Path.join
 
 config :peel, Peel.Collection,
-  dav_root: "#{tmp_root}/dav",
-  collection_root: "#{tmp_root}/collections",
+  root: "#{tmp_root}/collections",
   port: 8090

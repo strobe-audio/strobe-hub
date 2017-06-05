@@ -12,8 +12,7 @@ config :peel, Peel.Repo,
   pragma: [temp_store: 2]
 
 config :peel, Peel.Collection,
-  dav_root: "/state/data/peel/dav",
-  collection_root: "/state/data/peel/collections",
+  root: "/state/data/peel/collections",
   port: 8080
 
 config :peel, Peel.Modifications.Create, [
