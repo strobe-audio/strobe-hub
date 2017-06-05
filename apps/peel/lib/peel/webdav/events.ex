@@ -2,7 +2,6 @@ defmodule Peel.Webdav.Events do
   alias  Plug.Conn
 
   def init(opts) do
-    IO.inspect [__MODULE__, :init, opts]
     case Keyword.pop(opts, :root) do
       {nil, _opts} ->
         raise ArgumentError, "WebDav options must include a :root key"
@@ -12,7 +11,6 @@ defmodule Peel.Webdav.Events do
   end
 
   def call(conn, opts) do
-    IO.inspect [__MODULE__, conn.method, conn.status, conn.req_headers, conn.resp_headers]
     handle_request(conn, Enum.map(conn.path_info, &URI.decode/1), conn.method, conn.status, opts)
     conn
   end

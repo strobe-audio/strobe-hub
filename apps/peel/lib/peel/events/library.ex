@@ -15,7 +15,7 @@ defmodule Peel.Events.Library do
   end
 
   def library do
-    collections = collections() |> IO.inspect
+    collections = collections()
     %{id: Peel.library_id,
       title: "Local Music",
       icon: "",

@@ -55,17 +55,15 @@ defmodule Peel.Modifications.Create do
       {:ok, evt}
     end
     defp test_event({:modification, {:create, [:file, path]}} = evt) do
-      with {:ok, collection, track_path} <- Collection.from_path(path) |> IO.inspect,
+      with {:ok, collection, track_path} <- Collection.from_path(path),
            :ok <- exists?(collection, track_path),
            :ok <- not_empty(collection, track_path)
       do
         {:ok, evt}
       else
         {:error, :invalid_collection} = err ->
-          IO.inspect [:ready?, err, path]
           :discard
         err ->
-          IO.inspect [:ready?, err, path]
           {:wait, evt}
       end
     end
@@ -84,7 +82,6 @@ defmodule Peel.Modifications.Create do
       collection |> Collection.abs_path(path) |> exists?
     end
     def exists?(path) do
-      IO.inspect [:exists?, path]
       if File.exists?(path) do
         :ok
       else
@@ -96,7 +93,6 @@ defmodule Peel.Modifications.Create do
       collection |> Collection.abs_path(path) |> not_empty
     end
     def not_empty(path) do
-      IO.inspect [:empty?, path]
       case File.stat(path) do
         {:ok, %File.Stat{size: size}} when size > 0 ->
           :ok
@@ -142,9 +138,8 @@ defmodule Peel.Modifications.Create do
     {:ok, opts}
   end
   def handle_event({:modification, {:create, [:file, path]} = evt}, opts) do
-    IO.inspect [:handle_event, evt]
-    {:ok, collection, path} = Collection.from_path(path) |> IO.inspect
-    case Peel.Importer.track(collection, path) |> IO.inspect do
+    {:ok, collection, path} = Collection.from_path(path)
+    case Peel.Importer.track(collection, path) do
       {:ok, track} ->
         Logger.info "Added track #{ track.id } #{ track.performer } > #{ track.album_title } > #{ inspect track.title }"
       {:ignored, _reason} ->

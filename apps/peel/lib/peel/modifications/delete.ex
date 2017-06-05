@@ -14,7 +14,6 @@ defmodule Peel.Modifications.Delete do
   end
 
   def init(opts) do
-    IO.inspect [__MODULE__, :init, opts]
     {:consumer, opts, subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
   end
 

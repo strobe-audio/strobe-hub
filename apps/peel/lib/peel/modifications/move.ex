@@ -12,7 +12,6 @@ defmodule Peel.Modifications.Move do
   end
 
   def init(opts) do
-    IO.inspect [__MODULE__, :init, opts]
     {:consumer, opts, subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
   end
 
@@ -55,7 +54,7 @@ defmodule Peel.Modifications.Move do
       {:error, :not_found} ->
         move_collection(evt)
       err ->
-        IO.inspect [:move, err]
+        err
     end
 
     {:ok, state}
@@ -82,7 +81,6 @@ defmodule Peel.Modifications.Move do
       Peel.Webdav.Modifications.complete(evt)
     else
       err ->
-        IO.inspect err
         Logger.warn "Cannot move collection #{src} -> #{dst}: #{inspect err}"
     end
   end
