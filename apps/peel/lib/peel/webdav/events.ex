@@ -13,28 +13,25 @@ defmodule Peel.Webdav.Events do
 
   def call(conn, opts) do
     IO.inspect [__MODULE__, conn.method, conn.status, conn.req_headers, conn.resp_headers]
-    conn |> handle_request(conn.method, conn.status, opts)
-  end
-
-  defp handle_request(%Conn{path_info: [collection_name]} = conn, "MKCOL", 201, _opts) do
-    emit_event({:create, [:collection, collection_name]})
+    handle_request(conn, Enum.map(conn.path_info, &URI.decode/1), conn.method, conn.status, opts)
     conn
   end
 
-  defp handle_request(%Conn{path_info: path_info} = conn, "PUT", ok, _opts)
+  defp handle_request(_conn, [collection_name], "MKCOL", 201, _opts) do
+    emit_event({:create, [:collection, collection_name]})
+  end
+
+  defp handle_request(_conn, path_info, "PUT", ok, _opts)
   when ok in [200, 201, 204] do
     emit_event({:create, [:file, path(path_info)]})
-    conn
   end
 
-  defp handle_request(%Conn{path_info: path_info} = conn, "MOVE", ok, _opts)
+  defp handle_request(conn, path_info, "MOVE", ok, _opts)
   when ok in [201, 204] do
     emit_event({:move, [conn.assigns[:type], path(path_info), conn.assigns[:destination]]})
-    conn
   end
 
-  defp handle_request(conn, _method, _status, _opts) do
-    conn
+  defp handle_request(conn, _path_info, _method, _status, _opts) do
   end
 
   defp emit_event(event) do

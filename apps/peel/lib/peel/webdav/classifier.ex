@@ -9,17 +9,18 @@ defmodule Peel.Webdav.Classifier do
     end
   end
 
-  def call(conn, {root, _} = opts) do
+  def call(conn, {root, _} = _opts) do
     {type, _path} = path_type(conn, root)
     conn |> assign(:type, type)
   end
 
   def path_type(%Plug.Conn{path_info: []}, _root) do
-    :root
+    {:root, "/"}
   end
   def path_type(%Plug.Conn{path_info: path_info}, root) do
-    abs = [root | path_info] |> Path.join
-    rel = ["/" | path_info] |> Path.join
+    path = decode(path_info)
+    abs = [root | path] |> Path.join
+    rel = ["/" | path] |> Path.join
     path_type(abs, rel)
   end
   def path_type(abs_path, rel_path) do
@@ -49,4 +50,6 @@ defmodule Peel.Webdav.Classifier do
         false
     end
   end
+
+  defp decode(path_info), do: Enum.map(path_info, &URI.decode/1)
 end

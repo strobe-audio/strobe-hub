@@ -21,6 +21,12 @@ defmodule Peel.Webdav.ClassifierTest do
     assert conn.assigns[:type] == :directory
   end
 
+  test "URI decodes paths", context do
+    [context.root, "something here"] |> Path.join |> File.mkdir_p
+    conn = conn("GET", "/something%20here") |> Classifier.call({context.root, []})
+    assert conn.assigns[:type] == :directory
+  end
+
   test "path_type :directory", %{root: root} = _context do
     dir = [root, "something"] |> Path.join
     dir |> File.mkdir_p
@@ -54,6 +60,6 @@ defmodule Peel.Webdav.ClassifierTest do
   end
 
   test "path_type :root", cxt do
-    assert Classifier.path_type(conn("GET", "/"), cxt.root) == :root
+    assert Classifier.path_type(conn("GET", "/"), cxt.root) == {:root, "/"}
   end
 end

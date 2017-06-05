@@ -61,6 +61,16 @@ defmodule Peel.Webdav.ClientTest do
     assert collection.path |> File.dir?()
   end
 
+  test "MKCOL /New%20Collection", cxt do
+    conn = request("MKCOL",  "/New%20Collection", cxt)
+    {201, _headers, _body} = sent_resp(conn)
+    assert_receive {:modification, {:create, [:collection, "New Collection"]}}, 500
+    assert_receive {:complete, {:create, [:collection, "New Collection"]}}, 500
+    {:ok, %Collection{name: "New Collection"} = collection} = Collection.from_name("New Collection")
+    assert collection.path == [cxt[:root], "New Collection"] |> Path.join
+    assert collection.path |> File.dir?()
+  end
+
   test "MKCOL /Collection 1/New Artist", cxt do
     path = "/Collection 1/New Artist"
     conn = request("MKCOL", path, cxt)
