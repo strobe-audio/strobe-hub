@@ -27,6 +27,10 @@ defmodule Peel.Webdav.Events do
     emit_event({:move, [conn.assigns[:type], path(path_info), conn.assigns[:destination]]})
   end
 
+  defp handle_request(conn, path_info, "DELETE", 204, _opts) do
+    emit_event({:delete, [conn.assigns[:type], path(path_info)]})
+  end
+
   defp handle_request(_conn, _path_info, _method, _status, _opts) do
   end
 

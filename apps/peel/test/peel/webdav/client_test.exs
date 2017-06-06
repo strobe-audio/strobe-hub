@@ -123,14 +123,22 @@ defmodule Peel.Webdav.ClientTest do
     assert_receive {:modification, {:move, [:directory, ^path, ^new_path]}}, 500
   end
 
-  @tag :skip
   test "DELETE /Collection 1/Artist Name/Album Name/Track Name.mp3", cxt do
     path =  "/Collection 1/Artist Name/Album Name/Track Name.mp3"
     [cxt[:root], Path.dirname(path)] |> Path.join() |> File.mkdir_p()
     File.cp!(@silent_path, [cxt[:root], path] |> Path.join)
 
     conn = request("DELETE", path, cxt)
-    {200, _headers, _body} = sent_resp(conn)
+    {204, _headers, ""} = sent_resp(conn)
     assert_receive {:modification, {:delete, [:file, ^path]}}, 500
+  end
+
+  test "DELETE /Collection 1/Artist Name", cxt do
+    path =  "/Collection 1/Artist Name"
+    [cxt[:root], path] |> Path.join() |> File.mkdir_p()
+
+    conn = request("DELETE", path, cxt)
+    {204, _headers, ""} = sent_resp(conn)
+    assert_receive {:modification, {:delete, [:directory, ^path]}}, 500
   end
 end

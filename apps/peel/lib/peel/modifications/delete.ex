@@ -53,7 +53,21 @@ defmodule Peel.Modifications.Delete do
     case Collection.from_path(path) do
       {:ok, collection, track_path} ->
         {:ok, _result} = Repo.transaction fn ->
-          track_path |> Track.by_path(collection) |> delete_track(collection, track_path) |> notify_deletion()
+          track_path |> Track.by_path(collection) |> delete_track(collection, track_path)
+        end
+        Peel.Webdav.Modifications.complete(evt)
+      :error ->
+        Logger.warn "Attempt to delete file in unknown collection #{inspect path}"
+    end
+    {:ok, state}
+  end
+  def handle_event({:modification, {:delete, [:directory, path]} = evt}, state) do
+    case Collection.from_path(path) do
+      {:ok, collection, root} ->
+        {:ok, _result} = Repo.transaction fn ->
+          root
+          |> Track.under_root(collection)
+          |> delete_tracks(collection, root)
         end
         Peel.Webdav.Modifications.complete(evt)
       :error ->
@@ -62,13 +76,21 @@ defmodule Peel.Modifications.Delete do
     {:ok, state}
   end
 
+  defp delete_tracks([], _collection, _root) do
+    nil
+  end
+  defp delete_tracks([track|tracks], collection, root) do
+    track |> delete_track(collection, root)
+    delete_tracks(tracks, collection, root)
+  end
+
   defp delete_track(nil, collection, path)  do
     Logger.warn "Deleted file with no matching track collection: #{collection.id} #{inspect collection.name}: #{path}"
     nil
   end
 
   defp delete_track(track, _collection, _path) do
-    Track.delete(track) |> cleanup_album() |> cleanup_artist()
+    Track.delete(track) |> cleanup_album() |> cleanup_artist() |> notify_deletion()
   end
 
   defp cleanup_album(track) do

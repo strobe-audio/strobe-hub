@@ -90,4 +90,29 @@ defmodule Peel.Modifications.DeleteTest do
     assert  length(Album.all) == 0
     assert  length(Artist.all) == 0
   end
+
+  test "delete directory", cxt do
+    [path1, path2, path3] =
+      Enum.map(@milkman, fn(path) ->
+        {path, [Collection.dav_path(cxt.collection), path] |> Path.join}
+      end)
+      |> Enum.map(fn({fixture_path, dav_path}) ->
+        copy(dav_path, fixture_path, cxt)
+        dav_path
+      end)
+    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
+    Peel.Webdav.Modifications.notify({:create, [:file, path2]})
+    Peel.Webdav.Modifications.notify({:create, [:file, path3]})
+    assert_receive {:complete, {:create, [:file, ^path1]}}, 500
+    assert  length(Track.all) == 3
+    assert  length(Album.all) == 1
+    assert  length(Artist.all) == 1
+    dir = Path.dirname(path1)
+    Peel.Webdav.Modifications.notify({:delete, [:directory, dir]})
+    assert_receive {:complete, {:delete, [:directory, ^dir]}}, 500
+    assert  length(Track.all) == 0
+    assert  length(AlbumArtist.all) == 0
+    assert  length(Album.all) == 0
+    assert  length(Artist.all) == 0
+  end
 end
