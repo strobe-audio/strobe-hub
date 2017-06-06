@@ -204,6 +204,7 @@
   flex-direction: row;
   position: relative;
   transform: translateZ(0);
+  max-height: calc(100vh - (3 * $button-size));
 }
 
 .library--folder {
