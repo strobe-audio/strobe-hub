@@ -157,6 +157,9 @@ defmodule Plug.WebDav.Handler.Propfind do
   defp propfind(_, {_prop, {url, {prefix, prop}}}, _opts) do
     {404, ["<", to_string(prefix), ":", to_string(prop), " xmlns:", prefix, "=\"", to_string(url), "\"", "/>"]}
   end
+  defp propfind(_, {prop, {url, []}}, _opts) do
+    {404, ["<", to_string(prop), " xmlns=\"", to_string(url), "\"", "/>"]}
+  end
 
   @allprop [
     :creationdate,

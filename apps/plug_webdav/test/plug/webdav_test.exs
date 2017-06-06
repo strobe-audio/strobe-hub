@@ -195,6 +195,7 @@ defmodule Plug.WebDavTest do
           <prop>
             <getcontentlength/>
             <flibble:fliny xmlns:flibble="http://strobe.audio/flibble"/>
+            <boom xmlns="http://strobe.audio/boom"/>
           </prop>
         </propfind>
       )
@@ -211,8 +212,9 @@ defmodule Plug.WebDavTest do
       [valid, invalid] = dir.propstat
       assert valid.status == "HTTP/1.1 200 OK"
       assert invalid.status == "HTTP/1.1 404 Not Found"
-      [fliny] = invalid.props
+      [fliny, boom] = invalid.props
       assert fliny.name == "{http://strobe.audio/flibble}fliny"
+      assert boom.name == "boom"
     end
 
     test "empty request returns all props", cxt do
