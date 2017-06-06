@@ -31,7 +31,7 @@ defmodule Peel.Modifications.MoveTest do
   def copy(dest, src, %{collection: collection}) do
     copy(dest, src, collection)
   end
-  def copy(path, src, %Collection{} = collection) do
+  def copy(_path, src, %Collection{} = collection) do
     dest = [collection.path, src] |> Path.join
     :ok = dest |> Path.dirname |> File.mkdir_p
     :ok = File.cp([@fixtures, src] |> Path.join, dest)
