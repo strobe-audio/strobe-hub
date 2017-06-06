@@ -593,7 +593,8 @@ breadcrumb model =
             a
                 [ class classes
                 , onClick (Library.PopLevel (index))
-                , onSingleTouch (Library.PopLevel (index))
+                , mapTouch (Utils.Touch.touchStart (Library.PopLevel index))
+                , mapTouch (Utils.Touch.touchEnd (Library.PopLevel index))
                 ]
                 [ text level.title ]
 
