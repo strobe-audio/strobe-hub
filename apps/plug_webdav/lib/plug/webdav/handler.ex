@@ -8,6 +8,7 @@ defmodule Plug.WebDav.Handler do
   alias Plug.WebDav.Handler.Put
   alias Plug.WebDav.Handler.Get
   alias Plug.WebDav.Handler.Move
+  alias Plug.WebDav.Handler.Delete
 
   require Logger
 
@@ -26,11 +27,10 @@ defmodule Plug.WebDav.Handler do
     MKCOL
     PUT
     GET
-
     MOVE
+    DELETE
 
     HEAD
-    DELETE
     COPY
   )
   # Unsupported?
@@ -131,6 +131,19 @@ defmodule Plug.WebDav.Handler do
     case Move.call(conn, file_path, opts) do
       {:ok, status, conn} ->
         send_resp(conn, status, "")
+      {:error, status, reason, conn} ->
+        send_resp(conn, status, reason)
+    end
+  end
+
+  defp match(conn, "DELETE", {:ok, _file_path, 0}, _opts) do
+    # TODO: some kind of html page that would allow directory browsing?
+    send_resp(conn, 403, "Forbidden")
+  end
+  defp match(conn, "DELETE", {:ok, file_path, _depth}, opts) do
+    case Delete.call(conn, file_path, opts) do
+      {:ok, conn} ->
+        send_resp(conn, 204, "")
       {:error, status, reason, conn} ->
         send_resp(conn, status, reason)
     end

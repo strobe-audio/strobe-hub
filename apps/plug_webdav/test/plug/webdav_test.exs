@@ -671,4 +671,36 @@ defmodule Plug.WebDavTest do
       assert File.read!([cxt.root, dst_path] |> Path.join) == "something"
     end
   end
+
+  describe "DELETE" do
+    test "file", cxt do
+      path = "/file.txt"
+      File.write!([cxt.root, path] |> Path.join, "something", [:binary])
+      conn = conn(:delete, path) |> request(cxt)
+      {204, _headers, ""} = sent_resp(conn)
+      refute [cxt.root, path] |> Path.join |> File.exists?
+    end
+
+    test "directory", cxt do
+      paths = [
+        "/something/else/here.mp3",
+        "/something/here.mp3",
+      ]
+      Enum.each(paths, fn path ->
+        [cxt.root, Path.dirname(path)] |> Path.join |> File.mkdir_p
+        [cxt.root, path] |> Path.join |> File.write!(path, [:binary])
+      end)
+      conn = conn(:delete, "/something") |> request(cxt)
+      {204, _headers, ""} = sent_resp(conn)
+      Enum.each(paths, fn path ->
+        refute [cxt.root, Path.dirname(path)] |> Path.join |> File.exists?
+        refute [cxt.root, path] |> Path.join |> File.exists?
+      end)
+    end
+
+    test "traversing root directory", cxt do
+      conn = conn(:delete, "/../..") |> request(cxt)
+      {403, _headers, "Forbidden"} = sent_resp(conn)
+    end
+  end
 end
