@@ -69,7 +69,7 @@ defmodule Plug.WebDav.Handler do
   defp match(conn, "OPTIONS", _file_path, _opts) do
     conn
     |> put_resp_header("allow", @allow_header)
-    |> send_resp(200, "")
+    |> send_resp(204, "")
   end
 
   defp match(conn, "PROPFIND", {:ok, file_path, _depth}, opts) do
