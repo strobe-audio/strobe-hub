@@ -429,6 +429,40 @@ defmodule Plug.WebDavTest do
       conn = conn(:propfind, "/../immoral") |> put_req_header("depth", "1") |> request(cxt)
       {403, _headers, "Forbidden"} = sent_resp(conn)
     end
+
+    test "href values when mounted under a scope", cxt do
+      scope = ["my", "dav"]
+      sub = ["Some Doors", "Are Green"]
+      abs_sub = [cxt.root | sub] |> Path.join
+      File.mkdir_p(abs_sub)
+      File.write!([abs_sub, "file.txt"] |> Path.join, "something", [:binary])
+      req = ~s(<?xml version="1.0" encoding="UTF-8"?>
+        <propfind xmlns="DAV:">
+          <prop><getcontentlength/></prop>
+        </propfind>
+      )
+      path = ["/" | Enum.map(sub, &URI.encode/1)] |> Path.join
+      scoped_path = ["/" | Enum.map(Enum.concat(scope, sub), &URI.encode/1)] |> Path.join
+      conn =
+        conn(:propfind, path, req)
+        |> Map.put(:script_name, scope)
+        |> put_req_header("depth", "1")
+        |> request(cxt)
+
+      {207, _headers, body} = sent_resp(conn)
+
+      proplist =
+        body
+        |> parse_proplist
+
+      assert length(proplist.responses) == 2
+      [dir, file] = proplist.responses
+
+      [propstat] = dir.propstat
+      assert propstat.status == "HTTP/1.1 200 OK"
+      assert dir.href == scoped_path
+      assert file.href == "#{scoped_path}/file.txt"
+    end
   end
 
   describe "MKCOL" do

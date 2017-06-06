@@ -12,7 +12,7 @@ defmodule Plug.WebDav.Handler.Propfind do
         {:ok, body, conn} ->
           {body |> parse_propfind_body, conn}
       end
-    conn |> get_req_header("depth") |> propfind_depth(path, dir, propspecs, opts)
+    conn |> get_req_header("depth") |> propfind_depth(path, dir, propspecs, conn, opts)
   end
 
   defp parse_propfind_body(body) do
@@ -46,20 +46,20 @@ defmodule Plug.WebDav.Handler.Propfind do
     props
   end
 
-  defp propfind_depth(_depth, _path, {:error, :enoent}, _propfind, _opts) do
+  defp propfind_depth(_depth, _path, {:error, :enoent}, _propfind, _conn, _opts) do
     {:error, 404, ""}
   end
-  defp propfind_depth(["1"], dir, {:ok, dir}, propfind, opts) do
+  defp propfind_depth(["1"], dir, {:ok, dir}, propfind, conn, opts) do
     {:ok, files} = File.ls(dir)
-    propfind_response(["." | files], dir, propfind, opts)
+    propfind_response(["." | files], dir, propfind, conn, opts)
   end
-  defp propfind_depth(["0"], dir, {:ok, dir}, propfind, opts) do
-    propfind_response(["."], dir, propfind, opts)
+  defp propfind_depth(["0"], dir, {:ok, dir}, propfind, conn, opts) do
+    propfind_response(["."], dir, propfind, conn, opts)
   end
-  defp propfind_depth(["0"], file, {:ok, dir}, propfind, opts) do
-    propfind_response([Path.basename(file)], dir, propfind, opts)
+  defp propfind_depth(["0"], file, {:ok, dir}, propfind, conn, opts) do
+    propfind_response([Path.basename(file)], dir, propfind, conn, opts)
   end
-  defp propfind_depth(_depth, _path, _dir, _propfind, _opts) do
+  defp propfind_depth(_depth, _path, _dir, _propfind, _conn, _opts) do
     {:error, 403, [
       ~s(<?xml version="1.0" encoding="UTF-8"?>),
       ~s(<d:error xmlns:d="DAV:">),
@@ -68,12 +68,12 @@ defmodule Plug.WebDav.Handler.Propfind do
     ]}
   end
 
-  defp propfind_response(files, dir, propfind, opts) do
+  defp propfind_response(files, dir, propfind, conn, opts) do
     responses =
       files
       |> Stream.map(&({&1, [dir, &1] |> Path.join}))
       |> Stream.map(fn {name, path} -> {name, path, File.stat!(path)} end)
-      |> Enum.map(&propfind_resource(&1, propfind, opts))
+      |> Enum.map(&propfind_resource(&1, propfind, conn, opts))
     resp = [
       ~s(<?xml version="1.0" encoding="UTF-8"?>),
       ~s(<d:multistatus xmlns:d="DAV:">),
@@ -83,26 +83,31 @@ defmodule Plug.WebDav.Handler.Propfind do
     {:ok, resp}
   end
 
-  defp propfind_resource({_name, path, _stat} = file, propfind, opts) do
+  defp propfind_resource({_name, path, _stat} = file, propfind, conn, opts) do
     props =
       propfind
       |> Enum.map(&propfind(file, &1, opts))
       |> Enum.group_by(fn {status, _values} -> status end, fn {_status, values} -> values end)
       |> Enum.map(&propstat/1)
     [ "<d:response>",
-      "<d:href><![CDATA[", resource_href(path, opts), "]]></d:href>",
+      "<d:href><![CDATA[", resource_href(path, conn, opts), "]]></d:href>",
       props,
       "</d:response>",
     ]
   end
 
-  defp resource_href(path, {root, _}) do
+  defp resource_href(path, conn, {root, _}) do
     path
     |> Path.expand() # remove any trailing '.'
     |> path_relative_to(root)
     |> Path.split()
+    |> scope_path(conn)
     |> Enum.map(&URI.encode/1)
     |> path_join(true)
+  end
+
+  defp scope_path(path, %Plug.Conn{script_name: script_name}) when is_list(path) do
+    Enum.concat(script_name, path)
   end
 
   defp propstat({status, values}) do
