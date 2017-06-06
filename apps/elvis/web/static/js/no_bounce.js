@@ -25,11 +25,11 @@
         return
       }
 
-      let scrolling = style.getPropertyValue('-webkit-overflow-scrolling')
+      // let scrolling = style.getPropertyValue('-webkit-overflow-scrolling')
       let overflowY = style.getPropertyValue('overflow-y')
 
       // Determine if the element should scroll
-      let isScrollable = scrolling === 'touch' && (overflowY === 'auto' || overflowY === 'scroll')
+      let isScrollable = (overflowY === 'auto' || overflowY === 'scroll')
       let canScroll = el.scrollHeight > el.offsetHeight
 
       if (isScrollable && canScroll) {
