@@ -614,7 +614,14 @@ gotoDefaultChannel : Root.Model -> Cmd Msg
 gotoDefaultChannel model =
     case model.activeChannelId of
         Just id ->
-            Cmd.none
+            let
+                activeChannelExists =
+                    List.any (\c -> c.id == id) model.channels
+            in
+                if activeChannelExists then
+                    Cmd.none
+                else
+                    gotoDefaultChannel { model | activeChannelId = Nothing }
 
         Nothing ->
             let
