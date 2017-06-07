@@ -14,7 +14,7 @@ defmodule Peel.Modifications.Delete do
   end
 
   def init(opts) do
-    {:consumer, opts, subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
+    {:consumer, opts, subscribe_to: [{Peel.WebDAV.Modifications, selector: &selector/1}]}
   end
 
   defp selector({:modification, {:delete, _args}}), do: true
@@ -55,7 +55,7 @@ defmodule Peel.Modifications.Delete do
         {:ok, _result} = Repo.transaction fn ->
           track_path |> Track.by_path(collection) |> delete_track(collection, track_path)
         end
-        Peel.Webdav.Modifications.complete(evt)
+        Peel.WebDAV.Modifications.complete(evt)
       :error ->
         Logger.warn "Attempt to delete file in unknown collection #{inspect path}"
     end
@@ -69,7 +69,7 @@ defmodule Peel.Modifications.Delete do
           |> Track.under_root(collection)
           |> delete_tracks(collection, root)
         end
-        Peel.Webdav.Modifications.complete(evt)
+        Peel.WebDAV.Modifications.complete(evt)
       :error ->
         Logger.warn "Attempt to delete file in unknown collection #{inspect path}"
     end

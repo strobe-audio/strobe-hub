@@ -19,7 +19,7 @@ defmodule Peel.Modifications.CreateTest do
       File.rm_rf(config[:root])
     end
 
-    TestEventHandler.attach([Peel.Webdav.Modifications])
+    TestEventHandler.attach([Peel.WebDAV.Modifications])
     {:ok, root: config[:root], collection: collection}
   end
 
@@ -51,7 +51,7 @@ defmodule Peel.Modifications.CreateTest do
   test "create new collection" do
     name = "New Collection"
     assert length(Collection.all) == 1
-    Peel.Webdav.Modifications.notify({:create, [:collection, name]})
+    Peel.WebDAV.Modifications.notify({:create, [:collection, name]})
     assert_receive {:complete, {:create, [:collection, ^name]}}, 500
     assert length(Collection.all) == 2
     {:ok, collection} = Collection.from_name(name)
@@ -62,7 +62,7 @@ defmodule Peel.Modifications.CreateTest do
     [path|_] = @milkman
     dav_path = dav_path(path, cxt) |> copy(path, cxt)
 
-    Peel.Webdav.Modifications.notify({:create, [:file, dav_path]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, dav_path]})
     assert_receive {:complete, {:create, [:file, ^dav_path]}}, 500
     assert  length(Track.all) == 1
     [track] = Track.all
@@ -100,12 +100,12 @@ defmodule Peel.Modifications.CreateTest do
   test "create track with existing artist & album", cxt do
     [path|_] = @milkman
     dav_path = dav_path(path, cxt) |> copy(path, cxt)
-    Peel.Webdav.Modifications.notify({:create, [:file, dav_path]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, dav_path]})
     assert_receive {:complete, {:create, [:file, ^dav_path]}}, 500
 
     [_, path, _] = @milkman
     dav_path = dav_path(path, cxt) |> copy(path, cxt)
-    Peel.Webdav.Modifications.notify({:create, [:file, dav_path]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, dav_path]})
     assert_receive {:complete, {:create, [:file, ^dav_path]}}, 500
 
     assert  length(Track.all) == 2
@@ -114,7 +114,7 @@ defmodule Peel.Modifications.CreateTest do
 
     [_, _, path] = @milkman
     dav_path = dav_path(path, cxt) |> copy(path, cxt)
-    Peel.Webdav.Modifications.notify({:create, [:file, dav_path]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, dav_path]})
     assert_receive {:complete, {:create, [:file, ^dav_path]}}, 500
     assert  length(Track.all) == 3
     assert  length(Album.all) == 1

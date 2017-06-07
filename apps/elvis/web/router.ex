@@ -14,7 +14,7 @@ defmodule Elvis.Router do
   end
 
   scope path: "/collections" do
-    forward "/", Peel.Webdav
+    forward "/", Peel.WebDAV
   end
 
   scope "/", Elvis do

@@ -24,7 +24,7 @@ defmodule Peel.Modifications.MoveTest do
       File.rm_rf(config[:root])
     end
 
-    TestEventHandler.attach([Peel.Webdav.Modifications])
+    TestEventHandler.attach([Peel.WebDAV.Modifications])
     {:ok, root: config[:root], collection: collection}
   end
 
@@ -41,7 +41,7 @@ defmodule Peel.Modifications.MoveTest do
   test "rename collection", cxt do
     new_name = "Other Music"
     evt = {:move, [:directory, "/#{cxt.collection.name}", "/#{new_name}"]}
-    Peel.Webdav.Modifications.notify(evt)
+    Peel.WebDAV.Modifications.notify(evt)
     assert_receive {:complete, ^evt}, 500
 
     coll = Collection.find(cxt.collection.id)
@@ -59,12 +59,12 @@ defmodule Peel.Modifications.MoveTest do
         copy(dav_path, fixture_path, cxt)
         dav_path
       end)
-    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path1]})
     assert_receive {:complete, {:create, [:file, ^path1]}}, 500
 
     destination =  "Queerhoof/Moat Man/01 Moat Man.mp3"
     dest_path =  "/My Music/#{destination}"
-    Peel.Webdav.Modifications.notify({:move, [:file, path1, dest_path]})
+    Peel.WebDAV.Modifications.notify({:move, [:file, path1, dest_path]})
     assert_receive {:complete, {:move, [:file, ^path1, ^dest_path]}}, 500
 
     [track] = Track.all
@@ -84,11 +84,11 @@ defmodule Peel.Modifications.MoveTest do
         copy(dav_path, fixture_path, cxt)
         dav_path
       end)
-    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path1]})
     assert_receive {:complete, {:create, [:file, ^path1]}}, 500
     dest_path =  [Collection.dav_path(other_collection), src_path1] |> Path.join
 
-    Peel.Webdav.Modifications.notify({:move, [:file, path1, dest_path]})
+    Peel.WebDAV.Modifications.notify({:move, [:file, path1, dest_path]})
     assert_receive {:complete, {:move, [:file, ^path1, ^dest_path]}}, 500
 
     [track] = Track.all
@@ -106,16 +106,16 @@ defmodule Peel.Modifications.MoveTest do
         copy(dav_path, fixture_path, cxt)
         dav_path
       end)
-    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
-    Peel.Webdav.Modifications.notify({:create, [:file, path2]})
-    Peel.Webdav.Modifications.notify({:create, [:file, path3]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path2]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path3]})
     assert_receive {:complete, {:create, [:file, ^path1]}}, 500
     assert_receive {:complete, {:create, [:file, ^path2]}}, 500
     assert_receive {:complete, {:create, [:file, ^path3]}}, 500
 
     src = ["/My Music", "Deerhoof"] |> Path.join
     dst = ["/My Music", "Queerhoof"] |> Path.join
-    Peel.Webdav.Modifications.notify({:move, [:directory, src, dst]})
+    Peel.WebDAV.Modifications.notify({:move, [:directory, src, dst]})
     assert_receive {:complete, {:move, [:directory, ^src, ^dst]}}, 500
     [track1, track2, track3] = Track.all |> Enum.sort_by(fn(t) -> t.path end)
     assert track1.path == "Queerhoof/Milk Man/01 Milk Man.mp3"
@@ -136,9 +136,9 @@ defmodule Peel.Modifications.MoveTest do
         copy(dav_path, fixture_path, cxt)
         dav_path
       end)
-    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
-    Peel.Webdav.Modifications.notify({:create, [:file, path2]})
-    Peel.Webdav.Modifications.notify({:create, [:file, path3]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path2]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path3]})
     assert_receive {:complete, {:create, [:file, ^path1]}}, 500
     assert_receive {:complete, {:create, [:file, ^path2]}}, 500
     assert_receive {:complete, {:create, [:file, ^path3]}}, 500
@@ -149,7 +149,7 @@ defmodule Peel.Modifications.MoveTest do
 
     src = ["/My Music", "Deerhoof"] |> Path.join
     dst = ["/Other Music", "Deerhoof"] |> Path.join
-    Peel.Webdav.Modifications.notify({:move, [:directory, src, dst]})
+    Peel.WebDAV.Modifications.notify({:move, [:directory, src, dst]})
     assert_receive {:complete, {:move, [:directory, ^src, ^dst]}}, 500
     [track1, track2, track3] = Track.all |> Enum.sort_by(fn(t) -> t.path end)
     assert track1.path == src_path1

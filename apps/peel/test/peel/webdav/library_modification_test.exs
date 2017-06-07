@@ -1,7 +1,7 @@
-defmodule Peel.Webdav.LibraryModificationTest do
+defmodule Peel.WebDAV.LibraryModificationTest do
   use   ExUnit.Case
 
-  alias Peel.Webdav.LibraryModification, as: M
+  alias Peel.WebDAV.LibraryModification, as: M
 
   defmodule MockTester do
     # assume that all paths in this test will be files, not directories

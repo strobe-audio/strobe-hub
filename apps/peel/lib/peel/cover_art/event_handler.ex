@@ -9,7 +9,7 @@ defmodule Peel.CoverArt.EventHandler do
 
   def init(_opts) do
     {:consumer, %{timer: nil},
-      subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
+      subscribe_to: [{Peel.WebDAV.Modifications, selector: &selector/1}]}
   end
 
   defp selector({:complete, {:create, _args}}), do: true

@@ -12,7 +12,7 @@ defmodule Peel.Modifications.Move do
   end
 
   def init(opts) do
-    {:consumer, opts, subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
+    {:consumer, opts, subscribe_to: [{Peel.WebDAV.Modifications, selector: &selector/1}]}
   end
 
   defp selector({:modification, {:move, _args}}), do: true
@@ -33,7 +33,7 @@ defmodule Peel.Modifications.Move do
         {:ok, _result} = Repo.transaction fn ->
           src_track_path |> Track.by_path(src_collection) |> move_track(src, dst_collection, dst_track_path)
         end
-        Peel.Webdav.Modifications.complete(evt)
+        Peel.WebDAV.Modifications.complete(evt)
     else
       _err ->
         Logger.warn "Cannot move file #{src} -> #{dst}"
@@ -49,7 +49,7 @@ defmodule Peel.Modifications.Move do
         |> Track.under_root(src_collection)
         |> Enum.each(&move_directory(&1, src_dir_path, dst_collection, dst_dir_path))
       end
-      Peel.Webdav.Modifications.complete(evt)
+      Peel.WebDAV.Modifications.complete(evt)
     else
       {:error, :not_found} ->
         move_collection(evt)
@@ -78,7 +78,7 @@ defmodule Peel.Modifications.Move do
          {:ok, collection} <- Collection.from_name(src_name),
          {:ok, _renamed} <- Collection.rename(collection, dst_name)
     do
-      Peel.Webdav.Modifications.complete(evt)
+      Peel.WebDAV.Modifications.complete(evt)
     else
       err ->
         Logger.warn "Cannot move collection #{src} -> #{dst}: #{inspect err}"

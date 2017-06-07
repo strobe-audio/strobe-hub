@@ -1,3 +1,3 @@
-defmodule Peel.Webdav do
-  use Peel.Webdav.Plug
+defmodule Peel.WebDAV do
+  use Peel.WebDAV.Plug
 end

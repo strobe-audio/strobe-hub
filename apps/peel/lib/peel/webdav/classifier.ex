@@ -1,4 +1,4 @@
-defmodule Peel.Webdav.Classifier do
+defmodule Peel.WebDAV.Classifier do
   import Plug.Conn, only: [assign: 3]
   def init(opts) do
     case Keyword.pop(opts, :root) do

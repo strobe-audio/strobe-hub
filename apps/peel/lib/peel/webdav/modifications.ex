@@ -1,4 +1,4 @@
-defmodule Peel.Webdav.Modifications do
+defmodule Peel.WebDAV.Modifications do
   @moduledoc """
   Acts as en event source for library file modifications via webdav.
   """

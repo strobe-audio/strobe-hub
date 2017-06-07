@@ -55,7 +55,7 @@ defmodule Peel.Test.ImporterTest do
     #   File.rm_rf(tmp_root)
     # end
 
-    TestEventHandler.attach([Peel.Webdav.Modifications])
+    TestEventHandler.attach([Peel.WebDAV.Modifications])
 
     paths = [ "silent.mp3" ]
 

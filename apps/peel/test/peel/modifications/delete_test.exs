@@ -27,7 +27,7 @@ defmodule Peel.Modifications.DeleteTest do
       File.rm_rf(config[:root])
     end
 
-    TestEventHandler.attach([Peel.Webdav.Modifications])
+    TestEventHandler.attach([Peel.WebDAV.Modifications])
     {:ok, root: config[:root], collection: collection}
   end
 
@@ -50,8 +50,8 @@ defmodule Peel.Modifications.DeleteTest do
         copy(dav_path, fixture_path, cxt)
         dav_path
       end)
-    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
-    Peel.Webdav.Modifications.notify({:create, [:file, path2]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path2]})
     assert_receive {:complete, {:create, [:file, ^path1]}}, 500
     assert_receive {:complete, {:create, [:file, ^path2]}}, 500
 
@@ -59,7 +59,7 @@ defmodule Peel.Modifications.DeleteTest do
     assert  length(Album.all) == 1
     assert  length(Artist.all) == 1
     assert  length(AlbumArtist.all) == 1
-    Peel.Webdav.Modifications.notify({:delete, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:delete, [:file, path1]})
     assert_receive {:complete, {:delete, [:file, ^path1]}}, 500
     assert  length(Track.all) == 1
     assert  length(Album.all) == 1
@@ -78,12 +78,12 @@ defmodule Peel.Modifications.DeleteTest do
         copy(dav_path, fixture_path, cxt)
         dav_path
       end)
-    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path1]})
     assert_receive {:complete, {:create, [:file, ^path1]}}, 500
     assert  length(Track.all) == 1
     assert  length(Album.all) == 1
     assert  length(Artist.all) == 1
-    Peel.Webdav.Modifications.notify({:delete, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:delete, [:file, path1]})
     assert_receive {:complete, {:delete, [:file, ^path1]}}, 500
     assert  length(Track.all) == 0
     assert  length(AlbumArtist.all) == 0
@@ -100,15 +100,15 @@ defmodule Peel.Modifications.DeleteTest do
         copy(dav_path, fixture_path, cxt)
         dav_path
       end)
-    Peel.Webdav.Modifications.notify({:create, [:file, path1]})
-    Peel.Webdav.Modifications.notify({:create, [:file, path2]})
-    Peel.Webdav.Modifications.notify({:create, [:file, path3]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path1]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path2]})
+    Peel.WebDAV.Modifications.notify({:create, [:file, path3]})
     assert_receive {:complete, {:create, [:file, ^path1]}}, 500
     assert  length(Track.all) == 3
     assert  length(Album.all) == 1
     assert  length(Artist.all) == 1
     dir = Path.dirname(path1)
-    Peel.Webdav.Modifications.notify({:delete, [:directory, dir]})
+    Peel.WebDAV.Modifications.notify({:delete, [:directory, dir]})
     assert_receive {:complete, {:delete, [:directory, ^dir]}}, 500
     assert  length(Track.all) == 0
     assert  length(AlbumArtist.all) == 0

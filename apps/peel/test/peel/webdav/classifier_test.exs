@@ -1,8 +1,8 @@
-defmodule Peel.Webdav.ClassifierTest do
+defmodule Peel.WebDAV.ClassifierTest do
   use   ExUnit.Case, async: true
   use   Plug.Test
 
-  alias Peel.Webdav.Classifier
+  alias Peel.WebDAV.Classifier
   require Classifier
 
   setup do

@@ -16,7 +16,7 @@ defmodule Peel.Modifications.Create do
     end
 
     def init(opts) do
-      {:producer_consumer, {nil, :queue.new, opts}, subscribe_to: [{Peel.Webdav.Modifications, selector: &selector/1}]}
+      {:producer_consumer, {nil, :queue.new, opts}, subscribe_to: [{Peel.WebDAV.Modifications, selector: &selector/1}]}
     end
 
     defp selector({:modification, {:create, _args}}), do: true
@@ -133,7 +133,7 @@ defmodule Peel.Modifications.Create do
         Logger.warn "Attempt to create existing collection #{inspect name}"
       _err ->
         _collection = Collection.create(name, root)
-        Peel.Webdav.Modifications.complete(evt)
+        Peel.WebDAV.Modifications.complete(evt)
     end
     {:ok, opts}
   end
@@ -147,7 +147,7 @@ defmodule Peel.Modifications.Create do
       err ->
         Logger.error "Error importing path #{path} -> #{inspect err}"
     end
-    Peel.Webdav.Modifications.complete(evt)
+    Peel.WebDAV.Modifications.complete(evt)
     {:ok, opts}
   end
 end

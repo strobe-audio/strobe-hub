@@ -16,7 +16,7 @@ defmodule Peel do
       worker(Peel.Repo, []),
       worker(Peel.Migrator, [], restart: :transient),
       worker(Peel.Events.Library, []),
-      supervisor(Peel.Webdav.Supervisor, [webdav_conf]),
+      supervisor(Peel.WebDAV.Supervisor, [webdav_conf]),
       worker(Peel.CoverArt, []),
       worker(Peel.CoverArt.EventHandler, []),
       worker(Peel.CoverArt.Importer, []),

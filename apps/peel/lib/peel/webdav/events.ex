@@ -1,8 +1,8 @@
-defmodule Peel.Webdav.Events do
+defmodule Peel.WebDAV.Events do
   def init(opts) do
     case Keyword.pop(opts, :root) do
       {nil, _opts} ->
-        raise ArgumentError, "WebDav options must include a :root key"
+        raise ArgumentError, "WebDAV options must include a :root key"
       {root, opts} ->
         {Path.expand(root), opts}
     end
@@ -35,7 +35,8 @@ defmodule Peel.Webdav.Events do
   end
 
   defp emit_event(event) do
-    event |> Peel.Webdav.Modifications.notify
+    IO.inspect [__MODULE__, event]
+    event |> Peel.WebDAV.Modifications.notify
   end
 
   defp path(path_info), do: ["/" | path_info] |> Path.join

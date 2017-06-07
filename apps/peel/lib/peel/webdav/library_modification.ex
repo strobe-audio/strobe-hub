@@ -1,4 +1,4 @@
-defmodule Peel.Webdav.LibraryModification do
+defmodule Peel.WebDAV.LibraryModification do
   @moduledoc """
   Coalesces modified paths in the filesystem into a set of roots of a certain
   path length which contain the modifications.

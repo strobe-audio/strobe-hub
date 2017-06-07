@@ -1,13 +1,13 @@
-defmodule Peel.Webdav.ClientTest do
+defmodule Peel.WebDAV.ClientTest do
   use ExUnit.Case
   use Plug.Test
 
   alias Peel.Collection
 
   # require Handler
-  @classify Peel.Webdav.Classifier
-  @webdav  Plug.WebDav.Handler
-  @handler Peel.Webdav.Events
+  @classify Peel.WebDAV.Classifier
+  @webdav  Plug.WebDAV.Handler
+  @handler Peel.WebDAV.Events
 
   @collections [
     "Collection 1",
@@ -32,7 +32,7 @@ defmodule Peel.Webdav.ClientTest do
       File.rm_rf(config[:root])
     end
 
-    TestEventHandler.attach([Peel.Webdav.Modifications])
+    TestEventHandler.attach([Peel.WebDAV.Modifications])
 
     {:ok, root: config[:root], collections: collections, opts: @handler.init(config)}
   end
