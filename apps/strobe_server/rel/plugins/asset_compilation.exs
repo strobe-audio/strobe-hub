@@ -61,6 +61,7 @@ defmodule Strobe.Server.Release.AssetCompilation do
 
   defp env do
     [ {"MIX_TARGET", System.get_env("MIX_TARGET")},
-      {"YAWS_DISABLE_PAM", "y"}
+      {"YAWS_DISABLE_PAM", "y"},
     ]
+  end
 end
