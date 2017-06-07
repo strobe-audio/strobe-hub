@@ -40,8 +40,10 @@ defmodule Peel.Repo.Migrations.CreateCollections do
 
     config = Application.get_env(:peel, Peel.Collection)
     root = Keyword.fetch!(config, :root)
+    File.mkdir_p(root)
 
     collection = Peel.Collection.create("My Music", root)
+    collection |> Peel.Collection.root |> File.mkdir_p()
 
     Peel.Repo.update_all(Peel.Album, set: [collection_id: collection.id])
     Peel.Repo.update_all(Peel.Artist, set: [collection_id: collection.id])
