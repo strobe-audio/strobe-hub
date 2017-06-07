@@ -40,9 +40,8 @@ defmodule Plug.WebDavTest do
   describe "OPTIONS" do
     test "Returns appropriate allowed methods", cxt do
       conn = conn(:options, "/") |> request(cxt)
-      assert_header(conn, "allow", "OPTIONS,GET,HEAD,POST,PUT,DELETE,COPY,MOVE,PROPFIND,MKCOL")
-      # {200, headers, ""} = sent_resp(conn)
-      # assert {"allow", "OPTIONS,GET,HEAD,POST,PUT,DELETE,COPY,MOVE,PROPFIND,MKCOL"} == List.keyfind(headers, "allow", 0)
+      {204, _headers, ""} = sent_resp(conn)
+      assert_header(conn, "allow", "OPTIONS,PROPFIND,MKCOL,PUT,GET,MOVE,DELETE,POST,HEAD,COPY")
     end
 
     test "returns correct dav: header", cxt do

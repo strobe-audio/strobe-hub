@@ -30,11 +30,11 @@ defmodule Plug.WebDav.Handler do
     MOVE
     DELETE
 
+    POST
     HEAD
     COPY
   )
   # Unsupported?
-  # POST
   # PROPPATCH
   # LOCK
   # UNLOCK
