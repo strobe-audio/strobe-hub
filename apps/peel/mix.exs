@@ -33,6 +33,7 @@ defmodule Peel.Mixfile do
         :sqlite_ecto,
         :uuid,
         :work_queue,
+        :plug_webdav,
       ],
       included_applications: [
       ],
