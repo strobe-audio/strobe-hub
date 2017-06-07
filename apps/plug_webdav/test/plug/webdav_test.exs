@@ -1,14 +1,14 @@
-defmodule Plug.WebDavTest do
+defmodule Plug.WebDAVTest do
   use ExUnit.Case
   use Plug.Test
 
-  alias Plug.WebDav.Handler.Propfind
+  alias Plug.WebDAV.Handler.Propfind
 
-  @handler Plug.WebDav.Handler
+  @handler Plug.WebDAV.Handler
 
   setup do
     root =
-      [System.tmp_dir!, "Plug.WebDav", DateTime.utc_now |> DateTime.to_unix |> to_string]
+      [System.tmp_dir!, "Plug.WebDAV", DateTime.utc_now |> DateTime.to_unix |> to_string]
       |> Path.join
 
     File.mkdir_p(root)

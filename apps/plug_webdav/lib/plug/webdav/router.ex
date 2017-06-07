@@ -1,2 +1,2 @@
-defmodule Plug.WebDav.Router do
+defmodule Plug.WebDAV.Router do
 end

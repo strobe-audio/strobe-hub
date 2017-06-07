@@ -1,4 +1,4 @@
-defmodule Plug.WebDav.Xml do
+defmodule Plug.WebDAV.Xml do
   def encode(string) do
     string
     |> String.graphemes

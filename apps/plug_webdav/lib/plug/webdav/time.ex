@@ -1,4 +1,4 @@
-defmodule Plug.WebDav.Time do
+defmodule Plug.WebDAV.Time do
   def format(datetime) when is_tuple(datetime) do
     datetime |> format_universal_time("+0000")
   end

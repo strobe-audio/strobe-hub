@@ -1,4 +1,4 @@
-defmodule Plug.WebDav.Handler.Get do
+defmodule Plug.WebDAV.Handler.Get do
   import Plug.Conn
 
   def call(conn, path, opts) do

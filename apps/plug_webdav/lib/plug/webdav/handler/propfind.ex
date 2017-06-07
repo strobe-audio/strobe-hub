@@ -1,5 +1,5 @@
-defmodule Plug.WebDav.Handler.Propfind do
-  import Plug.WebDav.Handler.Common
+defmodule Plug.WebDAV.Handler.Propfind do
+  import Plug.WebDAV.Handler.Common
   import Plug.Conn
 
   require Record
@@ -154,10 +154,10 @@ defmodule Plug.WebDav.Handler.Propfind do
     {200, ["<d:displayname><![CDATA[", displayname, "]]></d:displayname>"]}
   end
   defp propfind({_name, _path, stat}, {:getlastmodified, _dav}, _opts) do
-    {200, ["<d:getlastmodified>", stat.mtime |> Plug.WebDav.Time.format, "</d:getlastmodified>"]}
+    {200, ["<d:getlastmodified>", stat.mtime |> Plug.WebDAV.Time.format, "</d:getlastmodified>"]}
   end
   defp propfind({_name, _path, stat}, {:creationdate, _dav}, _opts) do
-    {200, ["<d:creationdate>", stat.ctime |> Plug.WebDav.Time.format, "</d:creationdate>"]}
+    {200, ["<d:creationdate>", stat.ctime |> Plug.WebDAV.Time.format, "</d:creationdate>"]}
   end
   defp propfind(_, {_prop, {url, {prefix, prop}}}, _opts) do
     {404, ["<", to_string(prefix), ":", to_string(prop), " xmlns:", prefix, "=\"", to_string(url), "\"", "/>"]}

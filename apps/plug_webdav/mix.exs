@@ -1,4 +1,4 @@
-defmodule Plug.WebDav.Mixfile do
+defmodule Plug.WebDAV.Mixfile do
   use Mix.Project
 
   def project do

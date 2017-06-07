@@ -1,6 +1,6 @@
-defmodule Plug.WebDav.Handler.Mkcol do
+defmodule Plug.WebDAV.Handler.Mkcol do
   import Plug.Conn
-  import Plug.WebDav.Handler.Common
+  import Plug.WebDAV.Handler.Common
 
   def call(conn, path, opts) do
     mkcol_safe(conn, path, exists?(path), opts)

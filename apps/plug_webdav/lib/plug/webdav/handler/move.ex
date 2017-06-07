@@ -1,6 +1,6 @@
-defmodule Plug.WebDav.Handler.Move do
+defmodule Plug.WebDAV.Handler.Move do
   import Plug.Conn
-  import Plug.WebDav.Handler.Common
+  import Plug.WebDAV.Handler.Common
 
   def call(conn, path, opts) do
     move(conn, path, exists?(path), destination(conn), opts)

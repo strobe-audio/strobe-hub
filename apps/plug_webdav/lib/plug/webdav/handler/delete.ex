@@ -1,4 +1,4 @@
-defmodule Plug.WebDav.Handler.Delete do
+defmodule Plug.WebDAV.Handler.Delete do
 
   def call(conn, path, opts) do
     delete(conn, path, stat(path), opts)

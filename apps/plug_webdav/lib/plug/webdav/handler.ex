@@ -1,21 +1,21 @@
-defmodule Plug.WebDav.Handler do
+defmodule Plug.WebDAV.Handler do
 
   import Plug.Conn
-  import Plug.WebDav.Handler.Common
+  import Plug.WebDAV.Handler.Common
 
-  alias Plug.WebDav.Handler.Propfind
-  alias Plug.WebDav.Handler.Mkcol
-  alias Plug.WebDav.Handler.Put
-  alias Plug.WebDav.Handler.Get
-  alias Plug.WebDav.Handler.Move
-  alias Plug.WebDav.Handler.Delete
+  alias Plug.WebDAV.Handler.Propfind
+  alias Plug.WebDAV.Handler.Mkcol
+  alias Plug.WebDAV.Handler.Put
+  alias Plug.WebDAV.Handler.Get
+  alias Plug.WebDAV.Handler.Move
+  alias Plug.WebDAV.Handler.Delete
 
   require Logger
 
   def init(opts) do
     case Keyword.pop(opts, :root) do
       {nil, _opts} ->
-        raise ArgumentError, "WebDav options must include a :root key"
+        raise ArgumentError, "WebDAV options must include a :root key"
       {root, opts} ->
         {Path.expand(root), opts}
     end
@@ -43,7 +43,7 @@ defmodule Plug.WebDav.Handler do
   @allow_header Enum.join(@allow, ",")
 
   def call(conn, opts) do
-    IO.inspect [__MODULE__, conn.method, conn.request_path, conn.path_info]
+    IO.inspect [__MODULE__, conn.method, conn.request_path, conn.path_info, conn.req_headers]
     conn |> dav_headers(opts) |> match(conn.method, file_path(conn, opts), opts)
   end
 
@@ -75,6 +75,7 @@ defmodule Plug.WebDav.Handler do
   defp match(conn, "PROPFIND", {:ok, file_path, _depth}, opts) do
     case Propfind.call(conn, file_path, directory(file_path), opts) do
       {:ok, props} ->
+        IO.inspect props
         send_resp(conn, 207, props)
       {:error, status, reason} ->
         Logger.warn "PROPFIND error #{inspect status} #{inspect reason}"

@@ -1,4 +1,4 @@
-defmodule Plug.WebDav.Handler.Common do
+defmodule Plug.WebDAV.Handler.Common do
   alias Plug.Conn, as: C
 
   @dav_levels   ~w(1)
