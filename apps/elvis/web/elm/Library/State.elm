@@ -36,6 +36,7 @@ initialState =
         , searchQuery = ""
         , searchBounceCount = 0
         , scrollMomentum = Nothing
+        , scrollInteraction = Library.MouseScroll
         }
 
 
@@ -268,10 +269,15 @@ update action model maybeChannelId =
                         { model | levels = levels, unloadingLevel = Nothing }
                     else
                         model
+
+                scrollInteraction =
+                    Maybe.map (always Library.MouseScroll) scrollTop
+                        |> Maybe.withDefault Library.TouchScroll
             in
                 { model_
                     | animationTime = Just time
                     , scrollMomentum = scrollMomentum
+                    , scrollInteraction = scrollInteraction
                 }
                     ! []
 

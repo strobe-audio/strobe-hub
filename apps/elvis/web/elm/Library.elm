@@ -83,6 +83,11 @@ type alias Node =
     }
 
 
+type ScrollInteraction
+    = TouchScroll
+    | MouseScroll
+
+
 type alias Model =
     { levels : List Level
     , depth : Int
@@ -95,6 +100,7 @@ type alias Model =
     , searchQuery : String
     , searchBounceCount : Int
     , scrollMomentum : Maybe Utils.Touch.Momentum
+    , scrollInteraction : ScrollInteraction
     }
 
 

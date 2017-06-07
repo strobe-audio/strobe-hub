@@ -78,6 +78,56 @@ levels model =
 folder : Library.Model -> Library.Level -> Library.Folder -> Bool -> Html Library.Msg
 folder model level folder isCurrent =
     let
+        f =
+            case model.scrollInteraction of
+                Library.TouchScroll ->
+                    folderTouchInteraction
+
+                Library.MouseScroll ->
+                    folderMouseInteraction
+    in
+        (f model level folder isCurrent)
+
+
+folderMouseInteraction : Library.Model -> Library.Level -> Library.Folder -> Bool -> Html Library.Msg
+folderMouseInteraction model level folder isCurrent =
+    let
+        view =
+            (folderView level folder)
+
+        offset =
+            level.scrollPosition + view.firstNodePosition
+
+        contents =
+            (List.map (renderable model folder) view.renderable)
+
+        attrs =
+            if isCurrent then
+                [ id "__scrollable__" ]
+            else
+                []
+
+        pad =
+            div [ style [ ( "height", (toString view.firstNodePosition) ++ "px" ) ] ] []
+    in
+        div
+            (attribute "data-visible" (toString level.visible) :: (class "library--folder") :: attrs)
+            [ pad
+            , lazy2
+                (\ac sp ->
+                    Html.Keyed.node
+                        "div"
+                        [ class "library--contents library--contents__mouse" ]
+                        contents
+                )
+                level.action
+                level.scrollPosition
+            ]
+
+
+folderTouchInteraction : Library.Model -> Library.Level -> Library.Folder -> Bool -> Html Library.Msg
+folderTouchInteraction model level folder isCurrent =
+    let
         childHeight =
             Library.nodeHeight
 
