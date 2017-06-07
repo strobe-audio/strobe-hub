@@ -181,12 +181,6 @@ $channel-select-border: rgba(0, 0, 0, 0.05);
 }
 
 
-.channels-selector--channel__playing .channels-selector--display {
-  &:before {
-    color: rgba(0, 0, 0, 1);
-    content: "\f144";
-  }
-}
 .channels-selector--channel-info {
   flex: 1;
   display: flex;
