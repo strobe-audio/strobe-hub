@@ -4,11 +4,11 @@ defmodule Strobe.Server.Ntp do
 
   @name __MODULE__
 
-  def start_link(dev) do
-    GenServer.start_link(__MODULE__, dev, name: @name)
+  def start_link() do
+    GenServer.start_link(__MODULE__, [], name: @name)
   end
 
-  def init(dev) do
+  def init(_opts) do
     Process.flag(:trap_exit, true)
     send(self(), :start)
     {:ok, %{port: nil}}
