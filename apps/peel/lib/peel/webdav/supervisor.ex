@@ -11,7 +11,8 @@ defmodule Peel.WebDAV.Supervisor do
   end
 
   def init(opts) do
-    ensure_docroot(opts)
+    root = ensure_docroot(opts)
+    Logger.info "Starting WebDAV at root #{root}"
 
     children = [
       # We can run the Peel webdav on a separate port like this, but instead
@@ -23,6 +24,8 @@ defmodule Peel.WebDAV.Supervisor do
   end
 
   defp ensure_docroot(opts) do
-    Keyword.fetch!(opts, :root) |> File.mkdir_p
+    root = Keyword.fetch!(opts, :root)
+    root |> File.mkdir_p
+    root
   end
 end
