@@ -699,7 +699,7 @@ searchButton model =
         Just folder ->
             case folder.search of
                 Nothing ->
-                    div [] []
+                    div [ class "library--breadcrumb-search-pad" ] []
 
                 Just action ->
                     let

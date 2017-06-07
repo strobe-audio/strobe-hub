@@ -117,7 +117,9 @@
     margin: 0 $padding;
   }
 }
-
+.library--breadcrumb-search-pad {
+  flex: 0 0 $button-size;
+}
 .library--breadcrumb-search-toggle {
   @mixin fa-btn "\f002"; /* fa-search */
   flex: 0 0 $button-size;
