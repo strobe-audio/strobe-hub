@@ -25,6 +25,7 @@ defmodule Peel do
       worker(Peel.Modifications.Create.FileStatusCheck, [webdav_conf]),
       worker(Peel.Modifications.Create, [webdav_conf]),
       worker(MusicBrainz.Client, []),
+      worker(Peel.CoverArt.ITunes.Client, []),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

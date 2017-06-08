@@ -44,9 +44,14 @@ defmodule Peel.CoverArt do
   end
   def lookup_album_art({:error, _reason}, album) do
     {:ok, path, url} = media_location(album)
-    case MusicBrainz.cover_art(album, path) do
-      :ok -> {:ok, url}
-      {:error, reason} -> {:error, reason}
+    case Peel.CoverArt.ITunes.cover_art(album, path) do
+      :ok ->
+        {:ok, url}
+      {:error, _reason} ->
+        case MusicBrainz.cover_art(album, path) do
+          :ok -> {:ok, url}
+          {:error, reason} -> {:error, reason}
+        end
     end
   end
 
