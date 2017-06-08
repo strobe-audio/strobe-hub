@@ -386,7 +386,7 @@ defmodule Peel.Events.Library do
     %{
       # id: "peel:artist/#{artist.id}",
       title: artist.name,
-      icon: "",
+      icon: icon(artist.image),
       actions: %{ click: click_action(artist), play: nil },
       metadata: nil,
     }

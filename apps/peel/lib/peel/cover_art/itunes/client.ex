@@ -30,14 +30,11 @@ defmodule Peel.CoverArt.ITunes.Client do
       entity: "musicArtist",
       limit: 4,
     }
-    case request("/search", params) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    case request_with_retries("/search", params, 5) do
+      {:ok, body} ->
         response = Poison.decode!(body, as: %{"results" => [Peel.CoverArt.ITunes.Artist]})
         {:ok, response["results"]}
-      {:ok, %HTTPoison.Response{status_code: status}} ->
-        {:error, :invalid_request}
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        {:error, reason}
+      err -> err
     end
   end
 
@@ -50,14 +47,11 @@ defmodule Peel.CoverArt.ITunes.Client do
       attribute: "albumTerm",
       limit: 4,
     }
-    case request("/search", params) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    case request_with_retries("/search", params, 5) do
+      {:ok, body} ->
         response = Poison.decode!(body, as: %{"results" => [Peel.CoverArt.ITunes.Album]})
         {:ok, response["results"]}
-      {:ok, %HTTPoison.Response{status_code: status}} ->
-        {:error, :invalid_request}
-      {:error, %HTTPoison.Error{reason: reason}} ->
-        {:error, reason}
+      err -> err
     end
   end
 
@@ -77,8 +71,8 @@ defmodule Peel.CoverArt.ITunes.Client do
       id: id,
       entity: "album",
     }
-    case request("/lookup", params) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    case request_with_retries("/lookup", params, 5) do
+      {:ok, body} ->
         response =
         albums =
           Poison.decode!(body)
@@ -86,10 +80,35 @@ defmodule Peel.CoverArt.ITunes.Client do
           |> Enum.filter(fn(%{"wrapperType" => type}) -> type == "collection" end)
           |> Enum.map(&to_album/1)
         {:ok, albums}
-      {:ok, %HTTPoison.Response{status_code: status}} ->
+      err -> err
+    end
+  end
+
+  # TODO: add retries etc
+  def artist_image(%Artist{artistLinkUrl: url}) do
+    case HTTPoison.get(url, [], [follow_redirect: true]) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        extract_artist_image(body)
+      {:ok, resp} ->
+        Logger.error "Got error response from iTunes #{url} => #{ inspect resp }"
         {:error, :invalid_request}
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      {:error, %HTTPoison.Error{reason: reason} = resp} ->
+        Logger.error "Got error response from iTunes #{url} => #{ inspect resp }"
         {:error, reason}
+    end
+  end
+
+  @image_meta_re ~r{<meta.*?property="og:image".*?>}
+  @meta_url_re ~r{content="([^"]+)"}
+
+  defp extract_artist_image(body) do
+    with [meta]   <- Regex.run(@image_meta_re, body),
+         [_, url] <- Regex.run(@meta_url_re, meta)
+    do
+      {:ok, url}
+    else
+      _ ->
+        {:error, :invalid_html}
     end
   end
 
@@ -118,7 +137,6 @@ defmodule Peel.CoverArt.ITunes.Client do
     uri = request_uri(path, geolocated_params(params, country))
     gap = now() - last_call
     if gap < @period  do
-      IO.inspect [:sleeping, @period - gap]
       Process.sleep(@period - gap)
     end
     resp = uri |> URI.to_string |> HTTPoison.get([], [follow_redirect: true])
@@ -141,5 +159,25 @@ defmodule Peel.CoverArt.ITunes.Client do
     query = URI.encode_query(params)
     uri = @api_uri |> URI.merge(path)
     %URI{ uri | query: query }
+  end
+
+  defp request_with_retries(path, params, tries, last_resp \\ nil)
+  defp request_with_retries(_path, _params, 0, last_resp) do
+    case last_resp do
+      {:ok, %HTTPoison.Response{status_code: status}} ->
+        {:error, :"status_#{status}"}
+      {:error, %HTTPoison.Error{reason: reason}} ->
+        {:error, reason}
+    end
+  end
+  defp request_with_retries(path, params, tries, last_resp) do
+    case request(path, params) do
+      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+        {:ok, body}
+      {_, resp} ->
+        Logger.warn "Got bad response from server, #{path} -> #{inspect resp} retrying (#{tries - 1})"
+        Process.sleep(1_000)
+        request_with_retries(path, params, tries - 1, resp)
+    end
   end
 end

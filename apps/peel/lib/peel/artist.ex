@@ -14,6 +14,10 @@ defmodule Peel.Artist do
     field :name, :string
 
     field :normalized_name, :string
+    field :image, :string
+
+    field :itunes_url, :string
+    field :itunes_id, :integer
 
     belongs_to :collection, Peel.Collection, type: Ecto.UUID
     has_many :album_artists, AlbumArtist, on_delete: :delete_all
@@ -83,6 +87,20 @@ defmodule Peel.Artist do
   def search(query, %Collection{id: collection_id}) do
     pattern = "%#{Peel.String.normalize(query)}%"
     from(artist in Artist, where: like(artist.normalized_name, ^pattern)) |> where(collection_id: ^collection_id) |> Repo.all
+  end
+
+  def without_image do
+    from(a in Artist,
+      where: (is_nil(a.image) or (a.image == ""))
+    ) |> Repo.all
+  end
+
+  def change(model, changes) do
+    Ecto.Changeset.change(model, changes)
+  end
+
+  def set_image(artist, image_path) do
+    Artist.change(artist, %{image: image_path}) |> Repo.update!
   end
 end
 
