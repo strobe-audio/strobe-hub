@@ -43,7 +43,7 @@ defmodule Plug.WebDAV.Handler do
   @allow_header Enum.join(@allow, ",")
 
   def call(conn, opts) do
-    IO.inspect [__MODULE__, conn.method, conn.request_path, conn.path_info, conn.req_headers]
+    # IO.inspect [__MODULE__, conn.method, conn.request_path, conn.path_info, conn.req_headers]
     conn |> dav_headers(opts) |> match(conn.method, file_path(conn, opts), opts)
   end
 
@@ -75,7 +75,6 @@ defmodule Plug.WebDAV.Handler do
   defp match(conn, "PROPFIND", {:ok, file_path, _depth}, opts) do
     case Propfind.call(conn, file_path, directory(file_path), opts) do
       {:ok, props} ->
-        IO.inspect props
         send_resp(conn, 207, props)
       {:error, status, reason} ->
         Logger.warn "PROPFIND error #{inspect status} #{inspect reason}"
