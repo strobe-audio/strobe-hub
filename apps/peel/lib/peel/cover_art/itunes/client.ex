@@ -11,6 +11,8 @@ defmodule Peel.CoverArt.ITunes.Client do
   alias Peel.CoverArt.ITunes.Artist
   alias Peel.CoverArt.ITunes.Album
 
+  require Logger
+
   @api_uri URI.parse "https://itunes.apple.com"
   # Limit to 2 requests per second
   @period 500
@@ -24,7 +26,6 @@ defmodule Peel.CoverArt.ITunes.Client do
     normalized_name = Peel.String.normalize(name)
     params = %{
       term: normalized_name,
-      country: "gb", # TODO: does it matter apart from some future affiliate linking?
       media: "music",
       entity: "musicArtist",
       limit: 4,
@@ -44,7 +45,6 @@ defmodule Peel.CoverArt.ITunes.Client do
     normalized_title = Peel.String.normalize(title)
     params = %{
       term: normalized_title,
-      country: "gb", # TODO: does it matter apart from some future affiliate linking?
       media: "music",
       entity: "album",
       attribute: "albumTerm",
@@ -105,17 +105,28 @@ defmodule Peel.CoverArt.ITunes.Client do
   ##### Callbacks
 
   def init(_opts) do
-    {:ok, 0}
+    # TODO: perhaps make iTunes country a config setting, with an initial value
+    # derived from ipinfo
+    %HTTPoison.Response{status_code: 200, body: body} = HTTPoison.get!("https://ipinfo.io", [{"accept", "application/json"}], [follow_redirect: true])
+    location = body |> Poison.decode!
+    Logger.info "Using iTunes search with country set to #{location["country"]}"
+
+    {:ok, {location["country"], 0}}
   end
 
-  def handle_call({:get, uri}, _from, last_call) do
+  def handle_call({:get, path, params}, _from, {country, last_call}) do
+    uri = request_uri(path, geolocated_params(params, country))
     gap = now() - last_call
     if gap < @period  do
       IO.inspect [:sleeping, @period - gap]
       Process.sleep(@period - gap)
     end
     resp = uri |> URI.to_string |> HTTPoison.get([], [follow_redirect: true])
-    {:reply, resp, now()}
+    {:reply, resp, {country, now()}}
+  end
+
+  defp geolocated_params(params, country) do
+    Map.put(params, :country, country)
   end
 
   defp now do
@@ -123,8 +134,7 @@ defmodule Peel.CoverArt.ITunes.Client do
   end
 
   defp request(path, params) do
-    uri = request_uri(path, params)
-    GenServer.call(__MODULE__, {:get, uri}, :infinity)
+    GenServer.call(__MODULE__, {:get, path, params}, :infinity)
   end
 
   defp request_uri(path, params) do
