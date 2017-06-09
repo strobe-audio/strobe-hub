@@ -126,11 +126,19 @@ defmodule Peel.CoverArt.ITunes.Client do
   def init(_opts) do
     # TODO: perhaps make iTunes country a config setting, with an initial value
     # derived from ipinfo
-    %HTTPoison.Response{status_code: 200, body: body} = HTTPoison.get!("https://ipinfo.io", [{"accept", "application/json"}], [follow_redirect: true])
-    location = body |> Poison.decode!
-    Logger.info "Using iTunes search with country set to #{location["country"]}"
+    country =
+      case HTTPoison.get("https://ipinfo.io", [{"accept", "application/json"}], [follow_redirect: true]) do
+        %HTTPoison.Response{status_code: 200, body: body} ->
+          location = body |> Poison.decode!
+          location["country"]
+        resp ->
+          Logger.warn "Unable to resolve iTunes country using IP: #{inspect resp}"
+          "GB"
+      end
 
-    {:ok, {location["country"], 0}}
+    Logger.info "Using iTunes search with country set to #{country}"
+
+    {:ok, {country, 0}}
   end
 
   def handle_call({:get, path, params}, _from, {country, last_call}) do
