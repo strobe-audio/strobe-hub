@@ -93,7 +93,7 @@ folderMouseInteraction : Library.Model -> Library.Level -> Library.Folder -> Boo
 folderMouseInteraction model level folder isCurrent =
     let
         view =
-            (folderView level folder)
+            (folderView model level folder)
 
         offset =
             level.scrollPosition + view.firstNodePosition
@@ -113,8 +113,8 @@ folderMouseInteraction model level folder isCurrent =
         div
             (attribute "data-visible" (toString level.visible) :: (class "library--folder") :: attrs)
             [ pad
-            , lazy2
-                (\ac sp ->
+            , lazy3
+                (\ac sp w ->
                     Html.Keyed.node
                         "div"
                         [ class "library--contents library--contents__mouse" ]
@@ -122,6 +122,7 @@ folderMouseInteraction model level folder isCurrent =
                 )
                 level.action
                 level.scrollPosition
+                model.windowInnerWidth
             ]
 
 
@@ -132,7 +133,7 @@ folderTouchInteraction model level folder isCurrent =
             Library.nodeHeight
 
         view =
-            (folderView level folder)
+            (folderView model level folder)
 
         offset =
             level.scrollPosition + view.firstNodePosition
@@ -167,7 +168,7 @@ folderTouchInteraction model level folder isCurrent =
 
                 -- FIXME: these height calculation methods are too slow
                 totalHeight =
-                    Library.folderContentHeight folder
+                    Library.folderContentHeight model folder
 
                 -- FIXME: these height calculation methods are too slow
                 totalCount =
@@ -220,15 +221,15 @@ folderTouchInteraction model level folder isCurrent =
             level.scrollPosition
 
 
-folderView : Library.Level -> Library.Folder -> Library.FolderView
-folderView level folder =
+folderView : Library.Model -> Library.Level -> Library.Folder -> Library.FolderView
+folderView model level folder =
     -- find section that holds the current offset
     let
         ( renderable, firstNodePosition ) =
-            folderViewOpenWindow level folder.children 0.0
+            folderViewOpenWindow model level folder.children 0.0
 
         height =
-            Library.renderableHeight renderable
+            Library.renderableHeight model renderable
     in
         { renderable = renderable
         , height = height
@@ -237,8 +238,8 @@ folderView level folder =
         }
 
 
-folderViewOpenWindow : Library.Level -> List Library.Section -> Float -> ( List Library.Renderable, Float )
-folderViewOpenWindow level sections height =
+folderViewOpenWindow : Library.Model -> Library.Level -> List Library.Section -> Float -> ( List Library.Renderable, Float )
+folderViewOpenWindow model level sections height =
     case sections of
         [] ->
             ( [], 0.0 )
@@ -246,24 +247,24 @@ folderViewOpenWindow level sections height =
         section :: rest ->
             let
                 sectionHeight =
-                    Library.sectionHeight section
+                    Library.sectionHeight model section
 
                 sectionCover =
                     height + sectionHeight
             in
                 if sectionCover < (abs level.scrollPosition) then
-                    folderViewOpenWindow level rest sectionCover
+                    folderViewOpenWindow model level rest sectionCover
                 else
-                    folderViewFillWindow sections height ((abs level.scrollPosition) - height) level.scrollHeight []
+                    folderViewFillWindow model sections height ((abs level.scrollPosition) - height) level.scrollHeight []
 
 
-folderViewFillWindow : List Library.Section -> Float -> Float -> Float -> List Library.Renderable -> ( List Library.Renderable, Float )
-folderViewFillWindow sections position offset height renderable =
+folderViewFillWindow : Library.Model -> List Library.Section -> Float -> Float -> Float -> List Library.Renderable -> ( List Library.Renderable, Float )
+folderViewFillWindow model sections position offset height renderable =
     case sections of
         section :: rest ->
             let
                 ( r, firstNodePosition, remainingHeight ) =
-                    (sectionRenderable section position offset height)
+                    (sectionRenderable model section position offset height)
 
                 renderable_ =
                     (List.append renderable r)
@@ -279,7 +280,7 @@ folderViewFillWindow sections position offset height renderable =
                             position
             in
                 if remainingHeight > 0 then
-                    folderViewFillWindow rest newPosition 0.0 remainingHeight renderable_
+                    folderViewFillWindow model rest newPosition 0.0 remainingHeight renderable_
                 else
                     ( renderable_, newPosition )
 
@@ -287,14 +288,14 @@ folderViewFillWindow sections position offset height renderable =
             ( renderable, position )
 
 
-sectionRenderable : Library.Section -> Float -> Float -> Float -> ( List Library.Renderable, Float, Float )
-sectionRenderable section position offset height =
+sectionRenderable : Library.Model -> Library.Section -> Float -> Float -> Float -> ( List Library.Renderable, Float, Float )
+sectionRenderable model section position offset height =
     let
         ( skipHead, skipChild ) =
-            sectionContentOffset section offset
+            sectionContentOffset model section offset
 
         headHeight =
-            Library.sectionNodeHeight section
+            Library.sectionNodeHeight model section
 
         headOverlap =
             case skipHead of
@@ -319,7 +320,7 @@ sectionRenderable section position offset height =
         fillHeight =
             height + overlap
     in
-        if ((Library.sectionHeight section) - offset) > height then
+        if ((Library.sectionHeight model section) - offset) > height then
             -- take a subset
             let
                 childNodes : Int -> Int -> List Library.Renderable
@@ -358,7 +359,7 @@ sectionRenderable section position offset height =
                             children
 
                 sectionHeight =
-                    fillHeight - (Library.renderableHeight renderable)
+                    fillHeight - (Library.renderableHeight model renderable)
             in
                 ( renderable, sectionOffset, sectionHeight )
 
@@ -368,11 +369,11 @@ sectionRenderable section position offset height =
 -- contents at a givein pixel offset
 
 
-sectionContentOffset : Library.Section -> Float -> ( Bool, Int )
-sectionContentOffset section offset =
+sectionContentOffset : Library.Model -> Library.Section -> Float -> ( Bool, Int )
+sectionContentOffset model section offset =
     let
         headHeight =
-            Library.sectionNodeHeight section
+            Library.sectionNodeHeight model section
     in
         if offset < headHeight then
             ( False, 0 )
@@ -523,36 +524,45 @@ sectionLarge model folder section =
 sectionHuge : Library.Model -> Library.Folder -> Library.Section -> Html Library.Msg
 sectionHuge model folder section =
     let
-        playMsg =
+        playButton =
             case section.actions of
                 Nothing ->
-                    Library.NoOp
+                    []
 
                 Just actions ->
-                    (Library.MaybeExecuteAction actions.play section.title)
+                    let
+                        playMsg =
+                            (Library.MaybeExecuteAction actions.play section.title)
+                    in
+                        [ div
+                            [ class "library--section--h--play"
+                            , onClick playMsg
+                            , mapTouch (Utils.Touch.touchStart playMsg)
+                            , mapTouch (Utils.Touch.touchEnd playMsg)
+                            ]
+                            []
+                        ]
+
+        details =
+            div
+                [ class "library--section--h--metadata" ]
+                [ div
+                    [ class "library--section--h--title" ]
+                    [ text section.title ]
+                , (metadata section.metadata)
+                ]
 
         metadata_ =
             div
                 [ class "library--section--h--text" ]
-                [ div
-                    [ class "library--section--h--metadata" ]
-                    [ div
-                        [ class "library--section--h--title" ]
-                        [ text section.title ]
-                    , (metadata section.metadata)
-                    ]
-                , div
-                    [ class "library--section--h--play"
-                    , onClick playMsg
-                    , mapTouch (Utils.Touch.touchStart playMsg)
-                    , mapTouch (Utils.Touch.touchEnd playMsg)
-                    ]
-                    []
-                ]
+                (details :: playButton)
 
         cover =
             case section.icon of
                 Nothing ->
+                    div [] []
+
+                Just "" ->
                     div [] []
 
                 Just url ->

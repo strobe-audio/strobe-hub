@@ -151,29 +151,39 @@ defmodule Peel.Events.Library do
     case Artist.find(artist_id) do
       nil -> nil
       artist ->
-        albums = artist |> Artist.albums |> Enum.map(fn(album) ->
-          tracks = Track.album_by_artist(album.id, artist_id)
-          click = click_action(album)
+        albums =
+          artist
+          |> Artist.albums
+          |> Enum.map(fn(album) ->
+            tracks = Track.album_by_artist(album.id, artist_id)
+            click = click_action(album)
+            %{
+              id: "peel:album/#{album.id}",
+              title: album.title,
+              icon: icon(album.cover_image),
+              size: "l",
+              actions: %{
+                click: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
+                play: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
+              },
+              metadata: album_date_metadata([], album.date),
+              children: Enum.map(tracks, &folder_node/1)
+            } |> section()
+          end)
+        header =
           %{
-            id: "peel:album/#{album.id}",
-            title: album.title,
-            icon: icon(album.cover_image),
-            size: "l",
-            actions: %{
-              click: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
-              play: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
-            },
-            metadata: album_date_metadata([], album.date),
-            children: Enum.map(tracks, &folder_node/1)
+            id: "peel:artist/#{artist.id}",
+            title: artist.name,
+            size: "h",
+            icon: artist.image,
           } |> section()
-        end)
+        children = [header | albums]
 
-        %{
-          id: namespaced(path),
+        %{id: namespaced(path),
           title: artist.name,
           icon: "",
           search: nil,
-          children: albums,
+          children: children,
         }
     end
   end

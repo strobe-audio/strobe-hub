@@ -259,7 +259,7 @@
 	background: rgba(0, 0, 0, 0.05);
 }
 
-$library-huge-size: calc($button-size * 5);
+$library-huge-size: 100vw; /* calc($button-size * 5); */
 
 .library--section--h {
 	height: $library-huge-size;
@@ -267,7 +267,7 @@ $library-huge-size: calc($button-size * 5);
 .library--section--h--icon {
 	height: $library-huge-size;
 	background-size: cover;
-	background-position: 50% 0;
+	background-position: 50% 50%;
 	position: relative;
 	display: flex;
 	flex-direction: column;

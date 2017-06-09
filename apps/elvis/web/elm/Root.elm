@@ -31,6 +31,7 @@ type alias Model =
     , showAttachReceiver : Bool
     , activeChannelId : Maybe ID.Channel
     , listMode : State.ChannelListMode
+    , windowInnerWidth : Int
     , showPlaylistAndLibrary : Bool
     , library : Library.Model
     , touches : Utils.Touch.Model
@@ -56,6 +57,7 @@ type alias ViewAnimations =
 
 type alias Startup =
     { time : Time
+    , windowInnerWidth : Int
     , savedState : Maybe SavedState
     }
 

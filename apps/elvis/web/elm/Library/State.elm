@@ -13,8 +13,8 @@ import Process
 import Maybe.Extra
 
 
-initialState : Library.Model
-initialState =
+initialState : Int -> Library.Model
+initialState windowInnerWidth =
     let
         rootFolder =
             { id = "libraries", title = "Libraries", icon = "", children = [], search = Nothing }
@@ -37,6 +37,7 @@ initialState =
         , searchBounceCount = 0
         , scrollMomentum = Nothing
         , scrollInteraction = Library.MouseScroll
+        , windowInnerWidth = windowInnerWidth
         }
 
 
@@ -231,7 +232,7 @@ update action model maybeChannelId =
                                                 Utils.Touch.scrollPosition
                                                 model.animationTime
                                                 model.scrollMomentum
-                                                (Library.levelContentHeight current)
+                                                (Library.levelContentHeight model current)
                                                 (Just current.scrollHeight)
                                             )
                                     in

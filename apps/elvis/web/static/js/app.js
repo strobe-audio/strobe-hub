@@ -16,7 +16,7 @@ let storedState = localStorage.getItem(savedStateKey)
 let savedState = storedState ? JSON.parse(storedState) : null
 let time = Date.now()
 
-let app = Elm.Main.fullscreen({time, savedState})
+let app = Elm.Main.fullscreen({time, windowInnerWidth: window.innerWidth, savedState})
 
 let socketOpts = {
   params: {},
