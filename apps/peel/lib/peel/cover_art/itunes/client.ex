@@ -128,10 +128,10 @@ defmodule Peel.CoverArt.ITunes.Client do
     # derived from ipinfo
     country =
       case HTTPoison.get("https://ipinfo.io", [{"accept", "application/json"}], [follow_redirect: true]) do
-        %HTTPoison.Response{status_code: 200, body: body} ->
+        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
           location = body |> Poison.decode!
           location["country"]
-        resp ->
+        {_, resp} ->
           Logger.warn "Unable to resolve iTunes country using IP: #{inspect resp}"
           "GB"
       end
@@ -172,13 +172,13 @@ defmodule Peel.CoverArt.ITunes.Client do
   defp request_with_retries(path, params, tries, last_resp \\ nil)
   defp request_with_retries(_path, _params, 0, last_resp) do
     case last_resp do
-      {:ok, %HTTPoison.Response{status_code: status}} ->
+      %HTTPoison.Response{status_code: status} ->
         {:error, :"status_#{status}"}
-      {:error, %HTTPoison.Error{reason: reason}} ->
+      %HTTPoison.Error{reason: reason} ->
         {:error, reason}
     end
   end
-  defp request_with_retries(path, params, tries, last_resp) do
+  defp request_with_retries(path, params, tries, _last_resp) do
     case request(path, params) do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         {:ok, body}
