@@ -33,7 +33,7 @@ defmodule Peel.CoverArt.Importer do
   end
 
   defp import_albums(albums) do
-    workers = 4
+    workers = 1
     Logger.info "Launching cover art scan with #{workers} workers"
     opts = [
       worker_count: workers,
