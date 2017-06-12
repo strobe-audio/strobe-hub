@@ -3,7 +3,7 @@ defmodule Otis.State.Persistence.Renditions do
   require Logger
 
   alias Otis.State.Rendition
-  alias Otis.State.Repo
+  alias Otis.State.Repo.Writer, as: Repo
 
   def start_link do
     GenStage.start_link(__MODULE__, [], name: __MODULE__)

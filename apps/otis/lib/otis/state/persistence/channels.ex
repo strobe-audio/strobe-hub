@@ -4,7 +4,7 @@ defmodule Otis.State.Persistence.Channels do
   require Logger
 
   alias Otis.State.Channel
-  alias Otis.State.Repo
+  alias Otis.State.Repo.Writer, as: Repo
 
   @config Application.get_env(:otis, Otis.State.Persistence, [])
   @volume_save_period Keyword.get(@config, :volume_save_period, 0)

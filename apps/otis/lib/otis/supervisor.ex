@@ -13,6 +13,7 @@ defmodule Otis.Supervisor do
       worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
       worker(Otis.Source.File.Cache, []),
       worker(Otis.State.Repo, []),
+      worker(Otis.State.Repo.Writer, [Otis.State.Repo]),
       worker(Otis.State.Migrator, [], restart: :transient),
       worker(Otis.Events, []),
       worker(Otis.LoggerHandler, []),
