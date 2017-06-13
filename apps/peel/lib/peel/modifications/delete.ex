@@ -63,6 +63,11 @@ defmodule Peel.Modifications.Delete do
   end
   def handle_event({:modification, {:delete, [:directory, path]} = evt}, state) do
     case Collection.from_path(path) do
+      # DELETE /Collection Path
+      {:ok, collection, ""} ->
+        Logger.info "Deleting collection #{collection.id} '#{collection.name}'"
+        Collection.delete(collection)
+        Peel.WebDAV.Modifications.complete(evt)
       {:ok, collection, root} ->
         {:ok, _result} = Repo.transaction fn ->
           root

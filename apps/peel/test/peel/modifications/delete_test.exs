@@ -115,4 +115,20 @@ defmodule Peel.Modifications.DeleteTest do
     assert  length(Album.all) == 0
     assert  length(Artist.all) == 0
   end
+
+  test "delete collection", cxt do
+    path = "/#{cxt.collection.name}"
+    sub_path = "#{path}/sub"
+    :ok = [cxt.root, sub_path] |> Path.join |> Path.dirname |> File.mkdir_p
+    assert length(Collection.all) == 1
+    _track = Track.new("#{sub_path}/Track.mp3", cxt.collection, %{}) |> Peel.Repo.insert!
+    assert length(Track.all) == 1
+    Peel.WebDAV.Modifications.notify({:delete, [:directory, sub_path]})
+    assert_receive {:complete, {:delete, [:directory, ^sub_path]}}, 500
+    assert length(Collection.all) == 1
+    Peel.WebDAV.Modifications.notify({:delete, [:directory, path]})
+    assert_receive {:complete, {:delete, [:directory, ^path]}}, 500
+    assert length(Collection.all) == 0
+    assert length(Track.all) == 0
+  end
 end
