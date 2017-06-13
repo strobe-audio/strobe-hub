@@ -5,14 +5,22 @@ defmodule Otis.State.Persistence.Receivers do
 
   alias Otis.State.Receiver
   alias Otis.State.Channel
-  alias Otis.State.Repo
+  alias Otis.State.Repo.Writer, as: Repo
+
+  @config Application.get_env(:otis, Otis.State.Persistence, [])
+  @volume_save_period Keyword.get(@config, :volume_save_period, 0)
+
+  defmodule S do
+    @moduledoc false
+    defstruct [volumes: %{}, timer: nil]
+  end
 
   def start_link do
     GenStage.start_link(__MODULE__, [], name: __MODULE__)
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Otis.Events.producer}
+    {:consumer, %S{}, subscribe_to: Otis.Events.producer}
   end
 
   def handle_events([], _from, state) do
@@ -32,10 +40,8 @@ defmodule Otis.State.Persistence.Receivers do
     id |> receiver |> receiver_connected(id, recv)
     {:ok, state}
   end
-  def handle_event({:receiver_volume_change, [id, volume]}, state) do
-    Repo.transaction(fn ->
-      id |> receiver |> volume_change(id, volume)
-    end)
+  def handle_event({:receiver_volume_change, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do
+    state = %S{ state | volumes: Map.put(volumes, id, volume), timer: start_timer(timer) }
     {:ok, state}
   end
   def handle_event({:reattach_receiver, [id, channel_id, receiver]}, state) do
@@ -52,17 +58,34 @@ defmodule Otis.State.Persistence.Receivers do
     Repo.transaction fn ->
       id |> receiver |> rename(id, name)
     end
+    Otis.Events.notify({:"$__receiver_rename", [id]})
     {:ok, state}
   end
   def handle_event({:receiver_muted, [id, muted]}, state) do
     Repo.transaction fn ->
       id |> receiver |> muted(id, muted)
     end
+    Otis.Events.notify({:"$__receiver_muted", [id]})
     {:ok, state}
   end
   def handle_event(_evt, state) do
     {:ok, state}
   end
+
+  def handle_info(:save_volumes, %S{volumes: volumes} = state) do
+    Repo.transaction(fn ->
+      Enum.each(volumes, fn({id, volume}) ->
+        id |> receiver |> volume_change(id, volume)
+        Otis.Events.notify({:"$__receiver_volume_change", [id]})
+      end)
+    end)
+    {:noreply, [], %S{state | volumes: %{}, timer: nil}}
+  end
+
+  defp start_timer(nil) do
+    Process.send_after(self(), :save_volumes, @volume_save_period)
+  end
+  defp start_timer(timer), do: timer
 
   defp receiver(id) do
     Receiver.find(id, preload: :channel)

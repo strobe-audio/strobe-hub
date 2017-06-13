@@ -3,7 +3,7 @@ defmodule Otis.State.Persistence.Renditions do
   require Logger
 
   alias Otis.State.Rendition
-  alias Otis.State.Repo
+  alias Otis.State.Repo.Writer, as: Repo
 
   def start_link do
     GenStage.start_link(__MODULE__, [], name: __MODULE__)
@@ -33,18 +33,21 @@ defmodule Otis.State.Persistence.Renditions do
     Repo.transaction fn ->
       old_rendition_id |> load_rendition |> rendition_changed(old_rendition_id, channel_id)
     end
+    Otis.Events.notify({:"$__rendition_changed", [channel_id]})
     {:ok, state}
   end
   def handle_event({:renditions_skipped, [channel_id, skipped_ids]}, state) do
     Repo.transaction fn ->
       skipped_ids |> Enum.map(&load_rendition/1) |> renditions_skipped(channel_id)
     end
+    Otis.Events.notify({:"$__rendition_skip", [channel_id]})
     {:ok, state}
   end
   def handle_event({:rendition_deleted, [id, channel_id]}, state) do
     Repo.transaction fn ->
       [id] |> Enum.map(&load_rendition/1) |> compact_renditions() |> renditions_deleted(channel_id)
     end
+    Otis.Events.notify({:"$__rendition_delete", [channel_id]})
     {:ok, state}
   end
   def handle_event({:rendition_progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
@@ -52,6 +55,12 @@ defmodule Otis.State.Persistence.Renditions do
   end
   def handle_event({:rendition_progress, [_channel_id, rendition_id, position, _duration]}, state) do
     :ok = Otis.State.RenditionProgress.update(rendition_id, position)
+    Otis.Events.notify({:"$__rendition_progress", [rendition_id]})
+    {:ok, state}
+  end
+  def handle_event({:source_deleted, [type, id]}, state) do
+    renditions = Rendition.for_source(type, id)
+    Enum.each(renditions, &Otis.Events.notify({:rendition_deleted, [&1.id, &1.channel_id]}))
     {:ok, state}
   end
   def handle_event(_evt, state) do

@@ -9,7 +9,7 @@ defmodule Otis.Library.Airplay.Events.Library do
 
   if Code.ensure_compiled?(Otis.Media) do
     def setup(state) do
-      image_dir = [__DIR__, "../../../../../priv/static"] |> Path.join |> Path.expand
+      image_dir = [:code.priv_dir(:otis_library_airplay), "static"] |> Path.join |> Path.expand
       Otis.Media.copy!(Airplay.library_id(), "airplay.svg", Path.join([image_dir, "strobe-airplay.svg"]))
       Otis.Media.copy!(Airplay.library_id(), "airplay-1.svg", Path.join([image_dir, "strobe-airplay-1.svg"]))
       Otis.Media.copy!(Airplay.library_id(), "airplay-2.svg", Path.join([image_dir, "strobe-airplay-2.svg"]))

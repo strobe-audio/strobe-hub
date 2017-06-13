@@ -15,6 +15,7 @@ defmodule Otis.State.Channel do
     field :position, :integer, default: 0
 
     has_many :receivers, Otis.State.Receiver
+    belongs_to :profile, Otis.State.Profile, type: Ecto.UUID
   end
 
   def first do

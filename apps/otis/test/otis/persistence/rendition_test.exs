@@ -2,14 +2,11 @@ defmodule Otis.Persistence.RenditionTest do
   use   ExUnit.Case
 
   alias Otis.Test.TestSource
+  alias Otis.State.Rendition
   alias Otis.Pipeline.Playlist
   alias Otis.Channel
 
   setup_all do
-    on_exit fn ->
-      Otis.State.Rendition.delete_all
-      Otis.State.Channel.delete_all
-    end
     {:ok, channel_id: Otis.uuid }
   end
 
@@ -87,6 +84,8 @@ defmodule Otis.Persistence.RenditionTest do
     {:ok, [rendition1, rendition2]} = Playlist.list(context.playlist)
     Otis.Events.notify({:rendition_changed, [context.channel.id, rendition1.id, rendition2.id]})
     rendition1_id = rendition1.id
+    channel_id = context.channel.id
+    assert_receive {:"$__rendition_changed", [^channel_id]}
     assert_receive {:old_rendition_removed, [^rendition1_id]}
     [record2] = Otis.State.Rendition.all
     assert record2.id == rendition2.id
@@ -133,6 +132,7 @@ defmodule Otis.Persistence.RenditionTest do
     :ok = Playlist.skip(context.playlist, skip_to)
     channel_id = context.channel.id
     assert_receive {:renditions_skipped, [^channel_id, ^skipped_ids]}
+    assert_receive {:"$__rendition_skip", [^channel_id]}
     assert [nil, nil, nil] = skipped_ids |> Enum.map(&Otis.State.Rendition.find/1)
     positions = kept_ids |> Enum.map(fn(id) -> Otis.State.Rendition.find(id) end) |> Enum.map(fn(rec) -> rec.position end)
     assert [0, 1] == positions
@@ -174,8 +174,10 @@ defmodule Otis.Persistence.RenditionTest do
     assert_receive {:new_rendition_created, _}, 200
     {:ok, renditions} = Playlist.list(context.playlist)
     assert [0, 0] == Enum.map renditions, fn(r) -> r.playback_position end
-    [r1, _] = renditions
+    [%{id: r1id} = r1, _] = renditions
     Otis.Events.sync_notify({:rendition_progress, [context.channel.id, r1.id, 1000, 2000]})
+    assert_receive {:"$__rendition_progress", [^r1id]}
+    Otis.State.RenditionProgress.save()
     rendition = Otis.State.Rendition.find(r1.id)
     assert rendition.playback_position == 1000
   end
@@ -209,5 +211,16 @@ defmodule Otis.Persistence.RenditionTest do
     Playlist.remove(context.playlist, rendition1.id)
     assert_receive {:rendition_deleted, _}
     assert nil == Otis.State.Rendition.find(rendition1.id)
+  end
+
+  test "removing a source removes all associated renditions", context do
+    source = TestSource.new
+    Playlist.append(context.playlist, [source])
+    assert_receive {:new_rendition_created, _}
+    {:ok, [rendition]} = Playlist.list(context.playlist)
+    Otis.Events.notify({:source_deleted, [Otis.Library.Source.type(source), Otis.Library.Source.id(source)]})
+    evt = {:rendition_deleted, [rendition.id, context.channel.id]}
+    assert_receive ^evt
+    assert nil == Rendition.find(rendition.id)
   end
 end

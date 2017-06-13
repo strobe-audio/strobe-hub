@@ -2,6 +2,7 @@ defmodule Otis.State.RenditionProgress do
   use GenServer
 
   alias Otis.State.Repo
+  alias Otis.State.Repo.Writer
 
   require Logger
 
@@ -13,6 +14,10 @@ defmodule Otis.State.RenditionProgress do
 
   def update(rendition_id, progress) do
     GenServer.call(@name, {:progress, rendition_id, progress})
+  end
+
+  def save do
+    GenServer.call(@name, :save)
   end
 
   def init(_opts) do
@@ -49,7 +54,7 @@ defmodule Otis.State.RenditionProgress do
   end
 
   defp save(state) do
-    Repo.transaction fn ->
+    Writer.transaction fn ->
       Enum.each(state, &save_progress/1)
     end
   end

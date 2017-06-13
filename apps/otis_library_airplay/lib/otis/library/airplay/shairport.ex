@@ -19,7 +19,7 @@ defmodule Otis.Library.Airplay.Shairport do
   def version_major, do: version() |> elem(0)
 
   def config_file do
-    Path.join([__DIR__, "shairport-v#{version_major()}.conf"]) |> Path.expand()
+    Path.join([:code.priv_dir(:otis_library_airplay), "conf/shairport-v#{version_major()}.conf"]) |> Path.expand()
   end
 
   def run(n) do

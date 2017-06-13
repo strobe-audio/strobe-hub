@@ -27,8 +27,10 @@
 }
 
 .library--breadcrumb--dropdown {
-  /* flex: 1; */
 	max-width: 33vw;
+  height: $button-size;
+  display: flex;
+  align-items: center;
 }
 
 .library--breadcrumb--control {
@@ -73,12 +75,21 @@
   bottom: $padding;
 }
 
+.library--breadcrumb--section {
+  cursor: pointer;
+  &:hover {
+    color: red;
+  }
+}
+
 .library--breadcrumb--dropdown > .library--breadcrumb--section,
 .library--breadcrumb--dropdown > .library--breadcrumb--divider {
   display: none;
 }
 .library--breadcrumb--dropdown > .library--breadcrumb--section:last-child {
-  display: block;
+  height: $button-size;
+  display: flex;
+  align-items: center;
   color: #03A9F4;
 }
 
@@ -99,13 +110,6 @@
   flex: 0 0 0;
 }
 
-.library--breadcrumb--section {
-  cursor: pointer;
-  &:hover {
-    color: red;
-  }
-}
-
 
 .library--breadcrumb--divider {
   &:before {
@@ -113,7 +117,9 @@
     margin: 0 $padding;
   }
 }
-
+.library--breadcrumb-search-pad {
+  flex: 0 0 $button-size;
+}
 .library--breadcrumb-search-toggle {
   @mixin fa-btn "\f002"; /* fa-search */
   flex: 0 0 $button-size;
@@ -200,6 +206,7 @@
   flex-direction: row;
   position: relative;
   transform: translateZ(0);
+  max-height: calc(100vh - (3 * $button-size));
 }
 
 .library--folder {
@@ -252,7 +259,7 @@
 	background: rgba(0, 0, 0, 0.05);
 }
 
-$library-huge-size: calc($button-size * 5);
+$library-huge-size: 100vw; /* calc($button-size * 5); */
 
 .library--section--h {
 	height: $library-huge-size;
@@ -260,7 +267,7 @@ $library-huge-size: calc($button-size * 5);
 .library--section--h--icon {
 	height: $library-huge-size;
 	background-size: cover;
-	background-position: 50% 0;
+	background-position: 50% 50%;
 	position: relative;
 	display: flex;
 	flex-direction: column;

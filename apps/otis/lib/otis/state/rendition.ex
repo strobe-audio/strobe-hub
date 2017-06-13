@@ -74,6 +74,13 @@ defmodule Otis.State.Rendition do
     |> Otis.Library.Source.Origin.load!
   end
 
+  def for_source(type, id) when is_atom(type) do
+    for_source(to_string(type), id)
+  end
+  def for_source(type, id) do
+    Rendition |> where(source_id: ^id, source_type: ^type) |> Repo.all
+  end
+
   def type(record) do
     record.source_type
     |> String.to_atom

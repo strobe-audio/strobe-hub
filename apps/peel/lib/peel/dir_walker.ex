@@ -55,16 +55,16 @@ defmodule Peel.DirWalker do
 
   def stream(path_list) do
     Stream.resource(fn ->
-      {:ok, dirw} = __MODULE__.start_link(path_list)
-      dirw
-    end ,
-    fn(dirw) ->
-      case next(dirw,1) do
-        data when is_list(data) -> {data, dirw }
-        _ -> {:halt, dirw}
-      end
-    end,
-    fn(dirw) -> stop(dirw) end
+        {:ok, dirw} = __MODULE__.start_link(path_list)
+        dirw
+      end ,
+      fn(dirw) ->
+        case next(dirw,1) do
+          data when is_list(data) -> {data, dirw }
+          _ -> {:halt, dirw}
+        end
+      end,
+      fn(dirw) -> stop(dirw) end
     )
   end
 

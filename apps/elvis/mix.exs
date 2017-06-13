@@ -8,7 +8,7 @@ defmodule Elvis.Mixfile do
      config_path: "../../config/config.exs",
      deps_path: "../../deps",
      lockfile: "../../mix.lock",
-     elixir: "~> 1.0",
+     elixir: "~> 1.4.0",
      elixirc_paths: elixirc_paths(Mix.env()),
      compilers: [:phoenix] ++ Mix.compilers,
      build_embedded: Mix.env() == :prod,
@@ -55,7 +55,8 @@ defmodule Elvis.Mixfile do
      {:otis_library_bbc, in_umbrella: true},
      {:otis_library_upnp, in_umbrella: true},
      {:otis_library_airplay, in_umbrella: true},
-     {:distillery, "~> 1.0"},
+     # Needs to be compatible with that specified by nerves
+     {:distillery, "== 1.2.2"},
      {:logger_papertrail_backend, "~> 0.1.0"},
      {:gen_stage, "~> 0.1"},
    ]

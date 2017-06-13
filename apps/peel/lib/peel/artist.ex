@@ -4,6 +4,7 @@ defmodule Peel.Artist do
   alias  Peel.Album
   alias  Peel.AlbumArtist
   alias  Peel.Artist
+  alias  Peel.Collection
   alias  Peel.Repo
   alias  Peel.Track
 
@@ -13,13 +14,19 @@ defmodule Peel.Artist do
     field :name, :string
 
     field :normalized_name, :string
+    field :image, :string
 
-    has_many :album_artists, AlbumArtist
+    field :itunes_url, :string
+    field :itunes_id, :integer
+
+    belongs_to :collection, Peel.Collection, type: Ecto.UUID
+    has_many :album_artists, AlbumArtist, on_delete: :delete_all
     has_many :tracks, Track
   end
 
-  def sorted do
+  def sorted(%Collection{id: collection_id}) do
     Artist
+    |> where(collection_id: ^collection_id)
     |> order_by(asc: :normalized_name)
     |> Repo.all
   end
@@ -27,10 +34,10 @@ defmodule Peel.Artist do
   def for_track(%Track{performer: nil} = track) do
     %Track{ track | performer: "Unknown artist" } |> for_track
   end
-  def for_track(%Track{performer: performer} = track) do
+  def for_track(%Track{performer: performer, collection_id: collection_id} = track) do
     normalized_performer = normalize_performer(performer)
     Artist
-    |> where(normalized_name: ^normalized_performer)
+    |> where(collection_id: ^collection_id, normalized_name: ^normalized_performer)
     |> limit(1)
     |> Repo.one
     |> return_or_create(track)
@@ -38,7 +45,7 @@ defmodule Peel.Artist do
   end
 
   def return_or_create(nil, track) do
-    %Artist{ name: track.performer }
+    %Artist{ name: track.performer, collection_id: track.collection_id }
     |> normalize
     |> Repo.insert!
   end
@@ -64,6 +71,11 @@ defmodule Peel.Artist do
     ) |> Repo.all
   end
 
+  def tracks(artist) do
+    artist = artist |> Repo.preload(:tracks)
+    artist.tracks
+  end
+
   def renormalize do
     Repo.transaction fn ->
       Enum.each(all(), fn(a) ->
@@ -72,9 +84,23 @@ defmodule Peel.Artist do
     end
   end
 
-  def search(query) do
+  def search(query, %Collection{id: collection_id}) do
     pattern = "%#{Peel.String.normalize(query)}%"
-    from(artist in Artist, where: like(artist.normalized_name, ^pattern)) |> Repo.all
+    from(artist in Artist, where: like(artist.normalized_name, ^pattern)) |> where(collection_id: ^collection_id) |> Repo.all
+  end
+
+  def without_image do
+    from(a in Artist,
+      where: (is_nil(a.image) or (a.image == ""))
+    ) |> Repo.all
+  end
+
+  def change(model, changes) do
+    Ecto.Changeset.change(model, changes)
+  end
+
+  def set_image(artist, image_path) do
+    Artist.change(artist, %{image: image_path}) |> Repo.update!
   end
 end
 

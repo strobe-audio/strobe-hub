@@ -125,6 +125,7 @@ defmodule Otis.Library do
       def section(%{children: children} = section_data) do
         @section_defaults |> Map.merge(section_data) |> Map.merge(%{ length: length(children) })
       end
+      def section(section), do: section(Map.put(section, :children, []))
 
       defoverridable [
         setup: 1,

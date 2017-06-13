@@ -18,7 +18,8 @@ config :otis, :environment, :dev
 
 config :otis, Otis.State.Repo,
   adapter: Sqlite.Ecto,
-  database: Path.join([state_dir, "otis.dev.sqlite3"])
+  database: Path.join([state_dir, "otis.dev.sqlite3"]),
+  pragma: []
 
 config :otis, Otis.SNTP,
   port: 5045

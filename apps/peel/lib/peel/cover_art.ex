@@ -2,6 +2,7 @@ defmodule Peel.CoverArt do
   use    GenServer
 
   alias Peel.Album
+  alias Peel.Artist
   alias Peel.Track
 
   require Logger
@@ -10,6 +11,27 @@ defmodule Peel.CoverArt do
 
   def pending_albums do
     Album.without_cover_image()
+  end
+
+  def pending_artists do
+    Artist.without_image()
+  end
+
+  def artist_image(artist) do
+    result = {:ok, url} = artist |> lookup_artist_image() |> assign_default_cover(artist)
+    update_artist(artist, url)
+    result
+  end
+
+  def lookup_artist_image(artist) do
+    {:ok, path, url} = media_location(artist)
+    case Peel.CoverArt.ITunes.artist_image(artist, path) do
+      :ok ->
+        {:ok, url}
+      err ->
+        Logger.info "Unable to find image for artist #{artist.id} '#{artist.name}'"
+        err
+    end
   end
 
   def extract_and_assign(album) do
@@ -44,9 +66,14 @@ defmodule Peel.CoverArt do
   end
   def lookup_album_art({:error, _reason}, album) do
     {:ok, path, url} = media_location(album)
-    case MusicBrainz.cover_art(album, path) do
-      :ok -> {:ok, url}
-      {:error, reason} -> {:error, reason}
+    case Peel.CoverArt.ITunes.cover_art(album, path) do
+      :ok ->
+        {:ok, url}
+      {:error, _reason} ->
+        case MusicBrainz.cover_art(album, path) do
+          :ok -> {:ok, url}
+          {:error, reason} -> {:error, reason}
+        end
     end
   end
 
@@ -57,14 +84,20 @@ defmodule Peel.CoverArt do
     {:ok, placeholder_image()}
   end
 
-  def media_location(%Album{id: id}), do: media_location(id)
-  def media_location(%Track{album_id: album_id}), do: media_location(album_id)
-  def media_location(album_id) when is_binary(album_id) do
-    Otis.Media.location(media_namespace(), "#{album_id}.jpg", optimize: 2)
+  def media_location(%Artist{id: id}), do: media_location(id, "artist")
+  def media_location(%Album{id: id}), do: media_location(id, "cover")
+  def media_location(%Track{album_id: album_id}), do: media_location(album_id, "cover")
+  if Code.ensure_compiled?(Otis.Media) do
+    def media_location(id, type) do
+      Otis.Media.location(media_namespace(type), "#{id}.jpg", optimize: 2)
+    end
+  else
+    def media_location(_id, _type) do
+    end
   end
 
-  def media_namespace do
-    [Peel.library_id, "cover"]
+  def media_namespace(type) do
+    [Peel.library_id, type]
   end
 
   def start_link do
@@ -73,6 +106,9 @@ defmodule Peel.CoverArt do
 
   def update_album(album, artwork_path) do
     GenServer.cast(@name, {:update, album, artwork_path})
+  end
+  def update_artist(artist, artwork_path) do
+    GenServer.cast(@name, {:update, artist, artwork_path})
   end
 
   @placeholder_table :coverart_placeholder
@@ -84,7 +120,14 @@ defmodule Peel.CoverArt do
   end
 
 
-  def handle_cast({:update, album, image_path}, state) do
+  def handle_cast({:update, %Peel.Artist{} = artist, image_path}, state) do
+    Logger.info "Image for #{ artist.name } ==> #{ image_path }"
+    Peel.Repo.transaction fn ->
+      Artist.set_image(artist, image_path)
+    end
+    {:noreply, state}
+  end
+  def handle_cast({:update, %Peel.Album{} = album, image_path}, state) do
     Logger.info "Cover for #{ album.performer } > #{ album.title } ==> #{ image_path }"
     Peel.Repo.transaction fn ->
       Album.set_cover_image(album, image_path)
@@ -101,7 +144,7 @@ defmodule Peel.CoverArt do
   end
 
   defp executable do
-    System.find_executable("avconv")
+    System.find_executable("ffmpeg")
   end
 
   def placeholder_image do
@@ -114,11 +157,13 @@ defmodule Peel.CoverArt do
     end
   end
 
-  if Code.ensure_loaded?(Otis.Media) do
-    @placeholder_path  Path.expand("./cover_art/placeholder.jpg", __DIR__)
+  def placeholder_path do
+    Path.join([:code.priv_dir(:peel), "cover_art/placeholder.jpg"])
+  end
 
+  if Code.ensure_loaded?(Otis.Media) do
     def placeholder_image_path do
-      Otis.Media.copy!(Peel.library_id, "placeholder.jpg", @placeholder_path)
+      Otis.Media.copy!(Peel.library_id, "placeholder.jpg", placeholder_path())
     end
   else
     def placeholder_image_path do

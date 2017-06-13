@@ -2,6 +2,7 @@ defmodule Peel.Album do
   use    Peel.Model
 
   alias  Peel.Repo
+  alias  Peel.Collection
   alias  Peel.Track
   alias  Peel.Artist
   alias  Peel.Album
@@ -24,20 +25,22 @@ defmodule Peel.Album do
 
     field :cover_image, :string
 
-    has_many :album_artists, Peel.AlbumArtist
+    belongs_to :collection, Peel.Collection, type: Ecto.UUID
+    has_many :album_artists, Peel.AlbumArtist, on_delete: :delete_all
     has_many :tracks, Peel.Track
   end
 
-  def sorted do
+  def sorted(%Collection{id: collection_id}) do
     Album
+    |> where(collection_id: ^collection_id)
     |> order_by(asc: :normalized_title)
     |> Repo.all
   end
 
-  def by_title(title) do
+  def by_title(title, %Collection{id: collection_id}) do
     normalized_title = Peel.String.normalize(title)
     Album
-    |> where(normalized_title: ^normalized_title)
+    |> where(collection_id: ^collection_id, normalized_title: ^normalized_title)
     |> limit(1)
     |> Repo.one
   end
@@ -59,10 +62,10 @@ defmodule Peel.Album do
   def for_track(%Track{disk_number: nil} = track) do
     %Track{track | disk_number: 1} |> for_track
   end
-  def for_track(%Track{album_title: title} = track) do
+  def for_track(%Track{album_title: title, collection_id: collection_id} = track) do
     normalized_title = Peel.String.normalize(title)
     Album
-    |> where(normalized_title: ^normalized_title)
+    |> where(normalized_title: ^normalized_title, collection_id: ^collection_id)
     |> limit(1)
     |> Repo.one
     |> return_or_create(track)
@@ -71,6 +74,7 @@ defmodule Peel.Album do
 
   def return_or_create(nil, track) do
     %Album{
+      collection_id: track.collection_id,
       title: track.album_title,
       performer: track.performer,
       date: track.date,
@@ -113,8 +117,8 @@ defmodule Peel.Album do
     Ecto.Changeset.change(model, changes)
   end
 
-  def search(query) do
+  def search(query, %Collection{id: collection_id}) do
     pattern = "%#{Peel.String.normalize(query)}%"
-    from(album in Album, where: like(album.normalized_title, ^pattern)) |> Repo.all
+    from(album in Album, where: like(album.normalized_title, ^pattern)) |> where(collection_id: ^collection_id) |> Repo.all
   end
 end

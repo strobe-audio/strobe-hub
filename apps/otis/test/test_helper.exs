@@ -158,6 +158,9 @@ defmodule MessagingHandler do
     send(pid, :remove_messaging_handler)
     :ok
   end
+  def terminate(_reason, _state) do
+    :ok
+  end
 end
 
 defmodule Otis.Test.TestSource do
@@ -193,7 +196,7 @@ defimpl Otis.Library.Source, for: Otis.Test.TestSource do
   end
 
   def transcoder_args(_track) do
-    # noop
+    []
   end
 
   def metadata(_track) do

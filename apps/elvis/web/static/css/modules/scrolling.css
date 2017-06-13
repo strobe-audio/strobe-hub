@@ -1,9 +1,10 @@
 .scrolling,
 #__scrolling__ {
 	overflow-x: hidden;
-	overflow-y: scroll;
+	overflow-y: scroll !important;
 	-webkit-overflow-scrolling: touch;
   transform: translateZ(0);
+  z-index: 0 !important;
 }
 #__scrollable__ {
   transform: translateZ(0);

@@ -26,5 +26,13 @@ use Mix.Config
 # by uncommenting the line below and defining dev.exs, test.exs and such.
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
-#
+
+# http://yaws.hyber.org/embed.yaws
+config :yaws, [embedded: true]
+
+config :peel, Peel.Modifications.Create, [
+  # wait between getting event and testing the file status (ms)
+  queue_delay: 0,
+]
+
 import_config "#{Mix.env}.exs"

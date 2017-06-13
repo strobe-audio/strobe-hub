@@ -13,6 +13,10 @@ defmodule Elvis.Router do
     plug :accepts, ["json"]
   end
 
+  scope path: "/collections" do
+    forward "/", Peel.WebDAV
+  end
+
   scope "/", Elvis do
     pipe_through :browser # Use the default browser stack
 

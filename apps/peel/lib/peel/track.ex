@@ -2,10 +2,12 @@ defmodule Peel.Track do
   use    Peel.Model
 
   alias  Peel.Repo
+  alias  Peel.Collection
   alias  Peel.Track
   alias  Peel.Album
   alias  Peel.Artist
   alias  Peel.AlbumArtist
+  alias  Ecto.Changeset
 
   schema "tracks" do
     # Musical info
@@ -32,6 +34,7 @@ defmodule Peel.Track do
 
     field :cover_image, :string
 
+    belongs_to :collection, Peel.Collection, type: Ecto.UUID
     belongs_to :album, Peel.Album, type: Ecto.UUID
     belongs_to :artist, Peel.Artist, type: Ecto.UUID
   end
@@ -51,17 +54,23 @@ defmodule Peel.Track do
     |> Repo.all
   end
 
-  def new(path, metadata) do
-    new(path, metadata, File.stat!(path))
-  end
-  def new(path, metadata, %File.Stat{mtime: mtime}) do
+  def new(path, collection, metadata) do
+    # new(path, metadata, File.stat!(path))
     %Track{
-      mtime: Ecto.DateTime.from_erl(mtime),
-      path: path
+      collection_id: collection.id,
+      path: path,
     }
     |> struct(metadata)
     |> normalize
   end
+  # def new(path, metadata, %File.Stat{mtime: mtime}) do
+  #   %Track{
+  #     mtime: Ecto.DateTime.from_erl(mtime),
+  #     path: path
+  #   }
+  #   |> struct(metadata)
+  #   |> normalize
+  # end
 
   defp normalize(%Track{ title: nil } = track) do
     normalize(%Track{ track | title: "Untitled" })
@@ -70,11 +79,26 @@ defmodule Peel.Track do
     %Track{ track | normalized_title: Peel.String.normalize(track.title) }
   end
 
-  def by_path(path) do
+  def by_path(path, %Collection{id: collection_id}) do
     Track
-    |> where(path: ^path)
+    |> where(path: ^path, collection_id: ^collection_id)
     |> limit(1)
     |> Repo.one
+  end
+
+  def under_root(root, %Collection{id: collection_id}) do
+    pattern = "#{root}/%"
+    from(t in Track, where: like(t.path, ^pattern))
+    |> where(collection_id: ^collection_id)
+    |> Repo.all
+  end
+
+  def move(track, collection, path) do
+    Changeset.change(track, path: path, collection_id: collection.id) |> Repo.update!
+  end
+
+  def artist(track) do
+    track.artist_id |> Artist.find
   end
 
   def album(track) do
@@ -94,9 +118,20 @@ defmodule Peel.Track do
   end
   def strip_leading_dot("." <> rest), do: rest
 
-  def search(query) do
+  def search(query, %Collection{id: collection_id}) do
     pattern = "%#{Peel.String.normalize(query)}%"
-    from(track in Track, where: like(track.normalized_title, ^pattern)) |> Repo.all
+    from(track in Track, where: like(track.normalized_title, ^pattern))
+    |> where(collection_id: ^collection_id)
+    |> Repo.all
+  end
+
+  def path(track) do
+    track
+    |> Repo.preload(:collection)
+    |> abs_path()
+  end
+  defp abs_path(%Track{collection: collection, path: path}) do
+    [collection.path, path] |> Path.join
   end
 end
 
@@ -111,8 +146,8 @@ defimpl Otis.Library.Source, for: Peel.Track do
     Peel.Track
   end
 
-  def open!(%Track{path: path}, _id, packet_size_bytes) do
-    Elixir.File.stream!(path, [], packet_size_bytes)
+  def open!(track, _id, packet_size_bytes) do
+    track |> Track.path |> Elixir.File.stream!([], packet_size_bytes)
   end
 
   def pause(_track, _id, _stream) do

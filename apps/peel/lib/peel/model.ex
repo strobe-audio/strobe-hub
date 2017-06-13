@@ -51,6 +51,10 @@ defmodule Peel.Model do
         M |> Repo.delete_all
       end
 
+      def delete(m) do
+        m |> Repo.delete!
+      end
+
       # def search(title) do
         # match = "%#{title}%"
         # query = from(c in M,
@@ -65,6 +69,8 @@ defmodule Peel.Model do
       def validate_record(m, id) do
         m
       end
+
+      defoverridable [all: 0]
     end
   end
 end

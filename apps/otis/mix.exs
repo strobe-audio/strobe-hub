@@ -22,7 +22,6 @@ defmodule Otis.Mixfile do
     [ mod: {Otis, []},
       applications: [
         :logger,
-        :porcelain,
         :monotonic,
         :sqlite_ecto,
         :ecto,
@@ -35,15 +34,18 @@ defmodule Otis.Mixfile do
         :uuid,
         :poolboy,
         # :logger_file_backend,
+        :external_process,
       ],
       included_applications: [
         :dnssd,
       ],
       extra_applications: [],
-      env: [
-        receiver_logger: [addr: {224,0,0,224}, port: 9999],
-      ]
+      env: env(),
     ]
+  end
+
+  def env do
+    [ receiver_logger: [addr: {224,0,0,224}, port: 9999] ]
   end
 
   # Dependencies can be Hex packages:

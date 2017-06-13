@@ -20,7 +20,7 @@
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
     <script>
       // https://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/
-      document.addEventListener("touchstart", function() {},false);
+      document.addEventListener("touchstart", function() {},{passive: true});
     </script>
     <script>
       window.SENTRY_DSN = '<%= Application.get_env(:elvis, :sentry_dsn) %>'

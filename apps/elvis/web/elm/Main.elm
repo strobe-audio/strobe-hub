@@ -30,7 +30,7 @@ init startup location =
             (Routing.parseLocation location)
 
         initialState =
-            Root.State.initialState startup.time
+            Root.State.initialState startup.windowInnerWidth startup.time
 
         routeState =
             case currentRoute of

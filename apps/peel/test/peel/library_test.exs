@@ -2,6 +2,7 @@ defmodule Peel.Test.LibraryTest do
   use ExUnit.Case, async: false
 
   alias Peel.Repo
+  alias Peel.Collection
   alias Peel.Album
   alias Peel.Track
   alias Peel.Artist
@@ -17,16 +18,23 @@ defmodule Peel.Test.LibraryTest do
       Ecto.Adapters.SQL.rollback_test_transaction(Peel.Repo)
       Ecto.Adapters.SQL.rollback_test_transaction(Otis.State.Repo)
     end
+    Collection.delete_all
 
+    root = Path.expand(Path.join(__DIR__, "../fixtures/music"))
+    collection = %Collection{name: "My Music", id: Ecto.UUID.generate(), path: root} |> Repo.insert!
+    other_collection = %Collection{name: "Other Music", id: Ecto.UUID.generate(), path: root} |> Repo.insert!
 
     artists = [
       %Artist{
+        collection_id: collection.id,
         id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", name: "Talking Heads",
         normalized_name: "talking heads" },
       %Artist{
+        collection_id: collection.id,
         id: "ece2ce41-3194-4506-9e16-42e56e1be090", name: "Echo and the Bunnymen",
         normalized_name: "echo and the bunnymen" },
       %Artist{
+        collection_id: collection.id,
         id: "b408ec33-f533-49f6-944b-5d829139e1de", name: "The Lurkers",
         normalized_name: "the lurkers" },
     ]
@@ -34,11 +42,13 @@ defmodule Peel.Test.LibraryTest do
 
     albums = [
       %Album{ id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+        collection_id: collection.id,
         date: "1977", disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "talking heads 77", performer: "Talking Heads",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
         title: "Talking Heads: 77", track_total: 2 },
       %Album{ id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+        collection_id: collection.id,
         date: nil, disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "some compilation", performer: "Various Artists",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
@@ -48,6 +58,7 @@ defmodule Peel.Test.LibraryTest do
 
     tracks = [
       %Peel.Track{ id: "94499562-d2c5-41f8-b07c-ecfbecf0c428",
+        collection_id: collection.id,
         album_id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
         album_title: "Talking Heads: 77",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
@@ -59,6 +70,7 @@ defmodule Peel.Test.LibraryTest do
         performer: "Talking Heads", title: "Uh-Oh, Love Comes To Town",
         track_number: 1, track_total: 11},
       %Peel.Track{ id: "a3c90ce4-8a98-405f-bffd-04bc744c13df",
+        collection_id: collection.id,
         album_id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
         album_title: "Talking Heads: 77",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
@@ -71,6 +83,7 @@ defmodule Peel.Test.LibraryTest do
         track_total: 11},
 
       %Peel.Track{ id: "63f49bae-fcbf-49df-94c9-668c52f3e125",
+        collection_id: collection.id,
         album_id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         album_title: "Some Compilation",
         artist_id: "ece2ce41-3194-4506-9e16-42e56e1be090", composer: "Ian McCulloch",
@@ -82,6 +95,7 @@ defmodule Peel.Test.LibraryTest do
         performer: "Echo and the Bunnymen", title: "Going Up", track_number: 1,
         track_total: 3},
       %Peel.Track{ id: "59afcd1e-9f6f-4df5-9ece-5f874d6e36bd",
+        collection_id: collection.id,
         album_id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         album_title: "Some Compilation",
         artist_id: "b408ec33-f533-49f6-944b-5d829139e1de", composer: "Pete Stride",
@@ -93,6 +107,7 @@ defmodule Peel.Test.LibraryTest do
         performer: "The Lurkers", title: "Ain't Got a Clue", track_number: 2,
         track_total: 3},
       %Peel.Track{ id: "0a89f07e-0f5e-48c4-8b00-d83026a90724",
+        collection_id: collection.id,
         album_id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         album_title: "Some Compilation",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
@@ -153,7 +168,7 @@ defmodule Peel.Test.LibraryTest do
       end
     end
 
-    {:ok, channel_id: channel_id}
+    {:ok, channel_id: channel_id, collection: collection, other_collection: other_collection}
   end
 
   def track_node(%Track{} = track) do
@@ -184,55 +199,99 @@ defmodule Peel.Test.LibraryTest do
    }
   end
 
-  test "peel:root", context do
-    path = "root"
-    response = Library.handle_request(context.channel_id, path)
+  test "library", cxt do
+    response = Library.library
+    coll1 =
+      %{ title: cxt.collection.name,
+        id: "peel:collection/#{cxt.collection.id}",
+        size: "m",
+        icon: "",
+        actions: %{
+          click: %{url: "peel:collection/#{cxt.collection.id}", level: true},
+          play: nil
+        },
+        metadata: nil, # put counts here?
+        length: 0,
+        children: [],
+      }
+    coll2 =
+      %{ title: cxt.other_collection.name,
+        id: "peel:collection/#{cxt.other_collection.id}",
+        size: "m",
+        icon: "",
+        actions: %{
+          click: %{url: "peel:collection/#{cxt.other_collection.id}", level: true},
+          play: nil
+        },
+        metadata: nil, # put counts here?
+        length: 0,
+        children: [],
+      }
     assert response == %{
-      id: "peel:root",
-      title: "Your Music",
+      id: "peel",
+      title: "Local Music",
       icon: "",
-      search: %{ title: "your music", url: "peel:search/root"},
-      length: 2,
+      size: "s",
+      actions: nil,
+      metadata: nil,
       children: [
-            %{ title: "Albums",
-              id: "peel:albums",
-              size: "m",
-              icon: "",
-              actions: %{
-                click: %{url: "peel:albums", level: true},
-                play: nil
-              },
-              metadata: nil,
-              length: 0,
-              children: [],
-            },
-            %{ title: "Artists",
-              id: "peel:artists",
-              size: "m",
-              icon: "",
-              actions: %{
-                click: %{url: "peel:artists", level: true},
-                play: nil
-              },
-              metadata: nil,
-              length: 0,
-              children: [],
-            },
-          ]
-        }
+        coll1,
+        coll2,
+      ],
+      length: 2,
+    }
+
   end
 
-  test "peel:albums", context do
-    path = "albums"
+  test "peel:collection/:collection_id", context do
+    path = "collection/#{context.collection.id}"
+    response = Library.handle_request(context.channel_id, path)
+    assert response == %{
+      id: "peel:#{path}",
+      title: context.collection.name,
+      icon: "",
+      search: %{ title: context.collection.name, url: "peel:search/#{context.collection.id}"},
+      length: 2,
+      children: [
+        %{title: "Albums",
+          id: "peel:collection/#{context.collection.id}/albums",
+          size: "m",
+          icon: "",
+          actions: %{
+            click: %{url: "peel:collection/#{context.collection.id}/albums", level: true},
+            play: nil
+          },
+          metadata: nil,
+          length: 0,
+          children: [],
+        },
+        %{title: "Artists",
+          id: "peel:collection/#{context.collection.id}/artists",
+          size: "m",
+          icon: "",
+          actions: %{
+            click: %{url: "peel:collection/#{context.collection.id}/artists", level: true},
+            play: nil
+          },
+          metadata: nil,
+          length: 0,
+          children: [],
+        },
+      ]
+    }
+  end
+
+  test "peel:collection/:collection_id/albums", context do
+    path = "collection/#{context.collection.id}/albums"
     response = Library.handle_request(context.channel_id, path)
 
     assert response == %{
       id: "peel:" <> path,
       title: "Albums",
       icon: "",
-      search: %{ title: "albums", url: "peel:search/albums"},
+      search: %{ title: "albums", url: "peel:search/#{context.collection.id}/albums"},
       children: [
-        %{ title: "S",
+        %{title: "S",
           id: "peel:albums:S",
           size: "s",
           icon: nil,
@@ -311,14 +370,14 @@ defmodule Peel.Test.LibraryTest do
   end
 
   test "peel:artists", context do
-    path = "artists"
+    path = "collection/#{context.collection.id}/artists"
     response = Library.handle_request(context.channel_id, path)
     assert response == %{
       id: "peel:" <> path,
       title: "Artists",
       # icon: artist.cover_image,
       icon: "",
-      search: %{title: "artists", url: "peel:search/artists"},
+      search: %{title: "artists", url: "peel:search/#{context.collection.id}/artists"},
       children: [
         %{ title: "E",
           id: "peel:artists:E",
@@ -448,9 +507,10 @@ defmodule Peel.Test.LibraryTest do
     ]}
   end
 
-  test "search all music", %{channel_id: channel_id} = _context do
+  test "search all music", %{channel_id: channel_id} = context do
     artists = [
       %Artist{
+        collection_id: context.collection.id,
         id: "fdb8a7b3-e259-4ef3-a453-833f2795dec6", name: "The Big Monkey",
         normalized_name: "the big monkey" },
     ]
@@ -458,11 +518,13 @@ defmodule Peel.Test.LibraryTest do
 
     albums = [
       %Album{ id: "69eff193-5808-4165-a927-b5431d7da97b",
+        collection_id: context.collection.id,
         date: "1977", disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "monkey songs", performer: "Monkey Sings",
         cover_image: "",
         title: "Monkey Songs", track_total: 2 },
       %Album{ id: "8231ab23-0c44-44b1-891c-53917f085d82",
+        collection_id: context.collection.id,
         date: nil, disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "dance monkey dance", performer: "Various Artists",
         cover_image: "",
@@ -470,6 +532,7 @@ defmodule Peel.Test.LibraryTest do
     ]
     tracks = [
       %Peel.Track{ id: "118739fb-4558-4522-987d-bd3c5e805d7a",
+        collection_id: context.collection.id,
         album_id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
         album_title: "Talking Heads: 77",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
@@ -484,19 +547,19 @@ defmodule Peel.Test.LibraryTest do
     Enum.map albums, &Repo.insert!/1
     Enum.map tracks, &Repo.insert!/1
 
-    path = "search/root"
+    path = "search/#{context.collection.id}"
     query = "monkey"
     response = Library.handle_request(channel_id, path, query)
     assert response == %{
-      id: "peel:search/root",
-      title: "Search your music",
+      id: "peel:search/#{context.collection.id}",
+      title: "Search #{context.collection.name}",
       icon: "",
-      search: %{ title: "your music", url: "peel:search/root"},
+      search: %{ title: context.collection.name, url: "peel:search/#{context.collection.id}"},
       length: 3,
       children: [
         %{
           title: "Albums",
-          id: "peel:search/albums",
+          id: "peel:search/#{context.collection.id}/albums",
           size: "s",
           icon: nil,
           actions: nil,
@@ -523,7 +586,7 @@ defmodule Peel.Test.LibraryTest do
         },
         %{
           title: "Artists",
-          id: "peel:search/artists",
+          id: "peel:search/#{context.collection.id}/artists",
           size: "s",
           icon: nil,
           actions: nil,
@@ -536,7 +599,7 @@ defmodule Peel.Test.LibraryTest do
         },
         %{
           title: "Tracks",
-          id: "peel:search/tracks",
+          id: "peel:search/#{context.collection.id}/tracks",
           size: "s",
           icon: nil,
           actions: nil,
@@ -550,20 +613,20 @@ defmodule Peel.Test.LibraryTest do
     }
   end
 
-  test "search albums", %{channel_id: channel_id} = _context do
-    path = "search/albums"
+  test "search albums", %{channel_id: channel_id} = context do
+    path = "search/#{context.collection.id}/albums"
     query = "heads"
     response = Library.handle_request(channel_id, path, query)
     assert response == %{
-      id: "peel:search/albums",
+      id: "peel:search/#{context.collection.id}/albums",
       title: "Search albums",
       icon: "",
-      search: %{ title: "albums", url: "peel:search/albums"},
+      search: %{ title: "albums", url: "peel:search/#{context.collection.id}/albums"},
       length: 1,
       children: [
         %{
           title: "Albums matching ‘heads’",
-          id: "peel:search/albums",
+          id: "peel:search/#{context.collection.id}/albums",
           size: "s",
           icon: nil,
           actions: nil,
@@ -587,20 +650,20 @@ defmodule Peel.Test.LibraryTest do
     }
   end
 
-  test "search artists", %{channel_id: channel_id} = _context do
-    path = "search/artists"
+  test "search artists", %{channel_id: channel_id} = context do
+    path = "search/#{context.collection.id}/artists"
     query = "talking"
     response = Library.handle_request(channel_id, path, query)
     assert response == %{
-      id: "peel:search/artists",
+      id: "peel:search/#{context.collection.id}/artists",
       title: "Search artists",
       icon: "",
-      search: %{ title: "artists", url: "peel:search/artists"},
+      search: %{ title: "artists", url: "peel:search/#{context.collection.id}/artists"},
       length: 1,
       children: [
         %{
           title: "Artists matching ‘talking’",
-          id: "peel:search/artists",
+          id: "peel:search/#{context.collection.id}/artists",
           size: "s",
           icon: nil,
           actions: nil,

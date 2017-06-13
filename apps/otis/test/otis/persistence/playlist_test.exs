@@ -44,6 +44,7 @@ defmodule Otis.Persistence.SourceListTest do
     end
 
     assert_receive {:playlist_cleared, [^list_id]}
+    assert_receive {:"$__rendition_delete", [^list_id]}
     assert Rendition.all == []
   end
 end

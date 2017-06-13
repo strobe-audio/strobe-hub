@@ -26,14 +26,15 @@ import Ease
 import Time
 
 
-initialState : Time.Time -> Root.Model
-initialState time =
+initialState : Int -> Time.Time -> Root.Model
+initialState windowInnerWidth time =
     { connected = False
     , channels = []
     , receivers = []
     , listMode = State.PlaylistMode
     , showPlaylistAndLibrary = False
-    , library = Library.State.initialState
+    , windowInnerWidth = windowInnerWidth
+    , library = Library.State.initialState windowInnerWidth
     , showAddChannel = False
     , newChannelInput = Input.State.blank
     , activeChannelId = Nothing
@@ -344,8 +345,19 @@ update action model =
 
                 showPlaylistAndLibrary =
                     width > 1000
+
+                library =
+                    model.library
+
+                library_ =
+                    { library | windowInnerWidth = width }
             in
-                ( { model | showPlaylistAndLibrary = showPlaylistAndLibrary }, Cmd.none )
+                { model
+                    | windowInnerWidth = width
+                    , showPlaylistAndLibrary = showPlaylistAndLibrary
+                    , library = library
+                }
+                    ! []
 
         Msg.BrowserScroll value ->
             -- let
@@ -614,7 +626,14 @@ gotoDefaultChannel : Root.Model -> Cmd Msg
 gotoDefaultChannel model =
     case model.activeChannelId of
         Just id ->
-            Cmd.none
+            let
+                activeChannelExists =
+                    List.any (\c -> c.id == id) model.channels
+            in
+                if activeChannelExists then
+                    Cmd.none
+                else
+                    gotoDefaultChannel { model | activeChannelId = Nothing }
 
         Nothing ->
             let

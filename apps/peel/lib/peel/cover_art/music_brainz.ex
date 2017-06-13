@@ -7,7 +7,10 @@ defmodule MusicBrainz do
   end
 
   def cover_art(%Album{} = album, path) do
-    album |> lookup_album_strict() |> lookup_album_loose(album) |> download_cover_art(path)
+    # Am disabling the loose version as, though you get more albums with cover
+    # images, those images are way too random/comically wrong.
+    # album |> lookup_album_strict() |> lookup_album_loose(album) |> download_cover_art(path)
+    album |> lookup_album_strict() |> download_cover_art(path)
   end
 
   def lookup_album_strict(%Album{} = album) do

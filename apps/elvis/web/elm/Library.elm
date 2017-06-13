@@ -83,6 +83,11 @@ type alias Node =
     }
 
 
+type ScrollInteraction
+    = TouchScroll
+    | MouseScroll
+
+
 type alias Model =
     { levels : List Level
     , depth : Int
@@ -95,6 +100,8 @@ type alias Model =
     , searchQuery : String
     , searchBounceCount : Int
     , scrollMomentum : Maybe Utils.Touch.Momentum
+    , scrollInteraction : ScrollInteraction
+    , windowInnerWidth : Int
     }
 
 
@@ -148,9 +155,9 @@ nodeHeight =
     55.0
 
 
-levelContentHeight : Level -> Maybe Float
-levelContentHeight level =
-    level.contents |> Maybe.map (\f -> folderContentHeight f)
+levelContentHeight : Model -> Level -> Maybe Float
+levelContentHeight model level =
+    level.contents |> Maybe.map (\f -> folderContentHeight model f)
 
 
 folderContentCount : Folder -> Int
@@ -158,9 +165,9 @@ folderContentCount folder =
     (List.map .length folder.children) |> List.sum
 
 
-folderContentHeight : Folder -> Float
-folderContentHeight folder =
-    (List.map sectionHeight folder.children) |> List.sum
+folderContentHeight : Model -> Folder -> Float
+folderContentHeight model folder =
+    (List.map (sectionHeight model) folder.children) |> List.sum
 
 
 contentHeight : Int -> Float
@@ -182,13 +189,13 @@ sectionCount section =
     section.length
 
 
-sectionHeight : Section -> Float
-sectionHeight section =
-    (sectionNodeHeight section) + (contentHeight section.length)
+sectionHeight : Model -> Section -> Float
+sectionHeight model section =
+    (sectionNodeHeight model section) + (contentHeight section.length)
 
 
-sectionNodeHeight : Section -> Float
-sectionNodeHeight section =
+sectionNodeHeight : Model -> Section -> Float
+sectionNodeHeight model section =
     case section.size of
         "i" ->
             0
@@ -203,32 +210,33 @@ sectionNodeHeight section =
             nodeHeight * 2
 
         "h" ->
-            nodeHeight * 5
+            (toFloat model.windowInnerWidth)
 
+        -- nodeHeight * 5
         _ ->
             nodeHeight
 
 
-renderableHeight : List Renderable -> Float
-renderableHeight renderable =
-    renderable |> List.map renderableNodeHeight |> List.sum
+renderableHeight : Model -> List Renderable -> Float
+renderableHeight model renderable =
+    renderable |> List.map (renderableNodeHeight model) |> List.sum
 
 
-renderableNodeHeight : Renderable -> Float
-renderableNodeHeight renderable =
+renderableNodeHeight : Model -> Renderable -> Float
+renderableNodeHeight model renderable =
     case renderable of
         S section ->
-            sectionNodeHeight section
+            sectionNodeHeight model section
 
         N _ _ ->
             nodeHeight
 
 
-renderableFirstNodeHeight : List Renderable -> Float
-renderableFirstNodeHeight renderable =
+renderableFirstNodeHeight : Model -> List Renderable -> Float
+renderableFirstNodeHeight model renderable =
     case renderable of
         first :: rest ->
-            renderableNodeHeight first
+            renderableNodeHeight model first
 
         [] ->
             0.0

@@ -30,8 +30,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     mock2 = connect!(id2, @receiver_latency)
     assert_receive {:receiver_connected, [^id1, _]}
     assert_receive {:receiver_connected, [^id2, _]}
-    assert {:ok, "STOP"} == data_recv_raw(mock1)
-    assert {:ok, "STOP"} == data_recv_raw(mock2)
+    assert_receive {:"$__receiver_joined", [^id1]}
+    assert_receive {:"$__receiver_joined", [^id2]}
     receivers = Otis.Receivers.Channels.lookup(channel_id)
     r1 = Enum.find(receivers, fn(r) -> r.id == id1 end)
     r2 = Enum.find(receivers, fn(r) -> r.id == id2 end)

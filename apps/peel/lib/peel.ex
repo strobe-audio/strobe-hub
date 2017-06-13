@@ -2,21 +2,30 @@ defmodule Peel do
   use     Application
   require Logger
 
-  @library_id "d2e91614-135a-11e6-9170-002500f418fc"
+  @library_id "peel"
 
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    webdav_conf = Application.get_env(:peel, Peel.Collection)
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Peel.Worker, [arg1, arg2, arg3]),
       worker(Peel.Repo, []),
+      worker(Peel.Migrator, [], restart: :transient),
       worker(Peel.Events.Library, []),
+      supervisor(Peel.WebDAV.Supervisor, [webdav_conf]),
       worker(Peel.CoverArt, []),
+      worker(Peel.CoverArt.EventHandler, []),
       worker(Peel.CoverArt.Importer, []),
+      worker(Peel.Modifications.Delete, [webdav_conf]),
+      worker(Peel.Modifications.Move, [webdav_conf]),
+      worker(Peel.Modifications.Create.FileStatusCheck, [webdav_conf]),
+      worker(Peel.Modifications.Create, [webdav_conf]),
       worker(MusicBrainz.Client, []),
+      worker(Peel.CoverArt.ITunes.Client, []),
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

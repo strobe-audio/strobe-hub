@@ -19,7 +19,8 @@ defmodule ExternalProcess.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
-    [extra_applications: [:logger]]
+    [ mod: {ExternalProcess, []},
+      extra_applications: [:logger]]
   end
 
   # Dependencies can be Hex packages:
@@ -36,7 +37,7 @@ defmodule ExternalProcess.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [ {:porcelain, github: "alco/porcelain"},
+    [ {:porcelain, github: "strobe-audio/porcelain"},
     ]
   end
 end

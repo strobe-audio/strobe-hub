@@ -12,10 +12,6 @@ defmodule Peel.CoverArt.Importer do
     GenServer.start_link(__MODULE__, [], name: @name)
   end
 
-  def event_handler do
-    {Peel.CoverArt.EventHandler, []}
-  end
-
   def init([]) do
     {:ok, {}}
   end
@@ -29,6 +25,7 @@ defmodule Peel.CoverArt.Importer do
 
   defp rescan_library do
     Peel.CoverArt.pending_albums |> import_albums
+    Peel.CoverArt.pending_artists |> import_artists
   end
 
   defp import_albums([]) do
@@ -36,7 +33,7 @@ defmodule Peel.CoverArt.Importer do
   end
 
   defp import_albums(albums) do
-    workers = 4
+    workers = 1
     Logger.info "Launching cover art scan with #{workers} workers"
     opts = [
       worker_count: workers,
@@ -46,18 +43,41 @@ defmodule Peel.CoverArt.Importer do
     WorkQueue.process(&extract_cover_image/2, albums, opts)
   end
 
+  defp import_artists([]) do
+    Logger.info "No artists without image found"
+  end
+  defp import_artists(artists) do
+    workers = 1
+    Logger.info "Launching artist image import with #{workers} workers"
+    opts = [
+      worker_count: workers,
+      # report_progress_to: &progress/1,
+      # report_progress_interval: 250,
+    ]
+    WorkQueue.process(&assign_artist_image/2, artists, opts)
+  end
+
   def extract_cover_image(album, _) do
     Logger.info "Extracting cover of #{ album.performer } > #{ album.title }"
     Peel.CoverArt.extract_and_assign(album)
   end
 
-  def progress({:started, nil}) do
-    Otis.Events.notify({:cover_art_extraction, [:start]})
+  def assign_artist_image(artist, _) do
+    Logger.info "Looking for artist image #{ artist.name }"
+    Peel.CoverArt.artist_image(artist)
   end
-  def progress({:finished, _results}) do
-    Otis.Events.notify({:cover_art_extraction, [:finish]})
-  end
-  def progress({:progress, count}) do
-    Otis.Events.notify({:cover_art_extraction, [:progress, count]})
+
+  if Code.ensure_compiled?(Otis.Events) do
+    def progress({:started, nil}) do
+      Otis.Events.notify({:cover_art_extraction, [:start]})
+    end
+    def progress({:finished, _results}) do
+      Otis.Events.notify({:cover_art_extraction, [:finish]})
+    end
+    def progress({:progress, count}) do
+      Otis.Events.notify({:cover_art_extraction, [:progress, count]})
+    end
+  else
+    def progress(_evt), do: nil
   end
 end
