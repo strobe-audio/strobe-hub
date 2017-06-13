@@ -67,7 +67,7 @@ defmodule Peel.CoverArt.ITunes do
     album |> lookup_album_by_artist() |> lookup_album_by_title(album) |> download_cover_art(path)
   end
 
-  def lookup_album_by_artist(%Peel.Album{title: title} = collection_album) do
+  def lookup_album_by_artist(%Peel.Album{} = collection_album) do
     case Peel.Album.artists(collection_album) do
       [artist] ->
         {:ok, artists} = Client.search_artist(artist.name)

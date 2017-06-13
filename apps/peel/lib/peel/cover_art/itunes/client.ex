@@ -73,7 +73,6 @@ defmodule Peel.CoverArt.ITunes.Client do
     }
     case request_with_retries("/lookup", params, 5) do
       {:ok, body} ->
-        response =
         albums =
           Poison.decode!(body)
           |> Map.get("results", [])

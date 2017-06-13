@@ -87,8 +87,13 @@ defmodule Peel.CoverArt do
   def media_location(%Artist{id: id}), do: media_location(id, "artist")
   def media_location(%Album{id: id}), do: media_location(id, "cover")
   def media_location(%Track{album_id: album_id}), do: media_location(album_id, "cover")
-  def media_location(id, type) do
-    Otis.Media.location(media_namespace(type), "#{id}.jpg", optimize: 2)
+  if Code.ensure_compiled?(Otis.Media) do
+    def media_location(id, type) do
+      Otis.Media.location(media_namespace(type), "#{id}.jpg", optimize: 2)
+    end
+  else
+    def media_location(_id, _type) do
+    end
   end
 
   def media_namespace(type) do
