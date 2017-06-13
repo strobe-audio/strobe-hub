@@ -2,7 +2,11 @@ defmodule Peel.Scanner do
   require Logger
 
   def start(path) do
-    path |> stream |> Enum.each(&scan/1) |> scan_complete
+    collection = collection_from_path(path)
+    path
+    |> stream
+    |> Enum.each(&scan(collection, &1))
+    |> scan_complete
   end
 
   def stream(path) do
@@ -12,8 +16,8 @@ defmodule Peel.Scanner do
     |> Stream.filter(&Peel.Importer.is_audio?/1)
   end
 
-  def scan(path) do
-    Peel.Importer.track(path)
+  def scan(collection, path) do
+    Peel.Importer.track(collection, path)
     path
   end
 
@@ -23,5 +27,16 @@ defmodule Peel.Scanner do
     end
   else
     def scan_complete(_path), do: nil
+  end
+
+  defp collection_from_path(path) do
+    case Peel.Collection.from_path(path) do
+      {:ok, collection, _} ->
+        collection
+      _err ->
+        name = Path.basename(path)
+        root = Path.dirname(path)
+        Peel.Collection.create(name, root)
+    end
   end
 end
