@@ -74,10 +74,10 @@ defmodule Plug.WebDAV.Handler do
 
   defp match(conn, "PROPFIND", {:ok, file_path, _depth}, opts) do
     case Propfind.call(conn, file_path, directory(file_path), opts) do
-      {:ok, props} ->
+      {:ok, props, conn} ->
         send_resp(conn, 207, props)
-      {:error, status, reason} ->
-        Logger.warn "PROPFIND error #{inspect status} #{inspect reason}"
+      {:error, status, reason, conn} ->
+        Logger.warn "PROPFIND error #{conn.request_path} #{inspect status} #{reason}"
         send_resp(conn, status, reason)
     end
   end

@@ -46,8 +46,12 @@ defmodule Plug.WebDAV.Handler.Propfind do
     props
   end
 
-  defp propfind_depth(_depth, _path, {:error, :enoent}, _propfind, _conn, _opts) do
-    {:error, 404, ""}
+  defp propfind_depth(_depth, _path, {:error, :enoent}, _propfind, conn, _opts) do
+    {:error, 404, [
+      ~s(<?xml version="1.0" encoding="UTF-8"?>),
+      ~s(<d:error xmlns:d="DAV:">),
+      ~s(</d:error>),
+    ], conn}
   end
   defp propfind_depth(["1"], dir, {:ok, dir}, propfind, conn, opts) do
     {:ok, files} = File.ls(dir)
@@ -59,13 +63,13 @@ defmodule Plug.WebDAV.Handler.Propfind do
   defp propfind_depth(["0"], file, {:ok, dir}, propfind, conn, opts) do
     propfind_response([Path.basename(file)], dir, propfind, conn, opts)
   end
-  defp propfind_depth(_depth, _path, _dir, _propfind, _conn, _opts) do
+  defp propfind_depth(_depth, _path, _dir, _propfind, conn, _opts) do
     {:error, 403, [
       ~s(<?xml version="1.0" encoding="UTF-8"?>),
       ~s(<d:error xmlns:d="DAV:">),
       ~s(<d:propfind-finite-depth/>),
       ~s(</d:error>),
-    ]}
+    ], conn}
   end
 
   defp propfind_response(files, dir, propfind, conn, opts) do
@@ -80,7 +84,7 @@ defmodule Plug.WebDAV.Handler.Propfind do
       responses,
       ~s(</d:multistatus>),
     ]
-    {:ok, resp}
+    {:ok, resp, conn}
   end
 
   defp propfind_resource({_name, path, _stat} = file, propfind, conn, opts) do
