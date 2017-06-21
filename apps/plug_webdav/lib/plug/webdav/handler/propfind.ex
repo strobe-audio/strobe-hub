@@ -5,6 +5,17 @@ defmodule Plug.WebDAV.Handler.Propfind do
   require Record
 
   def call(conn, path, dir, opts) do
+    case {String.last(conn.request_path), File.dir?(path)} do
+      {"/", true} ->
+        do_propfind(conn, path, dir, opts)
+      {_, true} ->
+        {:error, 301, "", conn |> put_resp_header("location", conn.request_path <> "/")}
+      {_, false} ->
+        do_propfind(conn, path, dir, opts)
+    end
+  end
+
+  defp do_propfind(conn, path, dir, opts) do
     {propspecs, conn} =
       case read_body(conn) do
         {:ok, "", conn} ->
@@ -94,13 +105,13 @@ defmodule Plug.WebDAV.Handler.Propfind do
       |> Enum.group_by(fn {status, _values} -> status end, fn {_status, values} -> values end)
       |> Enum.map(&propstat/1)
     [ "<d:response>",
-      "<d:href><![CDATA[", resource_href(path, conn, opts), "]]></d:href>",
+      "<d:href><![CDATA[", resource_href(path, stat, conn, opts), "]]></d:href>",
       props,
       "</d:response>",
     ]
   end
 
-  defp resource_href(path, conn, {root, _}) do
+  defp resource_href(path, stat, conn, {root, _}) do
     path
     |> Path.expand() # remove any trailing '.'
     |> path_relative_to(root)
@@ -108,10 +119,21 @@ defmodule Plug.WebDAV.Handler.Propfind do
     |> scope_path(conn)
     |> Enum.map(&URI.encode/1)
     |> path_join(true)
+    |> trailing_slashes(stat)
   end
 
   defp scope_path(path, %Plug.Conn{script_name: script_name}) when is_list(path) do
     Enum.concat(script_name, path)
+  end
+
+  defp trailing_slashes("/", _stat) do
+    "/"
+  end
+  defp trailing_slashes(path, %File.Stat{type: :directory}) do
+    path <> "/"
+  end
+  defp trailing_slashes(path, _stat) do
+    path
   end
 
   defp propstat({status, values}) do

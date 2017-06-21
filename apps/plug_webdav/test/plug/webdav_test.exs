@@ -84,6 +84,13 @@ defmodule Plug.WebDAVTest do
           ]
         ]
       ])
+    test "PROPFIND /directory", cxt do
+      path = "/sub-directory"
+      [cxt.root, path] |> Path.join |> File.mkdir_p
+      conn = conn(:propfind, path, "") |> put_req_header("depth", "1") |> request(cxt)
+      {301, headers, _body} = sent_resp(conn)
+      {"location", location} = List.keyfind(headers, "location", 0)
+      assert location = path <> "/"
     end
 
     test "it returns the requested properties of any existing files", cxt do
@@ -307,7 +314,7 @@ defmodule Plug.WebDAVTest do
         </propfind>
       )
       path = ["/" | Enum.map(sub, &URI.encode/1)] |> Path.join
-      conn = conn(:propfind, path, req) |> put_req_header("depth", "1") |> request(cxt)
+      conn = conn(:propfind, path <> "/", req) |> put_req_header("depth", "1") |> request(cxt)
       {207, _headers, body} = sent_resp(conn)
 
       proplist =
@@ -319,7 +326,7 @@ defmodule Plug.WebDAVTest do
 
       [propstat] = dir.propstat
       assert propstat.status == "HTTP/1.1 200 OK"
-      assert dir.href == path
+      assert dir.href == path <> "/"
       assert file.href == "#{path}/file.txt"
     end
 
@@ -334,7 +341,7 @@ defmodule Plug.WebDAVTest do
         </propfind>
       )
       path = ["/" | Enum.map(sub, &URI.encode/1)] |> Path.join
-      conn = conn(:propfind, path, req) |> put_req_header("depth", "1") |> request(cxt)
+      conn = conn(:propfind, path <> "/", req) |> put_req_header("depth", "1") |> request(cxt)
       {207, _headers, body} = sent_resp(conn)
 
       proplist =
@@ -346,7 +353,7 @@ defmodule Plug.WebDAVTest do
 
       [propstat] = dir.propstat
       assert propstat.status == "HTTP/1.1 200 OK"
-      assert dir.href == path
+      assert dir.href == path <> "/"
       [propstat] = dir.propstat
       [displayname] = propstat.props
       assert displayname.value == "Are Green"
@@ -364,7 +371,7 @@ defmodule Plug.WebDAVTest do
         </propfind>
       )
       path = ["/" | Enum.map(sub, &URI.encode/1)] |> Path.join
-      conn = conn(:propfind, path, req) |> put_req_header("depth", "1") |> request(cxt)
+      conn = conn(:propfind, path <> "/", req) |> put_req_header("depth", "1") |> request(cxt)
       {207, _headers, body} = sent_resp(conn)
 
       proplist =
@@ -376,7 +383,7 @@ defmodule Plug.WebDAVTest do
 
       [propstat] = dir.propstat
       assert propstat.status == "HTTP/1.1 200 OK"
-      assert dir.href == path
+      assert dir.href == path <> "/"
       [propstat] = dir.propstat
       [displayname] = propstat.props
       assert displayname.value == "Blue & Green"
@@ -393,7 +400,7 @@ defmodule Plug.WebDAVTest do
         </a:propfind>
       )
       path = ["/" | Enum.map(sub, &URI.encode/1)] |> Path.join
-      conn = conn(:propfind, path, req) |> put_req_header("depth", "1") |> request(cxt)
+      conn = conn(:propfind, path <> "/", req) |> put_req_header("depth", "1") |> request(cxt)
       {207, _headers, body} = sent_resp(conn)
 
       proplist =
@@ -405,7 +412,7 @@ defmodule Plug.WebDAVTest do
 
       [propstat] = dir.propstat
       assert propstat.status == "HTTP/1.1 200 OK"
-      assert dir.href == path
+      assert dir.href == path <> "/"
       [propstat] = dir.propstat
       [displayname] = propstat.props
       assert displayname.value == "Blue & Green"
@@ -443,7 +450,7 @@ defmodule Plug.WebDAVTest do
       path = ["/" | Enum.map(sub, &URI.encode/1)] |> Path.join
       scoped_path = ["/" | Enum.map(Enum.concat(scope, sub), &URI.encode/1)] |> Path.join
       conn =
-        conn(:propfind, path, req)
+        conn(:propfind, path <> "/", req)
         |> Map.put(:script_name, scope)
         |> put_req_header("depth", "1")
         |> request(cxt)
@@ -459,7 +466,7 @@ defmodule Plug.WebDAVTest do
 
       [propstat] = dir.propstat
       assert propstat.status == "HTTP/1.1 200 OK"
-      assert dir.href == scoped_path
+      assert dir.href == scoped_path <> "/"
       assert file.href == "#{scoped_path}/file.txt"
     end
   end
