@@ -20,6 +20,7 @@ defmodule Plug.WebDAV.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: [:logger],
+     mod: {Plug.WebDAV.Application, []}
     ]
   end
 
@@ -42,6 +43,7 @@ defmodule Plug.WebDAV.Mixfile do
       {:sweet_xml, "~> 0.6.5"},
       {:mime, "~> 1.1"},
       {:timex, "~> 3.0", only: :test},
+      {:uuid, "~> 1.1"},
     ]
   end
 end

@@ -9,6 +9,7 @@ defmodule Plug.WebDAV.Handler do
   alias Plug.WebDAV.Handler.Get
   alias Plug.WebDAV.Handler.Move
   alias Plug.WebDAV.Handler.Delete
+  alias Plug.WebDAV.Handler.Lock
 
   require Logger
 
@@ -33,11 +34,12 @@ defmodule Plug.WebDAV.Handler do
     POST
     HEAD
     COPY
+
+    LOCK
+    UNLOCK
   )
   # Unsupported?
   # PROPPATCH
-  # LOCK
-  # UNLOCK
   # ORDERPATCH
 
   @allow_header Enum.join(@allow, ",")
@@ -142,6 +144,23 @@ defmodule Plug.WebDAV.Handler do
   end
   defp match(conn, "DELETE", {:ok, file_path, _depth}, opts) do
     case Delete.call(conn, file_path, opts) do
+      {:ok, conn} ->
+        send_resp(conn, 204, "")
+      {:error, status, reason, conn} ->
+        send_resp(conn, status, reason)
+    end
+  end
+
+  defp match(conn, "LOCK", {:ok, file_path, _depth}, opts) do
+    case Lock.lock(conn, file_path, opts) do
+      {:ok, body, conn} ->
+        send_resp(conn, 200, body)
+      {:error, status, reason, conn} ->
+        send_resp(conn, status, reason)
+    end
+  end
+  defp match(conn, "UNLOCK", {:ok, file_path, _depth}, opts) do
+    case Lock.unlock(conn, file_path, opts) do
       {:ok, conn} ->
         send_resp(conn, 204, "")
       {:error, status, reason, conn} ->

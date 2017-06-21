@@ -1,7 +1,7 @@
 defmodule Plug.WebDAV.Handler.Common do
   alias Plug.Conn, as: C
 
-  @dav_levels   ~w(1)
+  @dav_levels   ~w(1 2)
   @dav_header   Enum.join(@dav_levels, ",")
 
   def dav_headers(conn, _opts) do

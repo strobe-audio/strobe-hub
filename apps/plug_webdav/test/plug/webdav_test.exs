@@ -3,6 +3,7 @@ defmodule Plug.WebDAVTest do
   use Plug.Test
 
   alias Plug.WebDAV.Handler.Propfind
+  alias Plug.WebDAV.Lock
 
   @handler Plug.WebDAV.Handler
 
@@ -12,6 +13,7 @@ defmodule Plug.WebDAVTest do
       |> Path.join
 
     File.mkdir_p(root)
+    Lock.reset!
 
     on_exit fn ->
       File.rm_rf(root)
@@ -41,15 +43,42 @@ defmodule Plug.WebDAVTest do
     test "Returns appropriate allowed methods", cxt do
       conn = conn(:options, "/") |> request(cxt)
       {204, _headers, ""} = sent_resp(conn)
-      assert_header(conn, "allow", "OPTIONS,PROPFIND,MKCOL,PUT,GET,MOVE,DELETE,POST,HEAD,COPY")
+      assert_header(conn, "allow", "OPTIONS,PROPFIND,MKCOL,PUT,GET,MOVE,DELETE,POST,HEAD,COPY,LOCK,UNLOCK")
     end
 
     test "returns correct dav: header", cxt do
       conn = conn(:options, "/") |> request(cxt)
-      assert_header(conn, "dav", "1")
+      assert_header(conn, "dav", "1,2")
       # {200, headers, ""} = sent_resp(conn)
       # assert {"dav", "1"} == List.keyfind(headers, "dav", 0)
     end
+  end
+
+  def parse_response(body) do
+    body
+    |> SweetXml.parse(namespace_conformant: true)
+  end
+
+  def parse_proplist(body) do
+    body
+    |> parse_response
+    |> SweetXml.xmap(responses: [
+      xpath("/d:multistatus//d:response", 'l'),
+      href: xpath("./d:href/text()", 's'),
+      propstat: [
+        xpath(".//d:propstat", 'l'),
+        status: xpath("./d:status/text()", 's'),
+        props: [
+          xpath("./d:prop/*", 'l'),
+          name: xpath("name()", 's'),
+          value: xpath("./text()", 'S'),
+        ]
+      ]
+    ])
+  end
+
+  def xpath(selector, modifiers \\ '') do
+    SweetXml.sigil_x(selector, modifiers) |> SweetXml.add_namespace("d", "DAV:")
   end
 
   describe "PROPFIND" do
@@ -59,31 +88,6 @@ defmodule Plug.WebDAVTest do
       assert_header(conn, "content-type", "text/xml; charset=utf-8")
     end
 
-    def xpath(selector, modifiers \\ '') do
-      SweetXml.sigil_x(selector, modifiers) |> SweetXml.add_namespace("d", "DAV:")
-    end
-
-    def parse_response(body) do
-      body
-      |> SweetXml.parse(namespace_conformant: true)
-    end
-
-    def parse_proplist(body) do
-      body
-      |> parse_response
-      |> SweetXml.xmap(responses: [
-        xpath("/d:multistatus//d:response", 'l'),
-        href: xpath("./d:href/text()", 's'),
-        propstat: [
-          xpath(".//d:propstat", 'l'),
-          status: xpath("./d:status/text()", 's'),
-          props: [
-            xpath("./d:prop/*", 'l'),
-            name: xpath("name()", 's'),
-            value: xpath("./text()", 'S'),
-          ]
-        ]
-      ])
     test "PROPFIND /directory", cxt do
       path = "/sub-directory"
       [cxt.root, path] |> Path.join |> File.mkdir_p
@@ -707,6 +711,248 @@ defmodule Plug.WebDAVTest do
     test "traversing root directory", cxt do
       conn = conn(:delete, "/../..") |> request(cxt)
       {403, _headers, "Forbidden"} = sent_resp(conn)
+    end
+  end
+
+  describe "LOCK" do
+    test "PROPFIND supportedlock", cxt do
+      req = ~s(<?xml version="1.0" encoding="UTF-8"?>
+        <propfind xmlns="DAV:">
+          <prop>
+            <supportedlock/>
+          </prop>
+        </propfind>
+      )
+      conn = conn(:propfind, "/", req) |> put_req_header("depth", "0") |> request(cxt)
+      {207, _headers, body} = sent_resp(conn)
+      doc = body |> parse_response
+      [:xmlElement, :"d:exclusive" | _] = SweetXml.xpath(doc, xpath("//d:response/d:propstat/d:prop/d:supportedlock/d:lockentry/d:lockscope/d:exclusive")) |> Tuple.to_list
+      [:xmlElement, :"d:write" | _] = SweetXml.xpath(doc, xpath("//d:response/d:propstat/d:prop/d:supportedlock/d:lockentry/d:locktype/d:write")) |> Tuple.to_list
+    end
+    test "PROPFIND lockdiscovery (no locks)", cxt do
+      req = ~s(<?xml version="1.0" encoding="UTF-8"?>
+        <propfind xmlns="DAV:">
+          <prop>
+            <lockdiscovery/>
+          </prop>
+        </propfind>
+      )
+      conn = conn(:propfind, "/", req) |> put_req_header("depth", "0") |> request(cxt)
+      {207, _headers, body} = sent_resp(conn)
+      doc = body |> parse_response
+      assert nil == SweetXml.xpath(doc, xpath("//d:response/d:propstat/d:prop/d:lockdiscovery/*"))
+    end
+
+    test "PROPFIND lockdiscovery", cxt do
+      require SweetXml
+      {:ok, lock} = Lock.acquire_exclusive(cxt.root, [])
+      req = ~s(<?xml version="1.0" encoding="UTF-8"?>
+        <propfind xmlns="DAV:">
+          <prop>
+            <lockdiscovery/>
+          </prop>
+        </propfind>
+      )
+      conn = conn(:propfind, "/", req) |> put_req_header("depth", "0") |> request(cxt)
+      {207, _headers, body} = sent_resp(conn)
+      doc = body |> parse_response
+      [l] = SweetXml.xpath(
+        doc,
+        xpath("//d:response/d:propstat/d:prop/d:lockdiscovery/d:activelock", 'l'),
+        locktype: xpath("./d:locktype/*", 'l'),
+        lockscope: xpath("./d:lockscope/*", 'l'),
+        lockdepth: xpath("./d:depth/text()", 's'),
+        locktimeout: xpath("./d:timeout/text()", 's'),
+        id: xpath("./d:locktoken/d:href/text()", 's'),
+      )
+      assert l.id == lock.id
+      assert l.lockdepth == "Infinity"
+      assert l.locktimeout == "Second-3600"
+      [type] = l.locktype
+      assert :"d:write" == SweetXml.xmlElement(type, :name)
+      [scope] = l.lockscope
+      assert :"d:exclusive" == SweetXml.xmlElement(scope, :name)
+    end
+
+    test "LOCK / depth: infinity", cxt do
+      req = [
+        ~s(<?xml version="1.0" encoding="UTF-8"?>),
+        ~s(<lockinfo xmlns="DAV:">),
+        "<lockscope><exclusive/></lockscope>",
+        "<locktype><write/></locktype>",
+        # <d:owner>
+        #      <d:href>http://www.ics.uci.edu/~ejw/contact.html</d:href>
+        # </d:owner>
+        "</lockinfo>",
+      ] |> IO.iodata_to_binary
+      conn = conn(:lock, "/", req) |> request(cxt)
+      {200, headers, body} = sent_resp(conn)
+      [lock] = Lock.all()
+      assert lock.path == "/"
+      assert lock.depth == :infinity
+      expected = [
+        ~s(<?xml version="1.0" encoding="utf-8"?>),
+        ~s(<d:prop xmlns:d="DAV:">),
+        ~s(<d:lockdiscovery xmlns:d="DAV:">),
+        "<d:activelock>",
+        "<d:locktype><d:write/></d:locktype>",
+        "<d:lockscope><d:exclusive/></d:lockscope>",
+        "<d:depth>Infinity</d:depth>",
+        # "<d:owner>",
+        #      "<d:href>",
+        #           "http://www.ics.uci.edu/~ejw/contact.html",
+        #      "</d:href>",
+        # "</d:owner>",
+        "<d:timeout>Second-3600</d:timeout>",
+        "<d:locktoken>",
+        "<d:href>",
+        lock.id,
+        "</d:href>",
+        "</d:locktoken>",
+        "</d:activelock>",
+        "</d:lockdiscovery>",
+        "</d:prop>",
+      ] |> IO.iodata_to_binary
+      assert expected == IO.iodata_to_binary(body)
+      {"lock-token", lock_id} = List.keyfind(headers, "lock-token", 0)
+      assert lock_id == "<#{lock.id}>"
+    end
+
+    test "LOCK / depth: 0", cxt do
+      req = [
+        ~s(<?xml version="1.0" encoding="UTF-8"?>),
+        ~s(<lockinfo xmlns="DAV:">),
+        "<lockscope><exclusive/></lockscope>",
+        "<locktype><write/></locktype>",
+        # <d:owner>
+        #      <d:href>http://www.ics.uci.edu/~ejw/contact.html</d:href>
+        # </d:owner>
+        "</lockinfo>",
+      ] |> IO.iodata_to_binary
+      conn = conn(:lock, "/", req) |> put_req_header("depth", "0") |> request(cxt)
+      {200, _headers, body} = sent_resp(conn)
+      [lock] = Lock.all()
+      assert lock.path == "/"
+      assert lock.depth == 0
+      expected = [
+        ~s(<?xml version="1.0" encoding="utf-8"?>),
+        ~s(<d:prop xmlns:d="DAV:">),
+        ~s(<d:lockdiscovery xmlns:d="DAV:">),
+        "<d:activelock>",
+        "<d:locktype><d:write/></d:locktype>",
+        "<d:lockscope><d:exclusive/></d:lockscope>",
+        "<d:depth>0</d:depth>",
+        # "<d:owner>",
+        #      "<d:href>",
+        #           "http://www.ics.uci.edu/~ejw/contact.html",
+        #      "</d:href>",
+        # "</d:owner>",
+        "<d:timeout>Second-3600</d:timeout>",
+        "<d:locktoken>",
+        "<d:href>",
+        lock.id,
+        "</d:href>",
+        "</d:locktoken>",
+        "</d:activelock>",
+        "</d:lockdiscovery>",
+        "</d:prop>",
+      ] |> IO.iodata_to_binary
+      assert expected == IO.iodata_to_binary(body)
+    end
+
+    test "LOCK /something timeout: custom", cxt do
+      req = [
+        ~s(<?xml version="1.0" encoding="UTF-8"?>),
+        ~s(<lockinfo xmlns="DAV:">),
+        "<lockscope><exclusive/></lockscope>",
+        "<locktype><write/></locktype>",
+        # <d:owner>
+        #      <d:href>http://www.ics.uci.edu/~ejw/contact.html</d:href>
+        # </d:owner>
+        "</lockinfo>",
+      ] |> IO.iodata_to_binary
+      conn =
+        conn(:lock, "/something", req)
+        |> put_req_header("timeout", "Infinite, Second-4100000000")
+        |> put_req_header("depth", "0")
+        |> request(cxt)
+      {200, _headers, body} = sent_resp(conn)
+      [lock] = Lock.all()
+      assert lock.path == "/something"
+      assert lock.depth == 0
+      expected = [
+        ~s(<?xml version="1.0" encoding="utf-8"?>),
+        ~s(<d:prop xmlns:d="DAV:">),
+        ~s(<d:lockdiscovery xmlns:d="DAV:">),
+        "<d:activelock>",
+        "<d:locktype><d:write/></d:locktype>",
+        "<d:lockscope><d:exclusive/></d:lockscope>",
+        "<d:depth>0</d:depth>",
+        # "<d:owner>",
+        #      "<d:href>",
+        #           "http://www.ics.uci.edu/~ejw/contact.html",
+        #      "</d:href>",
+        # "</d:owner>",
+        "<d:timeout>Second-4100000000</d:timeout>",
+        "<d:locktoken>",
+        "<d:href>",
+        lock.id,
+        "</d:href>",
+        "</d:locktoken>",
+        "</d:activelock>",
+        "</d:lockdiscovery>",
+        "</d:prop>",
+      ] |> IO.iodata_to_binary
+      assert expected == IO.iodata_to_binary(body)
+    end
+
+    test "UNLOCK", cxt do
+      req = [
+        ~s(<?xml version="1.0" encoding="UTF-8"?>), ~s(<lockinfo xmlns="DAV:">),
+        "<lockscope><exclusive/></lockscope>", "<locktype><write/></locktype>", "</lockinfo>",
+      ] |> IO.iodata_to_binary
+      conn =
+        conn(:lock, "/something", req)
+        |> request(cxt)
+      {200, headers, _body} = sent_resp(conn)
+      [lock] = Lock.all()
+      assert lock.path == "/something"
+      {"lock-token", lock_token} = List.keyfind(headers, "lock-token", 0)
+      assert lock_token == "<#{lock.id}>"
+      conn =
+        conn(:unlock, "/something", req)
+        |> put_req_header("lock-token", lock_token)
+        |> request(cxt)
+      {204, _headers, ""} = sent_resp(conn)
+      [] = Lock.all()
+    end
+
+    test "UNLOCK with incorrect lock id", cxt do
+      req = [
+        ~s(<?xml version="1.0" encoding="UTF-8"?>), ~s(<lockinfo xmlns="DAV:">),
+        "<lockscope><exclusive/></lockscope>", "<locktype><write/></locktype>", "</lockinfo>",
+      ] |> IO.iodata_to_binary
+      conn =
+        conn(:lock, "/something", req)
+        |> request(cxt)
+      {200, headers, _body} = sent_resp(conn)
+      [lock] = Lock.all()
+      assert lock.path == "/something"
+      {"lock-token", lock_token} = List.keyfind(headers, "lock-token", 0)
+      assert lock_token == "<#{lock.id}>"
+
+      conn =
+        conn(:unlock, "/something", req)
+        |> request(cxt)
+      {409, _headers, _body} = sent_resp(conn)
+      [^lock] = Lock.all()
+
+      conn =
+        conn(:unlock, "/something", req)
+        |> put_req_header("lock-token", "<something:wrong>")
+        |> request(cxt)
+      {409, _headers, _body} = sent_resp(conn)
+      [^lock] = Lock.all()
     end
   end
 end
