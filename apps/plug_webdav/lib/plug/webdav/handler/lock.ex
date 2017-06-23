@@ -3,7 +3,7 @@ defmodule Plug.WebDAV.Handler.Lock do
 
   alias Plug.WebDAV.Lock
 
-  def lock(conn, path, opts) do
+  def lock(conn, _path, opts) do
     case read_body(conn) do
       {:ok, "", conn} ->
         {:error, 412, conn}
@@ -59,7 +59,7 @@ defmodule Plug.WebDAV.Handler.Lock do
         ]
         conn = conn |> put_resp_header("lock-token", "<#{lock.id}>")
         {:ok, body, conn}
-      {:error, :duplicate, locks} ->
+      {:error, :duplicate, _locks} ->
         {:error, 409, "", conn}
     end
   end
@@ -85,7 +85,7 @@ defmodule Plug.WebDAV.Handler.Lock do
     |> String.split(~r{ *, *}, trim: true)
     |> Enum.map(&String.split(&1, "-"))
     |> Enum.filter(fn
-      ["second", seconds] -> true
+      ["second", _seconds] -> true
       _ -> false
     end)
     |> Enum.map(fn
@@ -95,7 +95,7 @@ defmodule Plug.WebDAV.Handler.Lock do
   end
 
   defp clean_opts(opts) do
-    Enum.reject(opts, fn({k, v}) -> is_nil(v) end)
+    Enum.reject(opts, fn({_, v}) -> is_nil(v) end)
   end
 
   defp parse_locktokens([]), do: []

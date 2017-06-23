@@ -94,7 +94,7 @@ defmodule Plug.WebDAVTest do
       conn = conn(:propfind, path, "") |> put_req_header("depth", "1") |> request(cxt)
       {301, headers, _body} = sent_resp(conn)
       {"location", location} = List.keyfind(headers, "location", 0)
-      assert location = path <> "/"
+      assert location == path <> "/"
     end
 
     test "it returns the requested properties of any existing files", cxt do
