@@ -43,7 +43,6 @@ defmodule Plug.WebDAV.Lock do
   end
 
   def release(root, path, tokens) do
-    IO.inspect [:release, root, path, tokens]
     GenServer.call(__MODULE__, {:release, root, path, tokens})
   end
 
@@ -139,9 +138,6 @@ defmodule Plug.WebDAV.Lock do
   end
 
   defp match_lock_token(table, path, id) do
-    # IO.inspect [:match, all(), path, id]
-    # :ets.foldl(fn(a, b) -> [a | b] end, [], table) |> IO.inspect
-    # IO.inspect :ets.match(table, {path, id, '$1', '$2', '$3'})
     :ets.match(table, {path, id, :"_", :"_", :"$1"})
   end
 

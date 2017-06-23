@@ -14,7 +14,7 @@ defmodule Plug.WebDAV.Handler.Lock do
 
   def unlock(%Plug.Conn{path_info: path} = conn, _path, {root, _opts}) do
       # {"lock-token", lock_id} = List.keyfind(headers, "lock-token", 0)
-    tokens = conn |> get_req_header("lock-token") |> parse_locktokens() |> IO.inspect
+    tokens = conn |> get_req_header("lock-token") |> parse_locktokens()
     case Lock.release(root, path, tokens) do
       :ok ->
         {:ok, conn}
@@ -49,7 +49,7 @@ defmodule Plug.WebDAV.Handler.Lock do
     {:error, 412, reason, conn}
   end
   defp lock_resource({:ok, params}, %Plug.Conn{path_info: path} = conn, {root, _opts}) do
-    case Lock.acquire_exclusive(root, path, params) |> IO.inspect do
+    case Lock.acquire_exclusive(root, path, params) do
       {:ok, lock} ->
         body = [
           ~s(<?xml version="1.0" encoding="utf-8"?>),
