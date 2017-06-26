@@ -87,7 +87,7 @@ circular size rgba playing percent =
                 , class "progress-circular--root"
                 ]
                 [ circle
-                    [ class "progress-circular--background", stroke "rgba(255, 255, 255, 0.2)", strokeWidth "2", r (toString (radius + (sw / 2) - 1.5)), cx "0", cy "0", fill "none", transform "rotate(-90deg)" ]
+                    [ class "progress-circular--background", stroke "rgba(255, 255, 255, 0.2)", strokeWidth "2", r (toString (radius + (sw / 2) - 1.5)), cx "0", cy "0", fill "none", transform "rotate(-90)" ]
                     []
                 , Svg.path
                     [ class "progress-circular--arc", fill "none", d path_, stroke strokeColor, strokeWidth (toString sw) ]
