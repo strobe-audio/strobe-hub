@@ -68,8 +68,8 @@ defmodule Strobe.Server.Mixfile do
   def deps do
     [ {:nerves, "~> 0.5.0", runtime: false},
       {:gen_stage, "~> 0.11.0"},
-      # {:nerves_networking, github: "nerves-project/nerves_networking"},
-      {:nerves_networking, path: "/data/buildroot/nerves_networking"},
+      {:nerves_networking, github: "nerves-project/nerves_networking"},
+      # {:nerves_networking, path: "/data/buildroot/nerves_networking"},
       {:nerves_network_interface, "~> 0.4.0"},
       {:elvis, in_umbrella: true},
     ] ++ deps(@target)
