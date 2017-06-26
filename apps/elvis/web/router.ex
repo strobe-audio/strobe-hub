@@ -20,6 +20,7 @@ defmodule Elvis.Router do
   scope "/", Elvis do
     pipe_through :browser # Use the default browser stack
 
+    get "/strobe.appcache", ManifestController, :manifest
     get "/layout", PageController, :layout
     get "/*path", PageController, :index
   end
