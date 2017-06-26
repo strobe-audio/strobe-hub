@@ -1,0 +1,17 @@
+CACHE MANIFEST
+
+CACHE:
+/images/touch-icon@2x.png
+/images/touch-icon@3x.png
+/fonts/RobotoCondensed-Light.ttf
+/fonts/RobotoCondensed-Regular.ttf
+/fonts/RobotoCondensed-Bold.ttf
+/fonts/fontawesome-webfont.woff2
+/fonts/fontawesome-webfont.woff
+/fonts/fontawesome-webfont.ttf
+<%= static_path(@conn, "/css/app.css") %>
+<%= static_path(@conn, "/js/app.js") %>
+
+NETWORK:
+*
+
