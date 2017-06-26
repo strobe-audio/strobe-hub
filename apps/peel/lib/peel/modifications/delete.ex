@@ -75,9 +75,12 @@ defmodule Peel.Modifications.Delete do
           |> delete_tracks(collection, root)
         end
         Peel.WebDAV.Modifications.complete(evt)
-      :error ->
+      {:error, :not_found} ->
         Logger.warn "Attempt to delete file in unknown collection #{inspect path}"
     end
+    {:ok, state}
+  end
+  def handle_event({:modification, {:delete, [_type, _path]}}, state) do
     {:ok, state}
   end
 

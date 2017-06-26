@@ -26,6 +26,8 @@ defmodule Peel.WebDAV.Supervisor do
   defp ensure_docroot(opts) do
     root = Keyword.fetch!(opts, :root)
     root |> File.mkdir_p
+    # Stop macOS from attempting to index our volume
+    [root, ".metadata_never_index"] |> Path.join |> File.touch
     root
   end
 end
