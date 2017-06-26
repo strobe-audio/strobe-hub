@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# run from the elvis directory to avoid attempting to compile or start the
+# nerves build application
+cd apps/elvis
 export MIX_ENV=prod
 export PORT=4000
 
@@ -8,7 +11,6 @@ mix compile.protocols
 echo "done"
 
 (
-  cd apps/elvis
 
   echo -n "Compiling assets...            "
   $(yarn bin)/webpack --config config/webpack.config.js -p >/dev/null
@@ -20,5 +22,5 @@ echo "done"
 )
 
 echo "Starting server on port ${PORT}..."
-exec elixir -pa _build/prod/consolidated -S mix phoenix.server
+exec elixir -pa ../../_build/prod/consolidated -S mix phoenix.server
 
