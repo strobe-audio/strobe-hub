@@ -9,10 +9,13 @@ defmodule Otis.State.Channel do
   @primary_key {:id, :binary_id, autogenerate: true}
   @derive {Poison.Encoder, only: [:id, :name, :volume, :position]}
 
+  @type t :: %__MODULE__{}
+
   schema "channels" do
     field :name, :string
     field :volume, :float, default: 1.0
     field :position, :integer, default: 0
+    field :current_rendition_id, Ecto.UUID
 
     has_many :receivers, Otis.State.Receiver
     belongs_to :profile, Otis.State.Profile, type: Ecto.UUID

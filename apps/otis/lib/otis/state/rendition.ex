@@ -3,12 +3,16 @@ defmodule Otis.State.Rendition do
   import Ecto.Query
 
   alias Otis.State.Rendition
+  alias __MODULE__
   alias Otis.State.Repo
 
   @primary_key {:id, :binary_id, autogenerate: true}
 
+  @type t :: %__MODULE__{}
+
   schema "renditions" do
     field :position,          :integer
+    field :next_id,           Ecto.UUID
     field :source_type,       :string
     field :source_id,         :string
     field :playback_position, :integer
