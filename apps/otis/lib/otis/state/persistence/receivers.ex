@@ -38,6 +38,7 @@ defmodule Otis.State.Persistence.Receivers do
 
   def handle_event({:receiver_connected, [id, recv]}, state) do
     id |> receiver |> receiver_connected(id, recv)
+    Otis.Events.notify({:"$__receiver_connected", [id]})
     {:ok, state}
   end
   def handle_event({:receiver_volume_change, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do

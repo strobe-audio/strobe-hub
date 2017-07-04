@@ -164,11 +164,14 @@ defmodule MessagingHandler do
 end
 
 defmodule Otis.Test.TestSource do
+  @silence :binary.copy(<< 0 >>, 1024)
   defstruct [
     :id,
     duration: 60000,
     loaded: false,
+    data: @silence,
   ]
+
   def new(duration \\ 60000) do
     %__MODULE__{id: Otis.uuid(), duration: duration}
   end
@@ -183,20 +186,20 @@ defimpl Otis.Library.Source, for: Otis.Test.TestSource do
     Otis.Test.TestSource
   end
 
-  def open!(_source, _id, _packet_size_bytes) do
-    # noop
+  def open!(source, _id, _packet_size_bytes) do
+    Stream.repeatedly(fn -> source.data end)
   end
 
   def pause(_source, _id, _stream) do
-    # noop
+    :ok
   end
 
   def close(_source, _id, _stream) do
-    # noop
+    :ok
   end
 
   def transcoder_args(_track) do
-    []
+    :passthrough
   end
 
   def metadata(_track) do
@@ -413,4 +416,5 @@ Faker.start()
 Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
 
+ExUnit.configure(exclude: [skip: true])
 ExUnit.start()

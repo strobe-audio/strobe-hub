@@ -12,6 +12,8 @@ defmodule Test.Otis.Pipeline.Buffer do
   end
 
   setup do
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
+    _channel = @channel_id |> Otis.State.Channel.create!("Test Channel")
     config = %Otis.Pipeline.Config{
       packet_size: 100,
       packet_duration_ms: 20,
@@ -97,6 +99,9 @@ defmodule Test.Otis.Pipeline.Buffer do
     rendition = CycleSource.rendition!(@channel_id, d, 1)
 
     {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, config)
+    pid = GenServer.whereis(buffer)
+    Process.monitor(pid)
+
     {:done, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
     assert packet.rendition_id == rendition.id
@@ -117,8 +122,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert packet.data == <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>
     assert :done == Producer.next(buffer)
 
-    pid = GenServer.whereis(buffer)
-    assert nil == pid
+    assert_receive {:DOWN, _, :process, ^pid, {:shutdown, :normal}}
   end
 
   test "stopping buffer", context do

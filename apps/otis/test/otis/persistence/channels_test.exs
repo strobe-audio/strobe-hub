@@ -14,6 +14,7 @@ defmodule Otis.Persistence.ChannelsTest do
     name = "A new channel"
     {:ok, _channel} = Otis.Channels.create(id, name)
     assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
+    assert_receive {:"$__channel_added", [^id]}
     channels = Otis.State.Channel.all
     assert length(channels) == 1
     [%Otis.State.Channel{id: ^id, name: ^name}] = channels

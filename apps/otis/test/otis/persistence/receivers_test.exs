@@ -8,16 +8,17 @@ defmodule Otis.Persistence.ReceiversTest do
     MessagingHandler.attach
     id = Otis.uuid
     {:ok, channel} = Otis.Channels.create(id, "Fishy")
+    assert_receive {:"$__channel_added", [^id]}
     channel = %Otis.Channel{pid: channel, id: id}
     assert_receive {:channel_added, [^id, _]}
     channel_volume = 0.56
     Otis.Channel.volume channel, channel_volume
-    {:ok, channel: channel, channel_volume: channel_volume}
+    {:ok, channel_id: id, channel: channel, channel_volume: channel_volume}
   end
 
   test "receivers get their volume set from the db", context do
     id = Otis.uuid
-    channel = Otis.State.Channel.find(context.channel.id)
+    channel = Otis.State.Channel.find(context.channel_id)
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
@@ -27,7 +28,7 @@ defmodule Otis.Persistence.ReceiversTest do
 
   test "receiver volume changes get persisted to the db", context do
     id = Otis.uuid
-    channel = Otis.State.Channel.find(context.channel.id)
+    channel = Otis.State.Channel.find(context.channel_id)
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
@@ -42,7 +43,7 @@ defmodule Otis.Persistence.ReceiversTest do
 
   test "receivers get attached to the assigned channel", context do
     id = Otis.uuid
-    channel = Otis.State.Channel.find(context.channel.id)
+    channel = Otis.State.Channel.find(context.channel_id)
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
@@ -54,7 +55,7 @@ defmodule Otis.Persistence.ReceiversTest do
 
   test "receiver channel changes get persisted", context do
     id = Otis.uuid
-    channel = Otis.State.Channel.find(context.channel.id)
+    channel = Otis.State.Channel.find(context.channel_id)
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}
@@ -83,7 +84,7 @@ defmodule Otis.Persistence.ReceiversTest do
 
   test "receiver mute state gets persisted to the db", context do
     id = Otis.uuid
-    channel = Otis.State.Channel.find(context.channel.id)
+    channel = Otis.State.Channel.find(context.channel_id)
     _record = Otis.State.Receiver.create!(channel, id: id, name: "Receiver", volume: 0.34, muted: false)
     _mock = connect!(id, 1234)
     assert_receive {:receiver_connected, [^id, _]}

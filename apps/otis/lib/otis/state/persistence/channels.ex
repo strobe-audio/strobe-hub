@@ -34,6 +34,7 @@ defmodule Otis.State.Persistence.Channels do
     Repo.transaction fn ->
       Channel.find(id) |> add_channel(id, name)
     end
+    Otis.Events.notify({:"$__channel_added", [id]})
     {:ok, state}
   end
   def handle_event({:channel_removed, [id]}, state) do

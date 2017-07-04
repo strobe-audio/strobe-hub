@@ -18,12 +18,12 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   end
 
   setup do
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach()
 
-    channel_id = Otis.uuid
     id1 = Otis.uuid
     id2 = Otis.uuid
-    channel_record = Otis.State.Channel.create!(channel_id, "Something")
+    channel_record = Otis.State.Channel.create!(@channel_id, "Something")
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id1)
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id2)
     mock1 = connect!(id1, 1234)
@@ -32,10 +32,10 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     assert_receive {:receiver_connected, [^id2, _]}
     assert_receive {:"$__receiver_joined", [^id1]}
     assert_receive {:"$__receiver_joined", [^id2]}
-    receivers = Otis.Receivers.Channels.lookup(channel_id)
+    receivers = Otis.Receivers.Channels.lookup(@channel_id)
     r1 = Enum.find(receivers, fn(r) -> r.id == id1 end)
     r2 = Enum.find(receivers, fn(r) -> r.id == id2 end)
-    {:ok, channel: channel_record, channel_id: channel_id, receivers: [r1, r2], mocks: [mock1, mock2]}
+    {:ok, channel: channel_record, channel_id: @channel_id, receivers: [r1, r2], mocks: [mock1, mock2]}
   end
 
   test "broadcaster does a flood send of receivers on start", context do
