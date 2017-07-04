@@ -12,6 +12,8 @@ defmodule Otis.State.Playlist do
   alias Otis.State.Channel
   alias Otis.State.Repo
 
+  require Logger
+
   @doc """
   Retreives the active rendition for the channel
   """
@@ -31,6 +33,24 @@ defmodule Otis.State.Playlist do
   @spec stream(Channel.t) :: Enumerable.t
   def stream(%Channel{current_rendition_id: current_rendition_id}) do
     stream_from(current_rendition_id)
+  end
+
+  def stream_reverse(%Channel{current_rendition_id: nil} = channel) do
+    channel |> last() |> stream_reverse_from()
+  end
+  def stream_reverse(%Channel{current_rendition_id: current_rendition_id}) do
+    current_rendition_id |> previous() |> stream_reverse_from()
+  end
+
+  defp stream_reverse_from(nil), do: []
+  defp stream_reverse_from(first) do
+    Stream.resource(fn -> first end, &stream_prev/1, fn(_)-> :ok end)
+  end
+
+  defp stream_prev(nil), do: {:halt, nil}
+  defp stream_prev(current) do
+    previous = previous(current.id)
+    {[current], previous}
   end
 
   @doc """
@@ -179,6 +199,23 @@ defmodule Otis.State.Playlist do
     {channel, drop}
   end
 
+  @doc """
+
+  """
+  @spec clear!(Channel.t) :: {Channel.t, [Rendition.t]}
+  def clear!(%Channel{current_rendition_id: nil} = channel) do
+    {channel, []}
+  end
+  def clear!(channel) do
+    drop = list(channel)
+    delete_renditions(drop)
+    channel = channel |> relink(nil, nil)
+    {channel, drop}
+  end
+
+  defp relink(nil, _head, _next_id) do
+    Logger.warn "Channel is nil"
+  end
   defp relink(channel, head, %Rendition{id: next_id}) do
     relink(channel, head, next_id)
   end

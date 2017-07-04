@@ -221,6 +221,43 @@ defmodule Otis.Persistence.PlayListTest do
       assert ids == ids(Playlist.list(channel))
       last = Rendition.find("06a72197-dc53-40d3-afc4-0121db3271c5")
       assert last.next_id == nil
+      assert channel.current_rendition_id == "ec779bec-44d9-4a0a-ade5-b6df0eee9571"
+    end
+
+    test "advancing to end", cxt do
+      {channel, skipped} = Playlist.advance!(cxt.channel, nil)
+      assert ids(skipped) == ids(cxt.renditions)
+      assert [] == ids(Playlist.list(channel))
+    end
+
+    test "rewinding", cxt do
+      {channel, _skipped} = Playlist.advance!(cxt.channel, "cc8e2967-a956-47d2-9a5a-549a67aa95b6")
+      stream = Playlist.stream_reverse(channel)
+      history = Enum.take(stream, 5)
+      assert ids(history) == ids(Enum.slice(cxt.renditions, 0..3) |> Enum.reverse())
+    end
+
+    test "rewinding from empty", cxt do
+      {channel, _skipped} = Playlist.advance!(cxt.channel, nil)
+      assert [] == ids(Playlist.list(channel))
+      stream = Playlist.stream_reverse(channel)
+      history = Enum.take(stream, 5)
+      assert ids(history) == ids(Enum.slice(cxt.renditions, 4..-1) |> Enum.reverse())
+    end
+
+    test "rewinding all the way", cxt do
+      {channel, _skipped} = Playlist.advance!(cxt.channel, nil)
+      assert [] == ids(Playlist.list(channel))
+      stream = Playlist.stream_reverse(channel)
+      history = Enum.to_list(stream)
+      assert ids(history) == ids(cxt.renditions |> Enum.reverse())
+    end
+
+    test "clearing", cxt do
+      {channel, deleted} = Playlist.clear!(cxt.channel)
+      assert ids(deleted) == ids(cxt.renditions)
+      assert [] == ids(Playlist.list(channel))
+      assert channel.current_rendition_id == nil
     end
   end
 end
