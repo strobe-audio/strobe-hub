@@ -13,7 +13,7 @@ defmodule Otis.State.Repo.Writer do
   end
 
   def transaction(fun) do
-    GenServer.call(__MODULE__, {:perform, fun, now()})
+    GenServer.call(__MODULE__, {:perform, fun, now()}, :infinity)
   end
 
   def init(repo) do
