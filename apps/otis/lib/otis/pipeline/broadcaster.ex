@@ -175,22 +175,27 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp monitor_rendition(state, _played, [] = _unplayed) do
-    Otis.Events.notify({:rendition_changed, [state.id, state.rendition_id, nil]})
-    %S{ state | rendition_id: nil }
+    %S{ state | rendition_id: nil } |> notify_rendition_change(state.rendition_id, nil)
   end
   defp monitor_rendition(state, [], _unplayed) do
     state
   end
   defp monitor_rendition(%S{rendition_id: nil} = state, [packet | _rest], _unplayed) do
-    Otis.Events.notify({:rendition_changed, [state.id, nil, packet.rendition_id]})
-    %S{state|rendition_id: packet.rendition_id}
+    %S{state|rendition_id: packet.rendition_id} |> notify_rendition_change(nil, packet.rendition_id)
   end
   defp monitor_rendition(%S{rendition_id: rendition_id} = state, [%Packet{rendition_id: rendition_id} | _rest], _unplayed) do
     state
   end
   defp monitor_rendition(%S{rendition_id: rendition_id} = state, [packet | _rest], _unplayed) do
-    Otis.Events.notify({:rendition_changed, [state.id, rendition_id, packet.rendition_id]})
-    %S{state|rendition_id: packet.rendition_id}
+    %S{state|rendition_id: packet.rendition_id} |> notify_rendition_change(rendition_id, packet.rendition_id)
+  end
+
+  defp notify_rendition_change(state, nil, nil) do
+    state
+  end
+  defp notify_rendition_change(state, old_id, new_id) do
+    Otis.Events.notify({:rendition_changed, [state.id, old_id, new_id]})
+    state
   end
 
   defp monitor_progress(state, played) do

@@ -12,6 +12,7 @@ defmodule Otis.State.Repo.Migrations.PlaylistToLinkedList do
     alter table(:renditions) do
       add :next_id, :uuid
     end
+    create index(:renditions, [:next_id])
     flush()
 
     Channel

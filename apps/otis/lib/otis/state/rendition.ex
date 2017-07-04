@@ -2,7 +2,6 @@ defmodule Otis.State.Rendition do
   use    Ecto.Schema
   import Ecto.Query
 
-  alias Otis.State.Rendition
   alias __MODULE__
   alias Otis.State.Repo
 
@@ -31,45 +30,6 @@ defmodule Otis.State.Rendition do
 
   def all do
     Rendition |> order_by([:channel_id, :position]) |> Repo.all
-  end
-
-  def for_channel(%Otis.Channel{id: id}) do
-    for_channel(id)
-  end
-  def for_channel(channel_id) do
-    Rendition |> where(channel_id: ^channel_id) |> order_by(:position) |> Repo.all
-  end
-
-  def restore(%Otis.Channel{id: id}) do
-    restore(id)
-  end
-  def restore(channel_id) when is_binary(channel_id) do
-    channel_id |> for_channel |> restore_rendition([])
-  end
-
-  defp restore_rendition([], renditions) do
-    Enum.reverse(renditions)
-  end
-  defp restore_rendition([record | records], renditions) do
-    restore_rendition(records, [list_entry(record) | renditions])
-  end
-
-  def reload({id, _playback_position, _rendition} = entry) do
-    id |> find() |> reload_entry(entry)
-  end
-
-  def reload_entry(nil, original) do
-    original
-  end
-  def reload_entry(record, {_id, _position, rendition}) do
-    list_entry(record, rendition)
-  end
-
-  def list_entry(record) do
-    list_entry(record, source(record))
-  end
-  def list_entry(record, source) do
-    {record.id, record.playback_position, source}
   end
 
   def source(record) do
@@ -103,6 +63,24 @@ defmodule Otis.State.Rendition do
     rendition |> Ecto.Changeset.change(fields) |> Repo.update!
   end
 
+  def from_source(source) do
+    {source_id, source_type, duration} = source_info(source)
+    %Rendition{
+      id: Otis.uuid(),
+      playback_position: 0,
+      playback_duration: duration,
+      source_id: source_id,
+      source_type: source_type,
+    } |> Rendition.sanitize_playback_duration()
+  end
+
+  defp source_info(source) do
+    source_id = Otis.Library.Source.id(source)
+    source_type = source |> Otis.Library.Source.type() |> to_string
+    {:ok, duration} = source |> Otis.Library.Source.duration()
+    {source_id, source_type, duration}
+  end
+
   def sanitize_playback_duration(%Rendition{playback_duration: duration} = rendition) when is_atom(duration) do
     %Rendition{ rendition | playback_duration: nil }
   end
@@ -110,17 +88,16 @@ defmodule Otis.State.Rendition do
     rendition
   end
 
-  def played!(rendition, channel_id) do
-    rendition |> delete!
-    renumber(channel_id)
+  def played!(rendition, _channel_id) do
+    rendition
   end
 
-  def renumber(channel_id) do
-    channel_id
-    |> for_channel
-    |> Enum.with_index
-    |> Enum.map(fn({s, p}) -> Ecto.Changeset.change(s, position: p) end)
-    |> Enum.each(&Repo.update!/1)
+  # Do we want to delete skipped renditions? Doing so would mean that if we go
+  # back through the playlist, only tracks that were played would appear in the
+  # history. If we don't delete them then the historical view reflects not the
+  # tracks we played but instead the tracks we added.
+  def skipped!(rendition) do
+    rendition |> Rendition.delete!()
   end
 
   def playback_position(rendition, position) do

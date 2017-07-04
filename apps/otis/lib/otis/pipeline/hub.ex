@@ -81,23 +81,23 @@ defmodule Otis.Pipeline.Hub do
   end
 
   # The case when we've paused a live stream
-  defp load_pending_stream(%S{stream: nil, rendition: rendition} = state)
-  when not is_nil(rendition) do
-    {:ok, stream} = start_stream(rendition, state)
+  defp load_pending_stream(%S{stream: nil, rendition: rendition_id} = state)
+  when not is_nil(rendition_id) do
+    {:ok, stream} = start_stream(rendition_id, state)
     {:ok, %S{state| stream: stream}}
   end
   defp load_pending_stream(state) do
     case Playlist.next(state.playlist) do
-      {:ok, rendition} ->
-        {:ok, stream} = start_stream(rendition, state)
-        {:ok, %S{ state | stream: stream, rendition: rendition }}
+      {:ok, rendition_id} ->
+        {:ok, stream} = start_stream(rendition_id, state)
+        {:ok, %S{ state | stream: stream, rendition: rendition_id }}
       :done ->
         {:done, state}
     end
   end
 
-  defp start_stream(rendition, state) do
-    Streams.start_stream(rendition, state.config)
+  defp start_stream(rendition_id, state) do
+    Streams.start_stream(rendition_id, state.config)
   end
 
   ## Pause handling

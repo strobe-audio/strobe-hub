@@ -27,16 +27,16 @@ defmodule Otis.Pipeline.Buffer do
     ]
   end
 
-  def start_link(name, rendition, config) do
-    GenServer.start_link(__MODULE__, [rendition, config], [name: name])
+  def start_link(name, rendition_id, config) do
+    GenServer.start_link(__MODULE__, [rendition_id, config], [name: name])
   end
 
-  def init([rendition, config]) do
+  def init([rendition_id, config]) do
     # Start our stream after returning from this init call so that our parent
     # isn't tied up waiting for sources to open
-    GenServer.cast(self(), {:init, rendition.id})
+    GenServer.cast(self(), {:init, rendition_id})
     {:ok, %S{
-      id: rendition.id,
+      id: rendition_id,
       config: config,
       packet_size: config.packet_size,
       buffer_size: (config.buffer_packets * config.packet_size),

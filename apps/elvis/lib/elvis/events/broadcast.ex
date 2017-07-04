@@ -42,7 +42,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
 
-  def handle_event({:new_renditions, _}, state) do
+  def handle_event({:append_renditions, _}, state) do
     {:ok, state}
   end
 
@@ -62,7 +62,7 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:renditions_skipped, [channel_id, rendition_ids]}, state) do
+  def handle_event({:renditions_skipped, [channel_id, _skip_id, rendition_ids]}, state) do
     broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: rendition_ids})
     {:ok, state}
   end
