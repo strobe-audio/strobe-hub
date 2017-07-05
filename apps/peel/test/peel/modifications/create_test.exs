@@ -120,4 +120,22 @@ defmodule Peel.Modifications.CreateTest do
     assert  length(Album.all) == 1
     assert  length(Artist.all) == 1
   end
+
+  # This crashed the event handler rather than failing
+  test "create event with non-existing file", cxt do
+    [path|_] = @milkman
+    dav_path = dav_path(path, cxt)
+    evt = {:create, [:new, dav_path]}
+    Peel.WebDAV.Modifications.notify(evt)
+    refute_receive {:complete, ^evt}, 100
+  end
+
+  # This crashed the event handler rather than failing
+  test "create event with hidden file", cxt do
+    [path|_] = @milkman
+    dav_path = dav_path(path, cxt)
+    evt = {:create, [:hidden, dav_path]}
+    Peel.WebDAV.Modifications.notify(evt)
+    refute_receive {:complete, ^evt}, 100
+  end
 end

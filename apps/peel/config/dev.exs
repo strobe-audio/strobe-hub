@@ -8,7 +8,7 @@ config :peel, Peel.Repo,
   database: Path.join([state_dir, "peel.dev.sqlite3"])
 
 config :peel, Peel.Collection,
-  root: "/tmp/strobe-peel/collections",
+  root: Path.join([state_dir, "collections"]),
   port: 8888
 
 config :logger, :console,
