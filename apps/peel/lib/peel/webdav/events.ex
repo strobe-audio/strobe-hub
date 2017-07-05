@@ -17,9 +17,9 @@ defmodule Peel.WebDAV.Events do
     emit_event({:create, [:collection, collection_name]})
   end
 
-  defp handle_request(_conn, path_info, "PUT", ok, _opts)
+  defp handle_request(conn, path_info, "PUT", ok, _opts)
   when ok in [200, 201, 204] do
-    emit_event({:create, [:file, path(path_info)]})
+    emit_event({:create, [conn.assigns[:type], path(path_info)]})
   end
 
   defp handle_request(conn, path_info, "MOVE", ok, _opts)

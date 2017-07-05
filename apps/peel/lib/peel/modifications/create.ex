@@ -26,7 +26,10 @@ defmodule Peel.Modifications.Create do
       {:noreply, [], state}
     end
     def handle_events(events, _from, {timer, queue, opts}) do
-      queue = Enum.reduce(events, queue, &:queue.in(&1, &2))
+      queue =
+        events
+        |> Enum.filter(&keep_event/1)
+        |> Enum.reduce(queue, &:queue.in(&1, &2))
       {:noreply, [], {start_timer(timer), queue, opts}}
     end
 
@@ -34,6 +37,12 @@ defmodule Peel.Modifications.Create do
       {timer, queue, emit} = test_pending(queue, false, :queue.new, [])
       {:noreply, emit, {timer, queue, opts}}
     end
+
+    defp keep_event({:modification, {:create, [type, _path]}})
+    when type in [:collection, :file] do
+      true
+    end
+    defp keep_event(_evt), do: false
 
     defp test_pending(test_queue, start_timer, pending_queue, events) do
       case :queue.out(test_queue) do
