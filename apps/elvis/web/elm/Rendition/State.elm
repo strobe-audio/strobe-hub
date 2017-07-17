@@ -14,6 +14,7 @@ initialState state =
     , sourceId = state.sourceId
     , channelId = state.channelId
     , source = state.source
+    , active = state.active
     , touches = Utils.Touch.emptyModel
     , swipe = Nothing
     , menu = False

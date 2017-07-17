@@ -47,7 +47,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:new_rendition_created, [rendition]}, state) do
-    rendition = Otis.State.rendition(rendition)
+    rendition = Otis.State.rendition(rendition, nil)
     broadcast!("new_rendition_created", rendition)
     {:ok, state}
   end

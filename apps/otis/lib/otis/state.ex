@@ -12,7 +12,7 @@ defmodule Otis.State do
   end
 
   defmodule RenditionStatus do
-    defstruct [:id, :next_id, :source, :playback_position, :source_id, :channel_id]
+    defstruct [:id, :next_id, :source, :playback_position, :source_id, :channel_id, active: false]
   end
 
   @doc "Returns the current state from the db"
@@ -35,9 +35,17 @@ defmodule Otis.State do
 
   def renditions do
     Otis.State.Channel.all()
-    |> Enum.map(&Otis.State.Playlist.list/1)
+    |> Enum.map(&channel_renditions/1)
     |> Enum.concat()
-    |> Enum.map(&rendition/1)
+  end
+
+  defp channel_renditions(channel) do
+    with {:ok, pid} = Otis.Channels.find(channel.id),
+         {:ok, active_id} = Otis.Channel.active_rendition(pid),
+         playlist = Otis.State.Playlist.list(channel)
+    do
+      Enum.map(playlist, &rendition(&1, active_id))
+    end
   end
 
   def status(%Otis.State.Channel{} = channel) do
@@ -50,8 +58,12 @@ defmodule Otis.State do
     struct(ReceiverStatus, status)
   end
 
-  def rendition(rendition) do
-    status = rendition |> Map.from_struct |> Map.merge(source_status(rendition))
+  def rendition(rendition, active_id) do
+    status =
+      rendition
+      |> Map.from_struct
+      |> Map.merge(source_status(rendition))
+      |> Map.merge(%{active: rendition.id == active_id})
     struct(RenditionStatus, status)
   end
 
@@ -82,7 +94,7 @@ end
 defimpl Poison.Encoder, for: Otis.State.RenditionStatus do
   def encode(status, opts) do
     status
-    |> Map.take([:id, :source])
+    |> Map.take([:id, :source, :active])
     |> Map.put(:playbackPosition, status.playback_position)
     |> Map.put(:sourceId, status.source_id)
     |> Map.put(:channelId, status.channel_id)

@@ -23,6 +23,7 @@ type alias State =
     , sourceId : String
     , channelId : String
     , source : Source
+    , active : Bool
     }
 
 
@@ -33,6 +34,7 @@ type alias Model =
     , sourceId : String
     , channelId : String
     , source : Source
+    , active : Bool
     , touches : Utils.Touch.Model
     , swipe : Maybe Utils.Touch.SwipeModel
     , menu : Bool
