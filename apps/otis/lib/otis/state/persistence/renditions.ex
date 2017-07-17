@@ -66,12 +66,12 @@ defmodule Otis.State.Persistence.Renditions do
     {:ok, state}
   end
 
-  def handle_event({:playlist_cleared, [channel_id]}, state) do
+  def handle_event({:playlist_cleared, [channel_id, active_rendition_id]}, state) do
     {:ok, {_channel, deleted}} = Repo.transaction fn ->
-      channel_id |> channel() |> Playlist.clear!()
+      channel_id |> channel() |> Playlist.clear!(active_rendition_id)
     end
     Enum.each(deleted, &Otis.Events.notify({:rendition_deleted, [&1.id, channel_id]}))
-    Otis.Events.notify({:"$__playlist_cleared", [channel_id]})
+    Otis.Events.notify({:"$__playlist_cleared", [channel_id, active_rendition_id]})
     {:ok, state}
   end
 

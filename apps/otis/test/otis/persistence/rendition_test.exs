@@ -225,7 +225,7 @@ defmodule Otis.Persistence.RenditionTest do
       assert_receive ^evt
     end
 
-    evt = {:playlist_cleared, [context.channel.id]}
+    evt = {:playlist_cleared, [context.channel.id, nil]}
     assert_receive ^evt
   end
 
@@ -245,8 +245,8 @@ defmodule Otis.Persistence.RenditionTest do
       assert_receive ^evt
     end
 
-    assert_receive {:playlist_cleared, [^channel_id]}
-    assert_receive {:"$__playlist_cleared", [^channel_id]}
+    assert_receive {:playlist_cleared, [^channel_id, nil]}
+    assert_receive {:"$__playlist_cleared", [^channel_id, nil]}
     # assert Rendition.all == []
     assert [] == State.Playlist.list(channel(context))
   end

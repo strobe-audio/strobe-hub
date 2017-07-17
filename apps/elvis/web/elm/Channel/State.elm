@@ -179,11 +179,7 @@ update action channel =
                 ( channel_, Cmd.none )
 
         Channel.ClearPlaylist ->
-            let
-                channel_ =
-                    { channel | playlist = [] }
-            in
-                ( channel_, Channel.Cmd.clearPlaylist channel_ )
+            ( channel, Channel.Cmd.clearPlaylist channel )
 
         Channel.Tap te ->
             let

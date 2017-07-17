@@ -202,14 +202,22 @@ defmodule Otis.State.Playlist do
   @doc """
 
   """
-  @spec clear!(Channel.t) :: {Channel.t, [Rendition.t]}
-  def clear!(%Channel{current_rendition_id: nil} = channel) do
+  @spec clear!(Channel.t, nil | binary) :: {Channel.t, [Rendition.t]}
+  def clear!(channel, after_id \\ nil)
+  def clear!(%Channel{current_rendition_id: nil} = channel, _after_id) do
     {channel, []}
   end
-  def clear!(channel) do
+  def clear!(channel, nil) do
     drop = list(channel)
     delete_renditions(drop)
     channel = channel |> relink(nil, nil)
+    {channel, drop}
+  end
+  def clear!(channel, after_id) when is_binary(after_id) do
+    after_rendition = find!(after_id)
+    drop = stream_from(after_rendition.next_id) |> Enum.to_list()
+    delete_renditions(drop)
+    channel = channel |> relink(after_rendition, nil)
     {channel, drop}
   end
 

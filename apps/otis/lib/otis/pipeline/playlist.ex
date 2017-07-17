@@ -30,6 +30,10 @@ defmodule Otis.Pipeline.Playlist do
     GenServer.cast(pid, {:remove, id})
   end
 
+  def active_rendition(pid) do
+    GenServer.call(pid, :active_rendition)
+  end
+
   defmodule S do
     @moduledoc false
     defstruct [:id, :renditions, :position, :active]
@@ -58,10 +62,12 @@ defmodule Otis.Pipeline.Playlist do
   def handle_call(:next, _from, %S{renditions: [a | renditions]} = state) do
     {:reply, {:ok, a}, %S{ state | renditions: renditions, active: a }}
   end
-  def handle_call(:clear, _from, state) do
-    state |> all_renditions() |> notify_deletions(state)
-    Events.notify({:playlist_cleared, [state.id]})
-    {:reply, :ok, %S{ state | renditions: [], active: nil }}
+  def handle_call(:clear, _from, %S{active: active} = state) do
+    Events.notify({:playlist_cleared, [state.id, active]})
+    {:reply, :ok, %S{ state | renditions: [] }}
+  end
+  def handle_call(:active_rendition, _from, %S{active: active} = state) do
+    {:reply, {:ok, active}, state}
   end
 
   def handle_cast({:append, sources}, state) do
@@ -99,11 +105,6 @@ defmodule Otis.Pipeline.Playlist do
   defp notify_remove(renditions, state) do
     Enum.each(renditions, fn(id) ->
       Events.notify({:rendition_remove, [id, state.id]})
-    end)
-  end
-  defp notify_deletions(renditions, state) do
-    Enum.each(renditions, fn(id) ->
-      Events.notify({:rendition_deleted, [id, state.id]})
     end)
   end
   defp notify_skip(id, renditions, state) do

@@ -147,7 +147,7 @@ defmodule Otis.ChannelTest do
     assert_receive {:"$__append_renditions", _}
     {:ok, [rendition_id]} = Otis.Pipeline.Playlist.list(pl)
     :ok = Otis.Channel.clear(context.channel)
-    assert_receive {:"$__playlist_cleared", [^channel_id]}
+    assert_receive {:"$__playlist_cleared", [^channel_id, nil]}
     assert_receive {:rendition_deleted, [^rendition_id, ^channel_id]}
   end
 end

@@ -253,11 +253,19 @@ defmodule Otis.Persistence.PlayListTest do
       assert ids(history) == ids(cxt.renditions |> Enum.reverse())
     end
 
-    test "clearing", cxt do
+    test "clearing all", cxt do
       {channel, deleted} = Playlist.clear!(cxt.channel)
       assert ids(deleted) == ids(cxt.renditions)
       assert [] == ids(Playlist.list(channel))
       assert channel.current_rendition_id == nil
+    end
+
+    test "clearing all but active", cxt do
+      [active|to_delete] = ids(cxt.renditions)
+      {channel, deleted} = Playlist.clear!(cxt.channel, active)
+      assert ids(deleted) == to_delete
+      assert [active] == ids(Playlist.list(channel))
+      assert channel.current_rendition_id == active
     end
   end
 end
