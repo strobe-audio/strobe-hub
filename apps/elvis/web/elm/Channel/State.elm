@@ -13,6 +13,7 @@ import Input
 import Input.State
 import Volume
 import Utils.Touch
+import List.Extra
 
 
 forChannel : String -> List { a | channelId : String } -> List { a | channelId : String }
@@ -127,17 +128,14 @@ update action channel =
 
         Channel.AddRendition renditionState ->
             let
-                before =
-                    List.take renditionState.position channel.playlist
-
-                model =
+                rendition =
                     Rendition.State.initialState renditionState
 
-                after =
-                    model :: (List.drop renditionState.position channel.playlist)
+                ( before, after ) =
+                    List.Extra.break (\r -> r.id == renditionState.nextId) channel.playlist
 
                 playlist =
-                    List.concat [ before, after ]
+                    List.concat [ before, [ rendition ], after ]
             in
                 ( { channel | playlist = playlist }, Cmd.none )
 

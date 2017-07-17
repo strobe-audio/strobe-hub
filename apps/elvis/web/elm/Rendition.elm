@@ -18,7 +18,7 @@ type alias Source =
 
 type alias State =
     { id : ID.Rendition
-    , position : Int
+    , nextId : ID.Rendition
     , playbackPosition : Int
     , sourceId : String
     , channelId : String
@@ -28,7 +28,7 @@ type alias State =
 
 type alias Model =
     { id : ID.Rendition
-    , position : Int
+    , nextId : ID.Rendition
     , playbackPosition : Int
     , sourceId : String
     , channelId : String

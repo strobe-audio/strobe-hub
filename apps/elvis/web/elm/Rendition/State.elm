@@ -9,7 +9,7 @@ import Utils.Touch
 initialState : Rendition.State -> Rendition.Model
 initialState state =
     { id = state.id
-    , position = state.position
+    , nextId = state.nextId
     , playbackPosition = state.playbackPosition
     , sourceId = state.sourceId
     , channelId = state.channelId
