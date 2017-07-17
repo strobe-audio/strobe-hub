@@ -48,6 +48,10 @@ defmodule Otis.LoggerHandler do
     {:ok, %{state | progress_count: state.progress_count - 1}}
   end
 
+  def handle_event({:"$__rendition_progress", _args}, state) do
+    {:ok, state}
+  end
+
   def handle_event(event, state) do
     log_event(event, state)
     {:ok, state}
