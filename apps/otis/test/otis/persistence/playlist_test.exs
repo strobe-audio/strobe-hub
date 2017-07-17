@@ -186,6 +186,36 @@ defmodule Otis.Persistence.PlayListTest do
         "9048382e-df62-4932-819b-2d7f4a9d5d8f",
         "f6025f92-e6b5-4f2e-b45e-21fc3f6d09cb",
       ]
+      assert channel.current_rendition_id == "06a72197-dc53-40d3-afc4-0121db3271c5"
+      assert ids == ids(Playlist.list(channel))
+    end
+
+    test "deleting head with history", cxt do
+      _previous = %Rendition{
+        channel_id: cxt.channel_id,
+        id: "6a63f1ea-6b06-11e7-871f-002500f418fc",
+        next_id: "ec779bec-44d9-4a0a-ade5-b6df0eee9571"
+      } |> Rendition.create!
+
+      start = Enum.at(cxt.renditions, 0)
+      delete = [start]
+
+      assert cxt.channel.current_rendition_id == "ec779bec-44d9-4a0a-ade5-b6df0eee9571"
+      {channel, deleted} = Playlist.delete!(cxt.channel, start.id, 1)
+      assert ids(deleted) == ids(delete)
+      assert Enum.map(ids(deleted), &Rendition.find/1) == List.duplicate(nil, 1)
+      ids = [
+        # "ec779bec-44d9-4a0a-ade5-b6df0eee9571",
+        "dc1c043e-25ac-463a-8f3c-fd3f79a36897",
+        "f3a74de1-3c68-45d4-bb92-e1ad5f9224f9",
+        "06a72197-dc53-40d3-afc4-0121db3271c5",
+        "cc8e2967-a956-47d2-9a5a-549a67aa95b6",
+        "e01985f9-897b-4441-9b41-f1f198a8f7ef",
+        "99933b7d-ed14-495d-b8ca-f8ce37135474",
+        "9048382e-df62-4932-819b-2d7f4a9d5d8f",
+        "f6025f92-e6b5-4f2e-b45e-21fc3f6d09cb",
+      ]
+      assert channel.current_rendition_id == "dc1c043e-25ac-463a-8f3c-fd3f79a36897"
       assert ids == ids(Playlist.list(channel))
     end
 

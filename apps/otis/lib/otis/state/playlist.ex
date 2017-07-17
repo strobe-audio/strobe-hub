@@ -187,13 +187,19 @@ defmodule Otis.State.Playlist do
   Delete `n` items from playlist starting from `start_id`
   """
   @spec delete!(Channel.t, binary, non_neg_integer) :: {Channel.t, [Rendition.t]}
+  def delete!(channel, _start_id, 0) do
+    {channel, []}
+  end
   def delete!(channel, start_id, n) do
     previous = previous(start_id)
     {drop, keep} = stream_from(start_id) |> Enum.take(n + 1) |> Enum.split(n)
     channel =
       case keep do
         [] -> relink(channel, previous, nil)
-        [rendition] -> relink(channel, previous, rendition)
+        [rendition] ->
+          channel
+          |> relink(previous, rendition)
+          |> relink_head(drop, keep)
       end
     delete_renditions(drop)
     {channel, drop}
@@ -223,6 +229,7 @@ defmodule Otis.State.Playlist do
 
   defp relink(nil, _head, _next_id) do
     Logger.warn "Channel is nil"
+    nil
   end
   defp relink(channel, head, %Rendition{id: next_id}) do
     relink(channel, head, next_id)
@@ -237,6 +244,14 @@ defmodule Otis.State.Playlist do
     |> Ecto.Changeset.change(next_id: next_id)
     |> Repo.update!
     channel
+  end
+
+  defp relink_head(channel, [dropped | _], [kept | _]) do
+    if channel.current_rendition_id == dropped.id do
+      relink(channel, nil, kept.id)
+    else
+      channel
+    end
   end
 
   defp delete_renditions([]), do: nil
