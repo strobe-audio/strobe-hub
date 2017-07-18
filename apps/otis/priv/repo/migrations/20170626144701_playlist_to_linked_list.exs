@@ -1,6 +1,8 @@
 defmodule Otis.State.Repo.Migrations.PlaylistToLinkedList do
   use Ecto.Migration
 
+  import Ecto.Query
+
   alias Otis.State.Repo
   alias Otis.State.Channel
   alias Otis.State.Rendition
@@ -17,17 +19,29 @@ defmodule Otis.State.Repo.Migrations.PlaylistToLinkedList do
 
     Channel
     |> Repo.all
-    |> Enum.each(fn(channel) ->
-      [first | _] = renditions = channel.id |> Rendition.for_channel()
-      link(renditions)
-      Channel.update(channel, current_rendition_id: first.id)
-    end)
+    |> Enum.map(&migrate_channel/1)
   end
 
-  defp link([]), do: nil
-  defp link([_]), do: nil
+  defp migrate_channel(%Channel{id: channel_id} = channel) do
+    renditions =
+      Rendition
+      |> where(channel_id: ^channel_id)
+      |> order_by(:position)
+      |> Repo.all
+    link(renditions)
+    head(channel, renditions)
+  end
+
   defp link([first | [next | _] = rest]) do
     first |> Rendition.update(next_id: next.id)
     link(rest)
+  end
+  defp link(_), do: nil
+
+  defp head(channel, [%Rendition{id: id} | _]) do
+    Channel.update(channel, current_rendition_id: id)
+  end
+  defp head(channel, _) do
+    channel
   end
 end
