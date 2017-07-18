@@ -158,17 +158,22 @@ playlist channel =
         actionButtons =
             case List.length pending of
                 0 ->
-                    []
+                    div []
+                        [ playlistDivision ""
+                        , div [ class "playlist__empty" ] [ text "Playlist empty" ]
+                        ]
 
                 _ ->
-                    [ div [ class "channel--playlist-actions--space" ] []
-                    , div
-                        [ class "channel--playlist-actions--clear"
-                        , onClick (Channel.ClearPlaylist)
-                        , onSingleTouch (Channel.ClearPlaylist)
+                    div [ class "channel--playlist-actions" ]
+                        [ div [ class "channel--playlist-actions--label" ] [ text "Queued" ]
+                        , div [ class "channel--playlist-actions--space" ] []
+                        , div
+                            [ class "channel--playlist-actions--clear"
+                            , onClick (Channel.ClearPlaylist)
+                            , onSingleTouch (Channel.ClearPlaylist)
+                            ]
+                            []
                         ]
-                        []
-                    ]
 
         playlist =
             case List.length channel.playlist of
@@ -179,8 +184,7 @@ playlist channel =
                     div
                         [ class "channel--playlist--entries" ]
                         [ div [ class "channel--playlist--head" ] [ (playlistHead channel active) ]
-                        , div [ class "channel--playlist-actions" ] actionButtons
-                        , playlistDivision "Queued"
+                        , actionButtons
                         , div [ class "channel--playlist--tail" ] (List.map entry pending)
                         ]
     in

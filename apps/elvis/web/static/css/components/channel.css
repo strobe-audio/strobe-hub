@@ -21,9 +21,17 @@
 .channel--playlist-actions {
   display: flex;
   height: $button-size;
-  background-color: #eee;
+  background: #ddd;
   justify-content: flex-start;
-  align-items: flex-start;
+  align-items: center;
+}
+.channel--playlist-actions--label {
+  text-transform: uppercase;
+  font-size: 1.2rem;
+  line-height: calc($button-size / 2);
+  font-weight: 700;
+  padding-left: $padding;
+  color: #444;
 }
 .channel--playlist-actions--space {
   flex: 1;
