@@ -152,16 +152,30 @@ playlist channel =
         entry rendition =
             Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlist rendition)
 
-        ( current, playlist ) =
-            case channel.playlist of
-                c :: r ->
-                    ( Just c, r )
+        ( active, pending ) =
+            List.partition (\r -> r.active) channel.playlist
 
-                [] ->
-                    ( Nothing, [] )
+        actionButtons =
+            case List.length pending of
+                0 ->
+                    div []
+                        [ playlistDivision ""
+                        , div [ class "playlist__empty" ] [ text "Playlist empty" ]
+                        ]
 
-        -- Maybe.withDefault [] (List.tail channel.playlist)
-        list =
+                _ ->
+                    div [ class "channel--playlist-actions" ]
+                        [ div [ class "channel--playlist-actions--label" ] [ text "Queued" ]
+                        , div [ class "channel--playlist-actions--space" ] []
+                        , div
+                            [ class "channel--playlist-actions--clear"
+                            , onClick (Channel.ClearPlaylist)
+                            , onSingleTouch (Channel.ClearPlaylist)
+                            ]
+                            []
+                        ]
+
+        playlist =
             case List.length channel.playlist of
                 0 ->
                     div [ class "playlist__empty" ] [ text "Playlist empty" ]
@@ -169,39 +183,21 @@ playlist channel =
                 _ ->
                     div
                         [ class "channel--playlist--entries" ]
-                        [ div [ class "channel--playlist--head" ] [ (playlistHead channel current) ]
-                        , playlistDivision "Queued"
-                        , div [ class "channel--playlist--tail" ] (List.map entry playlist)
+                        [ div [ class "channel--playlist--head" ] [ (playlistHead channel active) ]
+                        , actionButtons
+                        , div [ class "channel--playlist--tail" ] (List.map entry pending)
                         ]
-
-        actionButtons =
-            case List.length playlist of
-                0 ->
-                    []
-
-                _ ->
-                    [ div [ class "channel--playlist-actions--space" ] []
-                    , div
-                        [ class "channel--playlist-actions--clear"
-                        , onClick (Channel.ClearPlaylist)
-                        , onSingleTouch (Channel.ClearPlaylist)
-                        ]
-                        []
-                    ]
     in
-        div [ id "__scrolling__", class "channel--playlist" ]
-            [ div [ class "channel--playlist-actions" ] actionButtons
-            , list
-            ]
+        div [ id "__scrolling__", class "channel--playlist" ] [ playlist ]
 
 
-playlistHead : Channel.Model -> Maybe Rendition.Model -> Html Channel.Msg
-playlistHead channel maybeRendition =
-    case maybeRendition of
-        Nothing ->
+playlistHead : Channel.Model -> List Rendition.Model -> Html Channel.Msg
+playlistHead channel active =
+    case active of
+        [] ->
             div [] []
 
-        Just rendition ->
+        rendition :: rest ->
             div
                 []
                 [ playlistDivision "Currently playing"

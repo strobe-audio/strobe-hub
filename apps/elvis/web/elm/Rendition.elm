@@ -18,21 +18,23 @@ type alias Source =
 
 type alias State =
     { id : ID.Rendition
-    , position : Int
+    , nextId : ID.Rendition
     , playbackPosition : Int
     , sourceId : String
     , channelId : String
     , source : Source
+    , active : Bool
     }
 
 
 type alias Model =
     { id : ID.Rendition
-    , position : Int
+    , nextId : ID.Rendition
     , playbackPosition : Int
     , sourceId : String
     , channelId : String
     , source : Source
+    , active : Bool
     , touches : Utils.Touch.Model
     , swipe : Maybe Utils.Touch.SwipeModel
     , menu : Bool
@@ -49,6 +51,7 @@ type Msg
     | Tap (Utils.Touch.E Msg)
     | CloseMenu
     | Remove
+    | Activate
 
 
 type alias ProgressEvent =
@@ -62,6 +65,13 @@ type alias ProgressEvent =
 type alias ChangeEvent =
     { channelId : String
     , removeRenditionIds : List String
+    , activateRenditionId : Maybe ID.Rendition
+    }
+
+
+type alias ActivationEvent =
+    { channelId : String
+    , renditionId : ID.Rendition
     }
 
 

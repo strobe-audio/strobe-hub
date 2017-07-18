@@ -492,7 +492,7 @@ defmodule Peel.Test.LibraryTest do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     path = "track/#{track.id}/play"
     Library.handle_request(channel_id, path)
-    assert_receive {:new_renditions, [^channel_id, [%Otis.State.Rendition{position: 0, source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"}]]}
+    assert_receive {:append_renditions, [^channel_id, [%Otis.State.Rendition{source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"}]]}
   end
 
   test "peel:album/{album_id}/play", %{channel_id: channel_id} = _context do
@@ -500,9 +500,9 @@ defmodule Peel.Test.LibraryTest do
     path = "album/#{album.id}/play"
     Library.handle_request(channel_id, path)
 
-    assert_receive {:new_renditions, [^channel_id, [
-        %Otis.State.Rendition{position: 0, source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"},
-        %Otis.State.Rendition{position: 1, source_id: "a3c90ce4-8a98-405f-bffd-04bc744c13df", source_type: "Elixir.Peel.Track"},
+    assert_receive {:append_renditions, [^channel_id, [
+        %Otis.State.Rendition{source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"},
+        %Otis.State.Rendition{source_id: "a3c90ce4-8a98-405f-bffd-04bc744c13df", source_type: "Elixir.Peel.Track"},
       ]
     ]}
   end

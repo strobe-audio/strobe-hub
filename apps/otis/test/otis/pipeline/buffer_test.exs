@@ -12,6 +12,8 @@ defmodule Test.Otis.Pipeline.Buffer do
   end
 
   setup do
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
+    _channel = @channel_id |> Otis.State.Channel.create!("Test Channel")
     config = %Otis.Pipeline.Config{
       packet_size: 100,
       packet_duration_ms: 20,
@@ -28,7 +30,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       <<"a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436">>,
     ]
     rendition = CycleSource.rendition!(@channel_id, d, -1)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
 
     {:ok, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
@@ -63,7 +65,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     ]
     rendition = CycleSource.rendition!(@channel_id, d, 1)
 
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
     {:done, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
     assert packet.rendition_id == rendition.id
@@ -96,7 +98,10 @@ defmodule Test.Otis.Pipeline.Buffer do
     ]
     rendition = CycleSource.rendition!(@channel_id, d, 1)
 
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, config)
+    pid = GenServer.whereis(buffer)
+    Process.monitor(pid)
+
     {:done, packet} = Producer.next(buffer)
     %Otis.Packet{} = packet
     assert packet.rendition_id == rendition.id
@@ -117,8 +122,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert packet.data == <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>
     assert :done == Producer.next(buffer)
 
-    pid = GenServer.whereis(buffer)
-    assert nil == pid
+    assert_receive {:DOWN, _, :process, ^pid, {:shutdown, :normal}}
   end
 
   test "stopping buffer", context do
@@ -127,7 +131,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
     ]
     rendition = CycleSource.rendition!(@channel_id, d, 1)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
     pid = GenServer.whereis(buffer)
     assert is_pid(pid) == true
     Producer.stop(buffer)
@@ -142,7 +146,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     ]
     rendition = CycleSource.rendition!(@channel_id, d, 1)
     rendition = rendition |> Rendition.update(playback_duration: 2000, playback_position: 1000)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
     {:done, packet} = Producer.next(buffer)
     assert packet.offset_ms == 1000
   end
@@ -153,7 +157,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
     ]
     rendition = CycleSource.rendition!(@channel_id, d, 1)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
     {:done, _packet} = Producer.next(buffer)
     assert :ok == Producer.pause(buffer)
   end
@@ -163,7 +167,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
     ]
     rendition = CycleSource.rendition!(@channel_id, d, 1, :live)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
     {:done, _packet} = Producer.next(buffer)
     assert :stop == Producer.pause(buffer)
   end
@@ -174,7 +178,7 @@ defmodule Test.Otis.Pipeline.Buffer do
       <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
     ]
     rendition = CycleSource.rendition!(@channel_id, d, 1)
-    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition, context.config)
+    {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
     {:done, packet} = Producer.next(buffer)
     assert packet.source_duration == 100_000
   end

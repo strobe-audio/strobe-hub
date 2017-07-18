@@ -6,13 +6,13 @@ defmodule Otis.Pipeline.Streams do
 
   def namespace, do: @namespace
 
-  def name(rendition) do
-    {:via, Registry, {@namespace, rendition.id}}
+  def name(rendition_id) do
+    {:via, Registry, {@namespace, rendition_id}}
   end
 
-  def start_stream(rendition, config) do
-    name = name(rendition)
-    {:ok, _pid} = Supervisor.start_child(@supervisor_name, [name, rendition, config])
+  def start_stream(rendition_id, config) do
+    name = name(rendition_id)
+    {:ok, _pid} = Supervisor.start_child(@supervisor_name, [name, rendition_id, config])
     {:ok, name}
   end
 

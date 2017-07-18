@@ -12,18 +12,19 @@ defmodule Test.Otis.Pipeline.Broadcaster do
 
   @channel_id Otis.uuid()
   @receiver_latency 2222
+  @stop Receiver.stop_command()
 
   setup_all do
     CycleSource.start_table()
   end
 
   setup do
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach()
 
-    channel_id = Otis.uuid
     id1 = Otis.uuid
     id2 = Otis.uuid
-    channel_record = Otis.State.Channel.create!(channel_id, "Something")
+    channel_record = Otis.State.Channel.create!(@channel_id, "Something")
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id1)
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id2)
     mock1 = connect!(id1, 1234)
@@ -32,10 +33,10 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     assert_receive {:receiver_connected, [^id2, _]}
     assert_receive {:"$__receiver_joined", [^id1]}
     assert_receive {:"$__receiver_joined", [^id2]}
-    receivers = Otis.Receivers.Channels.lookup(channel_id)
+    receivers = Otis.Receivers.Channels.lookup(@channel_id)
     r1 = Enum.find(receivers, fn(r) -> r.id == id1 end)
     r2 = Enum.find(receivers, fn(r) -> r.id == id2 end)
-    {:ok, channel: channel_record, channel_id: channel_id, receivers: [r1, r2], mocks: [mock1, mock2]}
+    {:ok, channel: channel_record, channel_id: @channel_id, receivers: [r1, r2], mocks: [mock1, mock2]}
   end
 
   test "broadcaster does a flood send of receivers on start", context do
@@ -271,8 +272,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     m3 = connect!(id3, 2000)
     assert_receive {:receiver_connected, [^id3, _]}
 
-    {:ok, data} = data_recv_raw(m3)
-    assert data == Receiver.stop_command()
+    assert {:ok, @stop} == data_recv_raw(m3)
     Enum.each(0..2, fn(n) ->
       {:ok, data} = data_recv_raw(m3)
       packet = Packet.unmarshal(data)
@@ -490,8 +490,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     assert_receive {:clock, {:stop}}
 
     Enum.each([m1, m2], fn(m) ->
-      {:ok, data} = data_recv_raw(m)
-      assert data == Receiver.stop_command()
+      {:ok, @stop} = data_recv_raw(m)
     end)
     time = 2_000_000
     GenServer.call(clock, {:set_time, time})
@@ -587,8 +586,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     Broadcaster.skip(bc, r3.id)
 
     Enum.each([m1, m2], fn(m) ->
-      {:ok, data} = data_recv_raw(m)
-      assert data == Receiver.stop_command()
+      {:ok, @stop} = data_recv_raw(m)
     end)
     Enum.each(Enum.slice(c3, 0..4), fn(d) ->
       Enum.each([m1, m2], fn(m) ->
@@ -733,8 +731,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     CycleSource.save(r1.id, s2)
 
     Enum.each([m1, m2], fn(m) ->
-      {:ok, data} = data_recv_raw(m)
-      assert data == Receiver.stop_command()
+      {:ok, @stop} = data_recv_raw(m)
     end)
     time = 2_000_000
     GenServer.call(clock, {:set_time, time})
@@ -874,6 +871,109 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
         assert packet.timestamp == packet_time.(t1, n)
+      end)
+    end)
+  end
+
+  test "skipping when paused does not start playing", context do
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+
+    renditions = [r1, r2]
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    Playlist.replace(pl, renditions)
+
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      receiver_buffer_ms: 100,
+      base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    {:ok, hub} = Hub.start_link(pl, config)
+
+    time = 1_000_000
+
+    {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
+    {:ok, bc} = Broadcaster.start_link(@channel_id, self(), hub, clock, config)
+
+    [m1, m2] = context.mocks
+
+    receiver_id = Otis.uuid()
+    _receiver_record = Otis.State.Receiver.create!(context.channel, id: receiver_id)
+    Broadcaster.skip(bc, r2.id)
+
+    Enum.each([m1, m2], fn(m) ->
+      {:error, :timeout} = data_recv_raw(m)
+    end)
+  end
+
+  test "skipping when paused flushes broadcaster", context do
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+
+    renditions = [r1, r2]
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    Playlist.replace(pl, renditions)
+
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      receiver_buffer_ms: 100,
+      base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    {:ok, hub} = Hub.start_link(pl, config)
+
+    time = 1_000_000
+
+    packet_time = fn(n) ->
+      time + @receiver_latency  + (config.base_latency_ms * 1000) + (n * config.packet_duration_ms * 1_000)
+    end
+
+    {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
+    {:ok, bc} = Broadcaster.start_link(@channel_id, self(), hub, clock, config)
+
+    [m1, m2] = context.mocks
+
+    receiver_id = Otis.uuid()
+    _receiver_record = Otis.State.Receiver.create!(context.channel, id: receiver_id)
+
+    Broadcaster.start(bc)
+    assert_receive {:clock, {:start, _, 20}}
+    :pong = GenServer.call(bc, :ping)
+
+    Enum.each(0..4, fn(n) ->
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, data} = data_recv_raw(m)
+        packet = Packet.unmarshal(data)
+        assert packet.data == String.duplicate("1", 64)
+        assert packet.timestamp == packet_time.(n)
+        assert packet.packet_number == n
+      end)
+    end)
+
+    Broadcaster.pause(bc)
+    assert_receive {:clock, {:stop}}
+    Enum.each([m1, m2], fn(m) ->
+      {:ok, @stop} = data_recv_raw(m)
+    end)
+    Broadcaster.skip(bc, r2.id)
+
+    time = 2_000_000
+    GenServer.call(clock, {:set_time, time})
+
+    Broadcaster.start(bc)
+    assert_receive {:clock, {:start, _, 20}}
+    :pong = GenServer.call(bc, :ping)
+
+    Enum.each(0..4, fn(_) ->
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, data} = data_recv_raw(m)
+        packet = Packet.unmarshal(data)
+        assert packet.data == String.duplicate("2", 64)
       end)
     end)
   end

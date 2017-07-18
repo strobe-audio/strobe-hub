@@ -57,6 +57,7 @@ subscriptions model =
         , Ports.channelRemovalActions
         , Ports.renditionProgressActions
         , Ports.renditionChangeActions
+        , Ports.renditionActivationActions
         , Ports.volumeChangeActions
         , Ports.playListAdditionActions
         , Ports.libraryRegistrationActions

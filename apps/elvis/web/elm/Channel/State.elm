@@ -13,6 +13,7 @@ import Input
 import Input.State
 import Volume
 import Utils.Touch
+import List.Extra
 
 
 forChannel : String -> List { a | channelId : String } -> List { a | channelId : String }
@@ -117,8 +118,20 @@ update action channel =
                 isMember =
                     (\r -> (List.member r.id event.removeRenditionIds))
 
+                activateRendition activateId r =
+                    { r | active = (r.id == activateId) }
+
+                activate playlist =
+                    case event.activateRenditionId of
+                        Nothing ->
+                            playlist
+
+                        Just id ->
+                            List.map (activateRendition id) playlist
+
                 playlist =
                     List.filter (isMember >> not) channel.playlist
+                        |> activate
 
                 updatedChannel =
                     { channel | playlist = playlist }
@@ -127,19 +140,19 @@ update action channel =
 
         Channel.AddRendition renditionState ->
             let
-                before =
-                    List.take renditionState.position channel.playlist
-
-                model =
+                rendition =
                     Rendition.State.initialState renditionState
 
-                after =
-                    model :: (List.drop renditionState.position channel.playlist)
+                ( before, after ) =
+                    List.Extra.break (\r -> r.id == renditionState.nextId) channel.playlist
 
                 playlist =
-                    List.concat [ before, after ]
+                    List.concat [ before, [ rendition ], after ]
             in
                 ( { channel | playlist = playlist }, Cmd.none )
+
+        Channel.RenditionActive renditionId ->
+            channel ! []
 
         Channel.ShowEditName state ->
             let
@@ -181,11 +194,7 @@ update action channel =
                 ( channel_, Cmd.none )
 
         Channel.ClearPlaylist ->
-            let
-                channel_ =
-                    { channel | playlist = [] }
-            in
-                ( channel_, Channel.Cmd.clearPlaylist channel_ )
+            ( channel, Channel.Cmd.clearPlaylist channel )
 
         Channel.Tap te ->
             let

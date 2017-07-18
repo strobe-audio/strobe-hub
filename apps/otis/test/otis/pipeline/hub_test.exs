@@ -14,13 +14,15 @@ defmodule Test.Otis.Pipeline.Hub do
   end
 
   setup do
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
+    channel = @channel_id |> Otis.State.Channel.create!("Test Channel")
     config = %Otis.Pipeline.Config{
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
       transcoder: Test.PassthroughTranscoder,
     }
-    {:ok, config: config}
+    {:ok, config: config, channel: channel}
   end
 
   def test_file(filename), do: Path.join(@dir, filename)

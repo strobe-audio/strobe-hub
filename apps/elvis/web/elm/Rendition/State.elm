@@ -9,11 +9,12 @@ import Utils.Touch
 initialState : Rendition.State -> Rendition.Model
 initialState state =
     { id = state.id
-    , position = state.position
+    , nextId = state.nextId
     , playbackPosition = state.playbackPosition
     , sourceId = state.sourceId
     , channelId = state.channelId
     , source = state.source
+    , active = state.active
     , touches = Utils.Touch.emptyModel
     , swipe = Nothing
     , menu = False
@@ -41,6 +42,9 @@ update action rendition =
 
         Rendition.PlayPause ->
             ( rendition, Cmd.none )
+
+        Rendition.Activate ->
+            ( { rendition | active = True }, Cmd.none )
 
         Rendition.Swipe te ->
             let

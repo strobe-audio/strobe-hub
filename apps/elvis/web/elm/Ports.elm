@@ -100,6 +100,18 @@ renditionChangeActions =
         renditionChange forward
 
 
+port renditionActive : (Rendition.ActivationEvent -> m) -> Sub m
+
+
+renditionActivationActions : Sub Msg
+renditionActivationActions =
+    let
+        forward event =
+            ((Msg.Channel event.channelId) (Channel.RenditionActive event.renditionId))
+    in
+        renditionActive forward
+
+
 port volumeChange : (State.VolumeChangeEvent -> m) -> Sub m
 
 

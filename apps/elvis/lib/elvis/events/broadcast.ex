@@ -42,13 +42,18 @@ defmodule Elvis.Events.Broadcast do
   end
 
 
-  def handle_event({:new_renditions, _}, state) do
+  def handle_event({:append_renditions, _}, state) do
     {:ok, state}
   end
 
   def handle_event({:new_rendition_created, [rendition]}, state) do
-    rendition = Otis.State.rendition(rendition)
+    rendition = Otis.State.rendition(rendition, nil)
     broadcast!("new_rendition_created", rendition)
+    {:ok, state}
+  end
+
+  def handle_event({:rendition_active, [channel_id, rendition_id]}, state) do
+    broadcast!("rendition_active", %{channelId: channel_id, renditionId: rendition_id})
     {:ok, state}
   end
 
@@ -62,16 +67,17 @@ defmodule Elvis.Events.Broadcast do
     {:ok, state}
   end
 
-  def handle_event({:renditions_skipped, [channel_id, rendition_ids]}, state) do
-    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: rendition_ids})
+  def handle_event({:renditions_skipped, [channel_id, skip_id, rendition_ids]}, state) do
+    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: rendition_ids, activateRenditionId: skip_id})
     {:ok, state}
   end
 
-  def handle_event({:rendition_changed, [_channel_id, nil, _new_rendition_id]}, state) do
+  def handle_event({:rendition_changed, [channel_id, nil, new_rendition_id]}, state) do
+    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [], activateRenditionId: new_rendition_id})
     {:ok, state}
   end
-  def handle_event({:rendition_changed, [channel_id, old_rendition_id, _new_rendition_id]}, state) do
-    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [old_rendition_id]})
+  def handle_event({:rendition_changed, [channel_id, old_rendition_id, new_rendition_id]}, state) do
+    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [old_rendition_id], activateRenditionId: new_rendition_id})
     {:ok, state}
   end
 
@@ -93,7 +99,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:rendition_deleted, [rendition_id, channel_id]}, state) do
-    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [rendition_id]})
+    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [rendition_id], activateRenditionId: nil})
     {:ok, state}
   end
 

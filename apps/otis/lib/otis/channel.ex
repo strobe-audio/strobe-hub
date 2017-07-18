@@ -27,13 +27,6 @@ defmodule Otis.Channel do
     GenServer.call(channel, :id)
   end
 
-  def socket(%__MODULE__{pid: pid} = _channel) do
-    socket(pid)
-  end
-  def socket(channel) do
-    GenServer.call(channel, :socket)
-  end
-
   def state(channel) do
     GenServer.call(channel, :get_state)
   end
@@ -51,6 +44,10 @@ defmodule Otis.Channel do
 
   def playlist(channel) do
     GenServer.call(channel, :get_playlist)
+  end
+
+  def active_rendition(channel) do
+    GenServer.call(channel, :active_rendition)
   end
 
   def volume!(channel) do
@@ -155,6 +152,10 @@ defmodule Otis.Channel do
 
   def handle_call(:get_playlist, _from, %S{playlist: playlist} = state) do
     {:reply, {:ok, playlist}, state}
+  end
+
+  def handle_call(:active_rendition, _from, %S{playlist: playlist} = state) do
+    {:reply, Playlist.active_rendition(playlist), state}
   end
 
   def handle_call(:volume, _from, %S{volume: volume} = state) do

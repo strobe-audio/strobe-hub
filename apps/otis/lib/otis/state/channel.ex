@@ -4,18 +4,24 @@ defmodule Otis.State.Channel do
 
   alias Otis.State.Channel
   alias Otis.State.Repo
-  alias Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @derive {Poison.Encoder, only: [:id, :name, :volume, :position]}
+
+  @type t :: %__MODULE__{}
 
   schema "channels" do
     field :name, :string
     field :volume, :float, default: 1.0
     field :position, :integer, default: 0
+    field :current_rendition_id, Ecto.UUID
 
     has_many :receivers, Otis.State.Receiver
     belongs_to :profile, Otis.State.Profile, type: Ecto.UUID
+  end
+
+  def changeset(channel, fields) do
+    Ecto.Changeset.change(channel, fields)
   end
 
   def first do
@@ -35,10 +41,17 @@ defmodule Otis.State.Channel do
   end
 
   def find(id) do
+    id |> find_query() |> Repo.one
+  end
+
+  def find!(id) do
+    id |> find_query() |> Repo.one!
+  end
+
+  defp find_query(id) do
     Channel
     |> where(id: ^id)
     |> limit(1)
-    |> Repo.one
   end
 
   def delete_all do
@@ -65,33 +78,14 @@ defmodule Otis.State.Channel do
   end
 
   def volume(channel, volume) do
-    Changeset.change(channel, volume: volume) |> Repo.update!
+    changeset(channel, volume: volume) |> Repo.update!
+  end
+
+  def update(channel, fields) do
+    channel |> changeset(fields) |> Repo.update!
   end
 
   def rename(channel, name) do
-    Changeset.change(channel, name: name) |> Repo.update!
+    channel |> changeset(name: name) |> Repo.update!
   end
-#
-#   def create(name)
-#
-#   def destroy(channel)
-#   def rename(channel)
-#
-#   # you can only add -- receivers are just moved around
-#   # maps to a detach_receiver, attach_receiver pair
-#   def add_receiver(channel, receiver)
-#
-#   def volume(channel, volume)
-#   def mute(channel)
-#
-#   def replace_source_list(channel, source_list)
-#   def insert_source(channel, source, position)
-#   def remove_source(channel, source)
-#   def position_source(channel, source, position)
-#
-#   def play_pause(channel)
-#   def skip(channel, source) #
-#   def scrub(channel, time) # time? what is the param here?
-#
-#
 end

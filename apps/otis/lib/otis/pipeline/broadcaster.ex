@@ -29,6 +29,7 @@ defmodule Otis.Pipeline.Broadcaster do
       buffer: [],
       rendition_id: nil,
       started: false,
+      playing: false,
     ]
   end
 
@@ -79,7 +80,7 @@ defmodule Otis.Pipeline.Broadcaster do
   def handle_cast(:start, state) do
     state = start(&clock_start_time/1, state)
     notify_channel(state, :broadcaster_start)
-    {:noreply, %S{state | started: true}}
+    {:noreply, %S{state | started: true, playing: true}}
   end
 
   def handle_cast(:pause, state) do
@@ -93,7 +94,7 @@ defmodule Otis.Pipeline.Broadcaster do
       :stop ->
         %S{state | n: 0, buffer: [], inflight: []}
     end
-    {:noreply, state}
+    {:noreply, %S{state | playing: false}}
   end
 
   def handle_cast({:tick, time}, state) do
@@ -102,6 +103,10 @@ defmodule Otis.Pipeline.Broadcaster do
     {:noreply, state}
   end
 
+  def handle_cast({:skip, rendition_id}, %S{playing: false} = state) do
+    Hub.skip(state.hub, rendition_id)
+    {:noreply, %S{state | buffer: []}}
+  end
   def handle_cast({:skip, rendition_id}, state) do
     Otis.Receivers.Channels.stop(state.id)
     Hub.skip(state.hub, rendition_id)
@@ -168,29 +173,34 @@ defmodule Otis.Pipeline.Broadcaster do
   defp monitor_status(state, []) do
     notify_channel(state, :broadcaster_stop)
     {:ok, _time} = Clock.stop(state.clock)
-    state
+    %S{state | playing: false}
   end
   defp monitor_status(state, _unplayed) do
     state
   end
 
   defp monitor_rendition(state, _played, [] = _unplayed) do
-    Otis.Events.notify({:rendition_changed, [state.id, state.rendition_id, nil]})
-    %S{ state | rendition_id: nil }
+    %S{ state | rendition_id: nil } |> notify_rendition_change(state.rendition_id, nil)
   end
   defp monitor_rendition(state, [], _unplayed) do
     state
   end
   defp monitor_rendition(%S{rendition_id: nil} = state, [packet | _rest], _unplayed) do
-    Otis.Events.notify({:rendition_changed, [state.id, nil, packet.rendition_id]})
-    %S{state|rendition_id: packet.rendition_id}
+    %S{state|rendition_id: packet.rendition_id} |> notify_rendition_change(nil, packet.rendition_id)
   end
   defp monitor_rendition(%S{rendition_id: rendition_id} = state, [%Packet{rendition_id: rendition_id} | _rest], _unplayed) do
     state
   end
   defp monitor_rendition(%S{rendition_id: rendition_id} = state, [packet | _rest], _unplayed) do
-    Otis.Events.notify({:rendition_changed, [state.id, rendition_id, packet.rendition_id]})
-    %S{state|rendition_id: packet.rendition_id}
+    %S{state|rendition_id: packet.rendition_id} |> notify_rendition_change(rendition_id, packet.rendition_id)
+  end
+
+  defp notify_rendition_change(state, nil, nil) do
+    state
+  end
+  defp notify_rendition_change(state, old_id, new_id) do
+    Otis.Events.notify({:rendition_changed, [state.id, old_id, new_id]})
+    state
   end
 
   defp monitor_progress(state, played) do

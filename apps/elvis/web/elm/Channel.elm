@@ -56,6 +56,7 @@ type Msg
     | ShowAddReceiver Bool
     | RenditionProgress Rendition.ProgressEvent
     | RenditionChange Rendition.ChangeEvent
+    | RenditionActive ID.Rendition
     | AddRendition Rendition.State
     | ShowEditName Bool
     | ShowConfirmDelete Bool

@@ -10,7 +10,6 @@ defmodule Peel.Events.Library do
   use  Otis.Library, namespace: Peel.library_id()
 
   def setup(state) do
-    # Copy my placeholder here
     state
   end
 
@@ -255,7 +254,6 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Search #{collection.name}",
       icon: icon(nil),
-      search: nil,
       search: %{url: search_url([collection_id]), title: collection.name },
       length: 3,
       children: [
