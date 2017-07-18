@@ -12,6 +12,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
 
   @channel_id Otis.uuid()
   @receiver_latency 2222
+  @stop Receiver.stop_command()
 
   setup_all do
     CycleSource.start_table()
@@ -271,8 +272,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     m3 = connect!(id3, 2000)
     assert_receive {:receiver_connected, [^id3, _]}
 
-    {:ok, data} = data_recv_raw(m3)
-    assert data == Receiver.stop_command()
+    assert {:ok, @stop} == data_recv_raw(m3)
     Enum.each(0..2, fn(n) ->
       {:ok, data} = data_recv_raw(m3)
       packet = Packet.unmarshal(data)
@@ -490,8 +490,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     assert_receive {:clock, {:stop}}
 
     Enum.each([m1, m2], fn(m) ->
-      {:ok, data} = data_recv_raw(m)
-      assert data == Receiver.stop_command()
+      {:ok, @stop} = data_recv_raw(m)
     end)
     time = 2_000_000
     GenServer.call(clock, {:set_time, time})
@@ -587,8 +586,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     Broadcaster.skip(bc, r3.id)
 
     Enum.each([m1, m2], fn(m) ->
-      {:ok, data} = data_recv_raw(m)
-      assert data == Receiver.stop_command()
+      {:ok, @stop} = data_recv_raw(m)
     end)
     Enum.each(Enum.slice(c3, 0..4), fn(d) ->
       Enum.each([m1, m2], fn(m) ->
@@ -733,8 +731,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     CycleSource.save(r1.id, s2)
 
     Enum.each([m1, m2], fn(m) ->
-      {:ok, data} = data_recv_raw(m)
-      assert data == Receiver.stop_command()
+      {:ok, @stop} = data_recv_raw(m)
     end)
     time = 2_000_000
     GenServer.call(clock, {:set_time, time})
