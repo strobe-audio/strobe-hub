@@ -155,19 +155,6 @@ playlist channel =
         ( active, pending ) =
             List.partition (\r -> r.active) channel.playlist
 
-        list =
-            case List.length channel.playlist of
-                0 ->
-                    div [ class "playlist__empty" ] [ text "Playlist empty" ]
-
-                _ ->
-                    div
-                        [ class "channel--playlist--entries" ]
-                        [ div [ class "channel--playlist--head" ] [ (playlistHead channel active) ]
-                        , playlistDivision "Queued"
-                        , div [ class "channel--playlist--tail" ] (List.map entry pending)
-                        ]
-
         actionButtons =
             case List.length pending of
                 0 ->
@@ -182,11 +169,22 @@ playlist channel =
                         ]
                         []
                     ]
+
+        playlist =
+            case List.length channel.playlist of
+                0 ->
+                    div [ class "playlist__empty" ] [ text "Playlist empty" ]
+
+                _ ->
+                    div
+                        [ class "channel--playlist--entries" ]
+                        [ div [ class "channel--playlist--head" ] [ (playlistHead channel active) ]
+                        , div [ class "channel--playlist-actions" ] actionButtons
+                        , playlistDivision "Queued"
+                        , div [ class "channel--playlist--tail" ] (List.map entry pending)
+                        ]
     in
-        div [ id "__scrolling__", class "channel--playlist" ]
-            [ div [ class "channel--playlist-actions" ] actionButtons
-            , list
-            ]
+        div [ id "__scrolling__", class "channel--playlist" ] [ playlist ]
 
 
 playlistHead : Channel.Model -> List Rendition.Model -> Html Channel.Msg
