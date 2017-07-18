@@ -877,4 +877,107 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
   end
+
+  test "skipping when paused does not start playing", context do
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+
+    renditions = [r1, r2]
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    Playlist.replace(pl, renditions)
+
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      receiver_buffer_ms: 100,
+      base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    {:ok, hub} = Hub.start_link(pl, config)
+
+    time = 1_000_000
+
+    {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
+    {:ok, bc} = Broadcaster.start_link(@channel_id, self(), hub, clock, config)
+
+    [m1, m2] = context.mocks
+
+    receiver_id = Otis.uuid()
+    _receiver_record = Otis.State.Receiver.create!(context.channel, id: receiver_id)
+    Broadcaster.skip(bc, r2.id)
+
+    Enum.each([m1, m2], fn(m) ->
+      {:error, :timeout} = data_recv_raw(m)
+    end)
+  end
+
+  test "skipping when paused flushes broadcaster", context do
+    r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
+    r2 = CycleSource.rendition!(@channel_id, [<<"2">>], 1024)
+
+    renditions = [r1, r2]
+    {:ok, pl} = Playlist.start_link(@channel_id)
+    Playlist.replace(pl, renditions)
+
+    config = %Otis.Pipeline.Config{
+      packet_size: 64,
+      packet_duration_ms: 20,
+      buffer_packets: 10,
+      receiver_buffer_ms: 100,
+      base_latency_ms: 10,
+      transcoder: Test.PassthroughTranscoder,
+    }
+    {:ok, hub} = Hub.start_link(pl, config)
+
+    time = 1_000_000
+
+    packet_time = fn(n) ->
+      time + @receiver_latency  + (config.base_latency_ms * 1000) + (n * config.packet_duration_ms * 1_000)
+    end
+
+    {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
+    {:ok, bc} = Broadcaster.start_link(@channel_id, self(), hub, clock, config)
+
+    [m1, m2] = context.mocks
+
+    receiver_id = Otis.uuid()
+    _receiver_record = Otis.State.Receiver.create!(context.channel, id: receiver_id)
+
+    Broadcaster.start(bc)
+    assert_receive {:clock, {:start, _, 20}}
+    :pong = GenServer.call(bc, :ping)
+
+    Enum.each(0..4, fn(n) ->
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, data} = data_recv_raw(m)
+        packet = Packet.unmarshal(data)
+        assert packet.data == String.duplicate("1", 64)
+        assert packet.timestamp == packet_time.(n)
+        assert packet.packet_number == n
+      end)
+    end)
+
+    Broadcaster.pause(bc)
+    assert_receive {:clock, {:stop}}
+    Enum.each([m1, m2], fn(m) ->
+      {:ok, @stop} = data_recv_raw(m)
+    end)
+    Broadcaster.skip(bc, r2.id)
+
+    time = 2_000_000
+    GenServer.call(clock, {:set_time, time})
+
+    Broadcaster.start(bc)
+    assert_receive {:clock, {:start, _, 20}}
+    :pong = GenServer.call(bc, :ping)
+
+    Enum.each(0..4, fn(_) ->
+      Enum.each([m1, m2], fn(m) ->
+        {:ok, data} = data_recv_raw(m)
+        packet = Packet.unmarshal(data)
+        assert packet.data == String.duplicate("2", 64)
+      end)
+    end)
+  end
 end

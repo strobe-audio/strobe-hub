@@ -29,6 +29,7 @@ defmodule Otis.Pipeline.Broadcaster do
       buffer: [],
       rendition_id: nil,
       started: false,
+      playing: false,
     ]
   end
 
@@ -79,7 +80,7 @@ defmodule Otis.Pipeline.Broadcaster do
   def handle_cast(:start, state) do
     state = start(&clock_start_time/1, state)
     notify_channel(state, :broadcaster_start)
-    {:noreply, %S{state | started: true}}
+    {:noreply, %S{state | started: true, playing: true}}
   end
 
   def handle_cast(:pause, state) do
@@ -93,7 +94,7 @@ defmodule Otis.Pipeline.Broadcaster do
       :stop ->
         %S{state | n: 0, buffer: [], inflight: []}
     end
-    {:noreply, state}
+    {:noreply, %S{state | playing: false}}
   end
 
   def handle_cast({:tick, time}, state) do
@@ -102,6 +103,10 @@ defmodule Otis.Pipeline.Broadcaster do
     {:noreply, state}
   end
 
+  def handle_cast({:skip, rendition_id}, %S{playing: false} = state) do
+    Hub.skip(state.hub, rendition_id)
+    {:noreply, %S{state | buffer: []}}
+  end
   def handle_cast({:skip, rendition_id}, state) do
     Otis.Receivers.Channels.stop(state.id)
     Hub.skip(state.hub, rendition_id)
@@ -168,7 +173,7 @@ defmodule Otis.Pipeline.Broadcaster do
   defp monitor_status(state, []) do
     notify_channel(state, :broadcaster_stop)
     {:ok, _time} = Clock.stop(state.clock)
-    state
+    %S{state | playing: false}
   end
   defp monitor_status(state, _unplayed) do
     state
