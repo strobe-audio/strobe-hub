@@ -51,6 +51,7 @@ type Msg
     | Tap (Utils.Touch.E Msg)
     | CloseMenu
     | Remove
+    | Activate
 
 
 type alias ProgressEvent =
@@ -64,6 +65,13 @@ type alias ProgressEvent =
 type alias ChangeEvent =
     { channelId : String
     , removeRenditionIds : List String
+    , activateRenditionId : Maybe ID.Rendition
+    }
+
+
+type alias ActivationEvent =
+    { channelId : String
+    , renditionId : ID.Rendition
     }
 
 

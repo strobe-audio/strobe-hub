@@ -60,6 +60,7 @@ defmodule Otis.Pipeline.Playlist do
     {:reply, :done, %S{ state | active: nil }}
   end
   def handle_call(:next, _from, %S{renditions: [a | renditions]} = state) do
+    Events.notify({:rendition_active, [state.id, a]})
     {:reply, {:ok, a}, %S{ state | renditions: renditions, active: a }}
   end
   def handle_call(:clear, _from, %S{active: active} = state) do

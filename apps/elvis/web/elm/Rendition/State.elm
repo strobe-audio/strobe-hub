@@ -43,6 +43,9 @@ update action rendition =
         Rendition.PlayPause ->
             ( rendition, Cmd.none )
 
+        Rendition.Activate ->
+            ( { rendition | active = True }, Cmd.none )
+
         Rendition.Swipe te ->
             let
                 touches =

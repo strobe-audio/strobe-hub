@@ -96,6 +96,10 @@ channel.on('new_rendition_created', payload => {
   app.ports.playlistAddition.send(payload)
 })
 
+channel.on('rendition_active', payload => {
+  app.ports.renditionActive.send(payload)
+})
+
 channel.on('library', payload => {
   app.ports.libraryResponse.send(payload)
 })

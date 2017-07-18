@@ -195,6 +195,17 @@ defmodule Test.Otis.Pipeline.Playlist do
     assert {:ok, []} == Playlist.list(context.pl)
   end
 
+  test "event when rendition becomes active", context do
+    channel_id = context.id
+    :ok = Playlist.append(context.pl, context.sources)
+    assert_receive {:"$__append_renditions", [^channel_id]}
+    assert_receive {:new_rendition_created, _}, 500
+    {:ok, rendition_id} = Playlist.next(context.pl)
+    assert_receive {:rendition_active, [^channel_id, ^rendition_id]}
+    {:ok, rendition_id} = Playlist.next(context.pl)
+    assert_receive {:rendition_active, [^channel_id, ^rendition_id]}
+  end
+
   test "removal of single rendition", context do
     channel_id = context.id
     Playlist.append(context.pl, context.sources)

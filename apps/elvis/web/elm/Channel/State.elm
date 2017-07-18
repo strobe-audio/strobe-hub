@@ -118,8 +118,20 @@ update action channel =
                 isMember =
                     (\r -> (List.member r.id event.removeRenditionIds))
 
+                activateRendition activateId r =
+                    { r | active = (r.id == activateId) }
+
+                activate playlist =
+                    case event.activateRenditionId of
+                        Nothing ->
+                            playlist
+
+                        Just id ->
+                            List.map (activateRendition id) playlist
+
                 playlist =
                     List.filter (isMember >> not) channel.playlist
+                        |> activate
 
                 updatedChannel =
                     { channel | playlist = playlist }
@@ -138,6 +150,9 @@ update action channel =
                     List.concat [ before, [ rendition ], after ]
             in
                 ( { channel | playlist = playlist }, Cmd.none )
+
+        Channel.RenditionActive renditionId ->
+            channel ! []
 
         Channel.ShowEditName state ->
             let

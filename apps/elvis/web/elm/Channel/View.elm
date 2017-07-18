@@ -152,15 +152,9 @@ playlist channel =
         entry rendition =
             Html.map (Channel.ModifyRendition rendition.id) (Rendition.View.playlist rendition)
 
-        ( current, playlist ) =
-            case channel.playlist of
-                c :: r ->
-                    ( Just c, r )
+        ( active, pending ) =
+            List.partition (\r -> r.active) channel.playlist
 
-                [] ->
-                    ( Nothing, [] )
-
-        -- Maybe.withDefault [] (List.tail channel.playlist)
         list =
             case List.length channel.playlist of
                 0 ->
@@ -169,13 +163,13 @@ playlist channel =
                 _ ->
                     div
                         [ class "channel--playlist--entries" ]
-                        [ div [ class "channel--playlist--head" ] [ (playlistHead channel current) ]
+                        [ div [ class "channel--playlist--head" ] [ (playlistHead channel active) ]
                         , playlistDivision "Queued"
-                        , div [ class "channel--playlist--tail" ] (List.map entry playlist)
+                        , div [ class "channel--playlist--tail" ] (List.map entry pending)
                         ]
 
         actionButtons =
-            case List.length playlist of
+            case List.length pending of
                 0 ->
                     []
 
@@ -195,13 +189,13 @@ playlist channel =
             ]
 
 
-playlistHead : Channel.Model -> Maybe Rendition.Model -> Html Channel.Msg
-playlistHead channel maybeRendition =
-    case maybeRendition of
-        Nothing ->
+playlistHead : Channel.Model -> List Rendition.Model -> Html Channel.Msg
+playlistHead channel active =
+    case active of
+        [] ->
             div [] []
 
-        Just rendition ->
+        rendition :: rest ->
             div
                 []
                 [ playlistDivision "Currently playing"
