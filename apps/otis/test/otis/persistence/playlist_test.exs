@@ -105,6 +105,17 @@ defmodule Otis.Persistence.PlayListTest do
       assert (ids(cxt.renditions) ++ ids(r)) == ids(Playlist.list(channel))
     end
 
+    test "appending to list with history", cxt do
+      channel = Channel.update(cxt.channel, current_rendition_id: nil)
+      r = [
+        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },
+      ]
+      {channel, inserted} = Playlist.append!(channel, r)
+      assert ids(inserted) == ids(r)
+      assert channel.current_rendition_id == "418c93d6-5b1f-11e7-a9a6-002500f418fc"
+      assert ids(r) == ids(Playlist.list(channel))
+    end
+
     test "prepending to list", cxt do
       r = [
         %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },

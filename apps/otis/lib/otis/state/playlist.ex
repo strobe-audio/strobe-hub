@@ -102,7 +102,7 @@ defmodule Otis.State.Playlist do
   @spec append!(Channel.t, [Rendition.t]) :: {Channel.t, [Rendition.t]}
   def append!(%Channel{id: id} = channel, renditions) do
     last = channel |> last()
-    [last | renditions] |> append(id, []) |> after_append(channel)
+    [last | renditions] |> append(id, []) |> after_append(last, channel)
   end
 
   defp append([rendition], channel_id, inserted) do
@@ -119,13 +119,16 @@ defmodule Otis.State.Playlist do
     append(rest, channel_id, [insert_linked(first, next.id, channel_id) | inserted])
   end
 
-  defp after_append([], channel) do
+  defp after_append([], _last, channel) do
     {channel, []}
   end
-  defp after_append([head | _] = inserted, %Channel{current_rendition_id: nil} = channel) do
+  defp after_append([head | _] = inserted, nil, %Channel{current_rendition_id: nil} = channel) do
     {channel |> skip(head.id), inserted}
   end
-  defp after_append([_ | inserted], channel) do
+  defp after_append([%Rendition{id: last_id} | [head | _] = inserted], %Rendition{id: last_id}, %Channel{current_rendition_id: nil} = channel) do
+    {channel |> skip(head.id), inserted}
+  end
+  defp after_append([_ | inserted], _last, channel) do
     {channel, inserted}
   end
 
