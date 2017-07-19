@@ -21,8 +21,11 @@ defmodule Otis.State.Persistence.Receivers do
   end
 
   def init(_opts) do
-    {:consumer, %S{}, subscribe_to: Otis.Events.producer}
+    {:consumer, %S{}, subscribe_to: Otis.Events.producer(&selector/1)}
   end
+
+  defp selector({:receiver, _evt, _args}), do: true
+  defp selector(_evt), do: false
 
   def handle_event({:receiver, :connect, [id, recv]}, state) do
     id |> receiver |> receiver_connected(id, recv)

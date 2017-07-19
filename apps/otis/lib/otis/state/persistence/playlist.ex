@@ -12,8 +12,11 @@ defmodule Otis.State.Persistence.Playlist do
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Otis.Events.producer}
+    {:consumer, [], subscribe_to: Otis.Events.producer(&selector/1)}
   end
+
+  defp selector({:playlist, _evt, _args}), do: true
+  defp selector(_evt), do: false
 
   def handle_event({:playlist, :append, [channel_id, renditions]}, state) do
     channel = channel(channel_id)

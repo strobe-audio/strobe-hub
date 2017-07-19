@@ -11,8 +11,11 @@ defmodule Otis.State.Persistence.Renditions do
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Otis.Events.producer}
+    {:consumer, [], subscribe_to: Otis.Events.producer(&selector/1)}
   end
+
+  defp selector({:rendition, _evt, _args}), do: true
+  defp selector(_evt), do: false
 
   def handle_event({:rendition, :delete, [_id, _channel_id]}, state) do
     {:ok, state}

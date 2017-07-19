@@ -20,8 +20,11 @@ defmodule Otis.State.Persistence.Channels do
   end
 
   def init(_opts) do
-    {:consumer, %S{}, subscribe_to: Otis.Events.producer}
+    {:consumer, %S{}, subscribe_to: Otis.Events.producer(&selector/1)}
   end
+
+  defp selector({:channel, _evt, _args}), do: true
+  defp selector(_evt), do: false
 
   def handle_event({:channel, :add, [id, %{name: name}]}, state) do
     Repo.transaction fn ->

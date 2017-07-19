@@ -13,8 +13,13 @@ defmodule Otis.Library do
       end
 
       def init(_opts) do
-        {:consumer, [], subscribe_to: Otis.Library.Events.producer}
+        {:consumer, [], subscribe_to: Otis.Library.Events.producer(&selector/1)}
       end
+
+      defp selector({:strobe, :start, _args}), do: true
+      defp selector({:controller, :join, _args}), do: true
+      defp selector({:library, :request, _args}), do: true
+      defp selector(_evt), do: false
 
       def handle_events([], _from, state) do
         {:noreply, [], state}
