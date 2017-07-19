@@ -25,6 +25,16 @@ defmodule Test.Otis.Pipeline.Playlist do
   alias Otis.Pipeline.Playlist
   alias Otis.State.Rendition
 
+  def build_playlist(context) do
+    build_playlist(context, context.sources)
+  end
+  def build_playlist(%{id: channel_id} = context, sources) do
+    Playlist.append(context.pl, sources)
+    assert_receive {:playlist, :append, [^channel_id, _]}
+    assert_receive {:__complete__, {:playlist, :append, [^channel_id, _]}, Otis.State.Persistence.Playlist}
+    Playlist.list(context.pl)
+  end
+
   setup do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach
@@ -53,11 +63,8 @@ defmodule Test.Otis.Pipeline.Playlist do
 
   test "it emits an event listing the new renditions", context do
     channel_id = context.id
-    Playlist.append(context.pl, context.sources)
-    {:ok, _rendition_ids} = Playlist.list(context.pl)
-    assert_receive {:append_renditions, [^channel_id, renditions]}, 200
-    assert_receive {:"$__append_renditions", [^channel_id]}
-    renditions = Enum.map(renditions, &Rendition.find(&1.id))
+    {:ok, rendition_ids} = build_playlist(context)
+    renditions = Enum.map(rendition_ids, &Rendition.find/1)
     [r0, r1, r2, r3] = renditions
     %Rendition{source_id: "a", source_type: "Elixir.Test.Otis.Pipeline.Source", channel_id: ^channel_id, playback_duration: 1000} = r0
     %Rendition{source_id: "b", source_type: "Elixir.Test.Otis.Pipeline.Source", channel_id: ^channel_id, playback_duration: 1000} = r1
@@ -66,10 +73,7 @@ defmodule Test.Otis.Pipeline.Playlist do
   end
 
   test "it returns the next rendition", context do
-    channel_id = context.id
-    Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
-    {:ok, rendition_ids} = Playlist.list(context.pl)
+    {:ok, rendition_ids} = build_playlist(context)
     [r0, r1, r2, r3] = rendition_ids
     Enum.each rendition_ids, fn r ->
       assert is_binary(r)
@@ -88,8 +92,7 @@ defmodule Test.Otis.Pipeline.Playlist do
 
   test "it can replace its contents", context do
     channel_id = context.id
-    Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
+    {:ok, _rendition_ids} = build_playlist(context)
     renditions = [
       %Rendition{id: "e", position: 0, source_id: "e", source_type: "Elixir.Test.Otis.Pipeline.Source", channel_id: channel_id},
       %Rendition{id: "f", position: 0, source_id: "f", source_type: "Elixir.Test.Otis.Pipeline.Source", channel_id: channel_id},
@@ -104,18 +107,16 @@ defmodule Test.Otis.Pipeline.Playlist do
 
   test "clear playlist without active rendition", context do
     channel_id = context.id
-    Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
-    {:ok, [_r1, _r2, _r3, _r4] = renditions} = Playlist.list(context.pl)
+    {:ok, renditions} = build_playlist(context)
     assert {:ok, nil} == Playlist.active_rendition(context.pl)
     Playlist.clear(context.pl)
     {:ok, r} = Playlist.list(context.pl)
     assert r == []
     Enum.each renditions, fn(rendition_id) ->
-      assert_receive {:rendition_deleted, [^rendition_id, ^channel_id]}
+      assert_receive {:rendition, :delete, [^rendition_id, ^channel_id]}
     end
 
-    assert_receive {:playlist_cleared, [^channel_id, nil]}
+    assert_receive {:playlist, :clear, [^channel_id, nil]}
   end
 
   test "skip to rendition", context do
@@ -124,32 +125,29 @@ defmodule Test.Otis.Pipeline.Playlist do
       TS.new("a"), TS.new("b"), TS.new("c"),
       TS.new("d"), TS.new("e"), TS.new("f"),
     ]
-    Playlist.append(context.pl, sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
-    assert_receive {:append_renditions, [^channel_id, renditions]}
-    [aid, bid, cid, did, eid, fid] = Enum.map(renditions, & &1.id)
+    {:ok, renditions} = build_playlist(context, sources)
+    [aid, bid, cid, did, eid, fid] = renditions
 
     {:ok, r} = Playlist.next(context.pl)
     assert r == aid
     Playlist.skip(context.pl, eid)
-    assert_receive {:renditions_skipped, [^channel_id, ^eid, _]}
-    assert_receive {:"$__rendition_skip", [^channel_id]}
+    assert_receive {:playlist, :skip, [^channel_id, ^eid, _]}
+    assert_receive {:__complete__, {:playlist, :skip, [^channel_id, ^eid, _]}, Otis.State.Persistence.Playlist}
     {:ok, renditions} = Playlist.list(context.pl)
     assert renditions == [eid, fid]
-    assert_receive {:rendition_deleted, [^aid, ^channel_id]}
-    assert_receive {:rendition_deleted, [^bid, ^channel_id]}
-    assert_receive {:rendition_deleted, [^cid, ^channel_id]}
-    assert_receive {:rendition_deleted, [^did, ^channel_id]}
+    assert_receive {:rendition, :delete, [^aid, ^channel_id]}
+    assert_receive {:rendition, :delete, [^bid, ^channel_id]}
+    assert_receive {:rendition, :delete, [^cid, ^channel_id]}
+    assert_receive {:rendition, :delete, [^did, ^channel_id]}
   end
 
 
   test "it appends sources in the right position", context do
     channel_id = context.id
-    Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
+    {:ok, _renditions} = build_playlist(context)
     {:ok, _r} = Playlist.next(context.pl)
     Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
+    assert_receive {:__complete__, {:playlist, :append, [^channel_id, _]}, Otis.State.Persistence.Playlist}
     {:ok, [first | _] = rendition_ids} = Playlist.list(context.pl)
     channel = Otis.State.Channel.find(channel_id)
     assert channel.current_rendition_id == first
@@ -157,10 +155,9 @@ defmodule Test.Otis.Pipeline.Playlist do
     assert rendition_ids == Enum.map(renditions, & &1.id)
   end
 
-  test "retreiving the active rendition", %{id: channel_id} = context do
+  test "retreiving the active rendition", context do
     assert {:ok, nil} == Playlist.active_rendition(context.pl)
-    Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
+    {:ok, _renditions} = build_playlist(context)
     assert {:ok, nil} == Playlist.active_rendition(context.pl)
     {:ok, r} = Playlist.next(context.pl)
     assert {:ok, r} == Playlist.active_rendition(context.pl)
@@ -168,28 +165,24 @@ defmodule Test.Otis.Pipeline.Playlist do
 
   test "clear playlist with active rendition", context do
     channel_id = context.id
-    Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
+    {:ok, _renditions} = build_playlist(context)
     {:ok, r1} = Playlist.next(context.pl)
     assert {:ok, r1} == Playlist.active_rendition(context.pl)
     {:ok, [^r1, _r2, _r3, _r4] = [ _|renditions]} = Playlist.list(context.pl)
     Playlist.clear(context.pl)
-    assert_receive {:playlist_cleared, [^channel_id, ^r1]}
+    assert_receive {:playlist, :clear, [^channel_id, ^r1]}
     assert {:ok, r1} == Playlist.active_rendition(context.pl)
     {:ok, l} = Playlist.list(context.pl)
     assert l == [r1]
     Enum.each renditions, fn(rendition_id) ->
-      assert_receive {:rendition_deleted, [^rendition_id, ^channel_id]}
+      assert_receive {:rendition, :delete, [^rendition_id, ^channel_id]}
     end
-    refute_receive {:rendition_deleted, [^r1, ^channel_id]}
+    refute_receive {:rendition, :delete, [^r1, ^channel_id]}
   end
 
   test "clears the active rendition when empty", context do
-    channel_id = context.id
     [s1, _, _, _] = context.sources
-    :ok = Playlist.append(context.pl, s1)
-    assert_receive {:"$__append_renditions", [^channel_id]}
-    assert_receive {:new_rendition_created, _}, 500
+    {:ok, _renditions} = build_playlist(context, s1)
     {:ok, _} = Playlist.next(context.pl)
     :done = Playlist.next(context.pl)
     assert {:ok, []} == Playlist.list(context.pl)
@@ -197,25 +190,21 @@ defmodule Test.Otis.Pipeline.Playlist do
 
   test "event when rendition becomes active", context do
     channel_id = context.id
-    :ok = Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
-    assert_receive {:new_rendition_created, _}, 500
+    {:ok, _renditions} = build_playlist(context)
     {:ok, rendition_id} = Playlist.next(context.pl)
-    assert_receive {:rendition_active, [^channel_id, ^rendition_id]}
+    assert_receive {:rendition, :active, [^channel_id, ^rendition_id]}
     {:ok, rendition_id} = Playlist.next(context.pl)
-    assert_receive {:rendition_active, [^channel_id, ^rendition_id]}
+    assert_receive {:rendition, :active, [^channel_id, ^rendition_id]}
   end
 
   test "removal of single rendition", context do
     channel_id = context.id
-    Playlist.append(context.pl, context.sources)
-    assert_receive {:"$__append_renditions", [^channel_id]}
-    {:ok, [a, b, _c, d] = ids} = Playlist.list(context.pl)
+    {:ok, [a, b, _c, d] = ids} = build_playlist(context)
     id = Enum.at(ids, 2)
     Playlist.remove(context.pl, id)
     {:ok, [^a, ^b, ^d]} = Playlist.list(context.pl)
-    assert_receive {:rendition_remove, [^id, ^channel_id]}
-    assert_receive {:"$__rendition_remove", [^channel_id]}
+    assert_receive {:playlist, :remove, [^id, ^channel_id]}
+    assert_receive {:__complete__, {:rendition, :delete, [^id, ^channel_id]}, _}
     assert nil == Rendition.find(id)
   end
 end

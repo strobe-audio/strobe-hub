@@ -12,12 +12,28 @@ defmodule Otis.Events do
     @name |> GenServer.whereis |> List.wrap
   end
 
-  def notify({name, args} = event) when is_atom(name) and is_list(args) do
-    GenStage.cast(@name, {:notify, event})
+  def notify(category, event, args \\ [])
+  def notify(category, event, args)
+  when is_atom(category) and is_atom(event) and is_list(args) do
+    GenStage.cast(@name, {:notify, {category, event, args}})
   end
 
-  def sync_notify({name, args} = event) when is_atom(name) and is_list(args) do
-    GenStage.call(@name, {:notify, event})
+  def sync_notify(category, event, args \\ [])
+  def sync_notify(category, event, args)
+  when is_atom(category) and is_atom(event) and is_list(args) do
+    GenStage.call(@name, {:notify, {category, event, args}})
+  end
+
+  defmacro complete(event) do
+    if Mix.env == :test do
+      quote do
+        Otis.Events.notify_complete(unquote(event), __MODULE__)
+      end
+    end
+  end
+
+  def notify_complete(event, module) do
+    GenStage.cast(@name, {:notify, {:__complete__, event, module}})
   end
 
   def init(_opts) do

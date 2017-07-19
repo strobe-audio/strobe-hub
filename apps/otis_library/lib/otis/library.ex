@@ -24,18 +24,18 @@ defmodule Otis.Library do
         handle_events(events, from, state)
       end
 
-      def handle_event({:otis_started, _args}, state) do
+      def handle_event({:strobe, :start, _args}, state) do
         {:ok, setup(state)}
       end
 
-      def handle_event({:controller_join, [socket]}, state) do
-        notify_event({:add_library, [library(), socket]})
+      def handle_event({:controller, :join, [socket]}, state) do
+        notify_event(:add, [library(), socket])
         {:ok, state}
       end
 
-      def handle_event({:library_request, [channel_id, (@protocol <> path) = url, socket, query]}, state) do
+      def handle_event({:library, :request, [channel_id, (@protocol <> path) = url, socket, query]}, state) do
         response = handle_request(channel_id, path, query)
-        notify_event({:library_response, [@namespace, url, response, socket]})
+        notify_event(:response, [@namespace, url, response, socket])
         {:ok, state}
       end
 
@@ -44,11 +44,11 @@ defmodule Otis.Library do
       end
 
       if Code.ensure_compiled?(Otis.Events) do
-        def notify_event(event) do
-          Otis.Events.notify(event)
+        def notify_event(event, args) do
+          Otis.Events.notify(:library, event, args)
         end
       else
-        def notify_event(event) do
+        def notify_event(_event, _args) do
         end
       end
 

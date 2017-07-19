@@ -94,7 +94,7 @@ defmodule Otis.Receivers.ControlConnection do
     # Don't send an event when changing the multiplier as the multiplier is a
     # channel-level property and events for it are emitted there.
     if Keyword.has_key?(values, :volume) do
-      Otis.Events.notify({:receiver_volume_change, [state.id, settings.volume]})
+      Otis.Events.notify(:receiver, :volume, [state.id, settings.volume])
     end
     state
   end

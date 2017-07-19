@@ -14,6 +14,17 @@ defmodule Test.Otis.Pipeline.Broadcaster do
   @receiver_latency 2222
   @stop Receiver.stop_command()
 
+  defmacro assert_clock_start do
+    quote do
+      assert_receive {:clock, {:start, _, 20}}, 500
+    end
+  end
+
+  def tick(clock, time) do
+    GenServer.call(clock, {:tick, time})
+    Process.sleep(10)
+  end
+
   setup_all do
     CycleSource.start_table()
   end
@@ -29,10 +40,10 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: id2)
     mock1 = connect!(id1, 1234)
     mock2 = connect!(id2, @receiver_latency)
-    assert_receive {:receiver_connected, [^id1, _]}
-    assert_receive {:receiver_connected, [^id2, _]}
-    assert_receive {:"$__receiver_joined", [^id1]}
-    assert_receive {:"$__receiver_joined", [^id2]}
+    assert_receive {:receiver, :connect, [^id1, _]}, 200
+    assert_receive {:receiver, :connect, [^id2, _]}, 200
+    assert_receive {:__complete__, {:receiver_joined, [^id1]}, Otis.Receivers.Channels}
+    assert_receive {:__complete__, {:receiver_joined, [^id2]}, Otis.Receivers.Channels}
     receivers = Otis.Receivers.Channels.lookup(@channel_id)
     r1 = Enum.find(receivers, fn(r) -> r.id == id1 end)
     r2 = Enum.find(receivers, fn(r) -> r.id == id2 end)
@@ -65,7 +76,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     [m1, m2] = context.mocks
     :pong = GenServer.call(bc, :ping)
     Enum.each(0..4, fn(n) ->
@@ -110,7 +121,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     [m1, m2] = context.mocks
     :pong = GenServer.call(bc, :ping)
     Enum.each(0..4, fn(n) ->
@@ -125,7 +136,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
 
     Enum.each(1..11, fn(t) ->
       n = t + 4
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -136,7 +147,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     end)
     Enum.each(12..27, fn(t) ->
       n = t + 4
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -147,7 +158,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     end)
     Enum.each(28..43, fn(t) ->
       n = t + 4
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -189,7 +200,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     [m1, m2] = context.mocks
     :pong = GenServer.call(bc, :ping)
     Enum.each(0..4, fn(n) ->
@@ -202,7 +213,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
 
-    GenServer.call(clock, {:tick, tick_time.(10)})
+    tick(clock, tick_time.(10))
 
     Enum.each(5..14, fn(n) ->
       Enum.each([m1, m2], fn(m) ->
@@ -214,7 +225,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
 
-    GenServer.call(clock, {:tick, tick_time.(10)})
+    tick(clock, tick_time.(10))
     :pong = GenServer.call(bc, :ping)
     Enum.each([m1, m2], fn(m) ->
       {:error, :timeout} = data_recv_raw(m)
@@ -249,7 +260,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     [m1, m2] = context.mocks
     Enum.each(0..4, fn(_) ->
@@ -258,7 +269,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Enum.each(5..10, fn(n) ->
-      GenServer.call(clock, {:tick, time + ((n - 4) * config.packet_duration_ms * 1000)})
+      tick(clock, time + (n - 4) * config.packet_duration_ms * 1000)
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
@@ -270,7 +281,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     id3 = Otis.uuid
     Otis.State.Receiver.create!(context.channel, id: id3)
     m3 = connect!(id3, 2000)
-    assert_receive {:receiver_connected, [^id3, _]}
+    assert_receive {:receiver, :connect, [^id3, _]}
 
     assert {:ok, @stop} == data_recv_raw(m3)
     Enum.each(0..2, fn(n) ->
@@ -316,7 +327,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     [m1, m2] = context.mocks
     Enum.each(0..4, fn(_) ->
@@ -325,7 +336,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Enum.each(1..11, fn(n) ->
-      GenServer.call(clock, {:tick, time + (n * config.packet_duration_ms * 1000)})
+      tick(clock, time + (n * config.packet_duration_ms * 1000))
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -334,24 +345,24 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     end)
 
     Enum.each(12..22, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+      tick(clock, tick_time.(n))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
     Enum.each(23..38, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+      tick(clock, tick_time.(n))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
     Enum.each(0..15, fn(n) ->
       t = n*20
-      assert_receive {:rendition_progress, [^channel_id, ^r1id, ^t, 100_000]}
+      assert_receive {:rendition, :progress, [^channel_id, ^r1id, ^t, 100_000]}
     end)
     Enum.each(0..14, fn(n) ->
       t = n*20
-      assert_receive {:rendition_progress, [^channel_id, ^r2id, ^t, 100_000]}
+      assert_receive {:rendition, :progress, [^channel_id, ^r2id, ^t, 100_000]}
     end)
   end
 
@@ -388,7 +399,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     [m1, m2] = context.mocks
     Enum.each(0..4, fn(_) ->
@@ -397,41 +408,41 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Enum.each(1..11, fn(t) ->
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
         assert packet.data == String.duplicate("1", 64)
       end)
     end)
-    assert_receive {:rendition_changed, [^channel_id, nil, ^r1id]}
+    assert_receive {:playlist, :advance, [^channel_id, nil, ^r1id]}
 
     Enum.each(12..22, fn(t) ->
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
     Enum.each(23..38, fn(t) ->
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
-    assert_receive {:rendition_changed, [^channel_id, ^r1id, ^r2id]}
+    assert_receive {:playlist, :advance, [^channel_id, ^r1id, ^r2id]}
     # we've already sent the first 4 packets
     Enum.each(39..(47 - 4), fn(t) ->
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
     Enum.each((48 - 4)..48, fn(t) ->
-      GenServer.call(clock, {:tick, tick_time.(t)})
+      tick(clock, tick_time.(t))
       :pong = GenServer.call(bc, :ping)
     end)
-    assert_receive {:rendition_changed, [^channel_id, ^r2id, ^r3id]}
-    assert_receive {:rendition_changed, [^channel_id, ^r3id, nil]}
+    assert_receive {:playlist, :advance, [^channel_id, ^r2id, ^r3id]}
+    assert_receive {:playlist, :advance, [^channel_id, ^r3id, nil]}
   end
 
   test "rebuffer unplayed packets on resume", context do
@@ -477,7 +488,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     Enum.each(Enum.slice(c, 0..4), fn(d) ->
       Enum.each([m1, m2], fn(m) ->
@@ -496,7 +507,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     GenServer.call(clock, {:set_time, time})
 
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
 
     Enum.each(Enum.slice(c, 0..4), fn(d) ->
@@ -563,7 +574,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     [m1, m2] = context.mocks
 
@@ -575,12 +586,12 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Enum.each(1..12, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+      tick(clock, tick_time.(n))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
-    assert_receive {:rendition_changed, [^channel_id, nil, ^r1id]}
+    assert_receive {:playlist, :advance, [^channel_id, nil, ^r1id]}
 
     GenServer.call(clock, {:set_time, time})
     Broadcaster.skip(bc, r3.id)
@@ -596,12 +607,12 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Enum.each(5..16, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+      tick(clock, tick_time.(n))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
-    assert_receive {:rendition_changed, [^channel_id, ^r1id, ^r3id]}
+    assert_receive {:playlist, :advance, [^channel_id, ^r1id, ^r3id]}
   end
 
   test "broadcaster stop/start events", context do
@@ -634,7 +645,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     assert_receive :broadcaster_start
 
@@ -649,7 +660,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     end)
 
     Enum.each(5..15, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n - 4)})
+      tick(clock, tick_time.(n - 4))
       Enum.each([m1, m2], fn(m) ->
         {:ok, data} = data_recv_raw(m)
         packet = Packet.unmarshal(data)
@@ -658,9 +669,9 @@ defmodule Test.Otis.Pipeline.Broadcaster do
         assert packet.packet_number == n
       end)
     end)
-    GenServer.call(clock, {:tick, packet_time.(14)})
+    tick(clock, packet_time.(14))
     refute_receive :broadcaster_stop
-    GenServer.call(clock, {:tick, packet_time.(16)})
+    tick(clock, packet_time.(16))
     assert_receive :broadcaster_stop
     assert_receive {:clock, {:stop}}
   end
@@ -713,7 +724,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
 
     Enum.each(Enum.slice(c1, 0..4), fn(d) ->
@@ -737,7 +748,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     GenServer.call(clock, {:set_time, time})
 
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
 
     Enum.each(Enum.slice(c2, 0..4), fn(d) ->
       Enum.each([m1, m2], fn(m) ->
@@ -818,7 +829,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, clock} = Test.Otis.Pipeline.Clock.start_link(time)
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     [m1, m2] = context.mocks
     Enum.each(0..4, fn(_) ->
@@ -827,12 +838,12 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Enum.each(1..10, fn(n) ->
-      GenServer.call(clock, {:tick, tick_time.(n)})
+      tick(clock, tick_time.(n))
       Enum.each([m1, m2], fn(m) ->
         {:ok, _data} = data_recv_raw(m)
       end)
     end)
-    assert_receive {:rendition_progress, [^channel_id, ^r1id, 20, :infinity]}
+    assert_receive {:rendition, :progress, [^channel_id, ^r1id, 20, :infinity]}
   end
 
   test "clock is started after source is loaded", context do
@@ -863,7 +874,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     {:ok, bc} = Broadcaster.start_link(context.channel_id, self(), hub, clock, config)
     Process.send_after(clock, {:set_time, t1}, 20)
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
     [m1, m2] = context.mocks
     Enum.each(0..4, fn(n) ->
@@ -942,7 +953,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     _receiver_record = Otis.State.Receiver.create!(context.channel, id: receiver_id)
 
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
 
     Enum.each(0..4, fn(n) ->
@@ -966,7 +977,7 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     GenServer.call(clock, {:set_time, time})
 
     Broadcaster.start(bc)
-    assert_receive {:clock, {:start, _, 20}}
+    assert_clock_start()
     :pong = GenServer.call(bc, :ping)
 
     Enum.each(0..4, fn(_) ->

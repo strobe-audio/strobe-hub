@@ -199,13 +199,13 @@ defmodule Otis.Pipeline.Broadcaster do
     state
   end
   defp notify_rendition_change(state, old_id, new_id) do
-    Otis.Events.notify({:rendition_changed, [state.id, old_id, new_id]})
+    Otis.Events.notify(:playlist, :advance, [state.id, old_id, new_id])
     state
   end
 
   defp monitor_progress(state, played) do
     Enum.each(played, fn(packet) ->
-      Otis.Events.notify({:rendition_progress, [state.id, packet.rendition_id, packet.offset_ms, packet.source_duration]})
+      Otis.Events.notify(:rendition, :progress, [state.id, packet.rendition_id, packet.offset_ms, packet.source_duration])
     end)
     state
   end

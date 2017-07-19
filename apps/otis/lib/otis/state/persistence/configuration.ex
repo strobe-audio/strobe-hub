@@ -1,5 +1,6 @@
 defmodule Otis.State.Persistence.Configuration do
   use     GenStage
+  use     Otis.Events.Handler
   require Logger
 
   alias Otis.State.Setting
@@ -14,28 +15,22 @@ defmodule Otis.State.Persistence.Configuration do
     {:consumer, [], subscribe_to: Otis.Events.producer}
   end
 
-  def handle_events([], _from, state) do
-    {:noreply, [], state}
-  end
-  def handle_events([event|events], from, state) do
-    {:ok, state} = handle_event(event, state)
-    handle_events(events, from, state)
-  end
-
-  def handle_event({:receiver_connected, [id, recv]}, state) do
+  def handle_event({:receiver, :connect, [id, recv]}, state) do
     receiver_connected(id, recv)
     {:ok, state}
   end
-  def handle_event({:retrieve_settings, ["otis", socket]}, state) do
+
+  def handle_event({:settings, :retrieve, ["otis", socket]}, state) do
     {:ok, settings} = Otis.Settings.current
-    Otis.Events.notify({:application_settings, [:otis, settings, socket]})
+    Otis.Events.notify(:settings, :application, [:otis, settings, socket])
     {:ok, state}
   end
-  def handle_event({:save_settings, [%{"application" => "otis", "namespaces" => ns} = _settings]}, state) do
+
+  def handle_event({:settings, :save, [%{"application" => "otis", "namespaces" => ns} = _settings]}, state) do
     ns |> save_settings
     {:ok, state}
   end
-  def handle_event({:save_settings, [_settings]}, state) do
+  def handle_event({:settings, :save, [_settings]}, state) do
     {:ok, state}
   end
 

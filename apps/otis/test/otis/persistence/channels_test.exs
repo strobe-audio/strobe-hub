@@ -1,6 +1,8 @@
 defmodule Otis.Persistence.ChannelsTest do
   use   ExUnit.Case
 
+  alias Otis.State.Persistence
+
   setup do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach
@@ -13,8 +15,8 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, _channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
-    assert_receive {:"$__channel_added", [^id]}
+    assert_receive {:channel, :add, [^id, %{name: ^name}]}
+    assert_receive {:__complete__, {:channel, :add, [^id, %{name: ^name}]}, Persistence.Channels}
     channels = Otis.State.Channel.all
     assert length(channels) == 1
     [%Otis.State.Channel{id: ^id, name: ^name}] = channels
@@ -25,11 +27,11 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, _channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
+    assert_receive {:channel, :add, [^id, %{name: ^name}]}, 200
 
     :ok = Otis.Channels.destroy!(id)
-    assert_receive {:channel_removed, [^id]}
-    assert_receive {:"$__channel_remove", [^id]}
+    assert_receive {:channel, :remove, [^id]}
+    assert_receive {:__complete__, {:channel, :remove, [^id]}, Persistence.Channels}
 
     channels = Otis.State.Channel.all
     assert length(channels) == 0
@@ -40,7 +42,7 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
+    assert_receive {:channel, :add, [^id, %{name: ^name}]}, 200
 
 
     Otis.Channels.stop(channel)
@@ -70,11 +72,11 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
+    assert_receive {:channel, :add, [^id, %{name: ^name}]}, 200
 
     Otis.Channel.volume(channel, 0.33)
-    assert_receive {:channel_volume_change, [^id, 0.33]}
-    assert_receive {:"$__channel_volume_change", [^id]}
+    assert_receive {:channel, :volume, [^id, 0.33]}
+    assert_receive {:__complete__, {:channel, :volume, [^id, 0.33]}, Persistence.Channels}
 
     channel = Otis.State.Channel.find(id)
 
@@ -85,10 +87,10 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, _channel} = Otis.Channels.create(id, name)
-    assert_receive {:channel_added, [^id, %{name: ^name}]}, 200
+    assert_receive {:channel, :add, [^id, %{name: ^name}]}, 200
     Otis.Channels.rename(id, "Believe in whales")
-    assert_receive {:channel_rename, [^id, "Believe in whales"]}
-    assert_receive {:"$__channel_rename", [^id]}
+    assert_receive {:channel, :rename, [^id, "Believe in whales"]}
+    assert_receive {:__complete__, {:channel, :rename, [^id, "Believe in whales"]}, Persistence.Channels}
 
     channel = Otis.State.Channel.find(id)
 

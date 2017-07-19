@@ -18,13 +18,12 @@ defmodule Elvis.Events.Startup do
     handle_events(events, from, state)
   end
 
-  def handle_event({:controller_join, [socket]}, state) do
-    # TODO: push otis current state to the browser
+  def handle_event({:controller, :join, [socket]}, state) do
     Phoenix.Channel.push(socket, "state", Otis.State.current())
     {:ok, state}
   end
 
-  def handle_event({:add_library, [library, socket]}, state) do
+  def handle_event({:library, :add, [library, socket]}, state) do
     Phoenix.Channel.push(socket, "add_library", library)
     {:ok, state}
   end

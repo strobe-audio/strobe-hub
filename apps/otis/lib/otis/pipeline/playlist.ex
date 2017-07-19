@@ -60,11 +60,11 @@ defmodule Otis.Pipeline.Playlist do
     {:reply, :done, %S{ state | active: nil }}
   end
   def handle_call(:next, _from, %S{renditions: [a | renditions]} = state) do
-    Events.notify({:rendition_active, [state.id, a]})
+    Events.notify(:rendition, :active, [state.id, a])
     {:reply, {:ok, a}, %S{ state | renditions: renditions, active: a }}
   end
   def handle_call(:clear, _from, %S{active: active} = state) do
-    Events.notify({:playlist_cleared, [state.id, active]})
+    Events.notify(:playlist, :clear, [state.id, active])
     {:reply, :ok, %S{ state | renditions: [] }}
   end
   def handle_call(:active_rendition, _from, %S{active: active} = state) do
@@ -73,7 +73,7 @@ defmodule Otis.Pipeline.Playlist do
 
   def handle_cast({:append, sources}, state) do
     renditions = sources |> List.wrap() |> make_renditions()
-    Events.notify({:append_renditions, [state.id, renditions]})
+    Events.notify(:playlist, :append, [state.id, renditions])
     {:noreply, %S{ state | renditions: Enum.concat(state.renditions, ids(renditions)) }}
   end
   def handle_cast({:replace, renditions}, state) do
@@ -105,11 +105,11 @@ defmodule Otis.Pipeline.Playlist do
 
   defp notify_remove(renditions, state) do
     Enum.each(renditions, fn(id) ->
-      Events.notify({:rendition_remove, [id, state.id]})
+      Events.notify(:playlist, :remove, [id, state.id])
     end)
   end
   defp notify_skip(id, renditions, state) do
-    Events.notify({:renditions_skipped, [state.id, id, renditions]})
+    Events.notify(:playlist, :skip, [state.id, id, renditions])
   end
 
   defp all_renditions(state) do

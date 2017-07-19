@@ -1,6 +1,7 @@
 
 defmodule Otis.State.Persistence.Receivers do
   use     GenStage
+  use     Otis.Events.Handler
   require Logger
 
   alias Otis.State.Receiver
@@ -23,29 +24,17 @@ defmodule Otis.State.Persistence.Receivers do
     {:consumer, %S{}, subscribe_to: Otis.Events.producer}
   end
 
-  def handle_events([], _from, state) do
-    {:noreply, [], state}
-  end
-  def handle_events([event|events], from, state) do
-    {:ok, state} = handle_event(event, state)
-    handle_events(events, from, state)
-  end
-
-  def handle_event({:receiver_started, [id]}, state) do
-    id |> receiver |> receiver_started(id)
-    {:ok, state}
-  end
-
-  def handle_event({:receiver_connected, [id, recv]}, state) do
+  def handle_event({:receiver, :connect, [id, recv]}, state) do
     id |> receiver |> receiver_connected(id, recv)
-    Otis.Events.notify({:"$__receiver_connected", [id]})
     {:ok, state}
   end
-  def handle_event({:receiver_volume_change, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do
+
+  def handle_event({:receiver, :volume, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do
     state = %S{ state | volumes: Map.put(volumes, id, volume), timer: start_timer(timer) }
-    {:ok, state}
+    {:incomplete, state}
   end
-  def handle_event({:reattach_receiver, [id, channel_id, receiver]}, state) do
+
+  def handle_event({:receiver, :reattach, [id, channel_id, receiver]}, state) do
     Repo.transaction(fn ->
       id |> receiver |> channel_change(id, channel_id)
     end)
@@ -55,30 +44,31 @@ defmodule Otis.State.Persistence.Receivers do
     Otis.Receiver.release_latch(receiver)
     {:ok, state}
   end
-  def handle_event({:receiver_rename, [id, name]}, state) do
+
+  def handle_event({:receiver, :rename, [id, name]}, state) do
     Repo.transaction fn ->
       id |> receiver |> rename(id, name)
     end
-    Otis.Events.notify({:"$__receiver_rename", [id]})
     {:ok, state}
   end
-  def handle_event({:receiver_muted, [id, muted]}, state) do
+
+  def handle_event({:receiver, :mute, [id, muted]}, state) do
     Repo.transaction fn ->
       id |> receiver |> muted(id, muted)
     end
-    Otis.Events.notify({:"$__receiver_muted", [id]})
     {:ok, state}
   end
+
   def handle_event(_evt, state) do
     {:ok, state}
   end
 
   def handle_info(:save_volumes, %S{volumes: volumes} = state) do
-    Repo.transaction(fn ->
-      Enum.each(volumes, fn({id, volume}) ->
+    Enum.each(volumes, fn({id, volume}) ->
+      Repo.transaction(fn ->
         id |> receiver |> volume_change(id, volume)
-        Otis.Events.notify({:"$__receiver_volume_change", [id]})
       end)
+      Otis.Events.complete({:receiver, :volume, [id, volume]})
     end)
     {:noreply, [], %S{state | volumes: %{}, timer: nil}}
   end
@@ -90,13 +80,6 @@ defmodule Otis.State.Persistence.Receivers do
 
   defp receiver(id) do
     Receiver.find(id, preload: :channel)
-  end
-
-  defp receiver_started(nil, _id) do
-    # Can happen in tests
-  end
-  defp receiver_started(receiver, id) do
-    Otis.Events.notify({:receiver_joined, [id, receiver.channel_id, receiver]})
   end
 
   # if neither the receiver nor the given channel are in the db, receiver at this

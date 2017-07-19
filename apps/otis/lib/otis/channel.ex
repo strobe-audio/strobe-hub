@@ -164,7 +164,7 @@ defmodule Otis.Channel do
   def handle_call({:volume, volume}, _from, state) do
     volume = Otis.sanitize_volume(volume)
     Otis.Receivers.Channels.volume_multiplier(state.id, volume)
-    event!(state, :channel_volume_change, volume)
+    event!(state, :volume, [volume])
     {:reply, {:ok, volume}, %S{state | volume: volume}}
   end
 
@@ -205,7 +205,7 @@ defmodule Otis.Channel do
   end
 
   defp event!(state, name, params) do
-    Otis.Events.notify({name, [state.id, params]})
+    Otis.Events.notify(:channel, name, [state.id | params])
   end
 
   defp toggle_state(%S{state: :play} = state) do
@@ -225,12 +225,12 @@ defmodule Otis.Channel do
 
   defp change_state(%S{state: :play} = state) do
     Broadcaster.start(state.broadcaster)
-    event!(state, :channel_play_pause, :play)
+    event!(state, :play_pause, [:play])
     state
   end
   defp change_state(%S{state: :pause} = state) do
     Broadcaster.pause(state.broadcaster)
-    event!(state, :channel_play_pause, :pause)
+    event!(state, :play_pause, [:pause])
     state
   end
 end

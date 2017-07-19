@@ -52,16 +52,16 @@ defmodule ChannelsTest do
   test "broadcasts an event when a channel is added" do
     id = Otis.uuid()
     {:ok, _channel} = Otis.Channels.create(id, "My New Channel")
-    assert_receive {:channel_added, [^id, %{id: ^id, name: "My New Channel"}]}, 200
+    assert_receive {:channel, :add, [^id, %{id: ^id, name: "My New Channel"}]}, 200
   end
 
   test "broadcasts an event when a channel is removed" do
     id = Otis.uuid()
     {:ok, channel} = Otis.Channels.create(id, "My New Channel")
-    assert_receive {:channel_added, [^id, %{id: ^id, name: "My New Channel"}]}, 200
+    assert_receive {:channel, :add, [^id, %{id: ^id, name: "My New Channel"}]}, 200
 
     Otis.Channels.destroy!(id)
-    assert_receive {:channel_removed, [^id]}, 200
+    assert_receive {:channel, :remove, [^id]}, 200
     pid = GenServer.whereis(channel)
     assert pid == nil
   end
@@ -69,7 +69,7 @@ defmodule ChannelsTest do
   test "doesn't broadcast an event when starting a channel" do
     id = Otis.uuid()
     {:ok, _channel} = Otis.Channels.start(%Channel{id: id, name: "Something"})
-    refute_receive {:channel_added, [^id, _]}
+    refute_receive {:channel, :add, [^id, _]}
 
     assert channel_ids() == [id]
     assert Otis.Channels.ids() == [id]

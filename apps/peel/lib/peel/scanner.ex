@@ -23,7 +23,7 @@ defmodule Peel.Scanner do
 
   if Code.ensure_compiled?(Otis.Events) do
     def scan_complete(path) do
-      Otis.Events.notify({:scan_finished, [path]})
+      Otis.Events.notify(:peel, :scan_finished, [path])
     end
   else
     def scan_complete(_path), do: nil
