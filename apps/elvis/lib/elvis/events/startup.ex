@@ -24,7 +24,7 @@ defmodule Elvis.Events.Startup do
   end
 
   def handle_event({:library, :add, [library, socket]}, state) do
-    Phoenix.Channel.push(socket, "add_library", library)
+    Phoenix.Channel.push(socket, "library-add", library)
     {:ok, state}
   end
 

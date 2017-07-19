@@ -50,85 +50,85 @@ channel.on('state', payload => {
   app.ports.broadcasterState.send(Object.assign({}, payload))
 })
 
-channel.on('add_library', payload => {
+channel.on('library-add', payload => {
   console.log('got library', payload);
   app.ports.libraryRegistration.send(payload)
 })
 
-channel.on('receiver_removed', payload => {
-  console.log('receiver_removed', payload)
-  app.ports.receiverStatus.send(['receiver_removed', payload])
-})
-
-channel.on('receiver_online', payload => {
-  console.log('receiver_online', payload)
-  app.ports.receiverPresence.send(payload)
-})
-
-channel.on('receiver_added', payload => {
-  console.log('receiver_added', payload)
+channel.on('receiver-add', payload => {
+  console.log('receiver-add', payload)
   app.ports.receiverStatus.send(['receiver_added', payload])
 })
 
-channel.on('reattach_receiver', payload => {
-  console.log('reattach_receiver', payload)
+channel.on('receiver-remove', payload => {
+  console.log('receiver-remove', payload)
+  app.ports.receiverStatus.send(['receiver_removed', payload])
+})
+
+channel.on('receiver-reattach', payload => {
+  console.log('receiver-reattach', payload)
   app.ports.receiverStatus.send(['reattach_receiver', payload])
 })
 
-channel.on('channel_play_pause', payload => {
-  console.log('channel_play_pause', payload)
+channel.on('receiver-online', payload => {
+  console.log('receiver-online', payload)
+  app.ports.receiverPresence.send(payload)
+})
+
+channel.on('channel-play_pause', payload => {
+  console.log('channel-play_pause', payload)
   app.ports.channelStatus.send(['channel_play_pause', payload])
 })
 
-channel.on('rendition_progress', payload => {
+channel.on('rendition-progress', payload => {
   app.ports.renditionProgress.send(payload)
 })
 
-channel.on('rendition_changed', payload => {
+channel.on('playlist-change', payload => {
   app.ports.renditionChange.send(payload)
 })
 
-channel.on('volume_change', payload => {
+channel.on('volume-change', payload => {
   app.ports.volumeChange.send(payload)
 })
 
-channel.on('new_rendition_created', payload => {
+channel.on('rendition-create', payload => {
   app.ports.playlistAddition.send(payload)
 })
 
-channel.on('rendition_active', payload => {
+channel.on('rendition-active', payload => {
   app.ports.renditionActive.send(payload)
 })
 
-channel.on('library', payload => {
+channel.on('library-response', payload => {
   app.ports.libraryResponse.send(payload)
 })
 
-channel.on('channel_added', payload => {
-  console.log('new channel', payload)
+channel.on('channel-add', payload => {
+  console.log('channel-add', payload)
   app.ports.channelAdditions.send(payload)
 })
 
-channel.on('channel_removed', ({id}) => {
-  console.log('channel removed', id)
+channel.on('channel-remove', ({id}) => {
+  console.log('channel-remove', id)
   app.ports.channelRemovals.send(id)
 })
 
-channel.on('channel_rename', payload => {
-  console.log('channel_rename', payload)
+channel.on('channel-rename', payload => {
+  console.log('channel-rename', payload)
   app.ports.channelRenames.send([payload.channelId, payload.name])
 })
-channel.on('receiver_rename', payload => {
-  console.log('receiver_rename', payload)
+channel.on('receiver-rename', payload => {
+  console.log('receiver-rename', payload)
   app.ports.receiverRenames.send([payload.receiverId, payload.name])
 })
-channel.on('receiver_muted', payload => {
-  console.log('receiver_muted', payload)
+channel.on('receiver-mute', payload => {
+  console.log('receiver-mute', payload)
   app.ports.receiverMuting.send([payload.receiverId, payload.muted])
 })
 
-channel.on('application_settings', payload => {
-  console.log('application_settings', payload)
+channel.on('settings-application', payload => {
+  console.log('settings-application', payload)
   let settings = Object.assign({application: payload.application, saving: false}, {namespaces: payload.settings})
   app.ports.applicationSettings.send([payload.application, settings])
 })
@@ -169,63 +169,62 @@ app.ports.saveState.subscribe(state => {
 })
 
 app.ports.volumeChangeRequests.subscribe(event => {
-  channel.push("change_volume", event)
+  channel.push("volume-change", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.receiverMuteRequests.subscribe(event => {
-  channel.push("mute_receiver", event)
+  channel.push("receiver-mute", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.playPauseChanges.subscribe(event => {
-  channel.push("play_pause", event)
+  channel.push("channel-play_pause", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.channelNameChanges.subscribe(event => {
-  channel.push("rename_channel", event)
+  channel.push("channel-rename", event)
   .receive("error", payload => console.log(payload.message))
 })
 app.ports.receiverNameChanges.subscribe(event => {
-  channel.push("rename_receiver", event)
+  channel.push("receiver-rename", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.channelClearPlaylist.subscribe(event => {
-  channel.push("clear_playlist", event)
+  channel.push("playlist-clear", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.playlistSkipRequests.subscribe(event => {
-  channel.push("skip_track", event)
+  channel.push("playlist-skip", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.playlistRemoveRequests.subscribe(event => {
-  channel.push("remove_rendition", event)
+  channel.push("playlist-remove", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.attachReceiverRequests.subscribe(event => {
-  channel.push("attach_receiver", event)
+  channel.push("receiver-attach", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.libraryRequests.subscribe(event => {
-  channel.push("library", event)
+  channel.push("library-request", event)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.addChannelRequests.subscribe(name => {
-  console.log("add_channel", name)
-  channel.push("add_channel", name)
+  console.log("channel-add", name)
+  channel.push("channel-add", name)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.removeChannelRequests.subscribe(id => {
-  console.log("add_channel", id)
-  channel.push("remove_channel", id)
+  channel.push("channel-remove", id)
   .receive("error", payload => console.log(payload.message))
 })
 
@@ -237,12 +236,12 @@ app.ports.blurActiveElement.subscribe(blur => {
 })
 
 app.ports.settingsRequests.subscribe(app => {
-  channel.push("retrieve_settings", app)
+  channel.push("settings-retrieve", app)
   .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.settingsSave.subscribe(settings => {
-  channel.push("save_settings", settings)
+  channel.push("settings-save", settings)
   .receive("error", payload => console.log(payload.message))
 })
 

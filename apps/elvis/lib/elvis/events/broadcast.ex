@@ -26,19 +26,18 @@ defmodule Elvis.Events.Broadcast do
     handle_events(events, from, state)
   end
 
-
   def handle_event({:library, :response, [id, url, response, socket]}, state) do
-    Phoenix.Channel.push(socket, "library", %{ libraryId: id, url: url, folder: response })
+    Phoenix.Channel.push(socket, "library-response", %{ libraryId: id, url: url, folder: response })
     {:ok, state}
   end
 
   def handle_event({:channel, :add, [_id, channel]}, state) do
-    broadcast!("channel_added", Otis.State.status(channel))
+    broadcast!("channel-add", Otis.State.status(channel))
     {:ok, state}
   end
 
   def handle_event({:channel, :remove, [id]}, state) do
-    broadcast!("channel_removed", %{id: id})
+    broadcast!("channel-remove", %{id: id})
     {:ok, state}
   end
 
@@ -49,31 +48,31 @@ defmodule Elvis.Events.Broadcast do
 
   def handle_event({:rendition, :create, [rendition]}, state) do
     rendition = Otis.State.rendition(rendition, nil)
-    broadcast!("new_rendition_created", rendition)
+    broadcast!("rendition-create", rendition)
     {:ok, state}
   end
 
   def handle_event({:rendition, :active, [channel_id, rendition_id]}, state) do
-    broadcast!("rendition_active", %{channelId: channel_id, renditionId: rendition_id})
+    broadcast!("rendition-active", %{channelId: channel_id, renditionId: rendition_id})
     {:ok, state}
   end
 
   def handle_event({:channel, :rename, [channel_id, name]}, state) do
-    broadcast!("channel_rename", %{channelId: channel_id, name: name})
+    broadcast!("channel-rename", %{channelId: channel_id, name: name})
     {:ok, state}
   end
 
   def handle_event({:playlist, :skip, [channel_id, skip_id, rendition_ids]}, state) do
-    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: rendition_ids, activateRenditionId: skip_id})
+    broadcast!("playlist-change", %{channelId: channel_id, removeRenditionIds: rendition_ids, activateRenditionId: skip_id})
     {:ok, state}
   end
 
   def handle_event({:playlist, :advance, [channel_id, nil, new_rendition_id]}, state) do
-    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [], activateRenditionId: new_rendition_id})
+    broadcast!("playlist-change", %{channelId: channel_id, removeRenditionIds: [], activateRenditionId: new_rendition_id})
     {:ok, state}
   end
   def handle_event({:playlist, :advance, [channel_id, old_rendition_id, new_rendition_id]}, state) do
-    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [old_rendition_id], activateRenditionId: new_rendition_id})
+    broadcast!("playlist-change", %{channelId: channel_id, removeRenditionIds: [old_rendition_id], activateRenditionId: new_rendition_id})
     {:ok, state}
   end
 
@@ -83,7 +82,7 @@ defmodule Elvis.Events.Broadcast do
   def handle_event({:rendition, :progress, [channel_id, rendition_id, progress_ms, duration_ms]}, state) do
     count = case Map.get(state.progress_count, channel_id, 0) do
       0 ->
-        broadcast!("rendition_progress", %{
+        broadcast!("rendition-progress", %{
           channelId: channel_id, renditionId: rendition_id,
           progress: progress_ms, duration: duration_ms
         })
@@ -95,64 +94,62 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:rendition, :delete, [rendition_id, channel_id]}, state) do
-    broadcast!("rendition_changed", %{channelId: channel_id, removeRenditionIds: [rendition_id], activateRenditionId: nil})
+    broadcast!("playlist-change", %{channelId: channel_id, removeRenditionIds: [rendition_id], activateRenditionId: nil})
     {:ok, state}
   end
 
   def handle_event({:channel, :play_pause, [channel_id, status]}, state) do
-    broadcast!("channel_play_pause", %{channelId: channel_id, status: status})
+    broadcast!("channel-play_pause", %{channelId: channel_id, status: status})
     {:ok, state}
   end
 
   def handle_event({:receiver, :online, [receiver_id, _receiver]}, state) do
     receiver_state = Otis.State.Receiver.find(receiver_id)
-    broadcast!(to_string(:receiver_online), Otis.State.status(receiver_state))
+    broadcast!("receiver-online", Otis.State.status(receiver_state))
     {:ok, state}
   end
 
   def handle_event({:receiver, event, [channel_id, receiver_id]}, state)
   when event in [:add, :remove] do
-    broadcast!(to_string(event), %{channelId: channel_id, receiverId: receiver_id})
+    broadcast!("receiver-#{event}", %{channelId: channel_id, receiverId: receiver_id})
     {:ok, state}
   end
 
   def handle_event({:receiver, :reattach, [receiver_id, channel_id, _receiver]}, state) do
-    broadcast!("reattach_receiver", %{channelId: channel_id, receiverId: receiver_id})
+    broadcast!("receiver-reattach", %{channelId: channel_id, receiverId: receiver_id})
     {:ok, state}
   end
 
   def handle_event({:receiver, :volume, [id, volume]}, state) do
-    broadcast!("volume_change", %{ id: id, target: "receiver", volume: volume })
+    broadcast!("volume-change", %{ id: id, target: "receiver", volume: volume })
     {:ok, state}
   end
 
   def handle_event({:receiver, :rename, [receiver_id, name]}, state) do
-    broadcast!("receiver_rename", %{receiverId: receiver_id, name: name})
+    broadcast!("receiver-rename", %{receiverId: receiver_id, name: name})
     {:ok, state}
   end
 
   def handle_event({:receiver, :mute, [receiver_id, muted]}, state) do
-    broadcast!("receiver_muted", %{receiverId: receiver_id, muted: muted})
+    broadcast!("receiver-mute", %{receiverId: receiver_id, muted: muted})
     {:ok, state}
   end
 
   def handle_event({:channel, :volume, [id, volume]}, state) do
-    broadcast!("volume_change", %{ id: id, target: "channel", volume: volume })
+    broadcast!("volume-change", %{ id: id, target: "channel", volume: volume })
     {:ok, state}
   end
 
   def handle_event({:settings, :application, [app, settings, socket]}, state) do
-    Phoenix.Channel.push(socket, "application_settings", %{application: app, settings: settings})
+    Phoenix.Channel.push(socket, "settings-application", %{application: app, settings: settings})
     {:ok, state}
   end
 
   def handle_event(_event, state) do
-    # IO.inspect [:broadcast?, event]
     {:ok, state}
   end
 
   defp broadcast!(event, msg) do
-    # msg = Map.put(args, :event, event)
     Elvis.Endpoint.broadcast!("controllers:browser", event, msg)
   end
 end
