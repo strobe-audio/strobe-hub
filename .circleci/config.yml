@@ -18,6 +18,5 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-
       - run: mix deps.get
       - run: mix test
