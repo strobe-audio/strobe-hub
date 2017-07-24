@@ -25,6 +25,7 @@ jobs:
       - restore_cache:
           keys:
             - deps-v1-{{ checksum "mix.lock" }}
+            - deps-v1
             - build-v1-{{ .Branch }}
             - build-v1
 
@@ -32,6 +33,10 @@ jobs:
 
       - save_cache:
           key: deps-v1-{{ checksum "mix.lock" }}
+          paths:
+            - deps
+      - save_cache:
+          key: deps-v1
           paths:
             - deps
 
