@@ -203,7 +203,7 @@ defmodule Otis.Channel do
   end
 
   defp event!(state, name, params) do
-    Otis.Events.notify(:channel, name, [state.id | params])
+    Strobe.Events.notify(:channel, name, [state.id | params])
   end
 
   defp toggle_state(%S{state: :play} = state) do

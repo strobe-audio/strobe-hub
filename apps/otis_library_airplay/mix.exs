@@ -39,7 +39,7 @@ defmodule Otis.Library.Airplay.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [ {:otis_library, in_umbrella: true},
-      {:gen_stage, "~> 0.1"},
+      {:gen_stage, "~> 0.12"},
       {:external_process, in_umbrella: true},
       {:poison, "~> 1.5.0"},
     ]

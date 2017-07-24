@@ -67,17 +67,13 @@ defmodule Peel.CoverArt.Importer do
     Peel.CoverArt.artist_image(artist)
   end
 
-  if Code.ensure_compiled?(Otis.Events) do
-    def progress({:started, nil}) do
-      Otis.Events.notify(:cover_art, :start, [])
-    end
-    def progress({:finished, _results}) do
-      Otis.Events.notify(:cover_art, :finish, [])
-    end
-    def progress({:progress, count}) do
-      Otis.Events.notify(:cover_art, :progress, [count])
-    end
-  else
-    def progress(_evt), do: nil
+  def progress({:started, nil}) do
+    Strobe.Events.notify(:cover_art, :start, [])
+  end
+  def progress({:finished, _results}) do
+    Strobe.Events.notify(:cover_art, :finish, [])
+  end
+  def progress({:progress, count}) do
+    Strobe.Events.notify(:cover_art, :progress, [count])
   end
 end

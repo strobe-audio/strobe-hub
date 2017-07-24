@@ -42,7 +42,7 @@ defmodule Strobe.Events do
   @doc """
   A macro that emits special completion events when in `:test` environment.
 
-  This along with `use Otis.Events.Handler` provides a mechanism for waiting
+  This along with `use Strobe.Events.Handler` provides a mechanism for waiting
   until the effects of an event have been persisted to the db before continuing
   with test assertions.
   """

@@ -32,7 +32,7 @@ defmodule Otis.Library.UPNP.Mixfile do
       {:xml_builder, "~> 0.0.9"},
       {:otis_library, in_umbrella: true},
       {:httparrot, "~> 1.0.0", only: :test},
-      {:gen_stage, "~> 0.1"},
+      {:gen_stage, "~> 0.12"},
       {:poison, "~> 1.0"},
     ]
   end

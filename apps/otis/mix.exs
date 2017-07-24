@@ -35,6 +35,7 @@ defmodule Otis.Mixfile do
         :poolboy,
         # :logger_file_backend,
         :external_process,
+        :strobe_events,
       ],
       included_applications: included_applications(Mix.env),
       extra_applications: [],
@@ -70,11 +71,12 @@ defmodule Otis.Mixfile do
       {:ecto, "~> 1.0"},
       {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
       {:otis_library, in_umbrella: true},
+      {:external_process, in_umbrella: true},
+      {:strobe_events, in_umbrella: true},
       {:nerves_ssdp_server, "~> 0.2.1"},
       {:gproc, "~> 0.5.0"},
       {:mdns, "~> 0.1.5"},
-      {:external_process, in_umbrella: true},
-      {:gen_stage, "~> 0.1"},
+      {:gen_stage, "~> 0.12"},
     ] ++ deps(Mix.env)
   end
 

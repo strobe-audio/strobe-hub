@@ -34,6 +34,7 @@ defmodule Peel.Mixfile do
         :uuid,
         :work_queue,
         :plug_webdav,
+        :strobe_events,
       ],
       included_applications: [
       ],
@@ -58,7 +59,7 @@ defmodule Peel.Mixfile do
       {:erlsom, github: "willemdj/erlsom"},
       {:floki, "~> 0.11.0"},
       {:flow, "~> 0.11"},
-      {:gen_stage, "~> 0.1"},
+      {:gen_stage, "~> 0.12"},
       {:httpoison, "~> 0.11.1"},
       {:otis, in_umbrella: true, only: :test},
       {:otis_library, in_umbrella: true},
@@ -68,6 +69,7 @@ defmodule Peel.Mixfile do
       {:work_queue, github: "magnetised/work_queue"},
       {:plug, "~> 1.3.0"},
       {:plug_webdav, in_umbrella: true},
+      {:strobe_events, in_umbrella: true},
     ]
   end
 end

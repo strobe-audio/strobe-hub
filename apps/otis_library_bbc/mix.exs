@@ -33,7 +33,7 @@ defmodule HLS.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [ {:httpoison, "~> 0.11.1"},
-      {:gen_stage, "~> 0.1"},
+      {:gen_stage, "~> 0.12"},
       {:gproc, "~> 0.5.0"},
       {:poison, "~> 1.5.0"},
       {:otis_library, in_umbrella: true},

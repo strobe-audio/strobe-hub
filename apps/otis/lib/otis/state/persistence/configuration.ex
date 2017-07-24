@@ -1,6 +1,6 @@
 defmodule Otis.State.Persistence.Configuration do
   use     GenStage
-  use     Otis.Events.Handler
+  use     Strobe.Events.Handler
   require Logger
 
   alias Otis.State.Setting
@@ -12,7 +12,7 @@ defmodule Otis.State.Persistence.Configuration do
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Otis.Events.producer(&selector/1)}
+    {:consumer, [], subscribe_to: Strobe.Events.producer(&selector/1)}
   end
 
   defp selector({:settings, _evt, _args}), do: true
@@ -26,7 +26,7 @@ defmodule Otis.State.Persistence.Configuration do
 
   def handle_event({:settings, :retrieve, ["otis", socket]}, state) do
     {:ok, settings} = Otis.Settings.current
-    Otis.Events.notify(:settings, :application, [:otis, settings, socket])
+    Strobe.Events.notify(:settings, :application, [:otis, settings, socket])
     {:ok, state}
   end
 

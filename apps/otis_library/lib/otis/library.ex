@@ -13,7 +13,7 @@ defmodule Otis.Library do
       end
 
       def init(_opts) do
-        {:consumer, [], subscribe_to: Otis.Library.Events.producer(&selector/1)}
+        {:consumer, [], subscribe_to: Strobe.Events.producer(&selector/1)}
       end
 
       defp selector({:strobe, :start, _args}), do: true
@@ -48,13 +48,8 @@ defmodule Otis.Library do
         {:ok, state}
       end
 
-      if Code.ensure_compiled?(Otis.Events) do
-        def notify_event(event, args) do
-          Otis.Events.notify(:library, event, args)
-        end
-      else
-        def notify_event(_event, _args) do
-        end
+      def notify_event(event, args) do
+        Strobe.Events.notify(:library, event, args)
       end
 
       def setup(state) do

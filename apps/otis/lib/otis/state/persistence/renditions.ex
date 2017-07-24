@@ -1,6 +1,6 @@
 defmodule Otis.State.Persistence.Renditions do
   use     GenStage
-  use     Otis.Events.Handler
+  use     Strobe.Events.Handler
   require Logger
 
   alias Otis.State
@@ -11,7 +11,7 @@ defmodule Otis.State.Persistence.Renditions do
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Otis.Events.producer(&selector/1)}
+    {:consumer, [], subscribe_to: Strobe.Events.producer(&selector/1)}
   end
 
   defp selector({:rendition, _evt, _args}), do: true
@@ -32,7 +32,7 @@ defmodule Otis.State.Persistence.Renditions do
 
   def handle_event({:rendition, :source_delete, [type, id]}, state) do
     renditions = Rendition.for_source(type, id)
-    Enum.each(renditions, &Otis.Events.notify(:playlist, :remove, [&1.id, &1.channel_id]))
+    Enum.each(renditions, &Strobe.Events.notify(:playlist, :remove, [&1.id, &1.channel_id]))
     {:ok, state}
   end
 

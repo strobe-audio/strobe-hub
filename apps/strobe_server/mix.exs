@@ -75,7 +75,7 @@ defmodule Strobe.Server.Mixfile do
     [{:nerves_runtime, "~> 0.1.0", only: :nerves},
      {:"nerves_system_#{target}", "~> 0.11.0", runtime: false, only: :nerves},
      {:nerves, "~> 0.5.0", runtime: false, only: :nerves},
-     {:gen_stage, "~> 0.11.0", only: :nerves},
+     {:gen_stage, "~> 0.12", only: :nerves},
      {:nerves_networking, github: "nerves-project/nerves_networking", only: :nerves},
      {:nerves_network_interface, "~> 0.4.0", only: :nerves},
      {:elvis, in_umbrella: true, only: :nerves},

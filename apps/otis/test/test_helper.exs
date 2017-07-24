@@ -119,6 +119,7 @@ end
 
 defmodule MessagingHandler do
   use GenStage
+  use Strobe.Events.Handler, filter_complete: false
 
   def attach do
     {:ok, _pid} = start_link(self())
@@ -130,15 +131,7 @@ defmodule MessagingHandler do
   end
 
   def init(parent) do
-    {:consumer, parent, subscribe_to: Otis.Events.producer}
-  end
-
-  def handle_events([], _from, state) do
-    {:noreply, [], state}
-  end
-  def handle_events([event|events], from, state) do
-    {:ok, state} = handle_event(event, state)
-    handle_events(events, from, state)
+    {:consumer, parent, subscribe_to: Strobe.Events.producer}
   end
 
   def handle_event(event, parent) do
@@ -149,7 +142,7 @@ defmodule MessagingHandler do
   # Allows tests to wait for successful removal of the handler
   #
   #    on_exit fn ->
-  #      Otis.Events.remove_handler(MessagingHandler, self())
+  #      Strobe.Events.remove_handler(MessagingHandler, self())
   #      assert_receive :remove_messaging_handler, 200
   #    end
 

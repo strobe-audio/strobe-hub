@@ -1,5 +1,6 @@
 defmodule Otis.LoggerHandler do
   use     GenStage
+  use     Strobe.Events.Handler
   require Logger
 
   @log_progress_every 100
@@ -19,15 +20,7 @@ defmodule Otis.LoggerHandler do
   end
 
   def init(id) do
-    {:consumer, %{id: id, progress_count: 0}, subscribe_to: Otis.Events.producer}
-  end
-
-  def handle_events([], _from,state) do
-    {:noreply, [], state}
-  end
-  def handle_events([event|events], from, state) do
-    {:ok, state} = handle_event(event, state)
-    handle_events(events, from, state)
+    {:consumer, %{id: id, progress_count: 0}, subscribe_to: Strobe.Events.producer}
   end
 
   for {category, event} <- @silent_events do

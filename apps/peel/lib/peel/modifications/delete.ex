@@ -119,12 +119,8 @@ defmodule Peel.Modifications.Delete do
     track
   end
 
-  if Code.ensure_compiled?(Otis.Events) do
-    defp notify_deletion(nil), do: nil
-    defp notify_deletion(track) do
-      Otis.Events.notify(:rendition, :source_delete, [Otis.Library.Source.type(track), Otis.Library.Source.id(track)])
-    end
-  else
-    defp notify_deletion(_track), do: nil
+  defp notify_deletion(nil), do: nil
+  defp notify_deletion(track) do
+    Strobe.Events.notify(:rendition, :source_delete, [Otis.Library.Source.type(track), Otis.Library.Source.id(track)])
   end
 end

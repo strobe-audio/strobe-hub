@@ -7,7 +7,7 @@ defmodule Elvis.Events.Startup do
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Otis.Library.Events.producer}
+    {:consumer, [], subscribe_to: Strobe.Events.producer}
   end
 
   def handle_events([], _from,state) do

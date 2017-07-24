@@ -11,6 +11,13 @@ defmodule Strobe.Events.Handler do
         def handle_events([{:__complete__, _event, _handler}|events], from, state) do
           handle_events(events, from, state)
         end
+      else
+        # Broadcast the :__complete__ event but don't send recursive
+        # {:__complete__, {:__complete, ...}} followup
+        def handle_events([{:__complete__, _event, _handler} = event|events], from, state) do
+          {_, state} = handle_event(event, state)
+          handle_events(events, from, state)
+        end
       end
       def handle_events([event|events], from, state) do
         state =

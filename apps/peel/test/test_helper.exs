@@ -1,7 +1,7 @@
 defmodule TestEventHandler do
   use GenStage
 
-  def attach(producer \\ Otis.Library.Events.producer) do
+  def attach(producer \\ Strobe.Events.producer) do
     {:ok, _pid} = start_link(self(), producer)
     :ok
   end

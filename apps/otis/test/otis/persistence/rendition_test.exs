@@ -81,7 +81,7 @@ defmodule Otis.Persistence.RenditionTest do
   test "a source played event progresses the channel playlist", context do
     {:ok, [id1, id2]} = build_playlist(context, [TestSource.new, TestSource.new])
     [rendition1, rendition2] = [id1, id2] |> Enum.map(&Rendition.find/1)
-    Otis.Events.notify(:playlist, :advance, [context.channel.id, rendition1.id, rendition2.id])
+    Strobe.Events.notify(:playlist, :advance, [context.channel.id, rendition1.id, rendition2.id])
     rendition1_id = rendition1.id
     evt = {:playlist, :advance, [context.channel.id, rendition1.id, rendition2.id]}
     assert_receive {:__complete__, ^evt, Persistence.Playlist}
@@ -98,10 +98,10 @@ defmodule Otis.Persistence.RenditionTest do
 
   test "a final source played event leaves the source list empty", context do
     {:ok, [id1, id2]} = build_playlist(context, [TestSource.new, TestSource.new])
-    Otis.Events.notify(:playlist, :advance, [context.channel.id, id1, id2])
+    Strobe.Events.notify(:playlist, :advance, [context.channel.id, id1, id2])
     evt = {:playlist, :advance, [context.channel.id, id1, id2]}
     assert_receive {:__complete__, ^evt, Persistence.Playlist}
-    Otis.Events.notify(:playlist, :advance, [context.channel.id, id2, nil])
+    Strobe.Events.notify(:playlist, :advance, [context.channel.id, id2, nil])
     evt = {:playlist, :advance, [context.channel.id, id2, nil]}
     assert_receive {:__complete__, ^evt, Persistence.Playlist}
     assert_receive {:rendition, :played, [^id2]}
@@ -143,7 +143,7 @@ defmodule Otis.Persistence.RenditionTest do
     renditions = sources |> Enum.map(fn(source) ->
       Rendition.from_source(source)
     end)
-    Otis.Events.notify(:playlist, :append, [context.channel.id, renditions])
+    Strobe.Events.notify(:playlist, :append, [context.channel.id, renditions])
     assert_receive {:rendition, :create, _}
     assert_receive {:rendition, :create, _}
     {:ok, []} = Playlist.list(context.playlist)
@@ -157,7 +157,7 @@ defmodule Otis.Persistence.RenditionTest do
   test "source progress events update the matching db record", context do
     sources = [TestSource.new, TestSource.new]
     {:ok, [r1id, _]} = build_playlist(context, sources)
-    Otis.Events.notify(:rendition, :progress, [context.channel.id, r1id, 1000, 2000])
+    Strobe.Events.notify(:rendition, :progress, [context.channel.id, r1id, 1000, 2000])
     evt = {:rendition, :progress, [context.channel.id, r1id, 1000, 2000]}
     assert_receive {:__complete__, ^evt, Persistence.Renditions}
     State.RenditionProgress.save()
@@ -193,7 +193,7 @@ defmodule Otis.Persistence.RenditionTest do
   test "removing a source removes all associated renditions", context do
     source = TestSource.new
     {:ok, [id]} = build_playlist(context, source)
-    Otis.Events.notify(:rendition, :source_delete, [Otis.Library.Source.type(source), Otis.Library.Source.id(source)])
+    Strobe.Events.notify(:rendition, :source_delete, [Otis.Library.Source.type(source), Otis.Library.Source.id(source)])
     evt = {:rendition, :delete, [id, context.channel.id]}
     assert_receive ^evt
     assert nil == Rendition.find(id)
