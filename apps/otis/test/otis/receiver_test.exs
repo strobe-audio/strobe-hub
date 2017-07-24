@@ -50,7 +50,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     data_connect(id, 1234)
     ctrl_connect(id)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
     assert receiver.latency == 1234
   end
@@ -58,7 +58,7 @@ defmodule Otis.ReceiverTest do
   test "setting the volume sends the right command", _context do
     id = Otis.uuid
     mock = connect!(id, 1234)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
     ctrl_reset(mock)
     Receiver.volume receiver, 0.13
@@ -71,7 +71,7 @@ defmodule Otis.ReceiverTest do
   test "setting the volume multiplier sends the right command", _context do
     id = Otis.uuid
     mock = connect!(id, 1234)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
 
     ctrl_reset(mock)
@@ -103,7 +103,7 @@ defmodule Otis.ReceiverTest do
   test "setting the volume & multiplier simultaneously", _context do
     id = Otis.uuid
     mock = connect!(id, 1234)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
 
     ctrl_reset(mock)
@@ -128,7 +128,7 @@ defmodule Otis.ReceiverTest do
   test "broadcasts an event on volume change" do
     id = Otis.uuid
     connect!(id, 1234)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
     Receiver.volume receiver, 0.13
     assert_receive {:receiver, :volume, [^id, 0.13]}
@@ -138,7 +138,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     data_connect(id, 1234)
     ctrl_connect(id)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
     Receiver.volume receiver, 0.13
     assert {:ok, 0.13} == Receiver.volume receiver
@@ -148,7 +148,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     socket = data_connect(id, 2222)
     ctrl_connect(id)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     :ok = :gen_tcp.close(socket)
     assert_receive {:receiver, :disconnect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
@@ -159,7 +159,7 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     data_connect(id, 2222)
     socket = ctrl_connect(id)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     :ok = :gen_tcp.close(socket)
     assert_receive {:receiver, :disconnect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
@@ -170,18 +170,18 @@ defmodule Otis.ReceiverTest do
     id = Otis.uuid
     data_socket = data_connect(id, 2222)
     ctrl_socket = ctrl_connect(id)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     :ok = :gen_tcp.close(data_socket)
-    assert_receive {:receiver, :disconnect, [^id, _]}
+    assert_receive {:receiver, :disconnect, [^id, _]}, 200
     :ok = :gen_tcp.close(ctrl_socket)
-    assert_receive {:receiver, :offline, [^id, _]}
+    assert_receive {:receiver, :offline, [^id, _]}, 200
     :error = Receivers.receiver(id)
   end
 
   test "stop sends the right data command", _context do
     id = Otis.uuid
     mock = connect!(id, 1234)
-    assert_receive {:receiver, :connect, [^id, _]}
+    assert_receive {:receiver, :connect, [^id, _]}, 200
     {:ok, receiver} = Receivers.receiver(id)
     Receiver.stop(receiver)
     {:ok, data} = data_recv_raw(mock)
@@ -399,6 +399,7 @@ defmodule Otis.ReceiverTest do
     assert Receiver.alive?(r)
 
     assert_receive {:receiver, :remove, [^channel_id, ^id]}
+    assert_receive {:__complete__, {:receiver, :remove, [^channel_id, ^id]}, Otis.State.Persistence.Receivers}
 
     [r] = Otis.Receivers.Channels.lookup channel_id
     assert r.id == id
