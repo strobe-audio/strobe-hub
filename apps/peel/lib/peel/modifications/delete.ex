@@ -1,11 +1,7 @@
 defmodule Peel.Modifications.Delete do
   use GenStage
 
-  alias Peel.Collection
-  alias Peel.Track
-  alias Peel.Album
-  alias Peel.Artist
-  alias Peel.Repo
+  alias Peel.{Album, Artist, Collection, Repo, Track}
 
   require Logger
 

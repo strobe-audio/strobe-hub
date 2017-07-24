@@ -8,8 +8,7 @@ defmodule Peel.CoverArt.ITunes.Client do
 
   use GenServer
 
-  alias Peel.CoverArt.ITunes.Artist
-  alias Peel.CoverArt.ITunes.Album
+  alias Peel.CoverArt.ITunes.{Album, Artist}
 
   require Logger
 

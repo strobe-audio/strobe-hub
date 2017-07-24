@@ -2,10 +2,7 @@ defmodule Peel.Events.Library do
   use     GenStage
   require Logger
 
-  alias Peel.Collection
-  alias Peel.Album
-  alias Peel.Artist
-  alias Peel.Track
+  alias Peel.{Album, Artist, Collection, Track}
 
   use  Otis.Library, namespace: Peel.library_id()
 

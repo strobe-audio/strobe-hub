@@ -109,9 +109,7 @@ defmodule Otis.Channel do
     GenServer.start_link(__MODULE__, [channel, config], name: name)
   end
 
-  alias Otis.Pipeline.Playlist
-  alias Otis.Pipeline.Hub
-  alias Otis.Pipeline.Broadcaster
+  alias Otis.Pipeline.{Playlist, Hub, Broadcaster}
 
   def init([channel, config]) do
     Logger.info "#{__MODULE__} starting... #{ channel.id }"

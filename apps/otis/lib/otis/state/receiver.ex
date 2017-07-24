@@ -2,8 +2,7 @@ defmodule Otis.State.Receiver do
   use    Ecto.Schema
   import Ecto.Query
 
-  alias Otis.State.Receiver
-  alias Otis.State.Repo
+  alias Otis.State.{Receiver, Repo}
   alias Ecto.Changeset
 
   @primary_key {:id, :binary_id, autogenerate: true}

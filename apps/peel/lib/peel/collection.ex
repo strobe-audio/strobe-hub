@@ -1,11 +1,8 @@
 defmodule Peel.Collection do
   use    Peel.Model
 
-  alias  Peel.Album
-  alias  Peel.Artist
-  alias  Peel.Track
-  alias  Peel.Collection
-  alias  Peel.Repo
+  alias  __MODULE__
+  alias  Peel.{Album, Artist, Repo, Track}
 
   alias Ecto.Changeset
 

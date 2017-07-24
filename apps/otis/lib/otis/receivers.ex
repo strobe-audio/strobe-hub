@@ -1,9 +1,9 @@
 defmodule Otis.Receivers do
   use     GenServer
   require Logger
+
   alias   Otis.Receiver
-  alias   Otis.Receivers.DataConnection
-  alias   Otis.Receivers.ControlConnection
+  alias   Otis.Receivers.{DataConnection, ControlConnection}
 
   @name Otis.Receivers
 

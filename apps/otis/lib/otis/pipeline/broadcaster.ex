@@ -5,10 +5,7 @@ defmodule Otis.Pipeline.Broadcaster do
 
   alias Otis.Packet
   alias Otis.Receiver
-  alias Otis.Pipeline.Clock
-  alias Otis.Pipeline.Config
-  alias Otis.Pipeline.Hub
-  alias Otis.Pipeline.Producer
+  alias Otis.Pipeline.{Clock, Config, Hub, Producer}
 
   defmodule S do
     @moduledoc false

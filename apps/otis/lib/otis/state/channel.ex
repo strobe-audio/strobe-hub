@@ -2,8 +2,7 @@ defmodule Otis.State.Channel do
   use    Ecto.Schema
   import Ecto.Query
 
-  alias Otis.State.Channel
-  alias Otis.State.Repo
+  alias Otis.State.{Channel, Repo}
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @derive {Poison.Encoder, only: [:id, :name, :volume, :position]}
