@@ -409,4 +409,4 @@ Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
 
 ExUnit.configure(exclude: [skip: true])
-ExUnit.start()
+ExUnit.start(assert_receive_timeout: 500)
