@@ -36,11 +36,15 @@ defmodule Otis.Mixfile do
         # :logger_file_backend,
         :external_process,
       ],
-      included_applications: [
-        :dnssd,
-      ],
+      included_applications: included_applications(Mix.env),
       extra_applications: [],
       env: env(),
+    ]
+  end
+
+  defp included_applications(:test), do: []
+  defp included_applications(_env) do
+    [ :dnssd,
     ]
   end
 
@@ -58,8 +62,7 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [ {:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar},
-      {:poolboy, "~> 1.4"},
+    [ {:poolboy, "~> 1.4"},
       {:monotonic, github: "magnetised/monotonic.ex"},
       {:erlsom, github: "willemdj/erlsom"},
       {:uuid, "~> 1.1"},
@@ -72,6 +75,12 @@ defmodule Otis.Mixfile do
       {:mdns, "~> 0.1.5"},
       {:external_process, in_umbrella: true},
       {:gen_stage, "~> 0.1"},
+    ] ++ deps(Mix.env)
+  end
+
+  defp deps(:test), do: []
+  defp deps(_env) do
+    [ {:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar},
     ]
   end
 end

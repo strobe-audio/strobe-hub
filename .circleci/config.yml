@@ -9,6 +9,7 @@ jobs:
       - image: circleci/elixir:1.4.5
         environment:
           MIX_TARGET: host
+          MIX_ENV: test
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
