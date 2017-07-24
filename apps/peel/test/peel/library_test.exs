@@ -15,7 +15,7 @@ defmodule Peel.Test.LibraryTest do
     # Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
 
     on_exit fn ->
-      Ecto.Adapters.SQL.rollback_test_transaction(Peel.Repo)
+      # Ecto.Adapters.SQL.rollback_test_transaction(Peel.Repo)
       # Ecto.Adapters.SQL.rollback_test_transaction(Otis.State.Repo)
     end
     Collection.delete_all
@@ -141,16 +141,16 @@ defmodule Peel.Test.LibraryTest do
 
     # Otis.State.Channel.delete_all
 
-    channels = [
-      %Otis.State.Channel{ id: channel_id,
-        name: "Sorry I Burnt Your Nose",
-        position: 0, volume: 0.40037950664136623},
-    ]
+    # channels = [
+    #   %Otis.State.Channel{ id: channel_id,
+    #     name: "Sorry I Burnt Your Nose",
+    #     position: 0, volume: 0.40037950664136623},
+    # ]
     # Enum.each channels, &Otis.State.Repo.insert!/1
 
-    Enum.each channels, fn(channel) ->
-      Otis.Channels.start(channel)
-    end
+    # Enum.each channels, fn(channel) ->
+    #   Otis.Channels.start(channel)
+    # end
 
     on_exit fn ->
       nil
