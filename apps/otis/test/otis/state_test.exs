@@ -18,9 +18,9 @@ defmodule Otis.StateTest do
         {:ok, channel} = Otis.Channels.create("Channel #{n}")
         sources = [TestSource.new, TestSource.new, TestSource.new]
         Otis.Channel.append(channel, sources)
-        assert_receive {:new_rendition_created, _}
-        assert_receive {:new_rendition_created, _}
-        assert_receive {:new_rendition_created, _}
+        assert_receive {:rendition, :create, _}
+        assert_receive {:rendition, :create, _}
+        assert_receive {:rendition, :create, _}
         channel
       end)
 

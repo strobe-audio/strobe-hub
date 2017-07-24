@@ -1,12 +1,8 @@
 defmodule Peel.Artist do
   use    Peel.Model
 
-  alias  Peel.Album
-  alias  Peel.AlbumArtist
-  alias  Peel.Artist
-  alias  Peel.Collection
-  alias  Peel.Repo
-  alias  Peel.Track
+  alias  __MODULE__
+  alias  Peel.{Album, AlbumArtist, Collection, Repo, Track}
 
   import Peel.String, only: [normalize_performer: 1]
 

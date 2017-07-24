@@ -109,9 +109,7 @@ defmodule Otis.Channel do
     GenServer.start_link(__MODULE__, [channel, config], name: name)
   end
 
-  alias Otis.Pipeline.Playlist
-  alias Otis.Pipeline.Hub
-  alias Otis.Pipeline.Broadcaster
+  alias Otis.Pipeline.{Playlist, Hub, Broadcaster}
 
   def init([channel, config]) do
     Logger.info "#{__MODULE__} starting... #{ channel.id }"
@@ -164,7 +162,7 @@ defmodule Otis.Channel do
   def handle_call({:volume, volume}, _from, state) do
     volume = Otis.sanitize_volume(volume)
     Otis.Receivers.Channels.volume_multiplier(state.id, volume)
-    event!(state, :channel_volume_change, volume)
+    event!(state, :volume, [volume])
     {:reply, {:ok, volume}, %S{state | volume: volume}}
   end
 
@@ -205,7 +203,7 @@ defmodule Otis.Channel do
   end
 
   defp event!(state, name, params) do
-    Otis.Events.notify({name, [state.id, params]})
+    Otis.Events.notify(:channel, name, [state.id | params])
   end
 
   defp toggle_state(%S{state: :play} = state) do
@@ -225,12 +223,12 @@ defmodule Otis.Channel do
 
   defp change_state(%S{state: :play} = state) do
     Broadcaster.start(state.broadcaster)
-    event!(state, :channel_play_pause, :play)
+    event!(state, :play_pause, [:play])
     state
   end
   defp change_state(%S{state: :pause} = state) do
     Broadcaster.pause(state.broadcaster)
-    event!(state, :channel_play_pause, :pause)
+    event!(state, :play_pause, [:pause])
     state
   end
 end

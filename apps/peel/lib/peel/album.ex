@@ -1,12 +1,8 @@
 defmodule Peel.Album do
   use    Peel.Model
 
-  alias  Peel.Repo
-  alias  Peel.Collection
-  alias  Peel.Track
-  alias  Peel.Artist
-  alias  Peel.Album
-  alias  Peel.AlbumArtist
+  alias  __MODULE__
+  alias  Peel.{Repo, Collection, Track, Artist, AlbumArtist}
 
   @derive {Poison.Encoder, only: [:id, :title, :performer, :date, :genre, :disk_number, :disk_total, :track_total, :artist_id]}
 

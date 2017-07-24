@@ -5,8 +5,16 @@ defmodule Otis.ChannelTest do
 
   alias Otis.Receivers
   alias Otis.Test.TestSource
+  alias Otis.State.Persistence
 
   @moduletag :channel
+
+  def playlist(context, sources) do
+    {:ok, pl} = Otis.Channel.playlist(context.channel)
+    :ok = Otis.Pipeline.Playlist.append(pl, sources)
+    assert_receive {:__complete__, {:playlist, :append, _}, Persistence.Playlist}
+    {:ok, pl}
+  end
 
   setup do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
@@ -20,11 +28,11 @@ defmodule Otis.ChannelTest do
       clock: {Test.Otis.Pipeline.Clock, :start_link, [self(), 1_000_000]},
     }
     {:ok, channel} = Otis.Channels.create(channel_id, "Something", config)
-    assert_receive {:"$__channel_added", [^channel_id]}
+    assert_receive {:__complete__, {:channel, :add, [^channel_id, _]}, Persistence.Channels}
     channel_record = Otis.State.Channel.find(channel_id)
     _receiver_record = Otis.State.Receiver.create!(channel_record, id: receiver_id, name: "Roger", volume: 1.0)
     mock = connect!(receiver_id, 1234)
-    assert_receive {:"$__receiver_connected", [^receiver_id]}
+    assert_receive {:__complete__, {:receiver, :connect, [^receiver_id, _]}, Persistence.Receivers}
     {:ok, receiver} = Receivers.receiver(receiver_id)
 
     {:ok,
@@ -48,21 +56,19 @@ defmodule Otis.ChannelTest do
 
   test "allows you to toggle the play pause state", %{channel: channel} = context do
     channel_id = context.channel_id
-    {:ok, pl} = Otis.Channel.playlist(context.channel)
-    :ok = Otis.Pipeline.Playlist.append(pl, TestSource.new)
-    assert_receive {:"$__append_renditions", _}
+    {:ok, _pl} = playlist(context, TestSource.new)
     {:ok, state} = Otis.Channel.play_pause(channel)
     assert state == :play
-    assert_receive {:channel_play_pause, [^channel_id, :play]}
-    assert_receive {:clock, {:start, _bc, _time}}
+    assert_receive {:__complete__, {:channel, :play_pause, [^channel_id, :play]}, _}
+    assert_receive {:clock, {:start, _bc, _time}}, 500
     {:ok, state} = Otis.Channel.play_pause(channel)
     assert state == :pause
-    assert_receive {:channel_play_pause, [^channel_id, :pause]}
-    assert_receive {:clock, {:stop}}
+    assert_receive {:__complete__, {:channel, :play_pause, [^channel_id, :pause]}, _}
+    assert_receive {:clock, {:stop}}, 500
     {:ok, state} = Otis.Channel.play_pause(channel)
     assert state == :play
-    assert_receive {:channel_play_pause, [^channel_id, :play]}
-    assert_receive {:clock, {:start, _bc, _time}}
+    assert_receive {:__complete__, {:channel, :play_pause, [^channel_id, :play]}, _}
+    assert_receive {:clock, {:start, _bc, _time}}, 500
   end
 
   test "can have its volume set", context do
@@ -82,7 +88,7 @@ defmodule Otis.ChannelTest do
     {:ok, 1.0} = Otis.Channel.volume(context.channel)
     Otis.Channel.volume(context.channel, 0.5)
     {:ok, 0.5} = Otis.Channel.volume(context.channel)
-    event = {:channel_volume_change, [context.channel_id, 0.5]}
+    event = {:channel, :volume, [context.channel_id, 0.5]}
     assert_receive ^event
   end
 
@@ -90,10 +96,9 @@ defmodule Otis.ChannelTest do
     {:ok, 1.0} = Otis.Channel.volume(context.channel)
     Otis.Channel.volume(context.channel, 0.5)
     {:ok, 0.5} = Otis.Channel.volume(context.channel)
-    event = {:channel_volume_change, [context.channel_id, 0.5]}
+    event = {:channel, :volume, [context.channel_id, 0.5]}
     assert_receive ^event
-    event = {:"$__channel_volume_change", [context.channel_id]}
-    assert_receive ^event
+    assert_receive {:__complete__, ^event, Persistence.Channels}
     channel = Otis.State.Channel.find context.channel_id
     assert channel.volume == 0.5
     receiver = Otis.State.Receiver.find context.receiver.id
@@ -102,52 +107,46 @@ defmodule Otis.ChannelTest do
 
   test "broadcasting event when play state changes", context do
     # Need to add something to the playlist or the channel stops as soon as it starts
-    {:ok, pl} = Otis.Channel.playlist(context.channel)
-    :ok = Otis.Pipeline.Playlist.append(pl, TestSource.new)
-    assert_receive {:"$__append_renditions", _}
+    {:ok, _pl} = playlist(context, TestSource.new)
     channel_id = context.channel_id
     {:ok, :play} = Otis.Channel.play_pause(context.channel)
-    assert_receive {:channel_play_pause, [^channel_id, :play]}
+    assert_receive {:channel, :play_pause, [^channel_id, :play]}
     {:ok, :pause} = Otis.Channel.play_pause(context.channel)
-    assert_receive {:channel_play_pause, [^channel_id, :pause]}
+    assert_receive {:channel, :play_pause, [^channel_id, :pause]}
   end
 
   test "playlist end broadcasts event", context do
     channel_id = context.channel_id
     {:ok, :play} = Otis.Channel.play_pause(context.channel)
-    assert_receive {:channel_play_pause, [^channel_id, :play]}
-    assert_receive {:channel_play_pause, [^channel_id, :pause]}
+    assert_receive {:channel, :play_pause, [^channel_id, :play]}
+    assert_receive {:channel, :play_pause, [^channel_id, :pause]}
   end
 
   @tag :skip
   test "skipping renditions"
 
   test "removing renditions", %{channel_id: channel_id} = context do
-    {:ok, pl} = Otis.Channel.playlist(context.channel)
-    :ok = Otis.Pipeline.Playlist.append(pl, TestSource.new)
-    assert_receive {:"$__append_renditions", _}
+    {:ok, pl} = playlist(context, TestSource.new)
     {:ok, [rendition_id]} = Otis.Pipeline.Playlist.list(pl)
     :ok = Otis.Channel.remove(context.channel, rendition_id)
-    assert_receive {:rendition_deleted, [^rendition_id, ^channel_id]}
+    assert_receive {:rendition, :delete, [^rendition_id, ^channel_id]}
   end
 
   test "playback completion sets state & sends message", context do
     channel_id = context.channel_id
     {:ok, :play} = Otis.Channel.play_pause(context.channel)
-    assert_receive {:channel_play_pause, [^channel_id, :play]}
+    assert_receive {:channel, :play_pause, [^channel_id, :play]}
     pid = GenServer.whereis(context.channel)
     send pid, :broadcaster_stop
-    assert_receive {:channel_play_pause, [^channel_id, :pause]}
+    assert_receive {:channel, :play_pause, [^channel_id, :pause]}
   end
 
   test "clearing playlist", context do
     channel_id = context.channel_id
-    {:ok, pl} = Otis.Channel.playlist(context.channel)
-    :ok = Otis.Pipeline.Playlist.append(pl, TestSource.new)
-    assert_receive {:"$__append_renditions", _}
+    {:ok, pl} = playlist(context, TestSource.new)
     {:ok, [rendition_id]} = Otis.Pipeline.Playlist.list(pl)
     :ok = Otis.Channel.clear(context.channel)
-    assert_receive {:"$__playlist_cleared", [^channel_id, nil]}
-    assert_receive {:rendition_deleted, [^rendition_id, ^channel_id]}
+    assert_receive {:__complete__, {:playlist, :clear, [^channel_id, _]}, Persistence.Playlist}
+    assert_receive {:rendition, :delete, [^rendition_id, ^channel_id]}
   end
 end

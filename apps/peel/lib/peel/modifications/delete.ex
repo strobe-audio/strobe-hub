@@ -1,11 +1,7 @@
 defmodule Peel.Modifications.Delete do
   use GenStage
 
-  alias Peel.Collection
-  alias Peel.Track
-  alias Peel.Album
-  alias Peel.Artist
-  alias Peel.Repo
+  alias Peel.{Album, Artist, Collection, Repo, Track}
 
   require Logger
 
@@ -126,7 +122,7 @@ defmodule Peel.Modifications.Delete do
   if Code.ensure_compiled?(Otis.Events) do
     defp notify_deletion(nil), do: nil
     defp notify_deletion(track) do
-      Otis.Events.notify({:source_deleted, [Otis.Library.Source.type(track), Otis.Library.Source.id(track)]})
+      Otis.Events.notify(:rendition, :source_delete, [Otis.Library.Source.type(track), Otis.Library.Source.id(track)])
     end
   else
     defp notify_deletion(_track), do: nil

@@ -4,14 +4,14 @@ defmodule Otis.LoggerHandler do
 
   @log_progress_every 100
   @silent_events [
-    :add_library,
-    :channel_play_pause,
-    :controller_connect,
-    :controller_join,
-    :library_request,
-    :library_response,
-    :receiver_muted,
-    :receiver_volume_change,
+    {:library, :add},
+    {:channel, :play_pause},
+    {:controller, :connect},
+    {:controller, :join},
+    {:library, :request},
+    {:library, :response},
+    {:receiver, :mute},
+    {:receiver, :volume},
   ]
 
   def start_link do
@@ -30,26 +30,22 @@ defmodule Otis.LoggerHandler do
     handle_events(events, from, state)
   end
 
-  for evt <- @silent_events do
-    def handle_event({unquote(evt), _request}, state) do
+  for {category, event} <- @silent_events do
+    def handle_event({unquote(category), unquote(event), _args}, state) do
       {:ok, state}
     end
   end
 
-  def handle_event({:rendition_progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
+  def handle_event({:rendition, :progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
     {:ok, state}
   end
   # Rate limit the source progress events to 1 out of @log_progress_every (or roughly every 10s)
-  def handle_event({:rendition_progress, _args} = event, %{progress_count: 0} = state) do
+  def handle_event({:rendition, :progress, _args} = event, %{progress_count: 0} = state) do
     log_event(event, state)
     {:ok, %{state | progress_count: @log_progress_every}}
   end
-  def handle_event({:rendition_progress, _args}, state) do
+  def handle_event({:rendition, :progress, _args}, state) do
     {:ok, %{state | progress_count: state.progress_count - 1}}
-  end
-
-  def handle_event({:"$__rendition_progress", _args}, state) do
-    {:ok, state}
   end
 
   def handle_event(event, state) do

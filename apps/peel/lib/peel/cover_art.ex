@@ -1,9 +1,7 @@
 defmodule Peel.CoverArt do
   use    GenServer
 
-  alias Peel.Album
-  alias Peel.Artist
-  alias Peel.Track
+  alias Peel.{Album, Artist, Track}
 
   require Logger
 

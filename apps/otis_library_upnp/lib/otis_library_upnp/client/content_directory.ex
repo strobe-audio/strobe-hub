@@ -8,9 +8,8 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
 
   require Logger
 
-  alias Otis.Library.UPNP.Server
+  alias Otis.Library.UPNP.{Server, Container, Item, Media}
   alias Otis.Library.UPNP.Server.Service
-  alias Otis.Library.UPNP.{Container, Item, Media}
 
   @search_capabilities_action "urn:schemas-upnp-org:service:ContentDirectory:1#GetSearchCapabilities"
   @browse_action {"urn:schemas-upnp-org:service:ContentDirectory:1", "Browse"}

@@ -1,6 +1,7 @@
 
 defmodule Otis.State.Persistence.Channels do
   use     GenStage
+  use     Otis.Events.Handler
   require Logger
 
   alias Otis.State.Channel
@@ -19,53 +20,49 @@ defmodule Otis.State.Persistence.Channels do
   end
 
   def init(_opts) do
-    {:consumer, %S{}, subscribe_to: Otis.Events.producer}
+    {:consumer, %S{}, subscribe_to: Otis.Events.producer(&selector/1)}
   end
 
-  def handle_events([], _from,state) do
-    {:noreply, [], state}
-  end
-  def handle_events([event|events], from, state) do
-    {:ok, state} = handle_event(event, state)
-    handle_events(events, from, state)
-  end
+  defp selector({:channel, _evt, _args}), do: true
+  defp selector(_evt), do: false
 
-  def handle_event({:channel_added, [id, %{name: name}]}, state) do
+  def handle_event({:channel, :add, [id, %{name: name}]}, state) do
     Repo.transaction fn ->
       Channel.find(id) |> add_channel(id, name)
     end
-    Otis.Events.notify({:"$__channel_added", [id]})
     {:ok, state}
   end
-  def handle_event({:channel_removed, [id]}, state) do
+
+  def handle_event({:channel, :remove, [id]}, state) do
     Repo.transaction fn ->
       Channel.find(id) |> remove_channel(id)
     end
-    Otis.Events.notify({:"$__channel_remove", [id]})
     {:ok, state}
   end
-  def handle_event({:channel_volume_change, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do
+
+  def handle_event({:channel, :volume, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do
     state = %S{ state | volumes: Map.put(volumes, id, volume), timer: start_timer(timer) }
-    {:ok, state}
+    {:incomplete, state}
   end
-  def handle_event({:channel_rename, [id, name]}, state) do
+
+  def handle_event({:channel, :rename, [id, name]}, state) do
     Repo.transaction fn ->
       id |> Channel.find |> rename(id, name)
     end
-    Otis.Events.notify({:"$__channel_rename", [id]})
     {:ok, state}
   end
+
   def handle_event(_evt, state) do
     {:ok, state}
   end
 
   def handle_info(:save_volumes, %S{volumes: volumes} = state) do
-    Repo.transaction fn ->
-      Enum.each(volumes, fn({id, volume}) ->
+    Enum.each(volumes, fn({id, volume}) ->
+      Repo.transaction fn ->
         id |> Channel.find |> volume_change(id, volume)
-        Otis.Events.notify({:"$__channel_volume_change", [id]})
-      end)
-    end
+      end
+      Otis.Events.complete({:channel, :volume, [id, volume]})
+    end)
     {:noreply, [], %S{state | volumes: %{}, timer: nil}}
   end
 

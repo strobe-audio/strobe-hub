@@ -8,9 +8,7 @@ defmodule Otis.State.Playlist do
 
   import Ecto.Query
 
-  alias Otis.State.Rendition
-  alias Otis.State.Channel
-  alias Otis.State.Repo
+  alias Otis.State.{Rendition, Channel, Repo}
 
   require Logger
 

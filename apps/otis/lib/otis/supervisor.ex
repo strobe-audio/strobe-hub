@@ -21,6 +21,7 @@ defmodule Otis.Supervisor do
       worker(Otis.State.Persistence.Channels, []),
       worker(Otis.State.Persistence.Receivers, []),
       worker(Otis.State.Persistence.Renditions, []),
+      worker(Otis.State.Persistence.Playlist, []),
       worker(Otis.State.Persistence.Configuration, []),
 
       # supervisor(Registry, [:unique, Otis.Pipeline.Streams.namespace()], id: Otis.Pipeline.Streams.namespace()),

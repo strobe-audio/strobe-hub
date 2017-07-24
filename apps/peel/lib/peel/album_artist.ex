@@ -2,9 +2,8 @@ defmodule Peel.AlbumArtist do
   import Ecto.Query
   use    Ecto.Schema
 
-  alias  Peel.AlbumArtist
-  alias  Peel.Repo
-  alias  Peel.Track
+  alias  __MODULE__
+  alias  Peel.{Repo, Track}
 
   schema "album_artists" do
     belongs_to :artist, Peel.Artist, type: Ecto.UUID

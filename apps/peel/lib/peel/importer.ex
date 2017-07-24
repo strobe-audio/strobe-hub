@@ -1,7 +1,5 @@
 defmodule Peel.Importer do
-  alias Peel.Collection
-  alias Peel.Repo
-  alias Peel.Track
+  alias Peel.{Collection, Repo, Track}
 
   def track(collection, path) do
     track(collection, path, is_audio?(path))

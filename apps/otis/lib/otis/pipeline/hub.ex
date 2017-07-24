@@ -7,9 +7,7 @@ defmodule Otis.Pipeline.Hub do
 
   use GenServer
 
-  alias Otis.Pipeline.Playlist
-  alias Otis.Pipeline.Producer
-  alias Otis.Pipeline.Streams
+  alias Otis.Pipeline.{Playlist, Producer, Streams}
 
   defmodule S do
     @moduledoc false
