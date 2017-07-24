@@ -9,8 +9,8 @@ defimpl Otis.Library.Source, for: Test.Otis.Pipeline.Source do
   def id(%{id: id}), do: id
   def type(_), do: Test.Otis.Pipeline.Source
   def open!(_source, _id, _packet_size_bytes), do: []
-  def close(_source, _id, _source), do: nil
-  def pause(_source, _id, _source), do: nil
+  def close(_source, _id, _stream), do: nil
+  def pause(_source, _id, _stream), do: nil
   def transcoder_args(_source), do: ["-f", "mp3"]
   def metadata(_source), do: %Otis.Source.Metadata{}
   def duration(_source) do
