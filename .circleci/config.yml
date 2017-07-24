@@ -19,8 +19,6 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: mix local.hex --force
-      - run: mix local.rebar --force
 
       - restore_cache:
           keys:
@@ -31,16 +29,22 @@ jobs:
             - build-v1-{{ .Branch }}
             - build-v1
 
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
       - run: mix deps.get
 
       - save_cache:
           key: deps-v1-{{ checksum "mix.lock" }}
           paths:
             - deps
+            - /home/circleci/.cache
+            - /home/circleci/.mix
       - save_cache:
           key: deps-v1
           paths:
             - deps
+            - /home/circleci/.cache
+            - /home/circleci/.mix
 
       - run: mix compile
 
