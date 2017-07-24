@@ -412,7 +412,6 @@ defmodule Test.Otis.Pipeline.Clock do
 end
 
 
-Faker.start()
 Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
 

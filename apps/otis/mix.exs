@@ -66,7 +66,6 @@ defmodule Otis.Mixfile do
       {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
       {:ecto, "~> 1.0"},
       {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
-      {:faker, "~> 0.5", only: :test},
       {:otis_library, in_umbrella: true},
       {:nerves_ssdp_server, "~> 0.2.1"},
       {:gproc, "~> 0.5.0"},
