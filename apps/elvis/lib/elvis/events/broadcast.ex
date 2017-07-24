@@ -104,8 +104,11 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:receiver, :online, [receiver_id, _receiver]}, state) do
-    receiver_state = Otis.State.Receiver.find(receiver_id)
-    broadcast!("receiver-online", Otis.State.status(receiver_state))
+    case Otis.State.Receiver.find(receiver_id) do
+      nil -> nil
+      receiver_state ->
+        broadcast!("receiver-online", Otis.State.status(receiver_state))
+    end
     {:ok, state}
   end
 
