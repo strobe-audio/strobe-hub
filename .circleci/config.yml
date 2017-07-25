@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
       # specify the version here
-      - image: circleci/elixir:1.4.5
+      - image: strobeaudio/circleci-elixir:latest
         environment:
           MIX_TARGET: host
           MIX_ENV: test
@@ -37,13 +37,11 @@ jobs:
           key: deps-v1-{{ checksum "mix.lock" }}
           paths:
             - deps
-            - /home/circleci/.cache
             - /home/circleci/.mix
       - save_cache:
           key: deps-v1
           paths:
             - deps
-            - /home/circleci/.cache
             - /home/circleci/.mix
 
       - run: mix compile
@@ -52,9 +50,11 @@ jobs:
           key: build-v1-{{ .Branch }}
           paths:
             - _build
+            - /home/circleci/.cache/rebar3
       - save_cache:
           key: build-v1
           paths:
             - _build
+            - /home/circleci/.cache/rebar3
 
       - run: mix test --trace
