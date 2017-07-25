@@ -3,6 +3,11 @@ defmodule Elvis.PageControllerTest do
 
   test "GET /" do
     conn = get conn(), "/"
-    assert html_response(conn, 200) =~ "Welcome to Phoenix!"
+    assert html_response(conn, 200) =~ "Strobe"
+  end
+
+  test "GET / refs strobe.appcache" do
+    conn = get conn(), "/"
+    assert html_response(conn, 200) =~ ~r{manifest="/strobe.appcache"}
   end
 end
