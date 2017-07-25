@@ -83,6 +83,7 @@ defmodule Peel.WebDAV.ClientTest do
   test "PUT /Collection 1/Artist Name/Album Name/Track Name.mp3", cxt do
     path =  "/Collection 1/Artist Name/Album Name/Track Name.mp3"
     [cxt[:root], Path.dirname(path)] |> Path.join |> File.mkdir_p
+    File.cp!(@silent_path, [cxt[:root], path] |> Path.join)
     conn =
       conn("PUT", path, @silence)
       |> merge_req_headers([{"content-type", "audio/mpeg"}])
