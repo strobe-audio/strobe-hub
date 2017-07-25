@@ -61,7 +61,6 @@ defmodule Peel.Mixfile do
       {:flow, "~> 0.11"},
       {:gen_stage, "~> 0.12"},
       {:httpoison, "~> 0.11.1"},
-      {:otis, in_umbrella: true, only: :test},
       {:otis_library, in_umbrella: true},
       {:poison, "~> 1.0"},
       {:sqlite_ecto, github: "magnetised/sqlite_ecto"},

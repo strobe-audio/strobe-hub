@@ -111,23 +111,11 @@ defmodule Otis.Library do
       defp encode(part), do: URI.encode(part, &URI.char_unreserved?/1)
       defp decode(part), do: URI.decode(part)
 
-      if Code.ensure_compiled?(Otis.Channel) do
-        def play(nil, _channel_id) do
-          nil
-        end
-        def play(tracks, channel_id) when is_list(tracks) do
-          with {:ok, channel} <- Otis.Channels.find(channel_id) do
-            Otis.Channel.append(channel, tracks)
-          end
-          nil
-        end
-        def play(track, channel_id) do
-          play([track], channel_id)
-        end
-      else
-        def play(_source, _channel_id), do: nil
+      # Let the Channel module handle playback as it wraps the play command
+      # with environment specific actions.
+      def play(tracks, channel_id) do
+        Otis.Library.Channel.play(tracks, channel_id)
       end
-
 
       def namespace, do: @namespace
 
