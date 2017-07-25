@@ -5,6 +5,7 @@ end
 defmodule OtisLibraryTest do
   use ExUnit.Case
 
+  doctest Otis.Library
 
   test "#url encodes individual path elements" do
     assert TestLibrary.url(["this", "/that"]) == "test:this/%2Fthat"

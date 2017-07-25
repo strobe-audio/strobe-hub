@@ -1,7 +1,20 @@
 defmodule Otis.Library do
-  def strip_leading_dot(ext) do
-    String.lstrip(ext, ?.)
-  end
+  @doc """
+  Strips any leading dots from extensions.
+
+
+      iex> Otis.Library.strip_leading_dot(".mp3")
+      "mp3"
+      iex> Otis.Library.strip_leading_dot(".m4a")
+      "m4a"
+      iex> Otis.Library.strip_leading_dot("mp3")
+      "mp3"
+      iex> Otis.Library.strip_leading_dot("m4a")
+      "m4a"
+
+  """
+  def strip_leading_dot(<<".", ext::binary>>), do: ext
+  def strip_leading_dot(ext), do: ext
 
   defmacro __using__([namespace: namespace]) do
     quote location: :keep do
