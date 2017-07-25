@@ -22,38 +22,25 @@ jobs:
 
       - restore_cache:
           keys:
-            - deps-v2-{{ checksum "mix.lock" }}
-            - deps-v2
-      - restore_cache:
-          keys:
-            - build-v2-{{ .Branch }}
-            - build-v2
+            - deps-v3-{{ checksum "mix.lock" }}
+            - deps-v3
 
-      - run: mix local.hex --force
-      - run: mix local.rebar --force
+      - run: mix do local.hex --force, local.rebar --force
       - run: mix deps.get
-
-      - save_cache:
-          key: deps-v2-{{ checksum "mix.lock" }}
-          paths:
-            - deps
-            - /root/.mix
-      - save_cache:
-          key: deps-v2
-          paths:
-            - deps
-            - /root/.mix
-
       - run: mix compile
 
       - save_cache:
-          key: build-v2-{{ .Branch }}
+          key: deps-v3-{{ checksum "mix.lock" }}
           paths:
+            - deps
+            - /root/.mix
             - _build
             - /root/.cache/rebar3
       - save_cache:
-          key: build-v2
+          key: deps-v3
           paths:
+            - deps
+            - /root/.mix
             - _build
             - /root/.cache/rebar3
 
