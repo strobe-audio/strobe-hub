@@ -22,39 +22,39 @@ jobs:
 
       - restore_cache:
           keys:
-            - deps-v1-{{ checksum "mix.lock" }}
-            - deps-v1
+            - deps-v2-{{ checksum "mix.lock" }}
+            - deps-v2
       - restore_cache:
           keys:
-            - build-v1-{{ .Branch }}
-            - build-v1
+            - build-v2-{{ .Branch }}
+            - build-v2
 
       - run: mix local.hex --force
       - run: mix local.rebar --force
       - run: mix deps.get
 
       - save_cache:
-          key: deps-v1-{{ checksum "mix.lock" }}
+          key: deps-v2-{{ checksum "mix.lock" }}
           paths:
             - deps
-            - /home/circleci/.mix
+            - /root/.mix
       - save_cache:
-          key: deps-v1
+          key: deps-v2
           paths:
             - deps
-            - /home/circleci/.mix
+            - /root/.mix
 
       - run: mix compile
 
       - save_cache:
-          key: build-v1-{{ .Branch }}
+          key: build-v2-{{ .Branch }}
           paths:
             - _build
-            - /home/circleci/.cache/rebar3
+            - /root/.cache/rebar3
       - save_cache:
-          key: build-v1
+          key: build-v2
           paths:
             - _build
-            - /home/circleci/.cache/rebar3
+            - /root/.cache/rebar3
 
       - run: mix test --trace
