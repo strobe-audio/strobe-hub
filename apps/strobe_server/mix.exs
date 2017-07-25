@@ -1,7 +1,9 @@
 defmodule Strobe.Server.Mixfile do
   use Mix.Project
 
-  @target System.get_env("MIX_TARGET") || "rpi3"
+  # Default to "host" target to prevent this app doing anything in most
+  # circumstances, use `MIX_TARGET=rpi3` for nerves-related activity
+  @target System.get_env("MIX_TARGET") || "host"
 
   Mix.shell.info([:green, """
   Env
