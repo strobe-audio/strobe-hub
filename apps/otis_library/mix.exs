@@ -11,6 +11,7 @@ defmodule OtisLibrary.Mixfile do
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     consolidate_protocols: Mix.env != :test,
      deps: deps()]
   end
 
@@ -18,7 +19,7 @@ defmodule OtisLibrary.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger]]
+    [extra_applications: [:logger]]
   end
 
   # Dependencies can be Hex packages:
@@ -31,7 +32,8 @@ defmodule OtisLibrary.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [ {:gen_stage, "~> 0.1"},
+    [ {:gen_stage, "~> 0.12"},
+      {:strobe_events, in_umbrella: true},
     ]
   end
 end

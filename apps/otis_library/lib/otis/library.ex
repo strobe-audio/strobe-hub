@@ -1,7 +1,20 @@
 defmodule Otis.Library do
-  def strip_leading_dot(ext) do
-    String.lstrip(ext, ?.)
-  end
+  @doc """
+  Strips any leading dots from extensions.
+
+
+      iex> Otis.Library.strip_leading_dot(".mp3")
+      "mp3"
+      iex> Otis.Library.strip_leading_dot(".m4a")
+      "m4a"
+      iex> Otis.Library.strip_leading_dot("mp3")
+      "mp3"
+      iex> Otis.Library.strip_leading_dot("m4a")
+      "m4a"
+
+  """
+  def strip_leading_dot(<<".", ext::binary>>), do: ext
+  def strip_leading_dot(ext), do: ext
 
   defmacro __using__([namespace: namespace]) do
     quote location: :keep do
@@ -13,7 +26,7 @@ defmodule Otis.Library do
       end
 
       def init(_opts) do
-        {:consumer, [], subscribe_to: Otis.Library.Events.producer(&selector/1)}
+        {:consumer, [], subscribe_to: Strobe.Events.producer(&selector/1)}
       end
 
       defp selector({:strobe, :start, _args}), do: true
@@ -48,13 +61,8 @@ defmodule Otis.Library do
         {:ok, state}
       end
 
-      if Code.ensure_compiled?(Otis.Events) do
-        def notify_event(event, args) do
-          Otis.Events.notify(:library, event, args)
-        end
-      else
-        def notify_event(_event, _args) do
-        end
+      def notify_event(event, args) do
+        Strobe.Events.notify(:library, event, args)
       end
 
       def setup(state) do
@@ -103,23 +111,11 @@ defmodule Otis.Library do
       defp encode(part), do: URI.encode(part, &URI.char_unreserved?/1)
       defp decode(part), do: URI.decode(part)
 
-      if Code.ensure_compiled?(Otis.Channel) do
-        def play(nil, _channel_id) do
-          nil
-        end
-        def play(tracks, channel_id) when is_list(tracks) do
-          with {:ok, channel} <- Otis.Channels.find(channel_id) do
-            Otis.Channel.append(channel, tracks)
-          end
-          nil
-        end
-        def play(track, channel_id) do
-          play([track], channel_id)
-        end
-      else
-        def play(_source, _channel_id), do: nil
+      # Let the Channel module handle playback as it wraps the play command
+      # with environment specific actions.
+      def play(tracks, channel_id) do
+        Otis.Library.Channel.play(tracks, channel_id)
       end
-
 
       def namespace, do: @namespace
 

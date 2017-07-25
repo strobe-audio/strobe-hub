@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :peel, key: :value
+#     config :strobe_events, key: :value
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:peel, :key)
+#     Application.get_env(:strobe_events, :key)
 #
 # Or configure a 3rd-party app:
 #
@@ -26,10 +26,5 @@ use Mix.Config
 # by uncommenting the line below and defining dev.exs, test.exs and such.
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
-
-config :peel, Peel.Modifications.Create, [
-  # wait between getting event and testing the file status (ms)
-  queue_delay: 0,
-]
-
-import_config "#{Mix.env}.exs"
+#
+#     import_config "#{Mix.env}.exs"

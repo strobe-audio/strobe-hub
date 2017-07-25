@@ -43,8 +43,12 @@ defmodule Otis.Library.UPNP.Source.Stream do
   end
 
   def handle_info(%HTTPoison.AsyncEnd{}, state) do
-    GenStage.async_notify(self(), {:producer, :done})
+    GenStage.async_info(self(), :stop)
     {:noreply, [], %S{state | demand: 0, response: nil}}
+  end
+
+  def handle_info(:stop, state) do
+    {:stop, :normal, state}
   end
 
   defp stream_next(state, always \\ false)

@@ -6,17 +6,20 @@ defmodule Elvis do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    startup =
+      case Mix.env do
+        :test -> []
+        _env  -> [worker(Otis.Startup, [], restart: :transient)]
+      end
+
     children = [
       # Start the endpoint when the application starts
       supervisor(Elvis.Endpoint, []),
       # worker(Elvis.Events, []),
       worker(Elvis.Events.Broadcast, []),
       worker(Elvis.Events.Startup, []),
-      # Here you could define other workers and supervisors as children
-      # worker(Elvis.Worker, [arg1, arg2, arg3]),
       # XXX: Needs to be last
-      worker(Otis.Startup, [], restart: :transient)
-    ]
+    ] ++ startup
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options

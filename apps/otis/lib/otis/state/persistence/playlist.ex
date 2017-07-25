@@ -1,6 +1,6 @@
 defmodule Otis.State.Persistence.Playlist do
   use     GenStage
-  use     Otis.Events.Handler
+  use     Strobe.Events.Handler
   require Logger
 
   alias Otis.State
@@ -12,7 +12,7 @@ defmodule Otis.State.Persistence.Playlist do
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Otis.Events.producer(&selector/1)}
+    {:consumer, [], subscribe_to: Strobe.Events.producer(&selector/1)}
   end
 
   defp selector({:playlist, _evt, _args}), do: true
@@ -31,7 +31,7 @@ defmodule Otis.State.Persistence.Playlist do
     {:ok, {_channel, skipped}} = Repo.transaction fn ->
       rendition_change(channel_id, new_rendition_id)
     end
-    Enum.each(skipped, &Otis.Events.notify(:rendition, :played, [&1.id]))
+    Enum.each(skipped, &Strobe.Events.notify(:rendition, :played, [&1.id]))
     {:ok, state}
   end
 
@@ -39,7 +39,7 @@ defmodule Otis.State.Persistence.Playlist do
     {:ok, {_channel, deleted}} = Repo.transaction fn ->
       skipped_ids |> renditions_skipped(channel_id, skip_id)
     end
-    Enum.each(deleted, &Otis.Events.notify(:rendition, :delete, [&1.id, channel_id]))
+    Enum.each(deleted, &Strobe.Events.notify(:rendition, :delete, [&1.id, channel_id]))
     {:ok, state}
   end
 
@@ -49,7 +49,7 @@ defmodule Otis.State.Persistence.Playlist do
       Repo.transaction fn ->
         Playlist.delete!(channel, id, 1)
       end
-    Enum.each(removed, &Otis.Events.notify(:rendition, :delete, [&1.id, channel_id]))
+    Enum.each(removed, &Strobe.Events.notify(:rendition, :delete, [&1.id, channel_id]))
     {:ok, state}
   end
 
@@ -57,7 +57,7 @@ defmodule Otis.State.Persistence.Playlist do
     {:ok, {_channel, deleted}} = Repo.transaction fn ->
       channel_id |> channel() |> Playlist.clear!(active_rendition_id)
     end
-    Enum.each(deleted, &Otis.Events.notify(:rendition, :delete, [&1.id, channel_id]))
+    Enum.each(deleted, &Strobe.Events.notify(:rendition, :delete, [&1.id, channel_id]))
     {:ok, state}
   end
 
@@ -66,7 +66,7 @@ defmodule Otis.State.Persistence.Playlist do
   end
 
   defp new_rendition(rendition) do
-    Otis.Events.notify(:rendition, :create, [rendition])
+    Strobe.Events.notify(:rendition, :create, [rendition])
   end
 
   defp rendition_change(channel_id, current_rendition_id) do

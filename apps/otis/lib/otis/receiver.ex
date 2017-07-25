@@ -235,7 +235,7 @@ defmodule Otis.Receiver do
   """
   def join_channel(receiver, channel) do
     Otis.Receivers.Channels.add_receiver(receiver, channel)
-    Otis.Events.notify(:receiver, :online, [receiver.id, receiver])
+    Strobe.Events.notify(:receiver, :online, [receiver.id, receiver])
   end
 
   @doc ~S"""

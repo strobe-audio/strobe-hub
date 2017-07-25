@@ -39,7 +39,7 @@ defmodule Otis.Receivers do
       {:ok, receiver} ->
         Otis.Receiver.volume receiver, volume
       _error ->
-        Otis.Events.notify(:receiver, :volume, [id, volume])
+        Strobe.Events.notify(:receiver, :volume, [id, volume])
     end
     {:ok, volume}
   end
@@ -55,7 +55,7 @@ defmodule Otis.Receivers do
   end
 
   def rename(id, name) when is_binary(id) do
-    Otis.Events.notify(:receiver, :rename, [id, name])
+    Strobe.Events.notify(:receiver, :rename, [id, name])
   end
 
   def connected?(id) do
@@ -125,7 +125,7 @@ defmodule Otis.Receivers do
     end
     # In this case the event comes before the state change. Feels wrong but is
     # much simpler than any other way of moving receivers that I can think of
-    Otis.Events.notify(:receiver, :reattach, [receiver_id, channel_id, receiver])
+    Strobe.Events.notify(:receiver, :reattach, [receiver_id, channel_id, receiver])
     {:reply, :ok, state}
   end
 
@@ -272,7 +272,7 @@ defmodule Otis.Receivers do
   end
 
   def start_valid_receiver(state, receiver, true) do
-    Otis.Events.notify(:receiver, :connect, [receiver.id, receiver])
+    Strobe.Events.notify(:receiver, :connect, [receiver.id, receiver])
     state
   end
   def start_valid_receiver(state, _receiver, false) do
@@ -280,7 +280,7 @@ defmodule Otis.Receivers do
   end
 
   def disable_zombie_receiver(state, receiver, true) do
-    Otis.Events.notify(:receiver, :disconnect, [receiver.id, receiver])
+    Strobe.Events.notify(:receiver, :disconnect, [receiver.id, receiver])
     state
   end
   def disable_zombie_receiver(state, _receiver, false) do
@@ -288,7 +288,7 @@ defmodule Otis.Receivers do
   end
 
   def remove_dead_receiver(state, receiver, true) do
-    Otis.Events.notify(:receiver, :offline, [receiver.id, receiver])
+    Strobe.Events.notify(:receiver, :offline, [receiver.id, receiver])
     delete(state, receiver)
   end
   def remove_dead_receiver(state, _receiver, false) do
@@ -300,7 +300,7 @@ defmodule Otis.Receivers do
   end
   defp mute_receiver({:ok, receiver}, id, muted, state) do
     state = receiver |> Receiver.mute(muted) |> update_receiver(id, state)
-    Otis.Events.notify(:receiver, :mute, [id, muted])
+    Strobe.Events.notify(:receiver, :mute, [id, muted])
     state
   end
 end

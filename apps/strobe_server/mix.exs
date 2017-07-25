@@ -1,7 +1,9 @@
 defmodule Strobe.Server.Mixfile do
   use Mix.Project
 
-  @target System.get_env("MIX_TARGET") || "rpi3"
+  # Default to "host" target to prevent this app doing anything in most
+  # circumstances, use `MIX_TARGET=rpi3` for nerves-related activity
+  @target System.get_env("MIX_TARGET") || "host"
 
   Mix.shell.info([:green, """
   Env
@@ -66,20 +68,20 @@ defmodule Strobe.Server.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   def deps do
-    [ {:nerves, "~> 0.5.0", runtime: false},
-      {:gen_stage, "~> 0.11.0"},
-      {:nerves_networking, github: "nerves-project/nerves_networking"},
-      # {:nerves_networking, path: "/data/buildroot/nerves_networking"},
-      {:nerves_network_interface, "~> 0.4.0"},
-      {:elvis, in_umbrella: true},
-    ] ++ deps(@target)
+    deps(@target)
   end
 
   # Specify target specific dependencies
   def deps("host"), do: []
   def deps(target) do
-    [{:nerves_runtime, "~> 0.1.0"},
-     {:"nerves_system_#{target}", "~> 0.11.0", runtime: false}]
+    [{:nerves_runtime, "~> 0.1.0", only: :nerves},
+     {:"nerves_system_#{target}", "~> 0.11.0", runtime: false, only: :nerves},
+     {:nerves, "~> 0.5.0", runtime: false, only: :nerves},
+     {:gen_stage, "~> 0.12", only: :nerves},
+     {:nerves_networking, github: "nerves-project/nerves_networking", only: :nerves},
+     {:nerves_network_interface, "~> 0.4.0", only: :nerves},
+     {:elvis, in_umbrella: true, only: :nerves},
+    ]
   end
 
   # We do not invoke the Nerves Env when running on the Host

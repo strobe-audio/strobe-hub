@@ -35,12 +35,17 @@ defmodule Otis.Mixfile do
         :poolboy,
         # :logger_file_backend,
         :external_process,
+        :strobe_events,
       ],
-      included_applications: [
-        :dnssd,
-      ],
+      included_applications: included_applications(Mix.env),
       extra_applications: [],
       env: env(),
+    ]
+  end
+
+  defp included_applications(:test), do: []
+  defp included_applications(_env) do
+    [ :dnssd,
     ]
   end
 
@@ -58,21 +63,26 @@ defmodule Otis.Mixfile do
   #
   # Type `mix help deps` for more examples and options
   defp deps do
-    [ {:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar},
-      {:poolboy, "~> 1.4"},
+    [ {:poolboy, "~> 1.4"},
       {:monotonic, github: "magnetised/monotonic.ex"},
       {:erlsom, github: "willemdj/erlsom"},
       {:uuid, "~> 1.1"},
       {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
       {:ecto, "~> 1.0"},
       {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
-      {:faker, "~> 0.5", only: :test},
       {:otis_library, in_umbrella: true},
+      {:external_process, in_umbrella: true},
+      {:strobe_events, in_umbrella: true},
       {:nerves_ssdp_server, "~> 0.2.1"},
       {:gproc, "~> 0.5.0"},
       {:mdns, "~> 0.1.5"},
-      {:external_process, in_umbrella: true},
-      {:gen_stage, "~> 0.1"},
+      {:gen_stage, "~> 0.12"},
+    ] ++ deps(Mix.env)
+  end
+
+  defp deps(:test), do: []
+  defp deps(_env) do
+    [ {:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar},
     ]
   end
 end

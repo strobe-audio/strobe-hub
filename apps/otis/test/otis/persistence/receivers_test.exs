@@ -35,7 +35,7 @@ defmodule Otis.Persistence.ReceiversTest do
     assert_receive {:receiver, :connect, [^id, _]}
     assert_receive {:receiver, :online, [^id, _]}
     assert_receive {:__complete__, {:receiver, :volume, [^id, 0.34]}, Persistence.Receivers}
-    Otis.Events.notify(:receiver, :volume, [id, 0.98])
+    Strobe.Events.notify(:receiver, :volume, [id, 0.98])
     assert_receive {:receiver, :volume, [^id, 0.98]}
     assert_receive {:__complete__, {:receiver, :volume, [^id, 0.98]}, Persistence.Receivers}
     record = Otis.State.Receiver.find id
@@ -90,7 +90,7 @@ defmodule Otis.Persistence.ReceiversTest do
     _mock = connect!(id, 1234)
     assert_receive {:receiver, :connect, [^id, _]}
     assert_receive {:receiver, :online, [^id, _]}
-    Otis.Events.notify(:receiver, :mute, [id, true])
+    Strobe.Events.notify(:receiver, :mute, [id, true])
     assert_receive {:receiver, :mute, [^id, true]}
     assert_receive {:__complete__, {:receiver, :mute, [^id, true]}, Persistence.Receivers}
     record = Otis.State.Receiver.find id

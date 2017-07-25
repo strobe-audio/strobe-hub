@@ -12,12 +12,7 @@ defmodule Peel.Test.LibraryTest do
     channel_id = "6df968bf-3454-4514-940b-4829dfcf4d3c"
 
     Ecto.Adapters.SQL.restart_test_transaction(Peel.Repo)
-    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
 
-    on_exit fn ->
-      Ecto.Adapters.SQL.rollback_test_transaction(Peel.Repo)
-      Ecto.Adapters.SQL.rollback_test_transaction(Otis.State.Repo)
-    end
     Collection.delete_all
 
     root = Path.expand(Path.join(__DIR__, "../fixtures/music"))
@@ -139,34 +134,7 @@ defmodule Peel.Test.LibraryTest do
 
     Enum.each album_artists, &Repo.insert!/1
 
-    # Otis.State.Channel.delete_all
-
-    channels = [
-      %Otis.State.Channel{ id: channel_id,
-        name: "Sorry I Burnt Your Nose",
-        position: 0, volume: 0.40037950664136623},
-    ]
-    # Enum.each channels, &Otis.State.Repo.insert!/1
-
-    Enum.each channels, fn(channel) ->
-      Otis.Channels.start(channel)
-    end
-
-    on_exit fn ->
-      nil
-      # Enum.each Otis.State.Channel.all, fn(channel) ->
-        # Otis.Channels.destroy!(channel.id)
-      # end
-    end
     TestEventHandler.attach
-
-    on_exit fn ->
-      with {:ok, channel} <- Otis.Channels.find(channel_id),
-           {:ok, playlist} <- Otis.Channel.playlist(channel)
-      do
-        Otis.Pipeline.Playlist.clear(playlist)
-      end
-    end
 
     {:ok, channel_id: channel_id, collection: collection, other_collection: other_collection}
   end
@@ -420,10 +388,18 @@ defmodule Peel.Test.LibraryTest do
     assert response == %{
       id: "peel:" <> path,
       title: artist.name,
-      # icon: artist.cover_image,
       icon: "",
       search: nil,
       children: [
+        %{ title: artist.name,
+          id: "peel:artist/#{artist.id}",
+          size: "h",
+          icon: artist.image,
+          actions: nil,
+          metadata: nil,
+          length: 0,
+          children: [],
+        },
         %{ title: "Talking Heads: 77",
           size: "l",
           icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
@@ -492,7 +468,7 @@ defmodule Peel.Test.LibraryTest do
     track = Track.find("94499562-d2c5-41f8-b07c-ecfbecf0c428")
     path = "track/#{track.id}/play"
     Library.handle_request(channel_id, path)
-    assert_receive {:append_renditions, [^channel_id, [%Otis.State.Rendition{source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"}]]}
+    assert_receive {:library, :play, [^channel_id, [^track]]}
   end
 
   test "peel:album/{album_id}/play", %{channel_id: channel_id} = _context do
@@ -500,9 +476,9 @@ defmodule Peel.Test.LibraryTest do
     path = "album/#{album.id}/play"
     Library.handle_request(channel_id, path)
 
-    assert_receive {:append_renditions, [^channel_id, [
-        %Otis.State.Rendition{source_id: "94499562-d2c5-41f8-b07c-ecfbecf0c428", source_type: "Elixir.Peel.Track"},
-        %Otis.State.Rendition{source_id: "a3c90ce4-8a98-405f-bffd-04bc744c13df", source_type: "Elixir.Peel.Track"},
+    assert_receive {:library, :play, [^channel_id, [
+        %Peel.Track{id: "94499562-d2c5-41f8-b07c-ecfbecf0c428"},
+        %Peel.Track{id: "a3c90ce4-8a98-405f-bffd-04bc744c13df"},
       ]
     ]}
   end

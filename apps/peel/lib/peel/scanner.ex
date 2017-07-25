@@ -21,12 +21,8 @@ defmodule Peel.Scanner do
     path
   end
 
-  if Code.ensure_compiled?(Otis.Events) do
-    def scan_complete(path) do
-      Otis.Events.notify(:peel, :scan_finished, [path])
-    end
-  else
-    def scan_complete(_path), do: nil
+  def scan_complete(path) do
+    Strobe.Events.notify(:peel, :scan_finished, [path])
   end
 
   defp collection_from_path(path) do

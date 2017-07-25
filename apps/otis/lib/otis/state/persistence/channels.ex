@@ -1,7 +1,7 @@
 
 defmodule Otis.State.Persistence.Channels do
   use     GenStage
-  use     Otis.Events.Handler
+  use     Strobe.Events.Handler
   require Logger
 
   alias Otis.State.Channel
@@ -20,7 +20,7 @@ defmodule Otis.State.Persistence.Channels do
   end
 
   def init(_opts) do
-    {:consumer, %S{}, subscribe_to: Otis.Events.producer(&selector/1)}
+    {:consumer, %S{}, subscribe_to: Strobe.Events.producer(&selector/1)}
   end
 
   defp selector({:channel, _evt, _args}), do: true
@@ -61,7 +61,7 @@ defmodule Otis.State.Persistence.Channels do
       Repo.transaction fn ->
         id |> Channel.find |> volume_change(id, volume)
       end
-      Otis.Events.complete({:channel, :volume, [id, volume]})
+      Strobe.Events.complete({:channel, :volume, [id, volume]})
     end)
     {:noreply, [], %S{state | volumes: %{}, timer: nil}}
   end

@@ -72,9 +72,10 @@ defmodule Otis.Channel do
   def playing?(%__MODULE__{pid: pid}) do
     playing?(pid)
   end
-  def playing?(channel) do
+  def playing?(channel) when is_pid(channel) do
     GenServer.call(channel, :playing)
   end
+  def playing?(_channel), do: false
 
   @doc "Skip to the source with the given id"
   def skip(%__MODULE__{pid: pid}, source_id) do
@@ -203,7 +204,7 @@ defmodule Otis.Channel do
   end
 
   defp event!(state, name, params) do
-    Otis.Events.notify(:channel, name, [state.id | params])
+    Strobe.Events.notify(:channel, name, [state.id | params])
   end
 
   defp toggle_state(%S{state: :play} = state) do

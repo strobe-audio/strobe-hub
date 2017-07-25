@@ -32,7 +32,7 @@ defimpl Otis.Library.Source, for: Otis.Library.UPNP.Item do
 
   def open!(%Item{} = item, _id, _packet_size_bytes) do
     {:ok, producer} = UPNP.Source.Stream.start_link(item)
-    GenStage.stream([{producer, [max_demand: 1]}])
+    GenStage.stream([{producer, [max_demand: 1, cancel: :transient]}])
   end
 
   def pause(_item, _id, _stream) do
@@ -46,7 +46,7 @@ defimpl Otis.Library.Source, for: Otis.Library.UPNP.Item do
   def close(%Item{}, _id, _stream) do
   end
 
-  def transcoder_args(%Item{media: %Media{uri: uri, info: info}}) do
+  def transcoder_args(%Item{media: %Media{uri: uri}}) do
     ["-f", Path.extname(uri) |> Otis.Library.strip_leading_dot]
   end
 

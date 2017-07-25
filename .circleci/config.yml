@@ -1,0 +1,47 @@
+# Elixir CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-elixir/ for more details
+version: 2
+jobs:
+  build:
+    docker:
+      # specify the version here
+      - image: strobeaudio/circleci-elixir:latest
+        environment:
+          MIX_TARGET: host
+          MIX_ENV: test
+
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+
+    working_directory: ~/repo
+    steps:
+      - checkout
+
+      - restore_cache:
+          keys:
+            - deps-v3-{{ checksum "mix.lock" }}
+            - deps-v3
+
+      - run: mix do local.hex --force, local.rebar --force
+      - run: mix deps.get
+      - run: mix compile
+
+      - save_cache:
+          key: deps-v3-{{ checksum "mix.lock" }}
+          paths:
+            - deps
+            - /root/.mix
+            - _build
+            - /root/.cache/rebar3
+      - save_cache:
+          key: deps-v3
+          paths:
+            - deps
+            - /root/.mix
+            - _build
+            - /root/.cache/rebar3
+
+      - run: mix test --trace

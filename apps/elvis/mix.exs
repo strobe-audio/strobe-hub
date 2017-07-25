@@ -35,6 +35,7 @@ defmodule Elvis.Mixfile do
        :otis_library_bbc,
        :otis_library_upnp,
        :otis_library_airplay,
+       :strobe_events,
      ]]
   end
 
@@ -58,7 +59,8 @@ defmodule Elvis.Mixfile do
      # Needs to be compatible with that specified by nerves
      {:distillery, "== 1.2.2"},
      {:logger_papertrail_backend, "~> 0.1.0"},
-     {:gen_stage, "~> 0.1"},
+     {:gen_stage, "~> 0.12"},
+     {:strobe_events, in_umbrella: true},
    ]
   end
 end

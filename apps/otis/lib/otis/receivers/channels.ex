@@ -3,7 +3,7 @@ defmodule Otis.Receivers.Channels do
 
   alias Otis.Receiver
 
-  require Otis.Events
+  require Strobe.Events
 
   @supervisor_name __MODULE__
   @channel_registry Otis.Receivers.ChannelRegistry
@@ -22,7 +22,7 @@ defmodule Otis.Receivers.Channels do
 
   def buffer_receiver(receiver, channel) do
     notify_subscribers(receiver, channel, :receiver_joined)
-    Otis.Events.complete({:receiver_joined, [receiver.id]})
+    Strobe.Events.complete({:receiver_joined, [receiver.id]})
   end
 
   def register(receiver, channel) do
@@ -42,12 +42,12 @@ defmodule Otis.Receivers.Channels do
   end
 
   def notify_add_receiver(receiver, channel) do
-    Otis.Events.notify(:receiver, :add, [channel.id, receiver.id])
+    Strobe.Events.notify(:receiver, :add, [channel.id, receiver.id])
     buffer_receiver(receiver, channel)
   end
 
   def notify_remove_receiver(receiver, channel) do
-    Otis.Events.notify(:receiver, :remove, [channel.id, receiver.id])
+    Strobe.Events.notify(:receiver, :remove, [channel.id, receiver.id])
     notify_subscribers(receiver, channel, :receiver_left)
   end
 

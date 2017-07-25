@@ -5,6 +5,7 @@ defmodule Elvis.Events.Broadcast do
   """
 
   use     GenStage
+  use     Strobe.Events.Handler
   require Logger
 
   # Send progress updates every @progress_interval times
@@ -15,15 +16,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def init(_opts) do
-    {:consumer, %{progress_count: %{}}, subscribe_to: Otis.Library.Events.producer}
-  end
-
-  def handle_events([], _from,state) do
-    {:noreply, [], state}
-  end
-  def handle_events([event|events], from, state) do
-    {:ok, state} = handle_event(event, state)
-    handle_events(events, from, state)
+    {:consumer, %{progress_count: %{}}, subscribe_to: Strobe.Events.producer}
   end
 
   def handle_event({:library, :response, [id, url, response, socket]}, state) do
@@ -104,8 +97,11 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:receiver, :online, [receiver_id, _receiver]}, state) do
-    receiver_state = Otis.State.Receiver.find(receiver_id)
-    broadcast!("receiver-online", Otis.State.status(receiver_state))
+    case Otis.State.Receiver.find(receiver_id) do
+      nil -> nil
+      receiver_state ->
+        broadcast!("receiver-online", Otis.State.status(receiver_state))
+    end
     {:ok, state}
   end
 
