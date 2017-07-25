@@ -32,7 +32,7 @@ defimpl Otis.Library.Source, for: Otis.Library.UPNP.Item do
 
   def open!(%Item{} = item, _id, _packet_size_bytes) do
     {:ok, producer} = UPNP.Source.Stream.start_link(item)
-    GenStage.stream([{producer, [max_demand: 1]}])
+    GenStage.stream([{producer, [max_demand: 1, cancel: :transient]}])
   end
 
   def pause(_item, _id, _stream) do
