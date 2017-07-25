@@ -31,9 +31,4 @@ end
 Ecto.Migrator.run(Peel.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Peel.Repo)
 
-# {:ok, _} = Application.ensure_all_started(:otis)
-# [otis] = Mix.Dep.loaded_by_name([:otis], [])
-# Ecto.Migrator.run(Otis.State.Repo, Path.join([otis.opts[:dest], "priv/repo/migrations"]), :up, all: true)
-# Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
-
-ExUnit.start()
+ExUnit.start(assert_receive_timeout: 500)
