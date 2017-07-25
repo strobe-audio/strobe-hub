@@ -6,8 +6,6 @@ defmodule Otis.Source.File do
   @derive {Poison.Encoder, only: [:id, :metadata]}
   defstruct [:id, :path, :metadata]
 
-  alias Otis.Source.Metadata
-
   @type t :: %__MODULE__{}
 
   @doc """
