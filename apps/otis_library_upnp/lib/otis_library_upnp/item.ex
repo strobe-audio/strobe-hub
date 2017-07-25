@@ -46,7 +46,7 @@ defimpl Otis.Library.Source, for: Otis.Library.UPNP.Item do
   def close(%Item{}, _id, _stream) do
   end
 
-  def transcoder_args(%Item{media: %Media{uri: uri, info: info}}) do
+  def transcoder_args(%Item{media: %Media{uri: uri}}) do
     ["-f", Path.extname(uri) |> Otis.Library.strip_leading_dot]
   end
 
