@@ -1,3 +1,7 @@
 engines:
+  elixir:
+    enabled: true
+  elm:
+    enabled: true
   csslint:
     enabled: false
