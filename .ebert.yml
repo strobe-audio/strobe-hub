@@ -1,7 +1,11 @@
 engines:
-  elixir:
+  credo:
     enabled: true
-  elm:
+  eslint:
+    enabled: true
+  duplication:
+    enabled: true
+  fixme:
     enabled: true
   csslint:
     enabled: false
