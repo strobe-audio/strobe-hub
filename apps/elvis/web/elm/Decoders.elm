@@ -54,14 +54,14 @@ decodeWithType typ =
         "rendition-progress" ->
             decodeRenditionProgress
 
-        "rendition-change" ->
-            decodeRenditionChange
-
         "rendition-create" ->
             decodeRenditionAdd
 
         "rendition-active" ->
             decodeRenditionActive
+
+        "playlist-change" ->
+            decodeRenditionChange
 
         unknown ->
             fail ("Unknown event type " ++ unknown)
