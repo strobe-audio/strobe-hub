@@ -50,13 +50,15 @@ function broadcasterEvent(type, data) {
 }
 
 channel.on('state', data => {
-  console.log('got startup', data)
   broadcasterEvent("startup", data)
 })
 
 channel.on('library-add', payload => {
-  console.log('got library', payload);
   app.ports.libraryRegistration.send(payload)
+})
+
+channel.on('library-response', payload => {
+  app.ports.libraryResponse.send(payload)
 })
 
 channel.on('receiver-add', payload => {
@@ -75,32 +77,16 @@ channel.on('receiver-online', payload => {
   broadcasterEvent("receiver-online", payload)
 })
 
+channel.on('receiver-rename', payload => {
+  broadcasterEvent('receiver-rename', payload)
+})
+
+channel.on('receiver-mute', payload => {
+  broadcasterEvent('receiver-mute', payload)
+})
+
 channel.on('channel-play_pause', payload => {
   broadcasterEvent("channel-play_pause", payload)
-})
-
-channel.on('rendition-progress', payload => {
-  broadcasterEvent("rendition-progress", payload)
-})
-
-channel.on('playlist-change', payload => {
-  broadcasterEvent("rendition-change", payload)
-})
-
-channel.on('volume-change', payload => {
-  broadcasterEvent('volume-change', payload)
-})
-
-channel.on('rendition-create', payload => {
-  broadcasterEvent('rendition-create', payload)
-})
-
-channel.on('rendition-active', payload => {
-  broadcasterEvent('rendition-active', payload)
-})
-
-channel.on('library-response', payload => {
-  app.ports.libraryResponse.send(payload)
 })
 
 channel.on('channel-add', payload => {
@@ -115,12 +101,24 @@ channel.on('channel-rename', payload => {
   broadcasterEvent('channel-rename', payload)
 })
 
-channel.on('receiver-rename', payload => {
-  broadcasterEvent('receiver-rename', payload)
+channel.on('rendition-progress', payload => {
+  broadcasterEvent("rendition-progress", payload)
 })
 
-channel.on('receiver-mute', payload => {
-  broadcasterEvent('receiver-mute', payload)
+channel.on('rendition-create', payload => {
+  broadcasterEvent('rendition-create', payload)
+})
+
+channel.on('rendition-active', payload => {
+  broadcasterEvent('rendition-active', payload)
+})
+
+channel.on('playlist-change', payload => {
+  broadcasterEvent("rendition-change", payload)
+})
+
+channel.on('volume-change', payload => {
+  broadcasterEvent('volume-change', payload)
 })
 
 channel.on('settings-application', payload => {
