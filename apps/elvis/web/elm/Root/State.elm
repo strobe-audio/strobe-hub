@@ -156,7 +156,19 @@ update action model =
         Msg.Event eventResult ->
             case eventResult of
                 Ok event ->
-                    Root.Events.update event model
+                    let
+                        ( eventModel, maybeMsg, eventCmds ) =
+                            Root.Events.update event model
+
+                        ( model_, cmd ) =
+                            case maybeMsg of
+                                Nothing ->
+                                    eventModel ! eventCmds
+
+                                Just msg ->
+                                    update msg eventModel
+                    in
+                        ( model_, cmd )
 
                 Err msg ->
                     let

@@ -12,7 +12,11 @@ import Task
 import Notification
 
 
-update : State.Event -> Root.Model -> ( Root.Model, Cmd Msg )
+-- type Action
+--     =
+
+
+update : State.Event -> Root.Model -> ( Root.Model, Maybe Msg, List (Cmd Msg) )
 update action model =
     case action of
         State.Startup state ->
@@ -23,7 +27,7 @@ update action model =
                         , receivers = (loadReceivers model state)
                     }
             in
-                model_ ! [ Root.gotoDefaultChannel model_ ]
+                ( model_, Nothing, [ Root.gotoDefaultChannel model_ ] )
 
         State.Volume event ->
             let
@@ -38,16 +42,16 @@ update action model =
                         _ ->
                             Msg.NoOp
             in
-                model ! [ task msg ]
+                ( model, Just msg, [] )
 
         State.ReceiverAdd receiverId channelId ->
-            model ! [ Msg.Receiver receiverId (Receiver.Online channelId) |> task ]
+            ( model, Just (Msg.Receiver receiverId (Receiver.Online channelId)), [] )
 
         State.ReceiverRemove receiverId ->
-            model ! [ Msg.Receiver receiverId Receiver.Offline |> task ]
+            ( model, Just (Msg.Receiver receiverId Receiver.Offline), [] )
 
         State.ReceiverAttach receiverId channelId ->
-            model ! [ Msg.Receiver receiverId (Receiver.Attached channelId) |> task ]
+            ( model, Just (Msg.Receiver receiverId (Receiver.Attached channelId)), [] )
 
         State.ReceiverOnline receiver ->
             let
@@ -57,16 +61,16 @@ update action model =
                     else
                         (Receiver.State.initialState receiver) :: model.receivers
             in
-                { model | receivers = receivers_ } ! []
+                ( { model | receivers = receivers_ }, Nothing, [] )
 
         State.ReceiverRename receiverId name ->
-            model ! [ Msg.Receiver receiverId (Receiver.Renamed name) |> task ]
+            ( model, Just (Msg.Receiver receiverId (Receiver.Renamed name)), [] )
 
         State.ReceiverMute receiverId muted ->
-            model ! [ Msg.Receiver receiverId (Receiver.Muted muted) |> task ]
+            ( model, Just (Msg.Receiver receiverId (Receiver.Muted muted)), [] )
 
         State.ChannelPlayPause channelId playing ->
-            model ! [ Msg.Channel channelId (Channel.IsPlaying playing) |> task ]
+            ( model, Just (Msg.Channel channelId (Channel.IsPlaying playing)), [] )
 
         State.ChannelAdd channelState ->
             let
@@ -79,7 +83,7 @@ update action model =
                         , newChannelInput = Input.State.blank
                     }
             in
-                model_ ! [ Msg.ActivateChannel channel |> task ]
+                ( model_, Just (Msg.ActivateChannel channel), [] )
 
         State.ChannelRemove channelId ->
             let
@@ -102,21 +106,19 @@ update action model =
                         Nothing ->
                             model_
             in
-                updatedModel ! [ Root.gotoDefaultChannel updatedModel ]
+                ( updatedModel, Nothing, [ Root.gotoDefaultChannel updatedModel ] )
 
         State.ChannelRename channelId name ->
-            model ! [ Msg.Channel channelId (Channel.Renamed name) |> task ]
+            ( model, Just (Msg.Channel channelId (Channel.Renamed name)), [] )
 
         State.RenditionProgress event ->
-            model ! [ Msg.Channel event.channelId (Channel.RenditionProgress event) |> task ]
+            ( model, Just (Msg.Channel event.channelId (Channel.RenditionProgress event)), [] )
 
         State.RenditionChange event ->
-            model ! [ Msg.Channel event.channelId (Channel.RenditionChange event) |> task ]
+            ( model, Just (Msg.Channel event.channelId (Channel.RenditionChange event)), [] )
 
         State.RenditionCreate rendition ->
             let
-                -- ( model_, channelCmd ) =
-                --     update (Msg.Channel rendition.channelId (Channel.AddRendition rendition)) model
                 msg =
                     Msg.Channel rendition.channelId (Channel.AddRendition rendition)
 
@@ -137,10 +139,10 @@ update action model =
                             else
                                 model.notifications
             in
-                { model | notifications = notifications } ! [ msg |> task ]
+                ( { model | notifications = notifications }, Just msg, [] )
 
         State.RenditionActive channelId renditionId ->
-            model ! [ Msg.Channel channelId (Channel.RenditionActive renditionId) |> task ]
+            ( model, Just (Msg.Channel channelId (Channel.RenditionActive renditionId)), [] )
 
 
 task : Msg -> Cmd Msg
