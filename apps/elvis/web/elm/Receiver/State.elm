@@ -69,13 +69,7 @@ update action model =
             model ! [ Receiver.Cmd.attach channelId model.id ]
 
         Receiver.Attached channelId ->
-            let
-                -- send a message so that we can hide the attach list if the
-                -- detached receiver list is empty
-                cmd =
-                    Task.perform identity (Task.succeed Msg.ReceiverAttachmentChange)
-            in
-                { model | channelId = channelId } ! [ cmd ]
+            { model | channelId = channelId } ! []
 
         Receiver.Online channelId ->
             { model | online = True, channelId = channelId } ! []
@@ -120,20 +114,6 @@ update action model =
 
         Receiver.Muted muted ->
             { model | muted = muted } ! []
-
-        Receiver.Status event channelId ->
-            case event of
-                "receiver_added" ->
-                    update (Receiver.Online channelId) model
-
-                "receiver_removed" ->
-                    update Receiver.Offline model
-
-                "reattach_receiver" ->
-                    update (Receiver.Attached channelId) model
-
-                _ ->
-                    model ! []
 
         Receiver.SingleTouch te ->
             let

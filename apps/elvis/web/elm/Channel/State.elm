@@ -67,22 +67,8 @@ update action channel =
         Channel.VolumeChanged volume ->
             ( { channel | volume = volume }, Cmd.none )
 
-        Channel.Status ( event, status ) ->
-            let
-                channel_ =
-                    case event of
-                        "channel_play_pause" ->
-                            case status of
-                                "play" ->
-                                    { channel | playing = True }
-
-                                _ ->
-                                    { channel | playing = False }
-
-                        _ ->
-                            channel
-            in
-                ( channel_, Cmd.none )
+        Channel.IsPlaying playing ->
+            { channel | playing = playing } ! []
 
         Channel.PlayPause ->
             let

@@ -10,9 +10,25 @@ import State
 import Receiver
 import Time
 import Settings
+import Json.Decode
+import Decoders
+
+
+decodeEvent : Json.Decode.Value -> Msg
+decodeEvent =
+    (Json.Decode.decodeValue Decoders.decodeTypedMessage) >> Msg.Event
+
 
 
 -- Incoming JS -> Elm
+
+
+port broadcasterEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+broadcasterEventSubscription : Sub Msg
+broadcasterEventSubscription =
+    broadcasterEvent decodeEvent
 
 
 port connectionStatus : (Bool -> m) -> Sub m
@@ -36,98 +52,6 @@ scrollTopActions =
     scrollTop Msg.BrowserScroll
 
 
-port broadcasterState : (State.BroadcasterState -> m) -> Sub m
-
-
-broadcasterStateActions : Sub Msg
-broadcasterStateActions =
-    broadcasterState Msg.InitialState
-
-
-port receiverStatus : (( String, Root.ReceiverStatusEvent ) -> m) -> Sub m
-
-
-receiverStatusActions : Sub Msg
-receiverStatusActions =
-    let
-        forward ( event, status ) =
-            (Msg.Receiver status.receiverId) (Receiver.Status event status.channelId)
-    in
-        receiverStatus forward
-
-
-port receiverPresence : (Receiver.State -> m) -> Sub m
-
-
-receiverPresenceActions : Sub Msg
-receiverPresenceActions =
-    receiverPresence Msg.ReceiverPresence
-
-
-port channelStatus : (( String, Root.ChannelStatusEvent ) -> m) -> Sub m
-
-
-channelStatusActions : Sub Msg
-channelStatusActions =
-    let
-        forward ( eventName, event ) =
-            ((Msg.Channel event.channelId) (Channel.Status ( eventName, event.status )))
-    in
-        channelStatus forward
-
-
-port renditionProgress : (Rendition.ProgressEvent -> m) -> Sub m
-
-
-renditionProgressActions : Sub Msg
-renditionProgressActions =
-    let
-        forward event =
-            ((Msg.Channel event.channelId) (Channel.RenditionProgress event))
-    in
-        renditionProgress forward
-
-
-port renditionChange : (Rendition.ChangeEvent -> m) -> Sub m
-
-
-renditionChangeActions : Sub Msg
-renditionChangeActions =
-    let
-        forward event =
-            ((Msg.Channel event.channelId) (Channel.RenditionChange event))
-    in
-        renditionChange forward
-
-
-port renditionActive : (Rendition.ActivationEvent -> m) -> Sub m
-
-
-renditionActivationActions : Sub Msg
-renditionActivationActions =
-    let
-        forward event =
-            ((Msg.Channel event.channelId) (Channel.RenditionActive event.renditionId))
-    in
-        renditionActive forward
-
-
-port volumeChange : (State.VolumeChangeEvent -> m) -> Sub m
-
-
-volumeChangeActions : Sub Msg
-volumeChangeActions =
-    volumeChange Msg.BroadcasterVolumeChange
-
-
-port playlistAddition : (Rendition.State -> m) -> Sub m
-
-
-playListAdditionActions : Sub Msg
-playListAdditionActions =
-    playlistAddition Msg.BroadcasterRenditionAdded
-
-
 port libraryRegistration : (Library.Section -> m) -> Sub m
 
 
@@ -147,46 +71,6 @@ libraryResponseActions =
             Msg.Library (Library.Response response.url response.folder)
     in
         libraryResponse translate
-
-
-port channelAdditions : (Channel.State -> m) -> Sub m
-
-
-channelAdditionActions : Sub Msg
-channelAdditionActions =
-    channelAdditions Msg.BroadcasterChannelAdded
-
-
-port channelRemovals : (ID.Channel -> m) -> Sub m
-
-
-channelRemovalActions : Sub Msg
-channelRemovalActions =
-    channelRemovals Msg.BroadcasterChannelRemoved
-
-
-port channelRenames : (( ID.Channel, String ) -> m) -> Sub m
-
-
-channelRenameActions : Sub Msg
-channelRenameActions =
-    channelRenames Msg.BroadcasterChannelRenamed
-
-
-port receiverRenames : (( ID.Receiver, String ) -> m) -> Sub m
-
-
-receiverRenameActions : Sub Msg
-receiverRenameActions =
-    receiverRenames Msg.BroadcasterReceiverRenamed
-
-
-port receiverMuting : (( ID.Receiver, Bool ) -> m) -> Sub m
-
-
-receiverMutingActions : Sub Msg
-receiverMutingActions =
-    receiverMuting Msg.BroadcasterReceiverMuted
 
 
 port animationScroll : (( Time.Time, Maybe Float, Float ) -> m) -> Sub m

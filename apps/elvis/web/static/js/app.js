@@ -20,9 +20,9 @@ let app = Elm.Main.fullscreen({time, windowInnerWidth: window.innerWidth, savedS
 
 let socketOpts = {
   params: {},
-  // reconnect attempt every half second. this is sensible/safe behaviour for
+  // reconnect attempt every 100ms. this is sensible/safe behaviour for
   // an app that expects < 5 simultaneous connections
-  reconnectAfterMs: () => 250,
+  reconnectAfterMs: () => 100,
   heartbeatIntervalMs: 1000,
 }
 let socket = new Socket("/controller", socketOpts)
@@ -41,13 +41,17 @@ socket.connect();
 
 let channel = socket.channel('controllers:browser', {})
 
-document.body.onscroll = function(e) {
+document.body.onscroll = function() {
   // app.ports.scrollTop.send(document.body.scrollTop)
 }
 
-channel.on('state', payload => {
-  console.log('got startup', payload)
-  app.ports.broadcasterState.send(Object.assign({}, payload))
+function broadcasterEvent(type, data) {
+  app.ports.broadcasterEvent.send(Object.assign({__type__: type}, data))
+}
+
+channel.on('state', data => {
+  console.log('got startup', data)
+  broadcasterEvent("startup", data)
 })
 
 channel.on('library-add', payload => {
@@ -56,48 +60,43 @@ channel.on('library-add', payload => {
 })
 
 channel.on('receiver-add', payload => {
-  console.log('receiver-add', payload)
-  app.ports.receiverStatus.send(['receiver_added', payload])
+  broadcasterEvent("receiver-add", payload)
 })
 
 channel.on('receiver-remove', payload => {
-  console.log('receiver-remove', payload)
-  app.ports.receiverStatus.send(['receiver_removed', payload])
+  broadcasterEvent("receiver-remove", payload)
 })
 
 channel.on('receiver-reattach', payload => {
-  console.log('receiver-reattach', payload)
-  app.ports.receiverStatus.send(['reattach_receiver', payload])
+  broadcasterEvent("receiver-reattach", payload)
 })
 
 channel.on('receiver-online', payload => {
-  console.log('receiver-online', payload)
-  app.ports.receiverPresence.send(payload)
+  broadcasterEvent("receiver-online", payload)
 })
 
 channel.on('channel-play_pause', payload => {
-  console.log('channel-play_pause', payload)
-  app.ports.channelStatus.send(['channel_play_pause', payload])
+  broadcasterEvent("channel-play_pause", payload)
 })
 
 channel.on('rendition-progress', payload => {
-  app.ports.renditionProgress.send(payload)
+  broadcasterEvent("rendition-progress", payload)
 })
 
 channel.on('playlist-change', payload => {
-  app.ports.renditionChange.send(payload)
+  broadcasterEvent("rendition-change", payload)
 })
 
 channel.on('volume-change', payload => {
-  app.ports.volumeChange.send(payload)
+  broadcasterEvent('volume-change', payload)
 })
 
 channel.on('rendition-create', payload => {
-  app.ports.playlistAddition.send(payload)
+  broadcasterEvent('rendition-create', payload)
 })
 
 channel.on('rendition-active', payload => {
-  app.ports.renditionActive.send(payload)
+  broadcasterEvent('rendition-active', payload)
 })
 
 channel.on('library-response', payload => {
@@ -105,26 +104,23 @@ channel.on('library-response', payload => {
 })
 
 channel.on('channel-add', payload => {
-  console.log('channel-add', payload)
-  app.ports.channelAdditions.send(payload)
+  broadcasterEvent('channel-add', payload)
 })
 
-channel.on('channel-remove', ({id}) => {
-  console.log('channel-remove', id)
-  app.ports.channelRemovals.send(id)
+channel.on('channel-remove', payload => {
+  broadcasterEvent('channel-remove', payload)
 })
 
 channel.on('channel-rename', payload => {
-  console.log('channel-rename', payload)
-  app.ports.channelRenames.send([payload.channelId, payload.name])
+  broadcasterEvent('channel-rename', payload)
 })
+
 channel.on('receiver-rename', payload => {
-  console.log('receiver-rename', payload)
-  app.ports.receiverRenames.send([payload.receiverId, payload.name])
+  broadcasterEvent('receiver-rename', payload)
 })
+
 channel.on('receiver-mute', payload => {
-  console.log('receiver-mute', payload)
-  app.ports.receiverMuting.send([payload.receiverId, payload.muted])
+  broadcasterEvent('receiver-mute', payload)
 })
 
 channel.on('settings-application', payload => {
