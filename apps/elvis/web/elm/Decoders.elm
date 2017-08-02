@@ -1,5 +1,6 @@
 module Decoders exposing (typedMessageDecoder)
 
+import Dict exposing (Dict)
 import Json.Decode exposing (..)
 import State
 import Channel
@@ -12,59 +13,36 @@ typedMessageDecoder =
     field "__type__" string |> andThen withTypeDecoder
 
 
+decoderMap : Dict String (Decoder State.Event)
+decoderMap =
+    Dict.fromList
+        [ ( "startup", startupDecoder )
+        , ( "volume-change", volumeChangeDecoder )
+        , ( "receiver-add", receiverAddDecoder )
+        , ( "receiver-remove", receiverRemoveDecoder )
+        , ( "receiver-attach", receiverAttachDecoder )
+        , ( "receiver-online", receiverOnlineDecoder )
+        , ( "receiver-rename", receiverRenameDecoder )
+        , ( "receiver-mute", receiverMuteDecoder )
+        , ( "channel-play_pause", channelPlayPauseDecoder )
+        , ( "channel-add", channelAddDecoder )
+        , ( "channel-remove", channelRemoveDecoder )
+        , ( "channel-rename", channelRenameDecoder )
+        , ( "rendition-progress", renditionProgressDecoder )
+        , ( "rendition-create", renditionAddDecoder )
+        , ( "rendition-active", renditionActiveDecoder )
+        , ( "playlist-change", renditionChangeDecoder )
+        ]
+
+
 withTypeDecoder : String -> Decoder State.Event
 withTypeDecoder typ =
-    case typ of
-        "startup" ->
-            startupDecoder
+    case (Dict.get typ decoderMap) of
+        Just decoder ->
+            decoder
 
-        "volume-change" ->
-            volumeChangeDecoder
-
-        "receiver-add" ->
-            receiverAddDecoder
-
-        "receiver-remove" ->
-            receiverRemoveDecoder
-
-        "receiver-attach" ->
-            receiverAttachDecoder
-
-        "receiver-online" ->
-            receiverOnlineDecoder
-
-        "receiver-rename" ->
-            receiverRenameDecoder
-
-        "receiver-mute" ->
-            receiverMuteDecoder
-
-        "channel-play_pause" ->
-            channelPlayPauseDecoder
-
-        "channel-add" ->
-            channelAddDecoder
-
-        "channel-remove" ->
-            channelRemoveDecoder
-
-        "channel-rename" ->
-            channelRenameDecoder
-
-        "rendition-progress" ->
-            renditionProgressDecoder
-
-        "rendition-create" ->
-            renditionAddDecoder
-
-        "rendition-active" ->
-            renditionActiveDecoder
-
-        "playlist-change" ->
-            renditionChangeDecoder
-
-        unknown ->
-            fail ("Unknown event type " ++ unknown)
+        Nothing ->
+            fail <| "Unknown event type " ++ typ
 
 
 startupDecoder : Decoder State.Event
