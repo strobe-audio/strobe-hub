@@ -149,4 +149,15 @@ defmodule Otis.ChannelTest do
     assert_receive {:__complete__, {:playlist, :clear, [^channel_id, _]}, Persistence.Playlist}
     assert_receive {:rendition, :delete, [^rendition_id, ^channel_id]}
   end
+
+  test "appending sources via events", %{channel_id: channel_id} = context do
+    sources = [TestSource.new, TestSource.new]
+    Strobe.Events.notify(:library, :play, [channel_id, sources])
+    evt = {:library, :play, [channel_id, sources]}
+    assert_receive {:__complete__, ^evt, Otis.State.Library}
+    {:ok, pl} = Otis.Channel.playlist(context.channel)
+    {:ok, ids} = Otis.Pipeline.Playlist.list(pl)
+    assert length(ids) == 2
+    assert_receive {:__complete__, {:playlist, :append, [_, _]}, Persistence.Playlist}
+  end
 end
