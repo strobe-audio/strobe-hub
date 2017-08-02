@@ -1,3 +1,4 @@
+/*eslint no-console: ["warn", { allow: ["warn", "error"] }] */
 
 import 'no_bounce'
 import 'modernizr'
@@ -89,101 +90,42 @@ forward(channel, 'playlist-change')
 forward(channel, 'volume-change')
 
 channel.on('settings-application', payload => {
-  console.log('settings-application', payload)
-  let settings = Object.assign({application: payload.application, saving: false}, {namespaces: payload.settings})
+  let settings = Object.assign({
+    application: payload.application,
+    saving: false
+  }, {
+    namespaces: payload.settings,
+  })
   app.ports.applicationSettings.send([payload.application, settings])
 })
 
-channel.join().receive('ok', () => {
-  app.ports.connectionStatus.send(true)
-}).receive('error', resp => {
-  console.error('unable to join', resp)
-})
-
-let hasTouchEvents = Modernizr.touchevents
-let raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame
-
-console.log('touchEvents', hasTouchEvents, Modernizr)
-
-let frame = () => {
-  let scroller = document.getElementById('__scrolling__') || document.getElementById('__scrollable__')
-  let scrollTop = null
-  let height = 0
-  if (scroller) {
-    scrollTop = hasTouchEvents ? null : scroller.scrollTop
-    height = scroller.parentNode.offsetHeight
-    // console.log('height', scroller.offsetHeight)
-  }
-  app.ports.animationScroll.send([Date.now(), scrollTop, height])
-  raf(frame)
+function push(channel, event, payload) {
+  channel.push(event, payload).receive("error", resp => {
+    console.error(resp.message)
+  })
 }
 
-raf(frame)
+function subscription(app, portName, channel, name) {
+  app.ports[portName].subscribe(payload => push(channel, name, payload))
+}
 
+subscription(app, 'volumeChangeRequests', channel, "volume-change")
+subscription(app, 'receiverMuteRequests', channel, "receiver-mute")
+subscription(app, 'receiverNameChanges', channel, "receiver-rename")
+subscription(app, 'attachReceiverRequests', channel, "receiver-attach")
+subscription(app, 'channelClearPlaylist', channel, "playlist-clear")
+subscription(app, 'playlistSkipRequests', channel, "playlist-skip")
+subscription(app, 'playlistRemoveRequests', channel, "playlist-remove")
+subscription(app, 'playPauseChanges', channel, "channel-play_pause")
+subscription(app, 'channelNameChanges', channel, "channel-rename")
+subscription(app, 'addChannelRequests', channel, "channel-add")
+subscription(app, 'removeChannelRequests', channel, "channel-remove")
+subscription(app, 'settingsRequests', channel, "settings-retrieve")
+subscription(app, 'settingsSave', channel, "settings-save")
+subscription(app, 'libraryRequests', channel, "library-request")
 
 app.ports.saveState.subscribe(state => {
-  console.log('saveState', state)
   localStorage.setItem(savedStateKey, JSON.stringify(state))
-})
-
-app.ports.volumeChangeRequests.subscribe(event => {
-  channel.push("volume-change", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.receiverMuteRequests.subscribe(event => {
-  channel.push("receiver-mute", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.playPauseChanges.subscribe(event => {
-  channel.push("channel-play_pause", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.channelNameChanges.subscribe(event => {
-  channel.push("channel-rename", event)
-    .receive("error", payload => console.log(payload.message))
-})
-app.ports.receiverNameChanges.subscribe(event => {
-  channel.push("receiver-rename", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.channelClearPlaylist.subscribe(event => {
-  channel.push("playlist-clear", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.playlistSkipRequests.subscribe(event => {
-  channel.push("playlist-skip", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.playlistRemoveRequests.subscribe(event => {
-  channel.push("playlist-remove", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.attachReceiverRequests.subscribe(event => {
-  channel.push("receiver-attach", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.libraryRequests.subscribe(event => {
-  channel.push("library-request", event)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.addChannelRequests.subscribe(name => {
-  console.log("channel-add", name)
-  channel.push("channel-add", name)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.removeChannelRequests.subscribe(id => {
-  channel.push("channel-remove", id)
-    .receive("error", payload => console.log(payload.message))
 })
 
 app.ports.blurActiveElement.subscribe(blur => {
@@ -193,21 +135,29 @@ app.ports.blurActiveElement.subscribe(blur => {
   }
 })
 
-app.ports.settingsRequests.subscribe(app => {
-  channel.push("settings-retrieve", app)
-    .receive("error", payload => console.log(payload.message))
-})
-
-app.ports.settingsSave.subscribe(settings => {
-  channel.push("settings-save", settings)
-    .receive("error", payload => console.log(payload.message))
-})
-
 // the window size signal doesn't always get sent on startup
 app.ports.windowWidth.send(window.innerWidth)
 
-// setTimeout(() => {
-//   channel.push("retrieve_settings", "otis")
-//   .receive("error", payload => console.log(payload.message))
-//   .receive("ok", (msg) => console.log('got settings for', 'otis', msg))
-// }, 2000)
+channel.join().receive('ok', () => {
+  app.ports.connectionStatus.send(true)
+}).receive('error', resp => {
+  console.error('unable to join', resp)
+})
+
+let hasTouchEvents = Modernizr.touchevents
+let _requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame
+
+let frame = () => {
+  let scroller = document.getElementById('__scrolling__') || document.getElementById('__scrollable__')
+  let scrollTop = null
+  let height = 0
+  if (scroller) {
+    scrollTop = hasTouchEvents ? null : scroller.scrollTop
+    height = scroller.parentNode.offsetHeight
+  }
+  app.ports.animationScroll.send([Date.now(), scrollTop, height])
+  _requestAnimationFrame(frame)
+}
+
+_requestAnimationFrame(frame)
+
