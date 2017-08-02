@@ -75,7 +75,8 @@ defmodule Plug.WebDAV.Handler.Move do
   end
 
   defp source_host(conn) do
-    %URI{ authority: "#{conn.host}:#{conn.port}",
+    %URI{
+      authority: "#{conn.host}:#{conn.port}",
       scheme: conn.scheme,
       host: conn.host,
       path: ["/"|conn.path_info] |> Path.join,

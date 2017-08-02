@@ -9,7 +9,8 @@ defmodule Otis.Media.Filesystem do
         [app: app, mod: mod] ->
           options = Application.get_env(app, mod)
           { Keyword.get(options, :root, "_state/fs"),
-            Keyword.get(options, :at, "/fs") }
+            Keyword.get(options, :at, "/fs")
+          }
       end
 
       @root Path.expand(root)

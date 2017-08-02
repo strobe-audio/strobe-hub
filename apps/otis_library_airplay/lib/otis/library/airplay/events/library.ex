@@ -34,12 +34,12 @@ defmodule Otis.Library.Airplay.Events.Library do
   end
 
   def library do
-    %{ id: Airplay.library_id,
+    %{id: Airplay.library_id,
       title: "Airplay",
       icon: airplay_logo(),
       size: "m",
       actions: %{
-        click: %{ url: url("root"), level: true },
+        click: %{url: url("root"), level: true},
         play: nil,
       },
       metadata: nil,
@@ -51,7 +51,18 @@ defmodule Otis.Library.Airplay.Events.Library do
   def route_library_request(_channel_id, ["root"], _query, _path) do
     inputs = Airplay.inputs()
     children = Enum.map(inputs, fn(input) ->
-      section(%{ id: "#{@ns}:#{input.id}", title: "Strobe #{input.id}", size: "m", icon: airplay_logo(input.id), actions: %{ click: %{ url: url("input/#{input.id}/play"), level: false }, play: %{ url: url("input/#{input.id}/play"), level: false } }, metadata: nil, children: [] })
+      section(%{
+        id: "#{@ns}:#{input.id}",
+        title: "Strobe #{input.id}",
+        size: "m",
+        icon: airplay_logo(input.id),
+        actions: %{
+          click: %{url: url("input/#{input.id}/play"), level: false},
+          play: %{url: url("input/#{input.id}/play"), level: false},
+        },
+        metadata: nil,
+        children: [],
+      })
     end)
     %{
       id: "#{@ns}:root",

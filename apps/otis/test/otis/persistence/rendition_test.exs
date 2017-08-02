@@ -9,7 +9,7 @@ defmodule Otis.Persistence.RenditionTest do
   alias Otis.Channel
 
   setup_all do
-    {:ok, channel_id: Otis.uuid, profile_id: Otis.uuid }
+    {:ok, channel_id: Otis.uuid, profile_id: Otis.uuid}
   end
 
   setup context do
@@ -18,7 +18,7 @@ defmodule Otis.Persistence.RenditionTest do
 
     channel_record =
       context.channel_id
-      |> State.Channel.create!( "Test Channel")
+      |> State.Channel.create!("Test Channel")
       |> State.Channel.update(profile_id: context.profile_id)
 
     {:ok, channel} = Otis.Channels.start(channel_record)

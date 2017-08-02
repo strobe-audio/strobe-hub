@@ -37,12 +37,12 @@ defmodule BBC.Events.Library do
 
 
   def library do
-    %{ id: BBC.library_id(),
+    %{id: BBC.library_id(),
       title: "BBC",
       icon: bbc_logo(),
       size: "m",
       actions: %{
-        click: %{ url: url("root"), level: true },
+        click: %{url: url("root"), level: true},
         play: nil
       },
       metadata: nil,
@@ -53,11 +53,12 @@ defmodule BBC.Events.Library do
 
   def route_library_request(_channel_id, ["root"], _query, _path) do
     channels = Enum.map BBC.channels(), fn(channel) ->
-      play = %{ url: url(["channel", channel.id, "play"]), level: false }
-      %{ id: "bbc:channel/#{channel.id}",
+      play = %{url: url(["channel", channel.id, "play"]), level: false}
+      %{
+        id: "bbc:channel/#{channel.id}",
         title: channel.title,
         icon: Channel.cover_image(channel, :small),
-        actions: %{ click: play, play: play },
+        actions: %{click: play, play: play},
         metadata: nil
       }
     end

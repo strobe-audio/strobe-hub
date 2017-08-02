@@ -18,7 +18,7 @@ defmodule Strobe.Server.Ntp do
     Logger.info "#{__MODULE__} starting #{ntpd_daemon()}"
     port = Port.open({:spawn_executable, ntpd_daemon()}, ntpd_daemon_args())
     Strobe.Server.Events.notify({:running, [:ntpd]})
-    {:noreply, %{ state | port: port }}
+    {:noreply, %{state | port: port}}
   end
   def handle_info(_evt, state) do
     {:noreply, state}

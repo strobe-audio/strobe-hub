@@ -13,12 +13,12 @@ defmodule Otis.Library.UPNP.Events.Library do
   end
 
   def library do
-    %{ id: UPNP.library_id,
+    %{id: UPNP.library_id,
       title: "UPnP",
       icon: "",
       size: "m",
       actions: %{
-        click: %{ url: url("root"), level: true },
+        click: %{url: url("root"), level: true},
         play: nil,
       },
       metadata: nil,
@@ -30,7 +30,15 @@ defmodule Otis.Library.UPNP.Events.Library do
   def route_library_request(_channel_id, ["root"], _query, _path) do
     {:ok, devices} = UPNP.Discovery.all
     children = Enum.map(devices, fn(device) ->
-        section(%{ id: "#{@ns}:#{device.id}", title: device.name, size: "m", icon: "", actions: %{ click: %{ url: url("device/#{device.id}"), level: true }, play: nil }, metadata: nil, children: [] })
+      section(%{
+        id: "#{@ns}:#{device.id}",
+        title: device.name,
+        size: "m",
+        icon: "",
+        actions: %{click: %{url: url("device/#{device.id}"), level: true}, play: nil},
+        metadata: nil,
+        children: [],
+      })
     end)
     %{
       id: "#{@ns}:root",
@@ -48,7 +56,15 @@ defmodule Otis.Library.UPNP.Events.Library do
     children =
       containers
       |> Enum.map(fn(%Container{} = container) ->
-        section(%{ id: "#{@ns}:container:#{container.id}", title: container.title, size: "m", icon: "", actions: %{ click: click_action(device_id, container), play: nil }, metadata: nil, children: [] })
+        section(%{
+          id: "#{@ns}:container:#{container.id}",
+          title: container.title,
+          size: "m",
+          icon: "",
+          actions: %{click: click_action(device_id, container), play: nil},
+          metadata: nil,
+          children: [],
+        })
       end)
 
     %{
@@ -77,8 +93,7 @@ defmodule Otis.Library.UPNP.Events.Library do
       |> Enum.map(&folder_node(device_id, &1))
 
     children =
-
-      [ section(%{
+      [section(%{
           id: namespaced(path),
           title: "Folders",
           size: "s",
@@ -144,14 +159,14 @@ defmodule Otis.Library.UPNP.Events.Library do
     play_action(device_id, item)
   end
   def click_action(device_id, %Container{id: id}) do
-    %{ url: url(["device", device_id, "container", id]), level: true }
+    %{url: url(["device", device_id, "container", id]), level: true}
   end
 
   def play_action(device_id, %Item{id: id}) do
-    %{ url: url(["device", device_id, "item", id, "play"]), level: false }
+    %{url: url(["device", device_id, "item", id, "play"]), level: false}
   end
   def play_action(device_id, %Container{id: id}) do
-    %{ url: url(["device", device_id, "container", id, "play"]), level: false }
+    %{url: url(["device", device_id, "container", id, "play"]), level: false}
   end
 
   def alphabetical_section(element, field \\ :title) do
@@ -168,7 +183,7 @@ defmodule Otis.Library.UPNP.Events.Library do
   end
 
   def _section({letter, children}) do
-    %{ id: "", title: letter, children: children } |> section
+    %{id: "", title: letter, children: children} |> section
   end
 
   def icon(nil), do: ""

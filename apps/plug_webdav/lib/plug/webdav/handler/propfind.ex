@@ -106,10 +106,10 @@ defmodule Plug.WebDAV.Handler.Propfind do
       |> Enum.map(&propfind(file, &1, conn, opts))
       |> Enum.group_by(fn {status, _values} -> status end, fn {_status, values} -> values end)
       |> Enum.map(&propstat/1)
-    [ "<d:response>",
-      "<d:href><![CDATA[", resource_href(path, stat, conn, opts), "]]></d:href>",
-      props,
-      "</d:response>",
+    ["<d:response>",
+     "<d:href><![CDATA[", resource_href(path, stat, conn, opts), "]]></d:href>",
+     props,
+     "</d:response>",
     ]
   end
 
@@ -174,10 +174,10 @@ defmodule Plug.WebDAV.Handler.Propfind do
   end
   defp propfind({_name, path, _stat}, {:displayname, _dav}, _conn, {root, _}) do
     displayname =
-      cond do
-        Path.expand(path) == root -> ""
-        true ->
-          path |> Path.expand |> Path.basename
+      if Path.expand(path) == root do
+        ""
+      else
+        path |> Path.expand |> Path.basename
       end
     {200, ["<d:displayname><![CDATA[", displayname, "]]></d:displayname>"]}
   end

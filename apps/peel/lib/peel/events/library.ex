@@ -28,12 +28,12 @@ defmodule Peel.Events.Library do
   end
 
   defp collection(%Collection{id: id, name: name}) do
-    %{ id: "peel:collection/#{id}",
+    %{id: "peel:collection/#{id}",
       title: name,
       size: "m",
       icon: "",
       actions: %{
-        click: %{ url: url(["collection", id]), level: true },
+        click: %{url: url(["collection", id]), level: true},
         play: nil,
       }
     } |> section()
@@ -53,21 +53,21 @@ defmodule Peel.Events.Library do
     %{id: "peel:#{url}",
       title: collection.name,
       icon: "",
-      search: %{url: search_url([collection_id]), title: collection.name },
+      search: %{url: search_url([collection_id]), title: collection.name},
       length: 2,
       children: [
         %{id: url(["collection", collection.id, "albums"]),
           title: "Albums",
           size: "m",
           icon: "",
-          actions: %{ click: %{ url: url(["collection", collection.id, "albums"]), level: true }, play: nil },
+          actions: %{click: %{url: url(["collection", collection.id, "albums"]), level: true}, play: nil},
           metadata: nil, children: []
         } |> section(),
         %{id: url(["collection", collection.id, "artists"]),
           title: "Artists",
           size: "m",
           icon: "",
-          actions: %{ click: %{ url: url(["collection", collection.id, "artists"]), level: true }, play: nil },
+          actions: %{click: %{url: url(["collection", collection.id, "artists"]), level: true}, play: nil},
           metadata: nil,
           children: []
         } |> section(),
@@ -88,7 +88,7 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Albums",
       icon: "",
-      search: %{url: search_url([collection_id, "albums"]), title: "albums" },
+      search: %{url: search_url([collection_id, "albums"]), title: "albums"},
       children: albums
     }
   end
@@ -101,7 +101,7 @@ defmodule Peel.Events.Library do
         section = %{
           id: namespaced(path),
           title: album.title,
-          actions: %{ click: play_action(album), play: play_action(album) },
+          actions: %{click: play_action(album), play: play_action(album)},
           size: "h",
           icon: album.cover_image,
           metadata: node_metadata(album),
@@ -139,7 +139,7 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Artists",
       icon: "",
-      search: %{url: search_url([collection_id, "artists"]), title: "artists" },
+      search: %{url: search_url([collection_id, "artists"]), title: "artists"},
       children: artists
     }
   end
@@ -160,8 +160,8 @@ defmodule Peel.Events.Library do
               icon: icon(album.cover_image),
               size: "l",
               actions: %{
-                click: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
-                play: %{ url: "#{click.url}/artist/#{artist_id}/play", level: false},
+                click: %{url: "#{click.url}/artist/#{artist_id}/play", level: false},
+                play: %{url: "#{click.url}/artist/#{artist_id}/play", level: false},
               },
               metadata: album_date_metadata([], album.date),
               children: Enum.map(tracks, &folder_node/1)
@@ -252,7 +252,7 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Search #{collection.name}",
       icon: icon(nil),
-      search: %{url: search_url([collection_id]), title: collection.name },
+      search: %{url: search_url([collection_id]), title: collection.name},
       length: 3,
       children: [
         albums_section,
@@ -274,7 +274,7 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Search albums",
       icon: icon(nil),
-      search: %{url: search_url([collection_id, "albums"]), title: "albums" },
+      search: %{url: search_url([collection_id, "albums"]), title: "albums"},
       length: 1,
       children: [albums_section],
     }
@@ -292,7 +292,7 @@ defmodule Peel.Events.Library do
       id: namespaced(path),
       title: "Search artists",
       icon: icon(nil),
-      search: %{url: search_url([collection_id, "artists"]), title: "artists" },
+      search: %{url: search_url([collection_id, "artists"]), title: "artists"},
       length: 1,
       children: [artists_section],
     }
@@ -320,10 +320,10 @@ defmodule Peel.Events.Library do
   def album_metadata(_album, nil) do
   end
   def album_metadata(album, [artist]) do
-    [ [link(artist)] ] |> album_date_metadata(album.date)
+    [[link(artist)]] |> album_date_metadata(album.date)
   end
   def album_metadata(album, _artists) do
-    [ [link("Various Artists", nil)] ] |> album_date_metadata(album.date)
+    [[link("Various Artists", nil)]] |> album_date_metadata(album.date)
   end
 
   def album_date_metadata([], nil) do
@@ -334,7 +334,7 @@ defmodule Peel.Events.Library do
   end
   def album_date_metadata(metadata, date) do
     # TODO: add action for searching by date
-    metadata ++ [[ library_link(date, nil) ]]
+    metadata ++ [[library_link(date, nil)]]
   end
 
   def link(%Track{title: title} = track) do
@@ -355,27 +355,27 @@ defmodule Peel.Events.Library do
   end
 
   def click_action(%Track{id: id}) do
-    %{ url: url(["track", id, "play"]), level: false }
+    %{url: url(["track", id, "play"]), level: false}
   end
 
   def click_action(%Album{id: id}) do
-    %{ url: url(["album", id]), level: true }
+    %{url: url(["album", id]), level: true}
   end
 
   def click_action(%Artist{id: id}) do
-    %{ url: url(["artist", id]), level: true }
+    %{url: url(["artist", id]), level: true}
   end
 
   def play_action(%Track{id: id}) do
-    %{ url: url(["track", id, "play"]), level: false }
+    %{url: url(["track", id, "play"]), level: false}
   end
 
   def play_action(%Album{id: id}) do
-    %{ url: url(["album", id, "play"]), level: false }
+    %{url: url(["album", id, "play"]), level: false}
   end
 
   def play_action(%Artist{id: id}) do
-    %{ url: url(["artist", id, "play"]), level: false }
+    %{url: url(["artist", id, "play"]), level: false}
   end
 
   def icon(nil), do: ""
@@ -393,7 +393,7 @@ defmodule Peel.Events.Library do
       # id: "peel:artist/#{artist.id}",
       title: artist.name,
       icon: icon(artist.image),
-      actions: %{ click: click_action(artist), play: nil },
+      actions: %{click: click_action(artist), play: nil},
       metadata: nil,
     }
   end
@@ -439,10 +439,10 @@ defmodule Peel.Events.Library do
   end
 
   def album_section({letter, children}) do
-    %{ id: namespaced("albums:#{letter}"), title: letter, children: children } |> section
+    %{id: namespaced("albums:#{letter}"), title: letter, children: children} |> section
   end
 
   def artist_section({letter, children}) do
-    %{ id: namespaced("artists:#{letter}"), title: letter, children: children } |> section
+    %{id: namespaced("artists:#{letter}"), title: letter, children: children} |> section
   end
 end

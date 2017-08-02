@@ -61,7 +61,7 @@ defmodule Otis.Library.UPNP.Discovery do
         device = Map.get(devices, uuid) || new_server(uuid, server)
         Map.put(d, uuid, device)
       end)
-    %S{ state | devices: updated_devices }
+    %S{state | devices: updated_devices}
   end
 
   defp new_server(uuid, %{location: location}) do

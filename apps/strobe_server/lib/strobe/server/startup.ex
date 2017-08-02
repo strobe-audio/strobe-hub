@@ -5,7 +5,7 @@ defmodule Strobe.Server.Startup do
     @moduledoc false
 
     defstruct [
-      run: %{ mount: false, avahi: false, dbus: false, ntpd: false }
+      run: %{mount: false, avahi: false, dbus: false, ntpd: false}
     ]
   end
 
@@ -28,27 +28,26 @@ defmodule Strobe.Server.Startup do
   end
 
   def handle_event({:running, sys}, state) do
-    state = running(sys, state) |> IO.inspect
+    state = sys |> running(state)
     state |> ready? |> launch
     {:ok, state}
   end
 
-  def handle_event(evt, state) do
-    IO.inspect [__MODULE__, :event, evt, state]
+  def handle_event(_evt, state) do
     {:ok, state}
   end
 
   defp running([:mount, _device, _mount_point], %S{run: run} = state) do
-    %S{ state | run: %{ run | mount: true } }
+    %S{state | run: %{run | mount: true}}
   end
   defp running([:dbus], %S{run: run} = state) do
-    %S{ state | run: %{ run | dbus: true } }
+    %S{state | run: %{run | dbus: true}}
   end
   defp running([:avahi], %S{run: run} = state) do
-    %S{ state | run: %{ run | avahi: true } }
+    %S{state | run: %{run | avahi: true}}
   end
   defp running([:ntpd], %S{run: run} = state) do
-    %S{ state | run: %{ run | ntpd: true } }
+    %S{state | run: %{run | ntpd: true}}
   end
 
   defp ready?(state) do
@@ -66,7 +65,6 @@ defmodule Strobe.Server.Startup do
   end
 
   defp launch(true) do
-    IO.inspect [__MODULE__, :launch]
     Application.ensure_all_started(:elvis, :permanent)
   end
 end

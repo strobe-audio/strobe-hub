@@ -75,7 +75,7 @@ defmodule Otis.Pipeline.Buffer do
     {:ok, source_duration} = Source.duration(source)
     stream = Source.open!(source, rendition_id, state.packet_size)
     {:ok, transcoder} = transcoder(state, rendition, source, stream)
-    %S{ state | source: source, source_duration: source_duration, stream: transcoder, start_position: rendition.playback_position }
+    %S{state | source: source, source_duration: source_duration, stream: transcoder, start_position: rendition.playback_position}
   end
 
   defp transcoder(state, rendition, source, stream) do
@@ -94,10 +94,10 @@ defmodule Otis.Pipeline.Buffer do
   end
 
   defp append({:ok, data}, state) do
-    %S{ state | buffer: (state.buffer <> data) }
+    %S{state | buffer: (state.buffer <> data)}
   end
   defp append(:done, state) do
-    %S{ state | status: :done }
+    %S{state | status: :done}
   end
 
   defp packet(%S{status: :done, empty: true, packet_size: packet_size, buffer: buffer} = state) when byte_size(buffer) < packet_size do
@@ -107,7 +107,7 @@ defmodule Otis.Pipeline.Buffer do
     {:done, state}
   end
   defp packet(%S{status: :done, packet_size: packet_size, buffer: buffer} = state) when byte_size(buffer) < packet_size do
-    packet(%S{ state | empty: true, buffer: buffer <> pad(packet_size, byte_size(buffer)) })
+    packet(%S{state | empty: true, buffer: buffer <> pad(packet_size, byte_size(buffer))})
   end
   defp packet(%S{packet_size: packet_size} = state) do
     <<data::binary-size(packet_size), buffer::binary>> = state.buffer
@@ -120,7 +120,7 @@ defmodule Otis.Pipeline.Buffer do
       packet_size: state.packet_size,
       data: data,
     }
-    {packet, %S{ state | n: state.n + 1, buffer: buffer }}
+    {packet, %S{state | n: state.n + 1, buffer: buffer}}
   end
 
   def pad(required_size, size) do

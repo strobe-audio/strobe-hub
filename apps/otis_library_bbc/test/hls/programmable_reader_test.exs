@@ -7,8 +7,8 @@ defmodule HLS.ProgrammableReaderTest do
   end
 
   def fingerprint({:ok, data, _headers}) do
-		fingerprint(data)
-	end
+    fingerprint(data)
+  end
   def fingerprint(data) do
     :crypto.hash_init(:md5)
     |> :crypto.hash_update(data)

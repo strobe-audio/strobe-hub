@@ -31,7 +31,7 @@ defmodule Otis.Packet do
 
   """
   def attach(packet, data) do
-    %P{ packet | data: data }
+    %P{packet | data: data}
   end
 
   @doc ~S"""
@@ -44,7 +44,7 @@ defmodule Otis.Packet do
 
   """
   def attach(packet, data, packet_number, timestamp) do
-    %P{ packet | data: data, packet_number: packet_number, timestamp: timestamp }
+    %P{packet | data: data, packet_number: packet_number, timestamp: timestamp}
   end
 
   @doc ~S"""
@@ -62,7 +62,7 @@ defmodule Otis.Packet do
 
   """
   def timestamp(packet, timestamp) do
-    %P{ packet | timestamp: timestamp }
+    %P{packet | timestamp: timestamp}
   end
 
   def timestamp(packet, timestamp, packet_number) do

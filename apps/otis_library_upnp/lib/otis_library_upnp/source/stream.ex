@@ -23,7 +23,7 @@ defmodule Otis.Library.UPNP.Source.Stream do
     {:stop, :normal, state}
   end
   def handle_demand(new_demand, %S{demand: demand} = state) do
-    {:noreply, [], stream_next(%S{ state | demand: demand + new_demand })}
+    {:noreply, [], stream_next(%S{state | demand: demand + new_demand})}
   end
 
   def handle_info(%HTTPoison.AsyncStatus{code: 200}, state) do

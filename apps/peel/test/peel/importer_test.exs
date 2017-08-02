@@ -18,20 +18,20 @@ defmodule Peel.Test.ImporterTest do
     root = Path.expand(Path.join(__DIR__, "../fixtures/music"))
     metadata = %Metadata{
       album: "Fresh Cream",
-      bit_rate: 288000,
+      bit_rate: 288_000,
       channels: 2,
       composer: "Peter Brown & Jack Bruce",
       date: "1966",
       disk_number: 1,
       disk_total: 1,
-      duration_ms: 173662,
+      duration_ms: 173_662,
       extension: "m4a",
       filename: "01 I Feel Free",
       genre: "Rock",
       mime_type: "audio/mp4",
       performer: "Cream",
-      sample_rate: 44100,
-      stream_size: 6370536,
+      sample_rate: 44_100,
+      stream_size: 6_370_536,
       title: "I Feel Free",
       track_number: 1,
       track_total: 11
@@ -57,7 +57,7 @@ defmodule Peel.Test.ImporterTest do
 
     TestEventHandler.attach([Peel.WebDAV.Modifications])
 
-    paths = [ "silent.mp3" ]
+    paths = ["silent.mp3"]
 
     {:ok,
       track_count: 1,
@@ -105,7 +105,7 @@ defmodule Peel.Test.ImporterTest do
   test "it correctly sets the track duration", context do
     Importer.create_track(context.collection, context.path, context.metadata)
     [track] = Track.all
-    assert track.duration_ms == 173662
+    assert track.duration_ms == 173_662
   end
 
   test "it correctly sets the track mime type", context do
@@ -191,7 +191,7 @@ defmodule Peel.Test.ImporterTest do
     artist = Artist.first
     Track.delete_all
     Album.delete_all
-    Importer.create_track(context.collection, context.path, %Metadata{ context.metadata | title: "White Room", track_number: 2 })
+    Importer.create_track(context.collection, context.path, %Metadata{context.metadata | title: "White Room", track_number: 2})
     assert length(Artist.all) == 1
     album = Album.first |> Repo.preload(:tracks)
     assert Album.artists(album) == [artist]
@@ -204,7 +204,7 @@ defmodule Peel.Test.ImporterTest do
     artist = Artist.first
     Track.delete_all
     # Album.delete_all
-    Importer.create_track(context.collection, context.path, %Metadata{ context.metadata | performer: "cream", title: "White Room", track_number: 2 })
+    Importer.create_track(context.collection, context.path, %Metadata{context.metadata | performer: "cream", title: "White Room", track_number: 2})
     assert length(Artist.all) == 1
     assert length(Album.all) == 1
     album = Album.first |> Repo.preload(:tracks)
@@ -215,23 +215,24 @@ defmodule Peel.Test.ImporterTest do
     path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
-      bit_rate: 128000,
+      bit_rate: 128_000,
       channels: 2,
       composer: "Kings College Choir/Thomas Tallis",
       date: nil,
       disk_number: nil,
       disk_total: nil,
-      duration_ms: 697667,
+      duration_ms: 697_667,
       extension: "m4a",
       filename: "01 Spem in alium",
       genre: "Classical",
       mime_type: "audio/mp4",
       performer: nil,
-      sample_rate: 44100,
-      stream_size: 11108509,
+      sample_rate: 44_100,
+      stream_size: 11_108_509,
       title: "Spem in alium",
       track_number: 1,
-      track_total: 11 }
+      track_total: 11
+    }
     Importer.create_track(context.collection, path, metadata)
     tracks = Track.all
     assert length(tracks) == 1
@@ -243,23 +244,24 @@ defmodule Peel.Test.ImporterTest do
     path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
-      bit_rate: 128000,
+      bit_rate: 128_000,
       channels: 2,
       composer: "Kings College Choir/Thomas Tallis",
       date: nil,
       disk_number: nil,
       disk_total: nil,
-      duration_ms: 697667,
+      duration_ms: 697_667,
       extension: "m4a",
       filename: "01 Spem in alium",
       genre: "Classical",
       mime_type: "audio/mp4",
       performer: "Various Artists",
-      sample_rate: 44100,
-      stream_size: 11108509,
+      sample_rate: 44_100,
+      stream_size: 11_108_509,
       title: nil,
       track_number: 1,
-      track_total: 11 }
+      track_total: 11
+    }
     Importer.create_track(context.collection, path, metadata)
     tracks = Track.all
     assert length(tracks) == 1
@@ -271,23 +273,24 @@ defmodule Peel.Test.ImporterTest do
     path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
-      bit_rate: 128000,
+      bit_rate: 128_000,
       channels: 2,
       composer: "Kings College Choir/Thomas Tallis",
       date: nil,
       disk_number: nil,
       disk_total: nil,
-      duration_ms: 697667,
+      duration_ms: 697_667,
       extension: "m4a",
       filename: "01 Spem in alium",
       genre: "Classical",
       mime_type: "audio/mp4",
       performer: "Various Artists",
-      sample_rate: 44100,
-      stream_size: 11108509,
+      sample_rate: 44_100,
+      stream_size: 11_108_509,
       title: "Spem in alium",
       track_number: 1,
-      track_total: 11 }
+      track_total: 11
+    }
     Importer.create_track(context.collection, path, metadata)
     assert length(Track.all) == 1
     track = Track.first |> Repo.preload(:album)
@@ -298,17 +301,18 @@ defmodule Peel.Test.ImporterTest do
     path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: "14 Classic Carols",
-      bit_rate: 281594,
+      bit_rate: 281_594,
       channels: 2,
-      duration_ms: 182416,
+      duration_ms: 182_416,
       extension: "m4a",
       filename: "01 Once in Royal David_s City",
       mime_type: "audio/mp4",
-      sample_rate: 44100,
-      stream_size: 6420903,
+      sample_rate: 44_100,
+      stream_size: 6_420_903,
       title: "Once in Royal David’s City",
       track_number: 1,
-      track_total: 14 }
+      track_total: 14
+    }
     Importer.create_track(context.collection, path, metadata)
     assert length(Track.all) == 1
     track = Track.first |> Repo.preload(:album)
@@ -335,20 +339,20 @@ defmodule Peel.Test.ImporterTest do
     path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: " Fresh Cream ",
-      bit_rate: 288000,
+      bit_rate: 288_000,
       channels: 2,
       composer: " Peter Brown & Jack Bruce ",
       date: "1966",
       disk_number: 1,
       disk_total: 1,
-      duration_ms: 173662,
+      duration_ms: 173_662,
       extension: "m4a",
       filename: " 01 I Feel Free ",
       genre: "Rock",
       mime_type: "audio/mp4",
       performer: " Cream ",
-      sample_rate: 44100,
-      stream_size: 6370536,
+      sample_rate: 44_100,
+      stream_size: 6_370_536,
       title: " I Feel Free ",
       track_number: 1,
       track_total: 11
@@ -371,20 +375,20 @@ defmodule Peel.Test.ImporterTest do
     path = Path.join(context.root, "silent.mp3")
     metadata = %Metadata{
       album: " Fresh Cream ",
-      bit_rate: 288000,
+      bit_rate: 288_000,
       channels: 2,
       composer: " Peter Brown & Jack Bruce ",
       date: "1966",
       disk_number: 1,
       disk_total: 1,
-      duration_ms: 173662,
+      duration_ms: 173_662,
       extension: "m4a",
       filename: " 01 I Feel Free ",
       genre: "Rock",
       mime_type: "audio/mp4",
       performer: "The Beatles",
-      sample_rate: 44100,
-      stream_size: 6370536,
+      sample_rate: 44_100,
+      stream_size: 6_370_536,
       title: " I Feel Free ",
       track_number: 1,
       track_total: 11

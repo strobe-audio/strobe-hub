@@ -42,7 +42,7 @@ defmodule Otis.State.Playlist do
 
   defp stream_reverse_from(nil), do: []
   defp stream_reverse_from(first) do
-    Stream.resource(fn -> first end, &stream_prev/1, fn(_)-> :ok end)
+    Stream.resource(fn -> first end, &stream_prev/1, fn(_) -> :ok end)
   end
 
   defp stream_prev(nil), do: {:halt, nil}
@@ -281,7 +281,7 @@ defmodule Otis.State.Playlist do
   # Returns a stream of renditions starting at the given id
   defp stream_from(nil), do: []
   defp stream_from(head_id) do
-    Stream.resource(fn -> head_id end, &stream_next/1, fn(_)-> :ok end)
+    Stream.resource(fn -> head_id end, &stream_next/1, fn(_) -> :ok end)
   end
 
   defp stream_next(nil), do: {:halt, nil}

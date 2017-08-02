@@ -107,7 +107,7 @@ defmodule Otis.Pipeline.Broadcaster do
   def handle_cast({:skip, rendition_id}, state) do
     Otis.Receivers.Channels.stop(state.id)
     Hub.skip(state.hub, rendition_id)
-    state = start(&clock_time/1, %S{ state | buffer: [] })
+    state = start(&clock_time/1, %S{state | buffer: []})
     {:noreply, state}
   end
 
@@ -117,7 +117,7 @@ defmodule Otis.Pipeline.Broadcaster do
       :done ->
         start_with_time(time, state)
       {:ok, packet} ->
-        start_with_time(time, %S{state| buffer: [ packet | state.buffer ]})
+        start_with_time(time, %S{state| buffer: [packet | state.buffer]})
     end
   end
   defp start(time, state) do
@@ -164,7 +164,7 @@ defmodule Otis.Pipeline.Broadcaster do
     {played, unplayed} = Enum.split_with(inflight, &Packet.played?(&1, time))
     state = state |> monitor_rendition(played, unplayed) |> monitor_progress(played)
     state = state |> monitor_status(unplayed)
-    %S{state | inflight: unplayed }
+    %S{state | inflight: unplayed}
   end
 
   defp monitor_status(state, []) do
@@ -177,7 +177,7 @@ defmodule Otis.Pipeline.Broadcaster do
   end
 
   defp monitor_rendition(state, _played, [] = _unplayed) do
-    %S{ state | rendition_id: nil } |> notify_rendition_change(state.rendition_id, nil)
+    %S{state | rendition_id: nil} |> notify_rendition_change(state.rendition_id, nil)
   end
   defp monitor_rendition(state, [], _unplayed) do
     state

@@ -10,7 +10,7 @@ defmodule HLS.Reader.Async.Supervisor do
   end
 
   def start_reader(supervisor, reader, url, parent, id, deadline) do
-		{:ok, _pid} = Supervisor.start_child(supervisor, [reader, url, parent, id, deadline])
+    {:ok, _pid} = Supervisor.start_child(supervisor, [reader, url, parent, id, deadline])
   end
 
   def init(:ok) do

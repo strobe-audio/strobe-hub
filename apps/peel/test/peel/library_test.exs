@@ -23,91 +23,91 @@ defmodule Peel.Test.LibraryTest do
       %Artist{
         collection_id: collection.id,
         id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", name: "Talking Heads",
-        normalized_name: "talking heads" },
+        normalized_name: "talking heads"},
       %Artist{
         collection_id: collection.id,
         id: "ece2ce41-3194-4506-9e16-42e56e1be090", name: "Echo and the Bunnymen",
-        normalized_name: "echo and the bunnymen" },
+        normalized_name: "echo and the bunnymen"},
       %Artist{
         collection_id: collection.id,
         id: "b408ec33-f533-49f6-944b-5d829139e1de", name: "The Lurkers",
-        normalized_name: "the lurkers" },
+        normalized_name: "the lurkers"},
     ]
     Enum.each artists, &Repo.insert!/1
 
     albums = [
-      %Album{ id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
+      %Album{id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
         collection_id: collection.id,
         date: "1977", disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "talking heads 77", performer: "Talking Heads",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-        title: "Talking Heads: 77", track_total: 2 },
-      %Album{ id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
+        title: "Talking Heads: 77", track_total: 2},
+      %Album{id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         collection_id: collection.id,
         date: nil, disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "some compilation", performer: "Various Artists",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
-        title: "Some Compilation", track_total: 3 },
+        title: "Some Compilation", track_total: 3},
     ]
     Enum.each albums, &Repo.insert!/1
 
     tracks = [
-      %Peel.Track{ id: "94499562-d2c5-41f8-b07c-ecfbecf0c428",
+      %Peel.Track{id: "94499562-d2c5-41f8-b07c-ecfbecf0c428",
         collection_id: collection.id,
         album_id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
         album_title: "Talking Heads: 77",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 159000,
+        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 159_000,
         genre: "Rock", mime_type: "audio/mp4",
         normalized_title: "uh oh love comes to town",
         path: "iTunes/iTunes Media/Music/Talking Heads/Talking Heads_ 77/01 Uh-Oh, Love Comes To Town.m4a",
         performer: "Talking Heads", title: "Uh-Oh, Love Comes To Town",
         track_number: 1, track_total: 11},
-      %Peel.Track{ id: "a3c90ce4-8a98-405f-bffd-04bc744c13df",
+      %Peel.Track{id: "a3c90ce4-8a98-405f-bffd-04bc744c13df",
         collection_id: collection.id,
         album_id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
         album_title: "Talking Heads: 77",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
-        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 189336,
+        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 189_336,
         genre: "Rock", mime_type: "audio/mp4",
         normalized_title: "new feeling",
         path: "iTunes/iTunes Media/Music/Talking Heads/Talking Heads_ 77/02 New Feeling.m4a",
         performer: "Talking Heads", title: "New Feeling", track_number: 2,
         track_total: 11},
 
-      %Peel.Track{ id: "63f49bae-fcbf-49df-94c9-668c52f3e125",
+      %Peel.Track{id: "63f49bae-fcbf-49df-94c9-668c52f3e125",
         collection_id: collection.id,
         album_id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         album_title: "Some Compilation",
         artist_id: "ece2ce41-3194-4506-9e16-42e56e1be090", composer: "Ian McCulloch",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
-        date: "1987", disk_number: 1, disk_total: 1, duration_ms: 189336,
+        date: "1987", disk_number: 1, disk_total: 1, duration_ms: 189_336,
         genre: "Rock", mime_type: "audio/mp4",
         normalized_title: "going up",
         path: "iTunes/iTunes Media/Music/Various Artists/Some Compilation/Going Up.m4a",
         performer: "Echo and the Bunnymen", title: "Going Up", track_number: 1,
         track_total: 3},
-      %Peel.Track{ id: "59afcd1e-9f6f-4df5-9ece-5f874d6e36bd",
+      %Peel.Track{id: "59afcd1e-9f6f-4df5-9ece-5f874d6e36bd",
         collection_id: collection.id,
         album_id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         album_title: "Some Compilation",
         artist_id: "b408ec33-f533-49f6-944b-5d829139e1de", composer: "Pete Stride",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
-        date: "1987", disk_number: 1, disk_total: 1, duration_ms: 189336,
+        date: "1987", disk_number: 1, disk_total: 1, duration_ms: 189_336,
         genre: "Rock", mime_type: "audio/mp4",
         normalized_title: "aint got a clue",
         path: "iTunes/iTunes Media/Music/Various Artists/Some Compilation/Ain't Got a Clue.m4a",
         performer: "The Lurkers", title: "Ain't Got a Clue", track_number: 2,
         track_total: 3},
-      %Peel.Track{ id: "0a89f07e-0f5e-48c4-8b00-d83026a90724",
+      %Peel.Track{id: "0a89f07e-0f5e-48c4-8b00-d83026a90724",
         collection_id: collection.id,
         album_id: "1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
         album_title: "Some Compilation",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
         cover_image: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
-        date: "1987", disk_number: 1, disk_total: 1, duration_ms: 189336,
+        date: "1987", disk_number: 1, disk_total: 1, duration_ms: 189_336,
         genre: "Rock", mime_type: "audio/mp4",
         normalized_title: "uh oh love comes to town",
         path: "iTunes/iTunes Media/Music/Various Artists/Some Compilation/Uh-Oh, Love Comes To Town.m4a",
@@ -140,16 +140,17 @@ defmodule Peel.Test.LibraryTest do
   end
 
   def track_node(%Track{} = track) do
-    %{ title: track.title,
-     actions: %{
-       click: %{level: false, url: "peel:track/#{track.id}/play"},
-       play: %{level: false, url: "peel:track/#{track.id}/play"}
-     },
-     icon: nil, # track.cover_image,
-     metadata: [
-      [%{title: Otis.Library.Duration.hms_ms(track.duration_ms), action: nil}],
-     ]
-   }
+    %{
+      title: track.title,
+      actions: %{
+        click: %{level: false, url: "peel:track/#{track.id}/play"},
+        play: %{level: false, url: "peel:track/#{track.id}/play"}
+      },
+      icon: nil, # track.cover_image,
+      metadata: [
+        [%{title: Otis.Library.Duration.hms_ms(track.duration_ms), action: nil}],
+      ]
+    }
   end
 
   test "track_node" do
@@ -162,7 +163,7 @@ defmodule Peel.Test.LibraryTest do
      icon: nil, # "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
      title: "Uh-Oh, Love Comes To Town",
      metadata: [
-      [%{ title: "02:39", action: nil}]
+      [%{title: "02:39", action: nil}]
      ],
    }
   end
@@ -170,7 +171,7 @@ defmodule Peel.Test.LibraryTest do
   test "library", cxt do
     response = Library.library
     coll1 =
-      %{ title: cxt.collection.name,
+      %{title: cxt.collection.name,
         id: "peel:collection/#{cxt.collection.id}",
         size: "m",
         icon: "",
@@ -183,7 +184,7 @@ defmodule Peel.Test.LibraryTest do
         children: [],
       }
     coll2 =
-      %{ title: cxt.other_collection.name,
+      %{title: cxt.other_collection.name,
         id: "peel:collection/#{cxt.other_collection.id}",
         size: "m",
         icon: "",
@@ -218,7 +219,7 @@ defmodule Peel.Test.LibraryTest do
       id: "peel:#{path}",
       title: context.collection.name,
       icon: "",
-      search: %{ title: context.collection.name, url: "peel:search/#{context.collection.id}"},
+      search: %{title: context.collection.name, url: "peel:search/#{context.collection.id}"},
       length: 2,
       children: [
         %{title: "Albums",
@@ -257,7 +258,7 @@ defmodule Peel.Test.LibraryTest do
       id: "peel:" <> path,
       title: "Albums",
       icon: "",
-      search: %{ title: "albums", url: "peel:search/#{context.collection.id}/albums"},
+      search: %{title: "albums", url: "peel:search/#{context.collection.id}/albums"},
       children: [
         %{title: "S",
           id: "peel:albums:S",
@@ -267,19 +268,19 @@ defmodule Peel.Test.LibraryTest do
           actions: nil,
           length: 1,
           children: [
-            %{ title: "Some Compilation",
+            %{title: "Some Compilation",
               actions: %{
                 click: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d", level: true},
                 play: %{url: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d/play", level: false},
               },
               icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
               metadata: [
-                [ %{title: "Various Artists", action: nil} ],
+                [%{title: "Various Artists", action: nil}],
               ],
             },
           ]
         },
-        %{ title: "T",
+        %{title: "T",
           id: "peel:albums:T",
           size: "s",
           icon: nil,
@@ -287,7 +288,7 @@ defmodule Peel.Test.LibraryTest do
           actions: nil,
           length: 1,
           children: [
-              %{ title: "Talking Heads: 77",
+              %{title: "Talking Heads: 77",
                 actions: %{
                   click: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898", level: true},
                   play:  %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play", level: false},
@@ -315,7 +316,7 @@ defmodule Peel.Test.LibraryTest do
       icon: album.cover_image,
       search: nil,
       children: [
-        %{ title: album.title,
+        %{title: album.title,
           id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
           size: "h",
           icon: album.cover_image,
@@ -347,7 +348,7 @@ defmodule Peel.Test.LibraryTest do
       icon: "",
       search: %{title: "artists", url: "peel:search/#{context.collection.id}/artists"},
       children: [
-        %{ title: "E",
+        %{title: "E",
           id: "peel:artists:E",
           size: "s",
           metadata: nil,
@@ -356,11 +357,11 @@ defmodule Peel.Test.LibraryTest do
           length: 1,
           children: [
             %{
-              actions: %{ click: %{level: true, url: "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090"}, play: nil },
+              actions: %{click: %{level: true, url: "peel:artist/ece2ce41-3194-4506-9e16-42e56e1be090"}, play: nil},
               icon: "", title: "Echo and the Bunnymen", metadata: nil},
           ],
         },
-        %{ title: "T",
+        %{title: "T",
           id: "peel:artists:T",
           size: "s",
           icon: nil,
@@ -369,10 +370,10 @@ defmodule Peel.Test.LibraryTest do
           length: 2,
           children: [
             %{
-              actions: %{ click: %{ level: true, url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e" }, play: nil },
+              actions: %{click: %{level: true, url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}, play: nil},
               icon: "", title: "Talking Heads", metadata: nil},
             %{
-              actions: %{ click: %{level: true, url: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"}, play: nil },
+              actions: %{click: %{level: true, url: "peel:artist/b408ec33-f533-49f6-944b-5d829139e1de"}, play: nil},
               icon: "", title: "The Lurkers", metadata: nil},
           ],
         },
@@ -391,7 +392,7 @@ defmodule Peel.Test.LibraryTest do
       icon: "",
       search: nil,
       children: [
-        %{ title: artist.name,
+        %{title: artist.name,
           id: "peel:artist/#{artist.id}",
           size: "h",
           icon: artist.image,
@@ -400,12 +401,12 @@ defmodule Peel.Test.LibraryTest do
           length: 0,
           children: [],
         },
-        %{ title: "Talking Heads: 77",
+        %{title: "Talking Heads: 77",
           size: "l",
           icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/7/a/7aed1ef3-de88-4ea8-9af7-29a1327a5898.jpg",
           id: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898",
           metadata: [
-            [ %{title: "1977", action: nil} ]
+            [%{title: "1977", action: nil}]
           ],
           actions: %{
             click: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e/play", level: false},
@@ -417,7 +418,7 @@ defmodule Peel.Test.LibraryTest do
             track_node(Track.find("a3c90ce4-8a98-405f-bffd-04bc744c13df")),
           ]
         },
-        %{ title: "Some Compilation",
+        %{title: "Some Compilation",
           id: "peel:album/1f74a72a-800d-443e-9bb2-4fc5e10ff43d",
           size: "l",
           icon: "/fs/d2e91614-135a-11e6-9170-002500f418fc/cover/1/f/1f74a72a-800d-443e-9bb2-4fc5e10ff43d.jpg",
@@ -488,32 +489,32 @@ defmodule Peel.Test.LibraryTest do
       %Artist{
         collection_id: context.collection.id,
         id: "fdb8a7b3-e259-4ef3-a453-833f2795dec6", name: "The Big Monkey",
-        normalized_name: "the big monkey" },
+        normalized_name: "the big monkey"},
     ]
     Enum.map artists, &Repo.insert!/1
 
     albums = [
-      %Album{ id: "69eff193-5808-4165-a927-b5431d7da97b",
+      %Album{id: "69eff193-5808-4165-a927-b5431d7da97b",
         collection_id: context.collection.id,
         date: "1977", disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "monkey songs", performer: "Monkey Sings",
         cover_image: "",
-        title: "Monkey Songs", track_total: 2 },
-      %Album{ id: "8231ab23-0c44-44b1-891c-53917f085d82",
+        title: "Monkey Songs", track_total: 2},
+      %Album{id: "8231ab23-0c44-44b1-891c-53917f085d82",
         collection_id: context.collection.id,
         date: nil, disk_number: 1, disk_total: 1, genre: "Rock",
         normalized_title: "dance monkey dance", performer: "Various Artists",
         cover_image: "",
-        title: "Dance Monkey Dance", track_total: 3 },
+        title: "Dance Monkey Dance", track_total: 3},
     ]
     tracks = [
-      %Peel.Track{ id: "118739fb-4558-4522-987d-bd3c5e805d7a",
+      %Peel.Track{id: "118739fb-4558-4522-987d-bd3c5e805d7a",
         collection_id: context.collection.id,
         album_id: "7aed1ef3-de88-4ea8-9af7-29a1327a5898",
         album_title: "Talking Heads: 77",
         artist_id: "fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e", composer: "David Byrne",
         cover_image: "",
-        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 159000,
+        date: "1977", disk_number: 1, disk_total: 1, duration_ms: 159_000,
         genre: "Rock", mime_type: "audio/mp4",
         normalized_title: "beware the wild monkey",
         path: "",
@@ -530,7 +531,7 @@ defmodule Peel.Test.LibraryTest do
       id: "peel:search/#{context.collection.id}",
       title: "Search #{context.collection.name}",
       icon: "",
-      search: %{ title: context.collection.name, url: "peel:search/#{context.collection.id}"},
+      search: %{title: context.collection.name, url: "peel:search/#{context.collection.id}"},
       length: 3,
       children: [
         %{
@@ -542,7 +543,7 @@ defmodule Peel.Test.LibraryTest do
           metadata: nil,
           length: 2,
           children: [
-            %{ title: "Monkey Songs",
+            %{title: "Monkey Songs",
               actions: %{
                 click: %{url: "peel:album/69eff193-5808-4165-a927-b5431d7da97b", level: true},
                 play:  %{url: "peel:album/69eff193-5808-4165-a927-b5431d7da97b/play", level: false},
@@ -550,7 +551,7 @@ defmodule Peel.Test.LibraryTest do
               icon: "",
               metadata: [[%{action: nil, title: "Various Artists"}], [%{action: nil, title: "1977"}]],
             },
-            %{ title: "Dance Monkey Dance",
+            %{title: "Dance Monkey Dance",
               actions: %{
                 click: %{url: "peel:album/8231ab23-0c44-44b1-891c-53917f085d82", level: true},
                 play:  %{url: "peel:album/8231ab23-0c44-44b1-891c-53917f085d82/play", level: false},
@@ -569,7 +570,11 @@ defmodule Peel.Test.LibraryTest do
           metadata: nil,
           length: 1,
           children: [
-            %{ actions: %{ click: %{ level: true, url: "peel:artist/fdb8a7b3-e259-4ef3-a453-833f2795dec6" }, play: nil },
+            %{
+              actions: %{
+                click: %{level: true, url: "peel:artist/fdb8a7b3-e259-4ef3-a453-833f2795dec6"},
+                play: nil
+              },
               icon: "", title: "The Big Monkey", metadata: nil},
           ],
         },
@@ -597,7 +602,7 @@ defmodule Peel.Test.LibraryTest do
       id: "peel:search/#{context.collection.id}/albums",
       title: "Search albums",
       icon: "",
-      search: %{ title: "albums", url: "peel:search/#{context.collection.id}/albums"},
+      search: %{title: "albums", url: "peel:search/#{context.collection.id}/albums"},
       length: 1,
       children: [
         %{
@@ -609,7 +614,7 @@ defmodule Peel.Test.LibraryTest do
           metadata: nil,
           length: 1,
           children: [
-              %{ title: "Talking Heads: 77",
+              %{title: "Talking Heads: 77",
                 actions: %{
                   click: %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898", level: true},
                   play:  %{url: "peel:album/7aed1ef3-de88-4ea8-9af7-29a1327a5898/play", level: false},
@@ -634,7 +639,7 @@ defmodule Peel.Test.LibraryTest do
       id: "peel:search/#{context.collection.id}/artists",
       title: "Search artists",
       icon: "",
-      search: %{ title: "artists", url: "peel:search/#{context.collection.id}/artists"},
+      search: %{title: "artists", url: "peel:search/#{context.collection.id}/artists"},
       length: 1,
       children: [
         %{
@@ -647,7 +652,7 @@ defmodule Peel.Test.LibraryTest do
           length: 1,
           children: [
             %{
-              actions: %{ click: %{ level: true, url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e" }, play: nil },
+              actions: %{click: %{level: true, url: "peel:artist/fbc1a6eb-57a8-4e85-bda3-e493a21d7f9e"}, play: nil},
               icon: "", title: "Talking Heads", metadata: nil},
           ],
         },

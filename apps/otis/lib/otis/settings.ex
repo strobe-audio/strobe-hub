@@ -2,12 +2,12 @@ defmodule Otis.Settings do
   @application :otis
   @ns_order [:wifi]
   @default_values %{
-    wifi: %{ psk: "", ssid: "" },
+    wifi: %{psk: "", ssid: ""},
   }
   @schema %{
     wifi: [
-      ssid: %{ inputType: :text, title: "Network" },
-      psk: %{ inputType: :password, title: "Password" },
+      ssid: %{inputType: :text, title: "Network"},
+      psk: %{inputType: :password, title: "Password"},
     ]
   }
   @titles %{

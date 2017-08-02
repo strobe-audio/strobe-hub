@@ -70,11 +70,11 @@ defmodule Otis.Library do
       end
 
       def library do
-        %{ id: "invalid",
+        %{id: "invalid",
           title: "Override me",
           icon: "",
           actions: %{
-            click: %{ url: url("root"), level: true },
+            click: %{url: url("root"), level: true},
             play: nil,
             search: nil,
           },
@@ -121,10 +121,10 @@ defmodule Otis.Library do
 
       def namespaced(url), do: "#{@namespace}:#{url}"
 
-      @section_defaults %{ title: "", actions: nil, metadata: nil, icon: nil, size: "s", children: [] }
+      @section_defaults %{title: "", actions: nil, metadata: nil, icon: nil, size: "s", children: []}
 
       def section(%{children: children} = section_data) do
-        @section_defaults |> Map.merge(section_data) |> Map.merge(%{ length: length(children) })
+        @section_defaults |> Map.merge(section_data) |> Map.merge(%{length: length(children)})
       end
       def section(section), do: section(Map.put(section, :children, []))
 

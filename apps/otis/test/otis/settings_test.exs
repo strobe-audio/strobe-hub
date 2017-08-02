@@ -18,8 +18,8 @@ defmodule Otis.SettingsTest do
         namespace: :wifi,
         title: "Wifi settings",
         fields: [
-          %{ application: :otis, namespace: :wifi, name: "ssid", value: "mynetwork", inputType: :text, title: "Network" },
-          %{ application: :otis, namespace: :wifi, name: "psk", value: "mysharedkey", inputType: :password, title: "Password" },
+          %{application: :otis, namespace: :wifi, name: "ssid", value: "mynetwork", inputType: :text, title: "Network"},
+          %{application: :otis, namespace: :wifi, name: "psk", value: "mysharedkey", inputType: :password, title: "Password"},
         ]
       }
     ]
@@ -33,8 +33,8 @@ defmodule Otis.SettingsTest do
         namespace: :wifi,
         title: "Wifi settings",
         fields: [
-          %{ application: :otis, namespace: :wifi, name: "ssid", value: "", inputType: :text, title: "Network" },
-          %{ application: :otis, namespace: :wifi, name: "psk", value: "", inputType: :password, title: "Password" },
+          %{application: :otis, namespace: :wifi, name: "ssid", value: "", inputType: :text, title: "Network"},
+          %{application: :otis, namespace: :wifi, name: "psk", value: "", inputType: :password, title: "Password"},
         ]
       }
     ]

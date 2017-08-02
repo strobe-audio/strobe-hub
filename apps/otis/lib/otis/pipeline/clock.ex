@@ -34,7 +34,7 @@ defmodule Otis.Pipeline.Clock do
 
   def handle_call({:start, broadcaster, interval_ms}, _from, state) do
     state = send_after({:tick, interval_ms}, interval_ms, state)
-    {:reply, {:ok, now()}, %S{ state | broadcaster: broadcaster, t: now() }}
+    {:reply, {:ok, now()}, %S{state | broadcaster: broadcaster, t: now()}}
   end
   def handle_call(:time, _from, state) do
     {:reply, {:ok, now()}, state}
@@ -71,12 +71,12 @@ defmodule Otis.Pipeline.Clock do
       _ -> d
     end
 
-    state = %S{ state | d: d }
+    state = %S{state | d: d}
     send_after({:tick, interval_ms}, interval_ms - d, state)
   end
   defp send_after(msg, interval_ms, state) do
     timer = Process.send_after(self(), msg, interval_ms)
-    %S{ state | timer: timer }
+    %S{state | timer: timer}
   end
 
   defp now, do: Monotonic.microseconds()

@@ -64,7 +64,7 @@ defmodule Otis.ReceiverTest do
     Receiver.volume receiver, 0.13
     assert_receive {:receiver, :volume, [^id, 0.13]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.13) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.13)}
     {:ok, 0.13} = Receiver.volume receiver
   end
 
@@ -79,25 +79,25 @@ defmodule Otis.ReceiverTest do
     Receiver.volume receiver, 0.13
     assert_receive {:receiver, :volume, [^id, 0.13]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.13) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.13)}
 
     Receiver.volume_multiplier receiver, 0.5
     refute_receive {:receiver, :volume, [^id, 0.13]}
     refute_receive {:receiver, :volume, [^id, 0.065]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.065) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.065)}
     {:ok, 0.5} = Receiver.volume_multiplier receiver
 
     Receiver.volume receiver, 0.6
     assert_receive {:receiver, :volume, [^id, 0.6]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.3) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.3)}
 
     Receiver.volume_multiplier receiver, 0.1
     refute_receive {:receiver, :volume, [^id, 0.6]}
     refute_receive {:receiver, :volume, [^id, 0.06]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.06) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.06)}
   end
 
   test "setting the volume & multiplier simultaneously", _context do
@@ -111,17 +111,17 @@ defmodule Otis.ReceiverTest do
     Receiver.volume receiver, 0.3, 0.1
     assert_receive {:receiver, :volume, [^id, 0.3]}
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.03) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.03)}
 
     Receiver.volume receiver, 0.1, 0.3
     assert_receive {:receiver, :volume, [^id, 0.1]}
     # Could assert that no volume change message is sent, but really, who cares!?
     {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.03) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.03)}
 
     Receiver.volume receiver, 0.9, 0.1
     assert_receive {:receiver, :volume, [^id, 0.9]}
-    {:ok, %{ "volume" => volume }} = ctrl_recv(mock)
+    {:ok, %{"volume" => volume}} = ctrl_recv(mock)
     assert_in_delta volume, Receiver.perceptual_volume(0.09), 0.000001
   end
 
@@ -281,17 +281,17 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver, :volume, [^id1, 1.0]}
     assert_receive {:receiver, :volume, [^id2, 1.0]}
     {:ok, msg} = ctrl_recv(mock1)
-    assert msg == %{ "volume" => 1.0 }
+    assert msg == %{"volume" => 1.0}
     {:ok, msg} = ctrl_recv(mock2)
-    assert msg == %{ "volume" => 1.0 }
+    assert msg == %{"volume" => 1.0}
     Otis.Receivers.Channels.volume_multiplier(channel_id, 0.5)
     # we don't get notifications when the multiplier changes
     refute_receive {:receiver, :volume, [^id1, _]}
     refute_receive {:receiver, :volume, [^id2, _]}
     {:ok, msg} = ctrl_recv(mock1)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.5) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.5)}
     {:ok, msg} = ctrl_recv(mock2)
-    assert msg == %{ "volume" => Receiver.perceptual_volume(0.5) }
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.5)}
   end
 
   test "we can send stop commands to a receiver set", _context do
@@ -308,9 +308,9 @@ defmodule Otis.ReceiverTest do
     assert_receive {:receiver, :online, [^id1, _]}
     assert_receive {:receiver, :online, [^id2, _]}
     {:ok, msg} = ctrl_recv(mock1)
-    assert msg == %{ "volume" => 1.0 }
+    assert msg == %{"volume" => 1.0}
     {:ok, msg} = ctrl_recv(mock2)
-    assert msg == %{ "volume" => 1.0 }
+    assert msg == %{"volume" => 1.0}
     Otis.Receivers.Channels.stop(channel_id)
     # {:ok, msg} = ctrl_recv(mock1)
     # assert msg == %{ "command" => "stop" }

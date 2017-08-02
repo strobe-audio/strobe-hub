@@ -20,7 +20,7 @@ defmodule Otis.Library.Airplay.Input do
   end
 
   # TODO: get packet size from provided config
-  @bpms round(44100 * 2 * 2 * (1 / 1000))
+  @bpms round(44_100 * 2 * 2 * (1 / 1_000))
   @packet_size 100 * @bpms
   @silence_bytes @packet_size
   @silence :binary.copy(<<0>>, @silence_bytes)
@@ -35,9 +35,19 @@ defmodule Otis.Library.Airplay.Input do
   end
 
   def init([n, _config]) do
-    process = Airplay.Shairport.run(n)
+    process = run_shairport(n)
     Process.flag(:trap_exit, true)
     {:producer, %S{id: n, process: process}, buffer_size: 100}
+  end
+
+  if Mix.env == :test do
+    def run_shairport(_n) do
+      nil
+    end
+  else
+    def run_shairport(n) do
+      Airplay.Shairport.run(n)
+    end
   end
 
   def terminate(_reason, %S{process: nil}) do
@@ -98,7 +108,7 @@ defmodule Otis.Library.Airplay.Input do
       << buffer <> data >>
       |> split_packets()
       |> queue_packets(queue)
-    %S{ state | buffer: buffer, queue: queue }
+    %S{state | buffer: buffer, queue: queue}
   end
 
   defp split_packets(buffer) do

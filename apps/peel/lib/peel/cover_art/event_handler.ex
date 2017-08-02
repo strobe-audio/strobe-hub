@@ -33,10 +33,10 @@ defmodule Peel.CoverArt.EventHandler do
   end
   defp reset(%{timer: timer} = state) do
     Process.cancel_timer(timer)
-    %{ state | timer: nil }
+    %{state | timer: nil}
   end
 
   defp restart(state) do
-    %{ state | timer: Process.send_after(self(), :activate, @timeout) }
+    %{state | timer: Process.send_after(self(), :activate, @timeout)}
   end
 end

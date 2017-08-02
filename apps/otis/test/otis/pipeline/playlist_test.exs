@@ -1,7 +1,7 @@
 defmodule Test.Otis.Pipeline.Source do
   defstruct [:id]
   def new(id) do
-    %__MODULE__{ id: id }
+    %__MODULE__{id: id}
   end
 end
 
@@ -174,7 +174,7 @@ defmodule Test.Otis.Pipeline.Playlist do
     {:ok, _renditions} = build_playlist(context)
     {:ok, r1} = Playlist.next(context.pl)
     assert {:ok, r1} == Playlist.active_rendition(context.pl)
-    {:ok, [^r1, _r2, _r3, _r4] = [ _|renditions]} = Playlist.list(context.pl)
+    {:ok, [^r1, _r2, _r3, _r4] = [_|renditions]} = Playlist.list(context.pl)
     Playlist.clear(context.pl)
     assert_receive {:playlist, :clear, [^channel_id, ^r1]}
     assert {:ok, r1} == Playlist.active_rendition(context.pl)

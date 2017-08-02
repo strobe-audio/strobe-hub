@@ -7,7 +7,7 @@ defmodule M3.PlaylistTest do
   end
 
   test "can provide the next set of media based on media sequence numbers", context do
-    [ segment0, segment1, segment2, segment3 ] = Enum.map(0..3, fn(n) ->
+    [segment0, segment1, segment2, segment3] = Enum.map(0..3, fn(n) ->
       [context.base, "high/segment-#{n}.m3u8"]
       |> Path.join
       |> File.read!
@@ -34,8 +34,8 @@ defmodule M3.PlaylistTest do
     ]
   end
 
-	test "handles out-of-sequence playlists", context do
-    [ segment0, segment1 ] = Enum.map(0..1, fn(n) ->
+  test "handles out-of-sequence playlists", context do
+    [segment0, segment1] = Enum.map(0..1, fn(n) ->
       [context.base, "high/segment-#{n}.m3u8"]
       |> Path.join
       |> File.read!
@@ -44,5 +44,5 @@ defmodule M3.PlaylistTest do
 
     {:ok, media} = M3.Playlist.sequence(segment0, segment1)
     assert media == []
-	end
+  end
 end

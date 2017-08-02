@@ -59,7 +59,7 @@ defmodule Otis.Receiver do
   @latch_exit_signal :exit
 
   def create_latch(receiver) do
-    %R{ receiver | latch: start_latch_process() }
+    %R{receiver | latch: start_latch_process()}
   end
 
   def release_latch(nil), do: nil
