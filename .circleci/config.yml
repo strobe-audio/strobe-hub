@@ -33,6 +33,7 @@ jobs:
 
       # re-run compilation after tests so that compilation warnings do not
       # prevent tests from running. Compile in prod mode to exclude test code
+      - run: MIX_ENV=prod mix deps.get
       - run: MIX_ENV=prod mix compile --force --warnings-as-errors
 
       - save_cache:
