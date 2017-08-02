@@ -174,10 +174,10 @@ defmodule Plug.WebDAV.Handler.Propfind do
   end
   defp propfind({_name, path, _stat}, {:displayname, _dav}, _conn, {root, _}) do
     displayname =
-      cond do
-        Path.expand(path) == root -> ""
-        true ->
-          path |> Path.expand |> Path.basename
+      if Path.expand(path) == root do
+        ""
+      else
+        path |> Path.expand |> Path.basename
       end
     {200, ["<d:displayname><![CDATA[", displayname, "]]></d:displayname>"]}
   end
