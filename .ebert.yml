@@ -5,6 +5,10 @@ engines:
     enabled: true
   duplication:
     enabled: true
+    config:
+      languages:
+        elixir:
+        javascript:
   fixme:
     enabled: true
   csslint:
