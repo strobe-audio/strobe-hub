@@ -14,9 +14,15 @@ defmodule Strobe.Server.Ethernet do
     {:ok, dev}
   end
 
-  def handle_info(:start, dev) do
-    {:ok, _pid} = Nerves.Networking.setup(String.to_atom(dev), [mode: "dhcp"])
-    {:noreply, dev}
+  if Code.ensure_compiled?(Nerves.Networking) do
+    def handle_info(:start, dev) do
+      {:ok, _pid} = Nerves.Networking.setup(String.to_atom(dev), [mode: "dhcp"])
+      {:noreply, dev}
+    end
+  else
+    def handle_info(:start, dev) do
+      {:noreply, dev}
+    end
   end
 
   def handle_info({Nerves.NetworkInterface, :ifchanged, %{ifname: dev, operstate: :up} = event}, dev) do

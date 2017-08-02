@@ -4,6 +4,7 @@ import Debug
 import Window
 import Root
 import Root.Cmd
+import Root.Events
 import Channel
 import Channel.State
 import Receiver
@@ -38,7 +39,6 @@ initialState windowInnerWidth time =
     , showAddChannel = False
     , newChannelInput = Input.State.blank
     , activeChannelId = Nothing
-    , showAttachReceiver = False
     , touches = Utils.Touch.emptyModel
     , startTime = time
     , animationTime = time
@@ -89,11 +89,6 @@ restoreSavedState maybeState model =
 
         Nothing ->
             model
-
-
-broadcasterState : State.BroadcasterState -> List Channel.Model
-broadcasterState state =
-    List.map (Channel.State.initialState (Debug.log "state" state)) state.channels
 
 
 activeChannel : Root.Model -> Maybe Channel.Model
@@ -153,6 +148,30 @@ update action model =
         Msg.NoOp ->
             model ! []
 
+        Msg.Event eventResult ->
+            case eventResult of
+                Ok event ->
+                    let
+                        ( eventModel, maybeMsg, eventCmds ) =
+                            Root.Events.update event model
+
+                        ( model_, cmd ) =
+                            case maybeMsg of
+                                Nothing ->
+                                    eventModel ! eventCmds
+
+                                Just msg ->
+                                    update msg eventModel
+                    in
+                        ( model_, cmd )
+
+                Err msg ->
+                    let
+                        _ =
+                            Debug.log "Error decoding message" msg
+                    in
+                        model ! []
+
         Msg.Connected connected ->
             let
                 _ =
@@ -172,41 +191,12 @@ update action model =
             in
                 updatedModel ! []
 
-        Msg.InitialState state ->
-            let
-                channels =
-                    loadChannels model state
-
-                receivers =
-                    loadReceivers model state
-
-                updatedModel =
-                    { model
-                        | channels = channels
-                        , receivers = receivers
-                    }
-            in
-                updatedModel ! [ gotoDefaultChannel updatedModel ]
-
         Msg.Receiver receiverId receiverAction ->
             let
                 ( receivers, cmd ) =
                     updateIn (Receiver.State.update receiverAction) receiverId model.receivers
             in
                 { model | receivers = receivers } ! [ cmd ]
-
-        Msg.ReceiverPresence receiver ->
-            let
-                receivers_ =
-                    if List.any (\r -> r.id == receiver.id) model.receivers then
-                        model.receivers
-                    else
-                        (Receiver.State.initialState receiver) :: model.receivers
-            in
-                { model | receivers = receivers_ } ! []
-
-        Msg.ShowAttachReceiver show ->
-            { model | showAttachReceiver = show } ! []
 
         Msg.Channel channelId channelAction ->
             let
@@ -245,51 +235,6 @@ update action model =
             in
                 ( updatedModel, Cmd.batch [ (Cmd.map Msg.AddChannelInput inputCmd), cmd ] )
 
-        Msg.BroadcasterChannelAdded channelState ->
-            let
-                channel =
-                    Channel.State.newChannel channelState
-
-                model_ =
-                    { model
-                        | channels = channel :: model.channels
-                        , newChannelInput = Input.State.blank
-                    }
-            in
-                update (Msg.ActivateChannel channel) model_
-
-        Msg.BroadcasterChannelRemoved channelId ->
-            let
-                channels =
-                    List.filter (\channel -> channel.id /= channelId) model.channels
-
-                model_ =
-                    { model | channels = channels }
-
-                -- if the channel we were on has been deleted, then reset our
-                -- active channel id and goto the new default channel
-                updatedModel =
-                    case model.activeChannelId of
-                        Just id ->
-                            if id == channelId then
-                                { model_ | activeChannelId = Nothing }
-                            else
-                                model_
-
-                        Nothing ->
-                            model_
-            in
-                updatedModel ! [ gotoDefaultChannel updatedModel ]
-
-        Msg.BroadcasterChannelRenamed ( channelId, newName ) ->
-            update ((Msg.Channel channelId) (Channel.Renamed newName)) model
-
-        Msg.BroadcasterReceiverRenamed ( receiverId, newName ) ->
-            update ((Msg.Receiver receiverId) (Receiver.Renamed newName)) model
-
-        Msg.BroadcasterReceiverMuted ( receiverId, muted ) ->
-            update ((Msg.Receiver receiverId) (Receiver.Muted muted)) model
-
         Msg.Library libraryAction ->
             let
                 ( library, effect ) =
@@ -301,42 +246,6 @@ update action model =
 
         Msg.BroadcasterLibraryRegistration node ->
             { model | library = Library.State.add model.library node } ! []
-
-        Msg.BroadcasterVolumeChange event ->
-            case event.target of
-                "receiver" ->
-                    update (Msg.Receiver event.id (Receiver.VolumeChanged event.volume)) model
-
-                "channel" ->
-                    update (Msg.Channel event.id (Channel.VolumeChanged event.volume)) model
-
-                _ ->
-                    model ! []
-
-        Msg.BroadcasterRenditionAdded rendition ->
-            let
-                ( model_, channelCmd ) =
-                    update (Msg.Channel rendition.channelId (Channel.AddRendition rendition)) model
-
-                notifications =
-                    case model.activeChannelId of
-                        Nothing ->
-                            model.notifications
-
-                        Just id ->
-                            if rendition.channelId == id then
-                                let
-                                    notification =
-                                        Debug.log "adding notification"
-                                            Notification.forRendition
-                                            model.animationTime
-                                            rendition
-                                in
-                                    notification :: model.notifications
-                            else
-                                model.notifications
-            in
-                { model_ | notifications = notifications } ! [ channelCmd ]
 
         Msg.BrowserViewport width ->
             let
@@ -360,9 +269,6 @@ update action model =
                     ! []
 
         Msg.BrowserScroll value ->
-            -- let
-            -- _ = Debug.log "scroll" value
-            -- in
             ( model, Cmd.none )
 
         Msg.SingleTouch te ->
@@ -424,21 +330,6 @@ update action model =
                     { viewAnimations | revealChannelControl = animation }
             in
                 { model | showChannelControl = showChannelControl, viewAnimations = viewAnimations_ } ! []
-
-        Msg.ReceiverAttachmentChange ->
-            case Root.activeChannel model of
-                Nothing ->
-                    model ! []
-
-                Just channel ->
-                    let
-                        detached =
-                            Receiver.detachedReceivers channel model.receivers
-
-                        showAttachReceiver =
-                            not <| List.isEmpty detached
-                    in
-                        { model | showAttachReceiver = showAttachReceiver } ! []
 
         Msg.AnimationScroll ( time, position, height ) ->
             let
@@ -573,23 +464,6 @@ libraryVisible model =
                     False
 
 
-loadChannels : Root.Model -> State.BroadcasterState -> List Channel.Model
-loadChannels model state =
-    let
-        channels =
-            List.map (Channel.State.initialState state) state.channels
-
-        activeChannelId =
-            Maybe.map (\channel -> channel.id) (List.head channels)
-    in
-        channels
-
-
-loadReceivers : Root.Model -> State.BroadcasterState -> List Receiver.Model
-loadReceivers model state =
-    List.map Receiver.State.initialState state.receivers
-
-
 processAddChannelInputAction : Maybe Input.Action -> Root.Model -> ( Root.Model, Msg )
 processAddChannelInputAction action model =
     case action of
@@ -620,29 +494,3 @@ loadSettings model =
 
         _ ->
             ( model, Cmd.none )
-
-
-gotoDefaultChannel : Root.Model -> Cmd Msg
-gotoDefaultChannel model =
-    case model.activeChannelId of
-        Just id ->
-            let
-                activeChannelExists =
-                    List.any (\c -> c.id == id) model.channels
-            in
-                if activeChannelExists then
-                    Cmd.none
-                else
-                    gotoDefaultChannel { model | activeChannelId = Nothing }
-
-        Nothing ->
-            let
-                defaultChannelId =
-                    Maybe.map (\channel -> channel.id) (List.head model.channels)
-            in
-                case defaultChannelId of
-                    Nothing ->
-                        Cmd.none
-
-                    Just id ->
-                        Navigation.newUrl (Routing.channelLocation id)

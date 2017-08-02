@@ -134,7 +134,9 @@ defmodule Test.Otis.Pipeline.Buffer do
     {:ok, buffer} = Otis.Pipeline.Streams.start_stream(rendition.id, context.config)
     pid = GenServer.whereis(buffer)
     assert is_pid(pid) == true
+    Process.monitor(pid)
     Producer.stop(buffer)
+    assert_receive {:DOWN, _, :process, ^pid, {:shutdown, :normal}}
     pid = GenServer.whereis(buffer)
     assert is_nil(pid) == true
   end

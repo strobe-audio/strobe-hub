@@ -3,13 +3,26 @@ module State exposing (..)
 import Channel
 import Receiver
 import Rendition
+import ID
 
 
-type alias BroadcasterState =
-    { channels : List Channel.State
-    , receivers : List Receiver.State
-    , renditions : List Rendition.State
-    }
+type Event
+    = Startup (List Channel.State) (List Receiver.State) (List Rendition.State)
+    | Volume VolumeChangeEvent
+    | ReceiverAdd ID.Receiver ID.Channel
+    | ReceiverRemove ID.Receiver
+    | ReceiverAttach ID.Receiver ID.Channel
+    | ReceiverOnline Receiver.State
+    | ReceiverRename ID.Receiver String
+    | ReceiverMute ID.Receiver Bool
+    | ChannelPlayPause ID.Channel Bool
+    | ChannelAdd Channel.State
+    | ChannelRemove ID.Channel
+    | ChannelRename ID.Channel String
+    | RenditionProgress Rendition.ProgressEvent
+    | RenditionChange Rendition.ChangeEvent
+    | RenditionCreate Rendition.State
+    | RenditionActive ID.Channel ID.Rendition
 
 
 type alias VolumeChangeEvent =

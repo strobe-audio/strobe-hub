@@ -51,7 +51,7 @@ type Msg
     = Volume V.Msg
     | VolumeChanged Float
     | PlayPause
-    | Status ( String, String )
+    | IsPlaying Bool
     | ModifyRendition String Rendition.Msg
     | ShowAddReceiver Bool
     | RenditionProgress Rendition.ProgressEvent

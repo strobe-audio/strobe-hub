@@ -31,10 +31,10 @@ defmodule Strobe.Server.Fs do
     device() |> File.stat |> test_fs(state) |> try_mount(state)
   end
 
-  defp test_fs({:error, :enoent} = err, state) do
+  defp test_fs({:error, :enoent} = err, _state) do
     err
   end
-  defp test_fs({:ok, %File.Stat{type: :device} = stat}, state) do
+  defp test_fs({:ok, %File.Stat{type: :device} = stat}, _state) do
     case partition_type(device()) do
       {:ok, %{"TYPE" => type}} ->
         IO.inspect [:type, type]
@@ -103,7 +103,7 @@ defmodule Strobe.Server.Fs do
     case probe_type(device) do
       {result, 0} ->
         {:ok, parse_blkid_response(result)}
-      {err, n} ->
+      {err, _n} ->
         {:error, err}
     end
   end

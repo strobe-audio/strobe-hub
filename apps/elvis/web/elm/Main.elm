@@ -50,23 +50,10 @@ init startup location =
 subscriptions : Root.Model -> Sub Msg
 subscriptions model =
     Sub.batch
-        [ Ports.broadcasterStateActions
-        , Ports.receiverStatusActions
-        , Ports.receiverPresenceActions
-        , Ports.channelStatusActions
-        , Ports.channelRemovalActions
-        , Ports.renditionProgressActions
-        , Ports.renditionChangeActions
-        , Ports.renditionActivationActions
-        , Ports.volumeChangeActions
-        , Ports.playListAdditionActions
+        [ Ports.broadcasterEventSubscription
         , Ports.libraryRegistrationActions
         , Ports.libraryResponseActions
         , Ports.windowStartupActions
-        , Ports.channelAdditionActions
-        , Ports.channelRenameActions
-        , Ports.receiverRenameActions
-        , Ports.receiverMutingActions
         , Ports.scrollTopActions
         , Ports.connectionStatusActions
         , viewportWidth

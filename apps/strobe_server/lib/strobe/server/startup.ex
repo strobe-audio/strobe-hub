@@ -55,11 +55,10 @@ defmodule Strobe.Server.Startup do
     offline(state) == []
   end
 
-  defp offline(%S{run: run} = state) do
+  defp offline(%S{run: run}) do
     run
     |> Enum.filter(fn({_, s}) -> !s end)
     |> Enum.map(fn({k, _}) -> k end)
-    |> IO.inspect
   end
 
   defp launch(false) do

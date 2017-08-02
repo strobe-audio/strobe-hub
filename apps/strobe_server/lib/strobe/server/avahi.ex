@@ -13,7 +13,7 @@ defmodule Strobe.Server.Avahi do
     {:ok, %{port: nil}}
   end
 
-  def handle_info({Nerves.NetworkInterface, :ifchanged, %{operstate: :up} = event}, %{port: nil} = state) do
+  def handle_info({Nerves.NetworkInterface, :ifchanged, %{operstate: :up}}, %{port: nil} = state) do
     Logger.info "#{__MODULE__} starting #{avahi_daemon()}"
     port = Port.open({:spawn_executable, avahi_daemon()}, avahi_daemon_args())
     Process.send_after(self(), :check_running, 1_000)

@@ -112,7 +112,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:receiver, :reattach, [receiver_id, channel_id, _receiver]}, state) do
-    broadcast!("receiver-reattach", %{channelId: channel_id, receiverId: receiver_id})
+    broadcast!("receiver-attach", %{channelId: channel_id, receiverId: receiver_id})
     {:ok, state}
   end
 
