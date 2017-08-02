@@ -1,4 +1,4 @@
-module Decoders exposing (decodeTypedMessage)
+module Decoders exposing (typedMessageDecoder)
 
 import Json.Decode exposing (..)
 import State
@@ -7,68 +7,68 @@ import Receiver
 import Rendition
 
 
-decodeTypedMessage : Decoder State.Event
-decodeTypedMessage =
-    field "__type__" string |> andThen decodeWithType
+typedMessageDecoder : Decoder State.Event
+typedMessageDecoder =
+    field "__type__" string |> andThen withTypeDecoder
 
 
-decodeWithType : String -> Decoder State.Event
-decodeWithType typ =
+withTypeDecoder : String -> Decoder State.Event
+withTypeDecoder typ =
     case typ of
         "startup" ->
-            decodeStartup
+            startupDecoder
 
         "volume-change" ->
-            decodeVolumeChange
+            volumeChangeDecoder
 
         "receiver-add" ->
-            decodeReceiverAdd
+            receiverAddDecoder
 
         "receiver-remove" ->
-            decodeReceiverRemove
+            receiverRemoveDecoder
 
         "receiver-attach" ->
-            decodeReceiverAttach
+            receiverAttachDecoder
 
         "receiver-online" ->
-            decodeReceiverOnline
+            receiverOnlineDecoder
 
         "receiver-rename" ->
-            decodeReceiverRename
+            receiverRenameDecoder
 
         "receiver-mute" ->
-            decodeReceiverMute
+            receiverMuteDecoder
 
         "channel-play_pause" ->
-            decodeChannelPlayPause
+            channelPlayPauseDecoder
 
         "channel-add" ->
-            decodeChannelAdd
+            channelAddDecoder
 
         "channel-remove" ->
-            decodeChannelRemove
+            channelRemoveDecoder
 
         "channel-rename" ->
-            decodeChannelRename
+            channelRenameDecoder
 
         "rendition-progress" ->
-            decodeRenditionProgress
+            renditionProgressDecoder
 
         "rendition-create" ->
-            decodeRenditionAdd
+            renditionAddDecoder
 
         "rendition-active" ->
-            decodeRenditionActive
+            renditionActiveDecoder
 
         "playlist-change" ->
-            decodeRenditionChange
+            renditionChangeDecoder
 
         unknown ->
             fail ("Unknown event type " ++ unknown)
 
 
-decodeStartup : Decoder State.Event
-decodeStartup =
+startupDecoder : Decoder State.Event
+startupDecoder =
     let
         constructor a b c =
             State.Startup (State.BroadcasterState a b c)
@@ -81,8 +81,8 @@ decodeStartup =
         )
 
 
-decodeVolumeChange : Decoder State.Event
-decodeVolumeChange =
+volumeChangeDecoder : Decoder State.Event
+volumeChangeDecoder =
     map3
         (\id target volume -> State.Volume (State.VolumeChangeEvent id target volume))
         (field "id" string)
@@ -90,84 +90,84 @@ decodeVolumeChange =
         (field "volume" float)
 
 
-decodeReceiverAdd : Decoder State.Event
-decodeReceiverAdd =
+receiverAddDecoder : Decoder State.Event
+receiverAddDecoder =
     map2
         State.ReceiverAdd
         (field "receiverId" string)
         (field "channelId" string)
 
 
-decodeReceiverRemove : Decoder State.Event
-decodeReceiverRemove =
+receiverRemoveDecoder : Decoder State.Event
+receiverRemoveDecoder =
     map
         State.ReceiverRemove
         (field "receiverId" string)
 
 
-decodeReceiverAttach : Decoder State.Event
-decodeReceiverAttach =
+receiverAttachDecoder : Decoder State.Event
+receiverAttachDecoder =
     map2
         State.ReceiverAttach
         (field "receiverId" string)
         (field "channelId" string)
 
 
-decodeReceiverOnline : Decoder State.Event
-decodeReceiverOnline =
+receiverOnlineDecoder : Decoder State.Event
+receiverOnlineDecoder =
     map
         State.ReceiverOnline
         receiverStateDecoder
 
 
-decodeReceiverRename : Decoder State.Event
-decodeReceiverRename =
+receiverRenameDecoder : Decoder State.Event
+receiverRenameDecoder =
     map2
         State.ReceiverRename
         (field "receiverId" string)
         (field "name" string)
 
 
-decodeReceiverMute : Decoder State.Event
-decodeReceiverMute =
+receiverMuteDecoder : Decoder State.Event
+receiverMuteDecoder =
     map2
         State.ReceiverMute
         (field "receiverId" string)
         (field "muted" bool)
 
 
-decodeChannelPlayPause : Decoder State.Event
-decodeChannelPlayPause =
+channelPlayPauseDecoder : Decoder State.Event
+channelPlayPauseDecoder =
     map2
         State.ChannelPlayPause
         (field "channelId" string)
         (map ((==) "play") (field "status" string))
 
 
-decodeChannelAdd : Decoder State.Event
-decodeChannelAdd =
+channelAddDecoder : Decoder State.Event
+channelAddDecoder =
     map
         State.ChannelAdd
         channelStateDecoder
 
 
-decodeChannelRemove : Decoder State.Event
-decodeChannelRemove =
+channelRemoveDecoder : Decoder State.Event
+channelRemoveDecoder =
     map
         State.ChannelRemove
         (field "id" string)
 
 
-decodeChannelRename : Decoder State.Event
-decodeChannelRename =
+channelRenameDecoder : Decoder State.Event
+channelRenameDecoder =
     map2
         State.ChannelRename
         (field "channelId" string)
         (field "name" string)
 
 
-decodeRenditionProgress : Decoder State.Event
-decodeRenditionProgress =
+renditionProgressDecoder : Decoder State.Event
+renditionProgressDecoder =
     map
         State.RenditionProgress
         (map4
@@ -179,8 +179,8 @@ decodeRenditionProgress =
         )
 
 
-decodeRenditionChange : Decoder State.Event
-decodeRenditionChange =
+renditionChangeDecoder : Decoder State.Event
+renditionChangeDecoder =
     map
         State.RenditionChange
         (map3
@@ -191,15 +191,15 @@ decodeRenditionChange =
         )
 
 
-decodeRenditionAdd : Decoder State.Event
-decodeRenditionAdd =
+renditionAddDecoder : Decoder State.Event
+renditionAddDecoder =
     map
         State.RenditionCreate
         renditionStateDecoder
 
 
-decodeRenditionActive : Decoder State.Event
-decodeRenditionActive =
+renditionActiveDecoder : Decoder State.Event
+renditionActiveDecoder =
     map2
         State.RenditionActive
         (field "channelId" string)

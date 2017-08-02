@@ -16,7 +16,7 @@ import Decoders
 
 decodeEvent : Json.Decode.Value -> Msg
 decodeEvent =
-    (Json.Decode.decodeValue Decoders.decodeTypedMessage) >> Msg.Event
+    (Json.Decode.decodeValue Decoders.typedMessageDecoder) >> Msg.Event
 
 
 
