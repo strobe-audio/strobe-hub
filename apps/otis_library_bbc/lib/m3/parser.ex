@@ -46,7 +46,7 @@ defmodule M3.Parser do
   defp parse_line("#EXT-X-TARGETDURATION:" <> duration, parser) do
     parser |> set_target_duration(String.to_integer(duration))
   end
-  defp parse_line("#EXT-X-MEDIA-SEQUENCE:"<>seq, parser) do
+  defp parse_line("#EXT-X-MEDIA-SEQUENCE:" <> seq, parser) do
     parser |> set_media_sequence(seq)
   end
   defp parse_line("#EXT-X-STREAM-INF:" <> comment, parser) do
@@ -54,13 +54,11 @@ defmodule M3.Parser do
     parser |> set_stream_inf(metadata)
   end
   defp parse_line("#EXTINF:" <> media_info, parser) do
-    cond do
-      match = Regex.run(~r/(\d+)\s*,\s*(.+)$/, media_info) ->
-        [_, duration, filename] = match
-        parser |> set_extinf(duration, filename)
-
-      true ->
-        parser
+    if match = Regex.run(~r/(\d+)\s*,\s*(.+)$/, media_info) do
+      [_, duration, filename] = match
+      parser |> set_extinf(duration, filename)
+    else
+      parser
     end
   end
   defp parse_line("#" <> _, parser) do
@@ -94,13 +92,11 @@ defmodule M3.Parser do
   end
 
   defp metadata_value(value) do
-    cond do
-      match = Regex.run(~r/^"([^"]*)"$/, value) ->
-        [_, unquoted] = match
-        unquoted
-
-      true ->
-        value
+    if match = Regex.run(~r/^"([^"]*)"$/, value) do
+      [_, unquoted] = match
+      unquoted
+    else
+      value
     end
   end
 
@@ -108,7 +104,7 @@ defmodule M3.Parser do
     set_extinf(parser, String.to_integer(duration), filename)
   end
   defp set_extinf(parser, duration, filename) do
-    %Parser{ parser | extinf: {duration, filename} }
+    %Parser{parser | extinf: {duration, filename}}
   end
 
   defp set_stream_inf(parser, %{bandwidth: _bandwidth, codecs: _codecs, program_id: _program_id} = stream_inf) do
@@ -127,34 +123,34 @@ defmodule M3.Parser do
   defp set_target_duration(parser, duration) do
     type = case parser.type do
       %M3.Playlist.Live{} ->
-        %M3.Playlist.Live{ parser.type | target_duration: duration }
+        %M3.Playlist.Live{parser.type | target_duration: duration}
       _ ->
-        %M3.Playlist.Live{ target_duration: duration }
+        %M3.Playlist.Live{target_duration: duration}
     end
-    %Parser{ parser | type: type }
+    %Parser{parser | type: type}
   end
   defp set_media_sequence(parser, seq) do
     type = case parser.type do
       %M3.Playlist.Live{} ->
-        %M3.Playlist.Live{ parser.type | media_sequence_number: String.to_integer(seq) }
+        %M3.Playlist.Live{parser.type | media_sequence_number: String.to_integer(seq)}
       _ ->
-        %M3.Playlist.Live{ media_sequence_number: String.to_integer(seq) }
+        %M3.Playlist.Live{media_sequence_number: String.to_integer(seq)}
     end
-    %Parser{ parser | type: type }
+    %Parser{parser | type: type}
   end
 
   defp set_version(parser, version) do
-    %Parser{ parser | version: version }
+    %Parser{parser | version: version}
   end
   defp reset_extinf(parser) do
-    %Parser{ parser | extinf: {0, ""} }
+    %Parser{parser | extinf: {0, ""}}
   end
 
   defp reset_streaminf(parser) do
-    %Parser{ parser | streaminf: nil }
+    %Parser{parser | streaminf: nil}
   end
 
   defp append_media(parser, media) do
-    %Parser{  parser | media: [media | parser.media] }
+    %Parser{parser | media: [media | parser.media]}
   end
 end

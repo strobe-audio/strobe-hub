@@ -1,0 +1,11 @@
+engines:
+  credo:
+    enabled: true
+  eslint:
+    enabled: true
+  duplication:
+    enabled: true
+  fixme:
+    enabled: true
+  csslint:
+    enabled: false
