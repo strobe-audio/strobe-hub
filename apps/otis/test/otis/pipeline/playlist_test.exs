@@ -141,10 +141,10 @@ defmodule Test.Otis.Pipeline.Playlist do
     assert_receive {:__complete__, {:playlist, :skip, [^channel_id, ^eid, _]}, Otis.State.Persistence.Playlist}
     {:ok, renditions} = Playlist.list(context.pl)
     assert renditions == [eid, fid]
-    assert_receive {:rendition, :delete, [^aid, ^channel_id]}
-    assert_receive {:rendition, :delete, [^bid, ^channel_id]}
-    assert_receive {:rendition, :delete, [^cid, ^channel_id]}
-    assert_receive {:rendition, :delete, [^did, ^channel_id]}
+    assert_receive {:rendition, :skip, [^channel_id, ^aid]}
+    assert_receive {:rendition, :skip, [^channel_id, ^bid]}
+    assert_receive {:rendition, :skip, [^channel_id, ^cid]}
+    assert_receive {:rendition, :skip, [^channel_id, ^did]}
   end
 
 
