@@ -20,9 +20,14 @@ defmodule Otis.Receivers.Logger do
     {:ok, %{socket: socket, config: config}}
   end
 
-  def handle_info({:udp, _socket, addr, _port, msg}, state) do
-  #   ip = addr |> Tuple.to_list |> Enum.join(".")
-  #   Logger.log(:info, String.trim_trailing(msg), [ip: ip])
+  def handle_info({:udp, _socket, _addr, _port, _msg}, state) do
+    # ip = addr |> Tuple.to_list |> Enum.join(".")
+    #   Logger.log(:info, String.trim_trailing(msg), [ip: ip])
+    {:noreply, state}
+  end
+
+  def handle_info(msg, state) do
+    Logger.warn "Unhandled message #{inspect msg}"
     {:noreply, state}
   end
 

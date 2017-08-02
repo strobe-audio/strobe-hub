@@ -45,3 +45,6 @@ jobs:
             - /root/.cache/rebar3
 
       - run: mix test --trace
+
+      # re-run compilation after tests
+      - run: mix compile --force --warnings-as-errors
