@@ -108,7 +108,7 @@ defmodule Otis.Persistence.RenditionTest do
     [] = State.Playlist.list(channel(context))
   end
 
-  test "a skip deletes every unplayed source from the db", context do
+  test "a skip does not delete unplayed source from the db", context do
     sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new, TestSource.new]
     {:ok, ids} = build_playlist(context, sources)
     skip_to = Enum.at(ids, -2)
@@ -119,12 +119,16 @@ defmodule Otis.Persistence.RenditionTest do
     evt = {:playlist, :skip, [channel_id, skip_to, skipped_ids]}
     assert_receive ^evt
     assert_receive {:__complete__, ^evt, Persistence.Playlist}
-    assert [nil, nil, nil] = skipped_ids |> Enum.map(&State.Rendition.find/1)
+    assert [%State.Rendition{}, %State.Rendition{}, %State.Rendition{}] = skipped_ids |> Enum.map(&State.Rendition.find/1)
     renditions = kept_ids |> Enum.map(fn(id) -> State.Rendition.find(id) end)
     assert renditions == State.Playlist.list(channel(context))
+    for id <- skipped_ids do
+      refute_received {:rendition, :delete, [^channel_id, ^id]}
+      assert_received {:rendition, :skip, [^channel_id, ^id]}
+    end
   end
 
-  test "a skip deletes the currently playing source from the db", context do
+  test "a skip does not delete the currently playing source from the db", context do
     sources = [TestSource.new, TestSource.new, TestSource.new, TestSource.new, TestSource.new]
     {:ok, ids} = build_playlist(context, sources)
     {:ok, _rendition} = Playlist.next(context.playlist)
@@ -135,7 +139,7 @@ defmodule Otis.Persistence.RenditionTest do
     evt = {:playlist, :skip, [channel_id, skip_to, skipped_ids]}
     assert_receive ^evt
     assert_receive {:__complete__, ^evt, Persistence.Playlist}
-    assert Enum.map(skipped_ids, &Rendition.find/1) == List.duplicate(nil, length(skipped_ids))
+    assert Enum.map(skipped_ids, &Rendition.find/1) != List.duplicate(nil, length(skipped_ids))
   end
 
   test "restores source lists from db", context do

@@ -39,7 +39,7 @@ defmodule Otis.State.Persistence.Playlist do
     {:ok, {_channel, deleted}} = Repo.transaction fn ->
       skipped_ids |> renditions_skipped(channel_id, skip_id)
     end
-    Enum.each(deleted, &Strobe.Events.notify(:rendition, :delete, [&1.id, channel_id]))
+    Enum.each(deleted, &Strobe.Events.notify(:rendition, :skip, [channel_id, &1.id]))
     {:ok, state}
   end
 
@@ -73,16 +73,11 @@ defmodule Otis.State.Persistence.Playlist do
     channel_id |> channel() |> Playlist.advance!(current_rendition_id)
   end
 
-  defp renditions_skipped([], channel_id, _skip_id) do
-    {channel(channel_id), []}
-  end
-  defp renditions_skipped([first | _] = renditions, channel_id, _skip_id) do
-    channel = channel(channel_id)
-    Playlist.delete!(channel, first, length(renditions))
+  defp renditions_skipped(_renditions, channel_id, skip_id) do
+    channel_id |> channel() |> Playlist.advance!(skip_id)
   end
 
   defp channel(id) do
     State.Channel.find!(id)
   end
 end
-
