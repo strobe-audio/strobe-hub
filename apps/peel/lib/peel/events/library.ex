@@ -39,7 +39,8 @@ defmodule Peel.Events.Library do
     } |> section()
   end
 
-  def route_library_request(channel_id, ["track", track_id, "play"], _query, _path) do Track.find(track_id) |> play(channel_id)
+  def route_library_request(channel_id, ["track", track_id, "play"], _query, _path) do
+    Track.find(track_id) |> play(channel_id)
   end
   def route_library_request(channel_id, ["track", track_id], _query, _path) do
     Track.find(track_id) |> play(channel_id)
