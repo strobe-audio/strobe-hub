@@ -33,7 +33,7 @@ defmodule Strobe.Server.Startup do
     {:ok, state}
   end
 
-  def handle_event(evt, state) do
+  def handle_event(_evt, state) do
     {:ok, state}
   end
 
