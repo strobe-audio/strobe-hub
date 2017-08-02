@@ -35,9 +35,19 @@ defmodule Otis.Library.Airplay.Input do
   end
 
   def init([n, _config]) do
-    process = Airplay.Shairport.run(n)
+    process = run_shairport(n)
     Process.flag(:trap_exit, true)
     {:producer, %S{id: n, process: process}, buffer_size: 100}
+  end
+
+  if Mix.env == :test do
+    def run_shairport(_n) do
+      nil
+    end
+  else
+    def run_shairport(n) do
+      Airplay.Shairport.run(n)
+    end
   end
 
   def terminate(_reason, %S{process: nil}) do
