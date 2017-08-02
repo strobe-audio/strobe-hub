@@ -20,7 +20,7 @@ defmodule Otis.Library.Airplay.Input do
   end
 
   # TODO: get packet size from provided config
-  @bpms round(44100 * 2 * 2 * (1 / 1000))
+  @bpms round(44_100 * 2 * 2 * (1 / 1_000))
   @packet_size 100 * @bpms
   @silence_bytes @packet_size
   @silence :binary.copy(<<0>>, @silence_bytes)
@@ -98,7 +98,7 @@ defmodule Otis.Library.Airplay.Input do
       << buffer <> data >>
       |> split_packets()
       |> queue_packets(queue)
-    %S{ state | buffer: buffer, queue: queue }
+    %S{state | buffer: buffer, queue: queue}
   end
 
   defp split_packets(buffer) do

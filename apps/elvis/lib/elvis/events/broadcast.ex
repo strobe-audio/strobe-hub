@@ -20,7 +20,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:library, :response, [id, url, response, socket]}, state) do
-    Phoenix.Channel.push(socket, "library-response", %{ libraryId: id, url: url, folder: response })
+    Phoenix.Channel.push(socket, "library-response", %{libraryId: id, url: url, folder: response})
     {:ok, state}
   end
 
@@ -117,7 +117,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:receiver, :volume, [id, volume]}, state) do
-    broadcast!("volume-change", %{ id: id, target: "receiver", volume: volume })
+    broadcast!("volume-change", %{id: id, target: "receiver", volume: volume})
     {:ok, state}
   end
 
@@ -132,7 +132,7 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:channel, :volume, [id, volume]}, state) do
-    broadcast!("volume-change", %{ id: id, target: "channel", volume: volume })
+    broadcast!("volume-change", %{id: id, target: "channel", volume: volume})
     {:ok, state}
   end
 

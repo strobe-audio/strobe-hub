@@ -7,7 +7,6 @@ defmodule Strobe.Server.Fs do
   end
 
   def start_link(opts) do
-    IO.inspect [:start_link, opts]
     GenServer.start_link(__MODULE__, opts)
   end
 

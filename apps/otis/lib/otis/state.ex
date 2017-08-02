@@ -18,7 +18,7 @@ defmodule Otis.State do
   @doc "Returns the current state from the db"
   def current do
     channels = channels()
-    %{ channels: channels, receivers: receivers(), renditions: renditions() }
+    %{channels: channels, receivers: receivers(), renditions: renditions()}
   end
 
   defp channels do

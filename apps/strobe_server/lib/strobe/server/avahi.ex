@@ -17,7 +17,7 @@ defmodule Strobe.Server.Avahi do
     Logger.info "#{__MODULE__} starting #{avahi_daemon()}"
     port = Port.open({:spawn_executable, avahi_daemon()}, avahi_daemon_args())
     Process.send_after(self(), :check_running, 1_000)
-    {:noreply, %{ state | port: port }}
+    {:noreply, %{state | port: port}}
   end
   def handle_info(:check_running, state) do
     IO.inspect [__MODULE__, :check_running]

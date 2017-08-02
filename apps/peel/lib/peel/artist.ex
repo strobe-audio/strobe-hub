@@ -28,7 +28,7 @@ defmodule Peel.Artist do
   end
 
   def for_track(%Track{performer: nil} = track) do
-    %Track{ track | performer: "Unknown artist" } |> for_track
+    %Track{track | performer: "Unknown artist"} |> for_track
   end
   def for_track(%Track{performer: performer, collection_id: collection_id} = track) do
     normalized_performer = normalize_performer(performer)
@@ -41,7 +41,7 @@ defmodule Peel.Artist do
   end
 
   def return_or_create(nil, track) do
-    %Artist{ name: track.performer, collection_id: track.collection_id }
+    %Artist{name: track.performer, collection_id: track.collection_id}
     |> normalize
     |> Repo.insert!
   end
@@ -50,11 +50,11 @@ defmodule Peel.Artist do
   end
 
   defp normalize(artist) do
-    %Artist{ artist | normalized_name: normalize_performer(artist.name) }
+    %Artist{artist | normalized_name: normalize_performer(artist.name)}
   end
 
   def associate(artist, track) do
-    %Track{ track | artist: artist, artist_id: artist.id }
+    %Track{track | artist: artist, artist_id: artist.id}
   end
 
   def albums(for_artist) do

@@ -50,7 +50,7 @@ defmodule HLS.Client.Playlist do
   def handle_info({:playlist, {:error, _reason}}, state) do
     Logger.warn "Failed to load playlist, using white-noise fallback"
     noise = %M3.Media{duration: state.playlist.target_duration, url: HLS.whitenoise_url()}
-    handle_media([noise], 4, %S{ state | reloading: false })
+    handle_media([noise], 4, %S{state | reloading: false})
   end
   def handle_info({:playlist, {:ok, data, headers}}, state) do
     playlist = M3.Parser.parse!(data, state.url)
@@ -68,7 +68,7 @@ defmodule HLS.Client.Playlist do
   defp handle_media(media, _expiry, state) do
     # Logger.info "New media #{length(media)}/#{state.demand} - #{state.playlist.media_sequence_number}"
     {events, media} = Enum.split(media, state.demand)
-    state = %S{ state | media: media, demand: state.demand - length(events) }
+    state = %S{state | media: media, demand: state.demand - length(events)}
     {:noreply, events, state}
   end
 

@@ -66,7 +66,7 @@ defmodule Otis.Receivers.Protocol do
       def process_message({id, params}, state) do
         Logger.info "Receiver connection #{unquote(opts[:type])} #{id} => #{ inspect params }"
         GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self(), state.socket}, params})
-        %S{ state | id: id }
+        %S{state | id: id}
       end
       def process_message(_msg, state) do
         state
@@ -118,7 +118,7 @@ defmodule Otis.Receivers.Protocol do
           active: :once,
           keepalive: true,
           nodelay: true,
-          send_timeout: 2_000*pipeline_config.packet_duration_ms,
+          send_timeout: 2_000 * pipeline_config.packet_duration_ms,
         ]
       end
     end

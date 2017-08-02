@@ -47,7 +47,7 @@ defmodule Peel.File do
   end
 
   defp parse_metadata(xml, path) do
-    state = %{ field: nil, data: %Metadata{}, audio_track: false }
+    state = %{field: nil, data: %Metadata{}, audio_track: false}
     {:ok, result, _} = :erlsom.parse_sax(xml, state, &sax_event/2)
     {:ok, %__MODULE__{id: path, path: path, metadata: result.data}}
   end
@@ -61,7 +61,7 @@ defmodule Peel.File do
     :performer, :title
   ], fn(field) ->
     defp sax_event({:characters, cdata}, %{field: unquote(field), data: data} = state) do
-      %{ state | data: :maps.put(unquote(field), to_string(cdata), data) }
+      %{state | data: :maps.put(unquote(field), to_string(cdata), data)}
     end
   end
 
@@ -75,7 +75,7 @@ defmodule Peel.File do
   ], fn([field, audio]) ->
     defp sax_event({:characters, cdata}, %{audio_track: unquote(audio), field: unquote(field), data: data} = state) do
       case Regex.match?(@integer, to_string(cdata)) do
-        true  -> %{ state | data: :maps.put(unquote(field), List.to_integer(cdata, 10), data) }
+        true  -> %{state | data: :maps.put(unquote(field), List.to_integer(cdata, 10), data)}
         false -> state
       end
     end
@@ -86,23 +86,23 @@ defmodule Peel.File do
   end
 
   Enum.each [
-    ['Album',               :album       ], ['Bit_rate',            :bit_rate    ],
-    ['Channel_s_',          :channels    ], ['Composer',            :composer    ],
-    ['Duration',            :duration_ms ], ['File_extension',      :extension   ],
-    ['File_name',           :filename    ], ['Genre',               :genre       ],
-    ['Internet_media_type', :mime_type   ], ['Part_Position',       :disk_number ],
-    ['Part_Total',          :disk_total  ], ['Performer',           :performer   ],
-    ['Recorded_date',       :date        ], ['Sampling_rate',       :sample_rate ],
-    ['Stream_size',         :stream_size ], ['Title',               :title       ],
-    ['Track_name_Position', :track_number], ['Track_name_Total',    :track_total ]
+    ['Album',               :album       ], ['Bit_rate',            :bit_rate   ],
+    ['Channel_s_',          :channels    ], ['Composer',            :composer   ],
+    ['Duration',            :duration_ms ], ['File_extension',      :extension  ],
+    ['File_name',           :filename    ], ['Genre',               :genre      ],
+    ['Internet_media_type', :mime_type   ], ['Part_Position',       :disk_number],
+    ['Part_Total',          :disk_total  ], ['Performer',           :performer  ],
+    ['Recorded_date',       :date        ], ['Sampling_rate',       :sample_rate],
+    ['Stream_size',         :stream_size ], ['Title',               :title      ],
+    ['Track_name_Position', :track_number], ['Track_name_Total',    :track_total]
   ], fn([tag, field]) ->
     defp sax_event({:startElement, [], unquote(tag), [], []}, state) do
-      %{ state | field: unquote(field) }
+      %{state | field: unquote(field)}
     end
   end
 
   defp sax_event({:startElement, [], 'track', [], [{:attribute, 'type', [], [], 'Audio'} | _attrs]}, state) do
-    %{ state | audio_track: true }
+    %{state | audio_track: true}
   end
 
   defp sax_event({:startElement, [], 'track', [], [{:attribute, 'type', [], [], _type} | _attrs]}, state) do
@@ -110,7 +110,7 @@ defmodule Peel.File do
   end
 
   defp sax_event({:endElement, [], _tag, []}, state) do
-    %{state | field: nil }
+    %{state | field: nil}
   end
 
   defp sax_event(_event, state) do

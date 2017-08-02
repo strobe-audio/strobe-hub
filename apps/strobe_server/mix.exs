@@ -39,7 +39,8 @@ defmodule Strobe.Server.Mixfile do
     [extra_applications: [:logger]]
   end
   def application(_target) do
-    [ mod: {Strobe.Server.Application, []},
+    [
+      mod: {Strobe.Server.Application, []},
       applications: [
         :gen_stage,
         :nerves_networking,

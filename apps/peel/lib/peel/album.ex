@@ -87,11 +87,11 @@ defmodule Peel.Album do
   end
 
   defp normalize(album) do
-    %Album{ album | normalized_title: Peel.String.normalize(album.title) }
+    %Album{album | normalized_title: Peel.String.normalize(album.title)}
   end
 
   def associate(album, track) do
-    %Track{ track | album: album, album_id: album.id, cover_image: album.cover_image }
+    %Track{track | album: album, album_id: album.id, cover_image: album.cover_image}
   end
 
   def tracks(album) do

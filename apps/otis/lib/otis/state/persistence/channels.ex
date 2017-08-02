@@ -41,7 +41,7 @@ defmodule Otis.State.Persistence.Channels do
   end
 
   def handle_event({:channel, :volume, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do
-    state = %S{ state | volumes: Map.put(volumes, id, volume), timer: start_timer(timer) }
+    state = %S{state | volumes: Map.put(volumes, id, volume), timer: start_timer(timer)}
     {:incomplete, state}
   end
 

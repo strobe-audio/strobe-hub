@@ -9,7 +9,7 @@ defmodule Otis.Persistence.PlayListTest do
   def ids(renditions), do: Enum.map(List.wrap(renditions), fn(%Rendition{id: id}) -> id end)
 
   setup_all do
-    {:ok, channel_id: Otis.uuid, profile_id: Otis.uuid }
+    {:ok, channel_id: Otis.uuid, profile_id: Otis.uuid}
   end
 
   setup cxt do
@@ -32,8 +32,8 @@ defmodule Otis.Persistence.PlayListTest do
 
   test "appending to empty list", cxt do
     r = [
-      %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },
-      %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc" },
+      %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc"},
+      %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc"},
     ]
     {channel, inserted} = Playlist.append!(cxt.channel, r)
     assert ids(inserted) == ids(r)
@@ -42,8 +42,8 @@ defmodule Otis.Persistence.PlayListTest do
 
   test "prepending to empty list", cxt do
     r = [
-      %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },
-      %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc" },
+      %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc"},
+      %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc"},
     ]
     {channel, inserted} = Playlist.prepend!(cxt.channel, r)
     assert ids(inserted) == ids(r)
@@ -53,15 +53,15 @@ defmodule Otis.Persistence.PlayListTest do
   describe "with existing entries" do
     setup %{channel_id: id, channel: channel} do
       playlist = [first | _] = [
-        %Rendition{channel_id: id, id: "ec779bec-44d9-4a0a-ade5-b6df0eee9571", next_id: "dc1c043e-25ac-463a-8f3c-fd3f79a36897" },
-        %Rendition{channel_id: id, id: "dc1c043e-25ac-463a-8f3c-fd3f79a36897", next_id: "f3a74de1-3c68-45d4-bb92-e1ad5f9224f9" },
-        %Rendition{channel_id: id, id: "f3a74de1-3c68-45d4-bb92-e1ad5f9224f9", next_id: "06a72197-dc53-40d3-afc4-0121db3271c5" },
-        %Rendition{channel_id: id, id: "06a72197-dc53-40d3-afc4-0121db3271c5", next_id: "cc8e2967-a956-47d2-9a5a-549a67aa95b6" },
-        %Rendition{channel_id: id, id: "cc8e2967-a956-47d2-9a5a-549a67aa95b6", next_id: "e01985f9-897b-4441-9b41-f1f198a8f7ef" },
-        %Rendition{channel_id: id, id: "e01985f9-897b-4441-9b41-f1f198a8f7ef", next_id: "99933b7d-ed14-495d-b8ca-f8ce37135474" },
-        %Rendition{channel_id: id, id: "99933b7d-ed14-495d-b8ca-f8ce37135474", next_id: "9048382e-df62-4932-819b-2d7f4a9d5d8f" },
-        %Rendition{channel_id: id, id: "9048382e-df62-4932-819b-2d7f4a9d5d8f", next_id: "f6025f92-e6b5-4f2e-b45e-21fc3f6d09cb" },
-        %Rendition{channel_id: id, id: "f6025f92-e6b5-4f2e-b45e-21fc3f6d09cb" },
+        %Rendition{channel_id: id, id: "ec779bec-44d9-4a0a-ade5-b6df0eee9571", next_id: "dc1c043e-25ac-463a-8f3c-fd3f79a36897"},
+        %Rendition{channel_id: id, id: "dc1c043e-25ac-463a-8f3c-fd3f79a36897", next_id: "f3a74de1-3c68-45d4-bb92-e1ad5f9224f9"},
+        %Rendition{channel_id: id, id: "f3a74de1-3c68-45d4-bb92-e1ad5f9224f9", next_id: "06a72197-dc53-40d3-afc4-0121db3271c5"},
+        %Rendition{channel_id: id, id: "06a72197-dc53-40d3-afc4-0121db3271c5", next_id: "cc8e2967-a956-47d2-9a5a-549a67aa95b6"},
+        %Rendition{channel_id: id, id: "cc8e2967-a956-47d2-9a5a-549a67aa95b6", next_id: "e01985f9-897b-4441-9b41-f1f198a8f7ef"},
+        %Rendition{channel_id: id, id: "e01985f9-897b-4441-9b41-f1f198a8f7ef", next_id: "99933b7d-ed14-495d-b8ca-f8ce37135474"},
+        %Rendition{channel_id: id, id: "99933b7d-ed14-495d-b8ca-f8ce37135474", next_id: "9048382e-df62-4932-819b-2d7f4a9d5d8f"},
+        %Rendition{channel_id: id, id: "9048382e-df62-4932-819b-2d7f4a9d5d8f", next_id: "f6025f92-e6b5-4f2e-b45e-21fc3f6d09cb"},
+        %Rendition{channel_id: id, id: "f6025f92-e6b5-4f2e-b45e-21fc3f6d09cb"},
       ]
 
       renditions = for r <- Enum.reverse(playlist) do
@@ -97,8 +97,8 @@ defmodule Otis.Persistence.PlayListTest do
 
     test "appending to list", cxt do
       r = [
-        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },
-        %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc" },
+        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc"},
+        %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc"},
       ]
       {channel, inserted} = Playlist.append!(cxt.channel, r)
       assert ids(inserted) == ids(r)
@@ -108,7 +108,7 @@ defmodule Otis.Persistence.PlayListTest do
     test "appending to list with history", cxt do
       channel = Channel.update(cxt.channel, current_rendition_id: nil)
       r = [
-        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },
+        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc"},
       ]
       {channel, inserted} = Playlist.append!(channel, r)
       assert ids(inserted) == ids(r)
@@ -118,8 +118,8 @@ defmodule Otis.Persistence.PlayListTest do
 
     test "prepending to list", cxt do
       r = [
-        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },
-        %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc" },
+        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc"},
+        %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc"},
       ]
       {channel, inserted} = Playlist.prepend!(cxt.channel, r)
       assert ids(inserted) == ids(r)
@@ -128,8 +128,8 @@ defmodule Otis.Persistence.PlayListTest do
 
     test "inserting into list", cxt do
       r = [
-        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc" },
-        %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc" },
+        %Rendition{id: "418c93d6-5b1f-11e7-a9a6-002500f418fc"},
+        %Rendition{id: "473a50fc-5b1f-11e7-a0d3-002500f418fc"},
       ]
       {channel, inserted} = Playlist.insert_after!(cxt.channel, "cc8e2967-a956-47d2-9a5a-549a67aa95b6", r)
       assert ids(inserted) == ids(r)

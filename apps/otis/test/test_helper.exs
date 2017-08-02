@@ -109,7 +109,7 @@ defmodule MockReceiver do
 
   defp tcp_connect(port, params, opts) do
     opts = Keyword.merge([mode: :binary, active: false, packet: 4, nodelay: true], opts)
-    {:ok, socket} = :gen_tcp.connect({127,0,0,1}, port, opts)
+    {:ok, socket} = :gen_tcp.connect({127, 0, 0, 1}, port, opts)
     # :inet.setopts(socket, opts)
     :gen_tcp.send(socket, Poison.encode!(params))
     {:ok, socket}
@@ -160,12 +160,12 @@ defmodule Otis.Test.TestSource do
   @silence :binary.copy(<< 0 >>, 1024)
   defstruct [
     :id,
-    duration: 60000,
+    duration: 60_000,
     loaded: false,
     data: @silence,
   ]
 
-  def new(duration \\ 60000) do
+  def new(duration \\ 60_000) do
     %__MODULE__{id: Otis.uuid(), duration: duration}
   end
 end
@@ -206,7 +206,7 @@ end
 
 defimpl Otis.Library.Source.Origin, for: Otis.Test.TestSource do
   def load!(source) do
-    %Otis.Test.TestSource{ source | loaded: true }
+    %Otis.Test.TestSource{source | loaded: true}
   end
 end
 
@@ -266,7 +266,7 @@ defmodule Test.CycleSource do
   end
 
   def init(%__MODULE__{source: source, cycles: cycles, type: type, delay: delay}) do
-    state = %{ source: source, sink: [], cycles: cycles, type: type, delay: delay }
+    state = %{source: source, sink: [], cycles: cycles, type: type, delay: delay}
     {:ok, state}
   end
 
@@ -279,7 +279,7 @@ defmodule Test.CycleSource do
   end
   def handle_call(:next, from, %{delay: delay} = state) when delay > 0 do
     Process.send_after(self(), {:delayed, from}, delay)
-    {:noreply, %{ state | delay: 0 }}
+    {:noreply, %{state | delay: 0}}
   end
   def handle_call(:next, _from, %{source: [h | t], sink: sink} = state) do
     {:reply, {:ok, h}, %{state | source: t, sink: [h | sink]}}

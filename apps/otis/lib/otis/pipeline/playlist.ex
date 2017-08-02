@@ -57,15 +57,15 @@ defmodule Otis.Pipeline.Playlist do
     {:reply, {:ok, renditions}, state}
   end
   def handle_call(:next, _from, %S{renditions: []} = state) do
-    {:reply, :done, %S{ state | active: nil }}
+    {:reply, :done, %S{state | active: nil}}
   end
   def handle_call(:next, _from, %S{renditions: [a | renditions]} = state) do
     Events.notify(:rendition, :active, [state.id, a])
-    {:reply, {:ok, a}, %S{ state | renditions: renditions, active: a }}
+    {:reply, {:ok, a}, %S{state | renditions: renditions, active: a}}
   end
   def handle_call(:clear, _from, %S{active: active} = state) do
     Events.notify(:playlist, :clear, [state.id, active])
-    {:reply, :ok, %S{ state | renditions: [] }}
+    {:reply, :ok, %S{state | renditions: []}}
   end
   def handle_call(:active_rendition, _from, %S{active: active} = state) do
     {:reply, {:ok, active}, state}
@@ -74,16 +74,16 @@ defmodule Otis.Pipeline.Playlist do
   def handle_cast({:append, sources}, state) do
     renditions = sources |> List.wrap() |> make_renditions()
     Events.notify(:playlist, :append, [state.id, renditions])
-    {:noreply, %S{ state | renditions: Enum.concat(state.renditions, ids(renditions)) }}
+    {:noreply, %S{state | renditions: Enum.concat(state.renditions, ids(renditions))}}
   end
   def handle_cast({:replace, renditions}, state) do
-    {:noreply, %S{ state | renditions: ids(renditions), active: nil }}
+    {:noreply, %S{state | renditions: ids(renditions), active: nil}}
   end
   def handle_cast({:skip, skip_to_id}, state) do
     renditions = all_renditions(state)
     {drop, keep} = Enum.split_while(renditions, fn(id) -> id != skip_to_id end)
     notify_skip(skip_to_id, drop, state)
-    {:noreply, %S{ state | renditions: keep, active: nil }}
+    {:noreply, %S{state | renditions: keep, active: nil}}
   end
   def handle_cast({:remove, remove_id}, state) do
     {drop, keep} = state.renditions |> Enum.split_with(fn(id) -> id == remove_id end)
@@ -95,7 +95,7 @@ defmodule Otis.Pipeline.Playlist do
       nil -> nil
       a -> a
     end
-    {:noreply, %S{ state | renditions: keep, active: active }}
+    {:noreply, %S{state | renditions: keep, active: active}}
   end
 
   defp ids(renditions) when is_list(renditions), do: Enum.map(renditions, &id/1)
@@ -120,4 +120,3 @@ defmodule Otis.Pipeline.Playlist do
     Enum.map(sources, &Rendition.from_source/1)
   end
 end
-

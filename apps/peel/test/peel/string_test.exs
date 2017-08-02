@@ -13,13 +13,13 @@ defmodule Peel.Test.StringTest do
       ]
     ],
     [
-      "bela bartok", [ "Béla Bartók" ]
+      "bela bartok", ["Béla Bartók"]
     ],
     [
-      "bjork", [ "Björk", "Bjork" ]
+      "bjork", ["Björk", "Bjork"]
     ],
     [
-      "john and paul", [ "john & paul", "john &amp; paul", "john &amp paul" ]
+      "john and paul", ["john & paul", "john &amp; paul", "john &amp paul"]
     ],
     [
       "john paul", [
@@ -35,16 +35,16 @@ defmodule Peel.Test.StringTest do
       ]
     ],
     [
-      "count to 10", [ "Count to 10" ]
+      "count to 10", ["Count to 10"]
     ],
     [
-      "wiener philharmoniker franz lehar", [ "Wiener Philharmoniker/Franz Lehár" ]
+      "wiener philharmoniker franz lehar", ["Wiener Philharmoniker/Franz Lehár"]
     ],
   ]
 
   @performer_test_cases Enum.concat(@test_cases, [
     [
-      "beatles", [ "the beatles", "The Beatles", " The  Beatles" ]
+      "beatles", ["the beatles", "The Beatles", " The  Beatles"]
     ],
   ])
 

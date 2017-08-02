@@ -24,7 +24,7 @@ defmodule Peel.AlbumArtist do
   end
 
   def return_or_create(nil, artist_id, album_id) do
-    %Peel.AlbumArtist{ artist_id: artist_id, album_id: album_id } |> Repo.insert!
+    %Peel.AlbumArtist{artist_id: artist_id, album_id: album_id} |> Repo.insert!
   end
   def return_or_create(album_artist, _artist_id, _album_id) do
     album_artist

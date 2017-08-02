@@ -164,7 +164,7 @@ defmodule Peel.CoverArt.ITunes.Client do
   defp request_uri(path, params) do
     query = URI.encode_query(params)
     uri = @api_uri |> URI.merge(path)
-    %URI{ uri | query: query }
+    %URI{uri | query: query}
   end
 
   defp request_with_retries(path, params, tries, last_resp \\ nil)

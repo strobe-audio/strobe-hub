@@ -76,7 +76,7 @@ defmodule Peel.Collection do
 
 
   defp assign_root(collection, root) do
-    %{collection | path: root(collection, root) }
+    %{collection | path: root(collection, root)}
   end
 
   def root(%Collection{path: nil} = collection) do

@@ -18,7 +18,7 @@ defmodule Strobe.Server.Dbus do
     File.mkdir_p("/var/run/dbus")
     port = Port.open({:spawn_executable, dbus_daemon()}, dbus_daemon_args())
     Strobe.Server.Events.notify({:running, [:dbus]})
-    {:noreply, %{ state | port: port }}
+    {:noreply, %{state | port: port}}
   end
 
   def handle_info({port, {:data, {:eol, msg}}}, %{port: port} = state) do

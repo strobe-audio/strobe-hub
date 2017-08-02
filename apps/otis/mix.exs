@@ -50,7 +50,7 @@ defmodule Otis.Mixfile do
   end
 
   def env do
-    [ receiver_logger: [addr: {224,0,0,224}, port: 9999] ]
+    [receiver_logger: [addr: {224, 0, 0, 224}, port: 9999]]
   end
 
   # Dependencies can be Hex packages:

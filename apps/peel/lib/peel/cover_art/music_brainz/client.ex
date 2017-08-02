@@ -71,7 +71,7 @@ defmodule MusicBrainz.Client do
   def build_releases([{"release", attrs, _children} | rest], releases) do
     id = get_attr(attrs, "id")
     release = %MusicBrainz.Release{id: id}
-    build_releases(rest, [ release | releases ])
+    build_releases(rest, [release | releases])
   end
 
   @doc ~S"""

@@ -9,12 +9,7 @@ defmodule Peel.Test.CollectionTest do
       [System.tmp_dir!, DateTime.utc_now |> DateTime.to_unix |> to_string]
       |> Path.join
 
-    env =
-      [ root: "#{tmp_root}/collection",
-        port: 8080
-      ]
-
-    # Application.put_env(:peel, Peel.Collection, env)
+    env = [root: "#{tmp_root}/collection", port: 8080]
 
     on_exit fn ->
       File.rm_rf(tmp_root)

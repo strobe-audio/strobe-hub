@@ -14,9 +14,9 @@ defmodule Otis.Library.UPNP.ItemTest do
   end
 
   test "returns correct type & extension info" do
-    media = %Media{bitrate: 256000, channels: 2, duration: "0:02:45.186",
+    media = %Media{bitrate: 256_000, channels: 2, duration: "0:02:45.186",
       info: "http-get:*:audio/mp4:DLNA.ORG_PN=AAC_ISO_320;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000",
-      sample_freq: 44100, size: 6403418,
+      sample_freq: 44_100, size: 6_403_418,
       uri: "http://192.168.1.92:8200/MediaItems/2165.m4a"
     }
     item = %Item{media: media}
@@ -24,9 +24,9 @@ defmodule Otis.Library.UPNP.ItemTest do
   end
 
   test "returns correct duration" do
-    media = %Media{bitrate: 256000, channels: 2, duration: 165_186,
+    media = %Media{bitrate: 256_000, channels: 2, duration: 165_186,
       info: "http-get:*:audio/mp4:DLNA.ORG_PN=AAC_ISO_320;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000",
-      sample_freq: 44100, size: 6403418,
+      sample_freq: 44_100, size: 6_403_418,
       uri: "http://192.168.1.92:8200/MediaItems/2165.m4a"
     }
     item = %Item{media: media}
@@ -34,11 +34,11 @@ defmodule Otis.Library.UPNP.ItemTest do
   end
 
   test "streaming data" do
-    {n, chunk_size, seed} = { 1024, 64, 9999 }
+    {n, chunk_size, seed} = {1024, 64, 9999}
     url =  "http://127.0.0.1:8080/stream-bytes/#{n}?seed=#{seed}&chunk_size=#{chunk_size}"
-    media = %Media{bitrate: 256000, channels: 2, duration: "0:02:45.186",
+    media = %Media{bitrate: 256_000, channels: 2, duration: "0:02:45.186",
       info: "http-get:*:audio/mp4:DLNA.ORG_PN=AAC_ISO_320;DLNA.ORG_OP=01;DLNA.ORG_CI=0;DLNA.ORG_FLAGS=01700000000000000000000000000000",
-      sample_freq: 44100, size: 6403418,
+      sample_freq: 44_100, size: 6_403_418,
       uri: url
     }
     item = %Item{media: media}

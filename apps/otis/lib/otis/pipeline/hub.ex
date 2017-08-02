@@ -88,7 +88,7 @@ defmodule Otis.Pipeline.Hub do
     case Playlist.next(state.playlist) do
       {:ok, rendition_id} ->
         {:ok, stream} = start_stream(rendition_id, state)
-        {:ok, %S{ state | stream: stream, rendition: rendition_id }}
+        {:ok, %S{state | stream: stream, rendition: rendition_id}}
       :done ->
         {:done, state}
     end

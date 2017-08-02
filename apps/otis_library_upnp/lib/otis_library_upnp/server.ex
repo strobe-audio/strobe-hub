@@ -24,12 +24,12 @@ defmodule Otis.Library.UPNP.Server do
           control_url: ~x"./controlURL/text()"s,
         ],
     )
-    server = %__MODULE__{ id: id, name: data.name, location: location }
+    server = %__MODULE__{id: id, name: data.name, location: location}
     directory =
       %Service{}
       |> struct(Enum.find(data.services, fn(s) -> s.type == @directory_service_urn end))
       |> merge_uris(uri, [:control_url, :event_sub_url, :scpd_url])
-    %__MODULE__{ server | directory: directory }
+    %__MODULE__{server | directory: directory}
   end
 
   defp merge_uris(struct, base, fields) do
