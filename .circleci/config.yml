@@ -29,6 +29,12 @@ jobs:
       - run: mix deps.get
       - run: mix compile
 
+      - run: mix test --trace
+
+      # re-run compilation after tests so that compilation warnings do not
+      # prevent tests from running. Compile in prod mode to exclude test code
+      - run: MIX_ENV=prod mix compile --force --warnings-as-errors
+
       - save_cache:
           key: deps-v3-{{ checksum "mix.lock" }}
           paths:
@@ -43,8 +49,3 @@ jobs:
             - /root/.mix
             - _build
             - /root/.cache/rebar3
-
-      - run: mix test --trace
-
-      # re-run compilation after tests
-      - run: mix compile --force --warnings-as-errors
