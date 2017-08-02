@@ -69,16 +69,12 @@ withTypeDecoder typ =
 
 startupDecoder : Decoder State.Event
 startupDecoder =
-    let
-        constructor a b c =
-            State.Startup (State.BroadcasterState a b c)
-    in
-        (map3
-            constructor
-            (field "channels" (list channelStateDecoder))
-            (field "receivers" (list receiverStateDecoder))
-            (field "renditions" (list renditionStateDecoder))
-        )
+    (map3
+        State.Startup
+        (field "channels" (list channelStateDecoder))
+        (field "receivers" (list receiverStateDecoder))
+        (field "renditions" (list renditionStateDecoder))
+    )
 
 
 volumeChangeDecoder : Decoder State.Event

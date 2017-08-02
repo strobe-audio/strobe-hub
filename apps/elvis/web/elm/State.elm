@@ -7,7 +7,7 @@ import ID
 
 
 type Event
-    = Startup BroadcasterState
+    = Startup (List Channel.State) (List Receiver.State) (List Rendition.State)
     | Volume VolumeChangeEvent
     | ReceiverAdd ID.Receiver ID.Channel
     | ReceiverRemove ID.Receiver
@@ -23,13 +23,6 @@ type Event
     | RenditionChange Rendition.ChangeEvent
     | RenditionCreate Rendition.State
     | RenditionActive ID.Channel ID.Rendition
-
-
-type alias BroadcasterState =
-    { channels : List Channel.State
-    , receivers : List Receiver.State
-    , renditions : List Rendition.State
-    }
 
 
 type alias VolumeChangeEvent =

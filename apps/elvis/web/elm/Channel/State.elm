@@ -1,7 +1,5 @@
 module Channel.State exposing (initialState, update, newChannel)
 
-import Debug
-import State exposing (BroadcasterState)
 import Msg exposing (Msg)
 import Channel
 import Channel.Cmd
@@ -21,11 +19,11 @@ forChannel channelId list =
     List.filter (\r -> r.channelId == channelId) list
 
 
-initialState : BroadcasterState -> Channel.State -> Channel.Model
-initialState broadcasterState channelState =
+initialState : List Rendition.State -> Channel.State -> Channel.Model
+initialState renditionStates channelState =
     let
         renditions =
-            (List.map Rendition.State.initialState (forChannel channelState.id broadcasterState.renditions))
+            (List.map Rendition.State.initialState (forChannel channelState.id renditionStates))
 
         model =
             newChannel channelState

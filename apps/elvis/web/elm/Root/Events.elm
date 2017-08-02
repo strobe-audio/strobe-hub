@@ -7,6 +7,7 @@ import Channel
 import Channel.State
 import Receiver
 import Receiver.State
+import Rendition
 import State
 import Task
 import Notification
@@ -19,12 +20,12 @@ import Notification
 update : State.Event -> Root.Model -> ( Root.Model, Maybe Msg, List (Cmd Msg) )
 update action model =
     case action of
-        State.Startup state ->
+        State.Startup channelStates receiverStates renditionStates ->
             let
                 model_ =
                     { model
-                        | channels = (loadChannels model state)
-                        , receivers = (loadReceivers model state)
+                        | channels = (loadChannels channelStates renditionStates)
+                        , receivers = (loadReceivers receiverStates)
                     }
             in
                 ( model_, Nothing, [ Root.gotoDefaultChannel model_ ] )
@@ -150,11 +151,11 @@ task msg =
     Task.perform identity (Task.succeed msg)
 
 
-loadChannels : Root.Model -> State.BroadcasterState -> List Channel.Model
-loadChannels model state =
+loadChannels : List Channel.State -> List Rendition.State -> List Channel.Model
+loadChannels channelStates renditionStates =
     let
         channels =
-            List.map (Channel.State.initialState state) state.channels
+            List.map (Channel.State.initialState renditionStates) channelStates
 
         activeChannelId =
             Maybe.map (\channel -> channel.id) (List.head channels)
@@ -162,6 +163,6 @@ loadChannels model state =
         channels
 
 
-loadReceivers : Root.Model -> State.BroadcasterState -> List Receiver.Model
-loadReceivers model state =
-    List.map Receiver.State.initialState state.receivers
+loadReceivers : List Receiver.State -> List Receiver.Model
+loadReceivers receiverStates =
+    List.map Receiver.State.initialState receiverStates

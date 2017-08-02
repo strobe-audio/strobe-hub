@@ -91,11 +91,6 @@ restoreSavedState maybeState model =
             model
 
 
-broadcasterState : State.BroadcasterState -> List Channel.Model
-broadcasterState state =
-    List.map (Channel.State.initialState (Debug.log "state" state)) state.channels
-
-
 activeChannel : Root.Model -> Maybe Channel.Model
 activeChannel model =
     Root.activeChannel model
