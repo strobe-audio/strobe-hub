@@ -31,6 +31,13 @@ defmodule Otis.Pipeline.Hub do
     Producer.pause(hub)
   end
 
+  @doc """
+  Retrieve the hub's stream (used by tests)
+  """
+  def stream(hub) do
+    GenServer.call(hub, :get_stream)
+  end
+
   def init([playlist, config]) do
     {:ok, %S{playlist: playlist, config: config}}
   end
@@ -48,6 +55,14 @@ defmodule Otis.Pipeline.Hub do
   def handle_call(:pause, _from, state) do
     {reply, state} = pause_stream(state)
     {:reply, reply, state}
+  end
+
+  def handle_call(:get_stream, _from, %S{stream: nil} = state) do
+    {:reply, :error, state}
+  end
+  def handle_call(:get_stream, _from, %S{stream: stream} = state) do
+    pid = GenServer.whereis(stream)
+    {:reply, {:ok, pid}, state}
   end
 
   ## Next handing

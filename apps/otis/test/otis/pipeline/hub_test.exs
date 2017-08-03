@@ -178,10 +178,14 @@ defmodule Test.Otis.Pipeline.Hub do
     {:ok, hub} = Hub.start_link(pl, context.config)
     {:ok, p} = Producer.next(hub)
     assert p.data == d1
+    {:ok, stream} = Hub.stream(hub)
+    Process.monitor(stream)
 
     c = Otis.Pipeline.Streams.streams() |> length()
     resp = Producer.pause(hub)
     assert resp == :stop
+
+    assert_receive {:DOWN, _, :process, ^stream, {:shutdown, :normal}}
     assert length(Otis.Pipeline.Streams.streams()) == c - 1
     {:ok, p} = Producer.next(hub)
     assert p.data == d1
