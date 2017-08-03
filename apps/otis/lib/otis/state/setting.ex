@@ -30,12 +30,13 @@ defmodule Otis.State.Setting do
       _put!(app, ns, key, value)
     rescue
       e in Sqlite.Ecto.Error ->
+        stacktrace = System.stacktrace
         case e do
           %Sqlite.Ecto.Error{sqlite: {:constraint, _}} ->
             _delete(app, ns, key)
             put(app, ns, key, value)
           _ ->
-            reraise
+            reraise(e, stacktrace)
         end
     end
   end
