@@ -13,7 +13,7 @@ defmodule Peel.CoverArt.ITunes do
         end
 
       sized_path = [sized | path] |> Enum.reverse |> Path.join
-      %URI{ uri | path: sized_path } |> URI.to_string
+      %URI{uri | path: sized_path} |> URI.to_string
     end
   end
 

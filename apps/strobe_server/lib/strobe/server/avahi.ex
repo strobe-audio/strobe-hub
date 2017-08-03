@@ -43,10 +43,10 @@ defmodule Strobe.Server.Avahi do
   end
 
   def avahi_daemon_args(args \\ []) do
-    [ :stderr_to_stdout,
-      :binary,
-      line: 4096,
-      args: args,
+    [:stderr_to_stdout,
+     :binary,
+     line: 4096,
+     args: args,
     ]
   end
 

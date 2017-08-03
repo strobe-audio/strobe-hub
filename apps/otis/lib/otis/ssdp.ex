@@ -40,11 +40,11 @@ defmodule Otis.SSDP do
 
   defp service_texts(pipeline_config) do
     receivers = config(Otis.Receivers)
-    [ {:data_port, to_string(receivers[:data_port])},
-      {:port, service_port()},
-      {:ctrl_port, to_string(receivers[:ctrl_port])},
-      {:stream_interval, to_string(pipeline_config.packet_duration_ms * 1000)},
-      {:packet_size, to_string(pipeline_config.packet_size)},
+    [{:data_port, to_string(receivers[:data_port])},
+     {:port, service_port()},
+     {:ctrl_port, to_string(receivers[:ctrl_port])},
+     {:stream_interval, to_string(pipeline_config.packet_duration_ms * 1000)},
+     {:packet_size, to_string(pipeline_config.packet_size)},
     ]
   end
 

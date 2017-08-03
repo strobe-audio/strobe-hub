@@ -35,7 +35,7 @@ defmodule Otis.State.Setting do
             _delete(app, ns, key)
             put(app, ns, key, value)
           _ ->
-            raise e
+            reraise
         end
     end
   end
@@ -47,7 +47,7 @@ defmodule Otis.State.Setting do
   def application(app) when is_binary(app) do
     Setting
     |> where(application: ^app)
-    |> order_by([s], asc: s.namespace, asc: s.key )
+    |> order_by([s], asc: s.namespace, asc: s.key)
     |> Repo.all
     |> to_application_map
   end
@@ -58,7 +58,7 @@ defmodule Otis.State.Setting do
   def namespace(app, ns) when is_binary(app) and is_binary(ns) do
     Setting
     |> where(application: ^app, namespace: ^ns)
-    |> order_by([s], asc: s.key )
+    |> order_by([s], asc: s.key)
     |> Repo.all
     |> to_namespace_map
   end
@@ -82,7 +82,7 @@ defmodule Otis.State.Setting do
   defp _get(app, ns, key) when is_binary(app) and is_binary(ns) and is_binary(key) do
     Setting
     |> where(application: ^app, namespace: ^ns, key: ^key)
-    |> order_by([s], asc: s.key )
+    |> order_by([s], asc: s.key)
     |> Repo.one
   end
 

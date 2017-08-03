@@ -60,7 +60,7 @@ defmodule Strobe.Server.Release.AssetCompilation do
   end
 
   defp env do
-    [ {"MIX_TARGET", System.get_env("MIX_TARGET")},
+    [{"MIX_TARGET", System.get_env("MIX_TARGET")},
     ]
   end
 end

@@ -83,7 +83,7 @@ defmodule Test.Otis.Pipeline.Buffer do
     assert packet.duration_ms == 20
     assert packet.packet_size == 100
     assert byte_size(packet.data) == 100
-    assert packet.data == <<"c20c0f7e5a74b8c36d2544bc6f82a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436",0,0,0,0,0,0,0,0>>
+    assert packet.data == << "c20c0f7e5a74b8c36d2544bc6f82a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436", 0, 0, 0, 0, 0, 0, 0, 0 >>
     pid = GenServer.whereis(buffer)
     Process.monitor(pid)
     :done = Producer.next(buffer)
@@ -91,7 +91,7 @@ defmodule Test.Otis.Pipeline.Buffer do
   end
 
   test "source size multiple of packet size", context do
-    config = %Otis.Pipeline.Config{ context.config | packet_size: 64 }
+    config = %Otis.Pipeline.Config{context.config | packet_size: 64}
     d = [
       <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
       <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,

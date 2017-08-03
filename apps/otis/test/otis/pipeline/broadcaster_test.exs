@@ -287,8 +287,8 @@ defmodule Test.Otis.Pipeline.Broadcaster do
     Enum.each(0..2, fn(n) ->
       {:ok, data} = data_recv_raw(m3)
       packet = Packet.unmarshal(data)
-      assert packet.packet_number == (n+8)
-      assert packet.timestamp == packet_time.(n+8)
+      assert packet.packet_number == (n + 8)
+      assert packet.timestamp == packet_time.(n + 8)
     end)
   end
 
@@ -357,11 +357,11 @@ defmodule Test.Otis.Pipeline.Broadcaster do
       end)
     end)
     Enum.each(0..15, fn(n) ->
-      t = n*20
+      t = n * 20
       assert_receive {:rendition, :progress, [^channel_id, ^r1id, ^t, 100_000]}
     end)
     Enum.each(0..14, fn(n) ->
-      t = n*20
+      t = n * 20
       assert_receive {:rendition, :progress, [^channel_id, ^r2id, ^t, 100_000]}
     end)
   end

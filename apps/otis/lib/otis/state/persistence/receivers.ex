@@ -33,7 +33,7 @@ defmodule Otis.State.Persistence.Receivers do
   end
 
   def handle_event({:receiver, :volume, [id, volume]}, %S{volumes: volumes, timer: timer} = state) do
-    state = %S{ state | volumes: Map.put(volumes, id, volume), timer: start_timer(timer) }
+    state = %S{state | volumes: Map.put(volumes, id, volume), timer: start_timer(timer)}
     {:incomplete, state}
   end
 

@@ -139,10 +139,10 @@ defmodule Plug.WebDAV.Handler.Propfind do
   end
 
   defp propstat({status, values}) do
-    [ "<d:propstat>",
-      "<d:prop>", values, "</d:prop>",
-      "<d:status>HTTP/1.1 ", propstatus(status), "</d:status>",
-      "</d:propstat>",
+    ["<d:propstat>",
+     "<d:prop>", values, "</d:prop>",
+     "<d:status>HTTP/1.1 ", propstatus(status), "</d:status>",
+     "</d:propstat>",
     ]
   end
 

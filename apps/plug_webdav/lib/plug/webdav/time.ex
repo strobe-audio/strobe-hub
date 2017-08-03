@@ -4,9 +4,9 @@ defmodule Plug.WebDAV.Time do
   end
 
   defp format_universal_time({{year, month, day}, {h, m, s}}, zone) do
-    [ day(year, month, day), ", ",
-      pad(day), " ", month(month), " ", to_string(year), " ",
-      pad(h), ":", pad(m), ":", pad(s), " ", zone
+    [day(year, month, day), ", ",
+     pad(day), " ", month(month), " ", to_string(year), " ",
+     pad(h), ":", pad(m), ":", pad(s), " ", zone
     ]
   end
 

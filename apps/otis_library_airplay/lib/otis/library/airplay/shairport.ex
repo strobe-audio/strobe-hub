@@ -41,10 +41,10 @@ defmodule Otis.Library.Airplay.Shairport do
   end
 
   def args(n) do
-    [ "--configfile=#{config_file()}",
-      "--name=#{name(n)}",
-      "--output=stdout",
-      "--port=#{port(n)}",
+    ["--configfile=#{config_file()}",
+     "--name=#{name(n)}",
+     "--output=stdout",
+     "--port=#{port(n)}",
     ]
   end
 
