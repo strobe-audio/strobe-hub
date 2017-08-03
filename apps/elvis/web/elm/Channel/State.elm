@@ -75,6 +75,9 @@ update action channel =
             in
                 ( updatedChannel, Channel.Cmd.playPause updatedChannel )
 
+        Channel.SkipNext ->
+            channel ! [ Channel.Cmd.skipNext channel ]
+
         Channel.ModifyRendition renditionId renditionAction ->
             let
                 updateRendition rendition =

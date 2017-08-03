@@ -17,6 +17,11 @@ playPause channel =
         Ports.playPauseChanges msg |> Cmd.map (always Msg.NoOp)
 
 
+skipNext : Channel.Model -> Cmd Msg
+skipNext channel =
+    Ports.playlistSkipRequests ( channel.id, "next" ) |> Cmd.map (always Msg.NoOp)
+
+
 volume : Channel.Model -> Cmd Msg
 volume channel =
     Volume.Cmd.channelVolumeChange channel |> Cmd.map (always Msg.NoOp)

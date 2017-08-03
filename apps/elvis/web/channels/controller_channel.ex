@@ -50,6 +50,10 @@ defmodule Elvis.ControllerChannel do
     {:noreply, socket}
   end
 
+  def handle_in("playlist-skip", [channel_id, "next"], socket) do
+    Otis.Channels.skip channel_id, :next
+    {:noreply, socket}
+  end
   def handle_in("playlist-skip", [channel_id, rendition_id], socket) do
     Otis.Channels.skip channel_id, rendition_id
     {:noreply, socket}
