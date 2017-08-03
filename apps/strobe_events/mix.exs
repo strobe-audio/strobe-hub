@@ -20,7 +20,7 @@ defmodule Strobe.Events.Mixfile do
   end
 
   defp deps do
-    [ {:gen_stage, "~> 0.12"},
+    [{:gen_stage, "~> 0.12"},
     ]
   end
 end

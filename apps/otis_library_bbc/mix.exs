@@ -15,28 +15,16 @@ defmodule HLS.Mixfile do
      deps: deps()]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :httpoison, :gen_stage, :gproc], mod: {BBC, []}]
+    [extra_applications: [:logger],
+     mod: {BBC, []}]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   defp deps do
-    [ {:httpoison, "~> 0.11.1"},
-      {:gen_stage, "~> 0.12"},
-      {:gproc, "~> 0.5.0"},
-      {:poison, "~> 1.5.0"},
-      {:otis_library, in_umbrella: true},
+    [{:httpoison, "~> 0.11.1"},
+     {:gen_stage, "~> 0.12"},
+     {:poison, "~> 1.5.0"},
+     {:otis_library, in_umbrella: true},
     ]
   end
 end

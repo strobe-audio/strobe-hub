@@ -20,23 +20,11 @@ defmodule Elvis.Mixfile do
   #
   # Type `mix help compile.app` for more information
   def application do
-    [mod: {Elvis, []},
-     applications: [
-       :logger,
-       :logger_papertrail_backend,
-       :phoenix,
-       :phoenix_html,
-       :cowboy,
-       :otis,
-       # fix missing apps from other dependencies
-       :socket,
-       :pipe,
-       :peel,
-       :otis_library_bbc,
-       :otis_library_upnp,
-       :otis_library_airplay,
-       :strobe_events,
-     ]]
+    # `socket` is a dependency from another app that doesn't have it in its
+    # applications list so I need to include it here
+    [extra_applications: [:logger, :socket],
+     mod: {Elvis, []},
+    ]
   end
 
   # Specifies which paths to compile per environment
@@ -57,7 +45,7 @@ defmodule Elvis.Mixfile do
      {:otis_library_upnp, in_umbrella: true},
      {:otis_library_airplay, in_umbrella: true},
      # Needs to be compatible with that specified by nerves
-     {:distillery, "== 1.2.2"},
+     {:distillery, "== 1.2.2", runtime: false},
      {:logger_papertrail_backend, "~> 0.1.0"},
      {:gen_stage, "~> 0.12"},
      {:strobe_events, in_umbrella: true},

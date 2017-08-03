@@ -39,35 +39,25 @@ defmodule Strobe.Server.Mixfile do
     [extra_applications: [:logger]]
   end
   def application(_target) do
-    [
-      mod: {Strobe.Server.Application, []},
-      applications: [
-        :gen_stage,
-        :nerves_networking,
-        :nerves_network_interface,
-      ],
-      extra_applications: [:logger],
-      included_applications: [
-        :esqlite,
-        :elvis,
-        :otis,
-        :peel,
-        :otis_library_bbc,
-        :otis_library_upnp,
-        :otis_library_airplay,
-      ],
+    [mod: {Strobe.Server.Application, []},
+     applications: [
+       :gen_stage,
+       :nerves_networking,
+       :nerves_network_interface,
+     ],
+     extra_applications: [:logger],
+     included_applications: [
+       :esqlite,
+       :elvis,
+       :otis,
+       :peel,
+       :otis_library_bbc,
+       :otis_library_upnp,
+       :otis_library_airplay,
+     ],
     ]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:my_dep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:my_dep, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
   def deps do
     deps(@target)
   end
@@ -91,5 +81,4 @@ defmodule Strobe.Server.Mixfile do
     ["deps.precompile": ["nerves.precompile", "deps.precompile"],
      "deps.loadpaths":  ["deps.loadpaths", "nerves.loadpaths"]]
   end
-
 end
