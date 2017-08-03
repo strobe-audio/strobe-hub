@@ -79,6 +79,19 @@ defmodule Otis.Pipeline.Playlist do
   def handle_cast({:replace, renditions}, state) do
     {:noreply, %S{state | renditions: ids(renditions), active: nil}}
   end
+  def handle_cast({:skip, :next}, state) do
+    keep =
+      case all_renditions(state) do
+        [drop|[first|_] = renditions] ->
+          notify_skip(first, [drop], state)
+          renditions
+        [drop] ->
+          notify_skip(nil, [drop], state)
+          []
+        [] -> []
+      end
+    {:noreply, %S{state | renditions: keep, active: nil}}
+  end
   def handle_cast({:skip, skip_to_id}, state) do
     renditions = all_renditions(state)
     {drop, keep} = Enum.split_while(renditions, fn(id) -> id != skip_to_id end)

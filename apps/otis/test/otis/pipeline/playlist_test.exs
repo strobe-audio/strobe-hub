@@ -147,6 +147,39 @@ defmodule Test.Otis.Pipeline.Playlist do
     assert_receive {:rendition, :skip, [^channel_id, ^did]}
   end
 
+  test "skip to next", context do
+    channel_id = context.id
+    sources = [
+      TS.new("a"), TS.new("b"), TS.new("c"),
+    ]
+    {:ok, renditions} = build_playlist(context, sources)
+    [aid, bid, cid] = renditions
+
+    Playlist.skip(context.pl, :next)
+    assert_receive {:playlist, :skip, [^channel_id, ^bid, _]}
+    assert_receive {:__complete__, {:playlist, :skip, [^channel_id, ^bid, _]}, Otis.State.Persistence.Playlist}
+    {:ok, renditions} = Playlist.list(context.pl)
+    assert renditions == [bid, cid]
+    assert_receive {:rendition, :skip, [^channel_id, ^aid]}
+  end
+
+  test "skip to next with active rendition", context do
+    channel_id = context.id
+    sources = [
+      TS.new("a"), TS.new("b"), TS.new("c"),
+    ]
+    {:ok, renditions} = build_playlist(context, sources)
+    [aid, bid, cid] = renditions
+
+    {:ok, r} = Playlist.next(context.pl)
+    assert r == aid
+    Playlist.skip(context.pl, :next)
+    assert_receive {:playlist, :skip, [^channel_id, ^bid, _]}
+    assert_receive {:__complete__, {:playlist, :skip, [^channel_id, ^bid, _]}, Otis.State.Persistence.Playlist}
+    {:ok, renditions} = Playlist.list(context.pl)
+    assert renditions == [bid, cid]
+    assert_receive {:rendition, :skip, [^channel_id, ^aid]}
+  end
 
   test "it appends sources in the right position", context do
     channel_id = context.id

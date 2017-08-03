@@ -126,6 +126,9 @@ rewindPlaySkip channel maybeRendition =
                     , ( "channel--play-control-btn__enabled", active )
                     , ( "channel--skip", True )
                     ]
+                , onClick Channel.SkipNext
+                , mapTap (Utils.Touch.touchStart Channel.SkipNext)
+                , mapTap (Utils.Touch.touchEnd Channel.SkipNext)
                 ]
                 []
             ]
