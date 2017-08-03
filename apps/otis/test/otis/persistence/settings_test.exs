@@ -55,7 +55,7 @@ defmodule Otis.Persistence.SettingsTest do
     end
     assert {:ok, %{
       ns_a: %{
-        akey1: %{"fish" => "fry1", "dog" => "tooth1" },
+        akey1: %{"fish" => "fry1", "dog" => "tooth1"},
         akey2: %{"fish" => "fry1", "dog" => "tooth1"}
       },
       ns_b: %{

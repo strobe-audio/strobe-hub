@@ -7,6 +7,7 @@ defmodule Otis.Supervisor do
 
   def init(pipeline_config) do
     children = [
+      supervisor(Registry, [:unique, Otis.Registry], id: Otis.Registry),
       worker(Otis.DNSSD, [pipeline_config]),
       worker(Otis.Mdns, [pipeline_config]),
       worker(Otis.SSDP, [pipeline_config]),

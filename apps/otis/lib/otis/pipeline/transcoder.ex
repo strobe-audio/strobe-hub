@@ -62,10 +62,10 @@ defmodule Otis.Pipeline.Transcoder do
   defp start(state, config) do
     case Source.transcoder_args(state.source) do
       :passthrough ->
-        %S{ state | transcoder: nil, outputstream: state.inputstream }
+        %S{state | transcoder: nil, outputstream: state.inputstream}
       args ->
         {pid, outputstream} = transcoder_module().transcode(state.inputstream, args, state.playback_position, config)
-        %S{ state | transcoder: pid, outputstream: outputstream }
+        %S{state | transcoder: pid, outputstream: outputstream}
     end
   end
 

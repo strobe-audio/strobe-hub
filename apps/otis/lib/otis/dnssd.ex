@@ -22,7 +22,7 @@ defmodule Otis.DNSSD do
         {:ok, _} ->
           Process.flag(:trap_exit, true)
           {:ok, ref} = register_service(state)
-          {:ok, %{state| ref: ref }}
+          {:ok, %{state| ref: ref}}
         {:error, {_app, reason}} ->
           Logger.warn "DNSSD: Unable to start :dnssd application: #{inspect reason}"
           {:ok, state}
@@ -52,11 +52,11 @@ defmodule Otis.DNSSD do
 
     defp service_texts(state) do
       receivers = config(Otis.Receivers)
-      [ {:data_port, to_string(receivers[:data_port])},
-        {:ctrl_port, to_string(receivers[:ctrl_port])},
-        {:sntp_port, to_string(service_port(state))},
-        {:stream_interval, to_string(state.pipeline_config.packet_duration_ms * 1000)},
-        {:packet_size, to_string(state.pipeline_config.packet_size)},
+      [{:data_port, to_string(receivers[:data_port])},
+       {:ctrl_port, to_string(receivers[:ctrl_port])},
+       {:sntp_port, to_string(service_port(state))},
+       {:stream_interval, to_string(state.pipeline_config.packet_duration_ms * 1000)},
+       {:packet_size, to_string(state.pipeline_config.packet_size)},
       ]
     end
 

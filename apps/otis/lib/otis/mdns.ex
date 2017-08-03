@@ -37,11 +37,11 @@ defmodule Otis.Mdns do
 
   defp service_texts(pipeline_config) do
     receivers = config(Otis.Receivers)
-    [ {:port, to_string(service_port())},
-      {:data_port, to_string(receivers[:data_port])},
-      {:ctrl_port, to_string(receivers[:ctrl_port])},
-      {:stream_interval, to_string(pipeline_config.packet_duration_ms * 1000)},
-      {:packet_size, to_string(pipeline_config.packet_size)},
+    [{:port, to_string(service_port())},
+     {:data_port, to_string(receivers[:data_port])},
+     {:ctrl_port, to_string(receivers[:ctrl_port])},
+     {:stream_interval, to_string(pipeline_config.packet_duration_ms * 1000)},
+     {:packet_size, to_string(pipeline_config.packet_size)},
     ]
   end
 

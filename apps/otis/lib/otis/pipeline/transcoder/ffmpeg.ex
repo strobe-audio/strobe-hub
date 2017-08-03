@@ -19,10 +19,10 @@ defmodule Otis.Pipeline.Transcoder.Ffmpeg do
   end
 
   defp params(config) do
-    [ "-f", "s16le",
-      "-ar", Integer.to_string(config.sample_freq),
-      "-ac", Integer.to_string(config.channels),
-      "-"
+    ["-f", "s16le",
+     "-ar", Integer.to_string(config.sample_freq),
+     "-ac", Integer.to_string(config.channels),
+     "-"
     ]
   end
 

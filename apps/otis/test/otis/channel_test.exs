@@ -24,7 +24,8 @@ defmodule Otis.ChannelTest do
     channel_id = Otis.uuid()
     receiver_id = Otis.uuid()
 
-    config = %Otis.Pipeline.Config{ Otis.Pipeline.Config.new(20) |
+    config = %Otis.Pipeline.Config{
+      Otis.Pipeline.Config.new(20) |
       clock: {Test.Otis.Pipeline.Clock, :start_link, [self(), 1_000_000]},
     }
     {:ok, channel} = Otis.Channels.create(channel_id, "Something", config)

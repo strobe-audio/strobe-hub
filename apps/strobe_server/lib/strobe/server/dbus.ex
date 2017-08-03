@@ -35,11 +35,11 @@ defmodule Strobe.Server.Dbus do
   end
 
   def dbus_daemon_args do
-    [ :stderr_to_stdout,
-      :binary,
-      line: 4096,
-      # args: ["--system", "--address", dbus_address(), "--nofork", "--nopidfile"],
-      args: ["--system", "--nofork", "--nopidfile"],
+    [:stderr_to_stdout,
+     :binary,
+     line: 4096,
+     # args: ["--system", "--address", dbus_address(), "--nofork", "--nopidfile"],
+     args: ["--system", "--nofork", "--nopidfile"],
     ]
   end
 

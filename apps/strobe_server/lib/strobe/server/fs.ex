@@ -87,14 +87,14 @@ defmodule Strobe.Server.Fs do
   end
 
   defp mount_args(device, mount_point) do
-    [ "-t",
-      "ext4",
-      "-o",
-      # https://www.kernel.org/doc/Documentation/filesystems/ext4.txt
-      # Be slow but careful -- we want to avoid data corruption at all costs
-      "noatime,noexec,nosuid,data=ordered,barrier=1",
-      device,
-      mount_point,
+    ["-t",
+     "ext4",
+     "-o",
+     # https://www.kernel.org/doc/Documentation/filesystems/ext4.txt
+     # Be slow but careful -- we want to avoid data corruption at all costs
+     "noatime,noexec,nosuid,data=ordered,barrier=1",
+     device,
+     mount_point,
     ]
   end
 

@@ -42,10 +42,14 @@ defmodule Otis.Persistence.ChannelsTest do
     id = Otis.uuid
     name = "A new channel"
     {:ok, channel} = Otis.Channels.create(id, name)
+    pid = GenServer.whereis(channel)
+    assert is_pid(pid)
+    Process.monitor(pid)
     assert_receive {:channel, :add, [^id, %{name: ^name}]}, 200
 
 
     Otis.Channels.stop(channel)
+    assert_receive {:DOWN, _, :process, ^pid, :shutdown}
     assert nil == GenServer.whereis(channel)
 
     {:ok, _channel} = Otis.Channels.create(id, name)

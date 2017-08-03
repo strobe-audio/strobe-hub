@@ -34,7 +34,7 @@ defmodule Otis.Filesystem do
     case File.ls(path) do
       {:error, _} = err -> err
       {:ok, files} ->
-        { :ok, files |> Enum.sort |> map(&Path.join(path, &1)) }
+        {:ok, files |> Enum.sort |> map(&Path.join(path, &1))}
     end
   end
 

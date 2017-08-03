@@ -15,25 +15,21 @@ defmodule Otis.Library.UPNP.Mixfile do
      deps: deps()]
   end
 
-  # Configuration for the OTP application
-  #
-  # Type "mix help compile.app" for more information
   def application do
-    # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: [:logger],
      mod: {Otis.Library.UPNP.Application, []}]
   end
 
   defp deps do
-    [ {:nerves_ssdp_client, "~> 0.1.3"},
-      {:sweet_xml, "~> 0.6.5"},
-      {:httpoison, "~> 0.11.1"},
-      {:erlsom, github: "willemdj/erlsom"},
-      {:xml_builder, "~> 0.0.9"},
-      {:otis_library, in_umbrella: true},
-      {:httparrot, "~> 1.0.0", only: :test},
-      {:gen_stage, "~> 0.12"},
-      {:poison, "~> 1.0"},
+    [{:nerves_ssdp_client, "~> 0.1.3"},
+     {:sweet_xml, "~> 0.6.5"},
+     {:httpoison, "~> 0.11.1"},
+     {:erlsom, github: "willemdj/erlsom"},
+     {:xml_builder, "~> 0.0.9"},
+     {:otis_library, in_umbrella: true},
+     {:httparrot, "~> 1.0.0", only: :test},
+     {:gen_stage, "~> 0.12"},
+     {:poison, "~> 1.0"},
     ]
   end
 end

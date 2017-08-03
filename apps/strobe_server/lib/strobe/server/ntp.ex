@@ -37,10 +37,10 @@ defmodule Strobe.Server.Ntp do
   end
 
   def ntpd_daemon_args do
-    [ :stderr_to_stdout,
-      :binary,
-      line: 4096,
-      args: args(),
+    [:stderr_to_stdout,
+     :binary,
+     line: 4096,
+     args: args(),
     ]
   end
 

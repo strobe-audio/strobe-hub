@@ -19,10 +19,11 @@ defmodule Otis.Pipeline.Transcoder.Avconv do
   end
 
   defp params(config) do
-    [ "-f", "s16le",
-      "-ar", Integer.to_string(config.sample_freq),
-      "-ac", Integer.to_string(config.channels),
-      "-" ]
+    ["-f", "s16le",
+     "-ar", Integer.to_string(config.sample_freq),
+     "-ac", Integer.to_string(config.channels),
+     "-"
+    ]
   end
 
   defp ms_to_s(ms) do

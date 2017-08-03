@@ -113,12 +113,12 @@ defmodule Otis.Receivers.Protocol do
       end
 
       defp socket_opts(pipeline_config) do
-        [ mode: :binary,
-          packet: 4,
-          active: :once,
-          keepalive: true,
-          nodelay: true,
-          send_timeout: 2_000 * pipeline_config.packet_duration_ms,
+        [mode: :binary,
+         packet: 4,
+         active: :once,
+         keepalive: true,
+         nodelay: true,
+         send_timeout: 2_000 * pipeline_config.packet_duration_ms,
         ]
       end
     end

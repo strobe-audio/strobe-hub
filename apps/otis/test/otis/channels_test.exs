@@ -24,7 +24,7 @@ defmodule ChannelsTest do
     id = Otis.uuid()
     {:ok, channel} = Otis.Channels.create(id, "Downstairs")
     pid = GenServer.whereis(channel)
-    {:ok, list } = Otis.Channels.list()
+    {:ok, list} = Otis.Channels.list()
     assert list == [pid]
   end
 

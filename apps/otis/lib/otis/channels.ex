@@ -3,6 +3,8 @@ defmodule Otis.Channels do
 
   alias Otis.State.Channel
 
+  import Otis.Registry
+
   @supervisor __MODULE__
 
   def create(name) when is_binary(name) do
@@ -29,15 +31,13 @@ defmodule Otis.Channels do
     add(:start, registry, channel, config)
   end
 
-
   def destroy!(id) do
-    case whereis_name(id) do
-      :undefined ->
-        nil
-      pid when is_pid(pid) ->
-        response = Supervisor.terminate_child(@supervisor, whereis_name(id))
+    case stop(id) do
+      :ok ->
         Strobe.Events.notify(:channel, :remove, [id])
-        response
+        :ok
+      err ->
+        err
     end
   end
 
@@ -46,6 +46,12 @@ defmodule Otis.Channels do
   end
   def stop(pid) when is_pid(pid) do
     Supervisor.terminate_child(@supervisor, pid)
+  end
+  def stop(id) when is_binary(id) do
+    stop(via(id))
+  end
+  def stop(nil) do
+    {:error, :not_found}
   end
 
   def ids do
@@ -73,10 +79,11 @@ defmodule Otis.Channels do
   end
 
   def find(id) do
-    case whereis_name(id) do
-      :undefined -> :error
-      nil -> :error
-      pid when is_pid(pid) -> {:ok, pid}
+    case whereis(id) do
+      pid when is_pid(pid) ->
+        {:ok, pid}
+      _ ->
+        :error
     end
   end
 
@@ -84,27 +91,27 @@ defmodule Otis.Channels do
     Otis.Channel.volume(channel)
   end
   def volume(id) do
-    Otis.Channel.volume(whereis_name(id))
+    Otis.Channel.volume(via(id))
   end
 
   def volume(id, volume) do
-    Otis.Channel.volume(whereis_name(id), volume)
+    Otis.Channel.volume(via(id), volume)
   end
 
   def playing?(id) when is_binary(id) do
-    Otis.Channel.playing?(whereis_name(id))
+    Otis.Channel.playing?(via(id))
   end
 
   def play(id, playing) when is_binary(id) do
-    Otis.Channel.play(whereis_name(id), playing)
+    Otis.Channel.play(via(id), playing)
   end
 
   def skip(id, source_id) do
-    Otis.Channel.skip(whereis_name(id), source_id)
+    Otis.Channel.skip(via(id), source_id)
   end
 
   def remove(id, rendition_id) do
-    Otis.Channel.remove(whereis_name(id), rendition_id)
+    Otis.Channel.remove(via(id), rendition_id)
   end
 
   def rename(id, name) when is_binary(id) do
@@ -112,7 +119,7 @@ defmodule Otis.Channels do
   end
 
   def clear(id) when is_binary(id) do
-    Otis.Channel.clear(whereis_name(id))
+    Otis.Channel.clear(via(id))
   end
 
   defp add(action, registry, channel, config) do
@@ -144,31 +151,5 @@ defmodule Otis.Channels do
       worker(Otis.Channel, [])
     ]
     supervise(children, strategy: :simple_one_for_one)
-  end
-
-  ### Registry functions & callbacks
-
-  def register_name(id, pid) do
-    id |> key |> :gproc.register_name(pid)
-  end
-
-  def unregister_name(id) do
-    id |> key |> :gproc.unregister_name
-  end
-
-  def whereis_name(id) do
-    id |> key |> :gproc.whereis_name
-  end
-
-  def send(id, msg) do
-    id |> key |> :gproc.send(msg)
-  end
-
-  def via(id) do
-    {:via, __MODULE__, id}
-  end
-
-  defp key(id) do
-    {:n, :l, {__MODULE__, String.to_atom(id)}}
   end
 end

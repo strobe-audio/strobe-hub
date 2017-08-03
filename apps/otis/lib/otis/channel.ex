@@ -219,7 +219,7 @@ defmodule Otis.Channel do
     state
   end
   defp set_state(channel, state) do
-    %S{ channel | state: state } |> change_state
+    %S{channel | state: state} |> change_state
   end
 
   defp change_state(%S{state: :play} = state) do
