@@ -45,7 +45,6 @@ defmodule Otis.Mixfile do
      {:external_process, in_umbrella: true},
      {:strobe_events, in_umbrella: true},
      {:nerves_ssdp_server, "~> 0.2.1"},
-     {:gproc, "~> 0.5.0"},
      {:mdns, "~> 0.1.5"},
      {:gen_stage, "~> 0.12"},
     ] ++ deps(Mix.env)
