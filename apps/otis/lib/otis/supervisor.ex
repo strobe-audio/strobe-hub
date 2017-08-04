@@ -18,6 +18,7 @@ defmodule Otis.Supervisor do
       worker(Otis.State.Migrator, [], restart: :transient),
       worker(Otis.LoggerHandler, []),
       worker(Otis.State.Library, []),
+      worker(Otis.State.Volume, []),
       worker(Otis.State.RenditionProgress, []),
       worker(Otis.State.Persistence.Channels, []),
       worker(Otis.State.Persistence.Receivers, []),

@@ -121,3 +121,7 @@ $muted-volume-thumb-color: #333;
   background-color: $muted-volume-thumb-color;
   color: #c00;
 }
+
+.volume--control__locked {
+  background-color: #f00;
+}

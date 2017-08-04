@@ -94,6 +94,13 @@ applicationSettingsActions =
         applicationSettings translate
 
 
+port forcePress : (Bool -> msg) -> Sub msg
+
+
+forcePressSubscription =
+    forcePress Msg.ForcePress
+
+
 
 -- Outgoing Elm -> JS
 
@@ -101,7 +108,7 @@ applicationSettingsActions =
 port saveState : Root.SavedState -> Cmd msg
 
 
-port volumeChangeRequests : ( String, String, Float ) -> Cmd msg
+port volumeChangeRequests : ( String, Bool, String, String, Float ) -> Cmd msg
 
 
 port receiverMuteRequests : ( String, Bool ) -> Cmd msg

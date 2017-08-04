@@ -6,14 +6,14 @@ import Receiver
 import Ports
 
 
-channelVolumeChange : Channel.Model -> Cmd ()
-channelVolumeChange channel =
-    volumeChange "channel" channel
+channelVolumeChange : Bool -> Channel.Model -> Cmd ()
+channelVolumeChange locked channel =
+    volumeChange "channel" locked channel.id channel
 
 
-receiverVolumeChange : Receiver.Model -> Cmd ()
-receiverVolumeChange receiver =
-    volumeChange "receiver" receiver
+receiverVolumeChange : Bool -> Receiver.Model -> Cmd ()
+receiverVolumeChange locked receiver =
+    volumeChange "receiver" locked receiver.channelId receiver
 
 
 receiverMuteChange : Receiver.Model -> Cmd ()
@@ -21,6 +21,6 @@ receiverMuteChange receiver =
     Ports.receiverMuteRequests ( receiver.id, receiver.muted )
 
 
-volumeChange : String -> { a | id : String, volume : Float } -> Cmd ()
-volumeChange kind model =
-    Ports.volumeChangeRequests ( kind, model.id, model.volume )
+volumeChange : String -> Bool -> String -> { a | id : String, volume : Float } -> Cmd ()
+volumeChange kind locked channelId model =
+    Ports.volumeChangeRequests ( kind, locked, channelId, model.id, model.volume )

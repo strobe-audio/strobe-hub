@@ -47,6 +47,7 @@ type alias Model =
     , savedState : Maybe SavedState
     , configuration : Configuration
     , viewAnimations : ViewAnimations
+    , forcePress : Bool
     }
 
 

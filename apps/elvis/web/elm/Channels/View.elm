@@ -55,7 +55,8 @@ channelVolume : Root.Model -> Channel.Model -> Html Msg
 channelVolume model channel =
     let
         volumeCtrl =
-            (Volume.View.control channel.volume
+            (Volume.View.control model.forcePress
+                channel.volume
                 False
                 (text "Master volume")
             )
@@ -124,7 +125,7 @@ channelChoice model receivers activeChannel channelSummary =
             if isActive then
                 Html.map
                     (\m -> (Msg.Channel channel.id) (Channel.Volume m))
-                    (Volume.View.bareControl channel.volume)
+                    (Volume.View.bareControl model.forcePress channel.volume)
             else
                 div [] []
     in

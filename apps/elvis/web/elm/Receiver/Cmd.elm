@@ -7,9 +7,9 @@ import Volume.Cmd
 import Msg exposing (Msg)
 
 
-volume : Receiver.Model -> Cmd Msg
-volume receiver =
-    Volume.Cmd.receiverVolumeChange receiver |> Cmd.map (always Msg.NoOp)
+volume : Bool -> Receiver.Model -> Cmd Msg
+volume locked receiver =
+    Volume.Cmd.receiverVolumeChange locked receiver |> Cmd.map (always Msg.NoOp)
 
 
 mute : Receiver.Model -> Cmd Msg

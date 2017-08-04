@@ -32,7 +32,7 @@ initialState state =
 updateVolume : Volume.Msg -> Receiver.Model -> ( Receiver.Model, Cmd Msg )
 updateVolume volumeMsg receiver =
     case volumeMsg of
-        Volume.Change maybeVol ->
+        Volume.Change locked maybeVol ->
             case maybeVol of
                 Nothing ->
                     ( receiver, Cmd.none )
@@ -42,7 +42,7 @@ updateVolume volumeMsg receiver =
                         updated =
                             { receiver | volume = volume }
                     in
-                        ( updated, Receiver.Cmd.volume updated )
+                        ( updated, Receiver.Cmd.volume locked updated )
 
         Volume.ToggleMute ->
             let

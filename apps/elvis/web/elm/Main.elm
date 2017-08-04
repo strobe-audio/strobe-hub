@@ -59,6 +59,7 @@ subscriptions model =
         , viewportWidth
         , Ports.animationScrollActions
         , Ports.applicationSettingsActions
+        , Ports.forcePressSubscription
         ]
 
 

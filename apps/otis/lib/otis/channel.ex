@@ -62,11 +62,12 @@ defmodule Otis.Channel do
     GenServer.call(channel, :volume)
   end
 
-  def volume(%__MODULE__{pid: pid}, volume) do
-    volume(pid, volume)
+  def volume(channel, volume, opts \\ [])
+  def volume(%__MODULE__{pid: pid}, volume, opts) do
+    volume(pid, volume, opts)
   end
-  def volume(channel, volume) do
-    GenServer.call(channel, {:volume, volume})
+  def volume(channel, volume, opts) do
+    GenServer.call(channel, {:volume, volume, opts})
   end
 
   def playing?(%__MODULE__{pid: pid}) do
@@ -160,9 +161,9 @@ defmodule Otis.Channel do
   def handle_call(:volume, _from, %S{volume: volume} = state) do
     {:reply, {:ok, volume}, state}
   end
-  def handle_call({:volume, volume}, _from, state) do
+  def handle_call({:volume, volume, opts}, _from, state) do
     volume = Otis.sanitize_volume(volume)
-    Otis.Receivers.Channels.volume_multiplier(state.id, volume)
+    Otis.Receivers.Channels.volume_multiplier(state.id, volume, opts)
     event!(state, :volume, [volume])
     {:reply, {:ok, volume}, %S{state | volume: volume}}
   end

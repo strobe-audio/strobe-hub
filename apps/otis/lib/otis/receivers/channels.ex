@@ -63,9 +63,9 @@ defmodule Otis.Receivers.Channels do
     end)
   end
 
-  def volume_multiplier(channel_id, volume) do
+  def volume_multiplier(channel_id, volume, opts \\ []) do
     Enum.each(lookup(channel_id), fn(r) ->
-      Receiver.volume_multiplier(r, volume)
+      Receiver.volume_multiplier(r, volume, opts)
     end)
   end
 

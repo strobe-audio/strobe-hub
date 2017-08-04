@@ -31,15 +31,29 @@ defmodule Otis.Receivers do
     GenServer.call(pid, {:receiver, id})
   end
 
+  def volume(id) do
+    with {:ok, receiver} <- receiver(id),
+         {:ok, volume} <- Otis.Receiver.volume(receiver)
+    do
+      {:ok, volume}
+    else
+      err -> err
+    end
+  end
+
   @doc "A useful wrapper command to set the volume for a given receiver id"
-  def volume(id, volume)
-  when is_binary(id) do
+  def volume(id, channel_id, volume, opts \\ [])
+  def volume(id, channel_id, volume, opts) when is_binary(id) do
     volume = Otis.sanitize_volume(volume)
-    case receiver(id) do
-      {:ok, receiver} ->
-        Otis.Receiver.volume receiver, volume
-      _error ->
-        Strobe.Events.notify(:receiver, :volume, [id, volume])
+    if Keyword.get(opts, :lock, false) do
+      Strobe.Events.notify(:volume, :lock, [:receiver, channel_id, id, volume])
+    else
+      case receiver(id) do
+        {:ok, receiver} ->
+          Otis.Receiver.volume receiver, volume
+        _error ->
+          Strobe.Events.notify(:receiver, :volume, [id, volume])
+      end
     end
     {:ok, volume}
   end

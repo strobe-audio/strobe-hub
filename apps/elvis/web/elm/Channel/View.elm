@@ -38,7 +38,7 @@ control model channel =
                 [ (renditionProgressBar channel maybeRendition)
                 , (rewindPlaySkip channel maybeRendition)
                 ]
-            , (volumeControl channel)
+            , (volumeControl model.forcePress channel)
               -- , (receiverControl model channel)
             ]
 
@@ -134,11 +134,12 @@ rewindPlaySkip channel maybeRendition =
             ]
 
 
-volumeControl : Channel.Model -> Html Channel.Msg
-volumeControl channel =
+volumeControl : Bool -> Channel.Model -> Html Channel.Msg
+volumeControl forcePress channel =
     let
         volumeCtrl =
-            (Volume.View.control channel.volume
+            (Volume.View.control forcePress
+                channel.volume
                 False
                 (div [ class "channel--volume-label" ] [ text "Master volume" ])
             )

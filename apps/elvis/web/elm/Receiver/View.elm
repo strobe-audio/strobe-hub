@@ -28,8 +28,8 @@ receiverClasses receiver attached =
     ]
 
 
-attached : Receiver.Model -> Html Receiver.Msg
-attached receiver =
+attached : Root.Model -> Receiver.Model -> Html Receiver.Msg
+attached model receiver =
     let
         receiverLabel receiver =
             div [ class "receiver--name" ] [ text receiver.name ]
@@ -38,7 +38,7 @@ attached receiver =
             [ div [ class "receiver--view" ]
                 [ div [ class "receiver--state" ] []
                 , div [ class "receiver--volume" ]
-                    [ Html.map Receiver.Volume (Volume.View.control receiver.volume receiver.muted (receiverLabel receiver))
+                    [ Html.map Receiver.Volume (Volume.View.control model.forcePress receiver.volume receiver.muted (receiverLabel receiver))
                     ]
                 ]
             ]

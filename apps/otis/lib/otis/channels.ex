@@ -94,8 +94,8 @@ defmodule Otis.Channels do
     Otis.Channel.volume(via(id))
   end
 
-  def volume(id, volume) do
-    Otis.Channel.volume(via(id), volume)
+  def volume(id, volume, opts \\ []) do
+    Otis.Channel.volume(via(id), volume, opts)
   end
 
   def playing?(id) when is_binary(id) do

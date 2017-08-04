@@ -115,14 +115,57 @@ defmodule Otis.ReceiverTest do
 
     Receiver.volume receiver, 0.1, 0.3
     assert_receive {:receiver, :volume, [^id, 0.1]}
-    # Could assert that no volume change message is sent, but really, who cares!?
-    {:ok, msg} = ctrl_recv(mock)
-    assert msg == %{"volume" => Receiver.perceptual_volume(0.03)}
+    {:error, :timeout} = ctrl_recv(mock)
 
     Receiver.volume receiver, 0.9, 0.1
     assert_receive {:receiver, :volume, [^id, 0.9]}
     {:ok, %{"volume" => volume}} = ctrl_recv(mock)
     assert_in_delta volume, Receiver.perceptual_volume(0.09), 0.000001
+  end
+
+  test "setting a locked volume multiplier", _context do
+    id = Otis.uuid
+    mock = connect!(id, 1234)
+    assert_receive {:receiver, :connect, [^id, _]}, 200
+    {:ok, receiver} = Receivers.receiver(id)
+
+    ctrl_reset(mock)
+
+    Receiver.volume receiver, 0.13
+    assert_receive {:receiver, :volume, [^id, 0.13]}
+    {:ok, msg} = ctrl_recv(mock)
+    assert msg == %{"volume" => Receiver.perceptual_volume(0.13)}
+
+    ######
+
+    Receiver.volume_multiplier receiver, 0.5, lock: true
+    # 0.13 * 1 = v * 0.5
+    # v = (0.13 * 1) / 0.5
+    assert_receive {:receiver, :volume, [^id, 0.26]}
+    {:error, _msg} = ctrl_recv(mock)
+
+    # old_mult = 0.5, old_vol = 0.26
+    # new_mult = 0.4, new_vol = (0.5 * 0.26) / 0.4
+    Receiver.volume_multiplier receiver, 0.4, lock: true
+
+    assert_receive {:receiver, :volume, [^id, 0.325]}
+    {:error, _msg} = ctrl_recv(mock)
+
+    # old_mult = 0.4, old_vol = 0.325
+    # new_mult = 0.1, new_vol = (0.4 * 0.325) / 0.1
+    Receiver.volume_multiplier receiver, 0.1, lock: true
+
+    assert_receive {:receiver, :volume, [^id, 1.0]}
+
+    # old_mult = 0.1, old_vol = 1.0
+    # new_mult = 0.05, new_vol = (0.1 * 1) / 0.05
+    Receiver.volume_multiplier receiver, 0.05, lock: true
+    {:ok, %{"volume" => volume}} = ctrl_recv(mock)
+    assert_in_delta volume, Receiver.perceptual_volume(0.1), 0.000001
+
+    refute_receive {:receiver, :volume, [^id, 1.0]}
+    {:ok, %{"volume" => volume}} = ctrl_recv(mock)
+    assert_in_delta volume, Receiver.perceptual_volume(0.05), 0.000001
   end
 
   test "broadcasts an event on volume change" do
