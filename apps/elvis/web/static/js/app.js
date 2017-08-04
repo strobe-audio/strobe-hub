@@ -5,6 +5,8 @@ import 'modernizr'
 import {Socket} from 'phoenix'
 import Elm from 'Main'
 import Raven from 'raven-js'
+import Pressure from 'pressure'
+
 
 if (window.SENTRY_DSN) {
   console.log('Installing Sentry error tracking...')
@@ -99,6 +101,20 @@ channel.on('settings-application', payload => {
   app.ports.applicationSettings.send([payload.application, settings])
 })
 
+// set on body because it's likely that at this point our UI has not been built
+Pressure.set('body', {
+  change(force) {
+    if (force >= 1.0) {
+      app.ports.forcePress.send(true)
+    } else {
+      app.ports.forcePress.send(false)
+    }
+  },
+  unsupported() {
+    console.warn('Pressure unsupported')
+  }
+}, {polyfill: false})
+
 function push(channel, event, payload) {
   channel.push(event, payload).receive("error", resp => {
     console.error(resp.message)
@@ -160,4 +176,3 @@ let frame = () => {
 }
 
 _requestAnimationFrame(frame)
-

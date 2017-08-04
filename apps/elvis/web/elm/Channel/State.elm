@@ -208,14 +208,14 @@ update action channel =
 updateVolume : Volume.Msg -> Channel.Model -> ( Channel.Model, Cmd Msg )
 updateVolume volumeMsg channel =
     case volumeMsg of
-        Volume.Change maybeVolume ->
+        Volume.Change locked maybeVolume ->
             case maybeVolume of
                 Just volume ->
                     let
                         updatedChannel =
                             { channel | volume = volume }
                     in
-                        ( updatedChannel, Channel.Cmd.volume updatedChannel )
+                        ( updatedChannel, Channel.Cmd.volume locked updatedChannel )
 
                 Nothing ->
                     channel ! []

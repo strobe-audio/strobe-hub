@@ -59,6 +59,7 @@ initialState windowInnerWidth time =
         { revealChannelList = Animation.static 0
         , revealChannelControl = Animation.static 0
         }
+    , forcePress = False
     }
 
 
@@ -447,6 +448,9 @@ update action model =
 
         Msg.ActivateControlReceiver ->
             { model | controlChannel = False, controlReceiver = True } ! []
+
+        Msg.ForcePress active ->
+            { model | forcePress = active } ! []
 
 
 libraryVisible : Root.Model -> Bool

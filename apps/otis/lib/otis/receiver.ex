@@ -208,12 +208,12 @@ defmodule Otis.Receiver do
 
   See the corresponding logic in `Otis.Receivers.ControlConnection`.
   """
-  def volume_multiplier(receiver, multiplier) do
-    set_volume_multiplier(receiver, Otis.sanitize_volume(multiplier))
+  def volume_multiplier(receiver, multiplier, opts \\ []) do
+    set_volume_multiplier(receiver, Otis.sanitize_volume(multiplier), opts)
   end
 
-  defp set_volume_multiplier(%R{ctrl: {pid, _socket}}, multiplier) do
-    Otis.Receivers.ControlConnection.set_volume_multiplier(pid, multiplier)
+  defp set_volume_multiplier(%R{ctrl: {pid, _socket}}, multiplier, opts) do
+    Otis.Receivers.ControlConnection.set_volume_multiplier(pid, multiplier, opts)
   end
 
   def volume_multiplier(receiver) do

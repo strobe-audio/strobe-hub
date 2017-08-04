@@ -9,15 +9,15 @@ import Utils.Touch exposing (onUnifiedClick, onSingleTouch)
 import String
 
 
-control : Float -> Bool -> Html Volume.Msg -> Html Volume.Msg
-control volume muted label =
+control : Bool -> Float -> Bool -> Html Volume.Msg -> Html Volume.Msg
+control locked volume muted label =
     let
         stateButton : List ( String, Bool ) -> Volume.Msg -> List (Html.Attribute Volume.Msg)
         stateButton classes msg =
             ((classList classes) :: (onUnifiedClick msg))
     in
         div
-            [ classList [ ( "volume--control", True ), ( "volume--control__muted", muted ) ] ]
+            [ classList [ ( "volume--control", True ), ( "volume--control__locked", locked ), ( "volume--control__muted", muted ) ] ]
             [ div [ class "volume--label" ] [ label ]
             , div
                 [ class "volume--range" ]
@@ -37,19 +37,19 @@ control volume muted label =
                         , Html.Attributes.max (scale |> floor |> toString)
                         , value (toString (volume * scale))
                         , step "1"
-                        , onInput (Volume.Change << decode)
+                        , onInput ((Volume.Change locked) << decode)
                         ]
                         []
                     ]
-                , div (stateButton [ ( "volume--state volume--state__full", True ) ] (Volume.Change (Just 1.0))) []
+                , div (stateButton [ ( "volume--state volume--state__full", True ) ] (Volume.Change locked (Just 1.0))) []
                 ]
             ]
 
 
-bareControl : Float -> Html Volume.Msg
-bareControl volume =
+bareControl : Bool -> Float -> Html Volume.Msg
+bareControl locked volume =
     div
-        [ class "volume--control" ]
+        [ classList [ ( "volume--control", True ), ( "volume--control__locked", locked ) ] ]
         [ div
             [ class "volume--range" ]
             [ div
@@ -60,7 +60,7 @@ bareControl volume =
                     , Html.Attributes.max (scale |> floor |> toString)
                     , value (toString (volume * scale))
                     , step "1"
-                    , onInput (Volume.Change << decode)
+                    , onInput ((Volume.Change locked) << decode)
                     ]
                     []
                 ]

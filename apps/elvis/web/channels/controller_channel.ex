@@ -16,12 +16,12 @@ defmodule Elvis.ControllerChannel do
     {:ok, socket}
   end
 
-  def handle_in("volume-change", ["receiver", id, volume], socket) do
-    socket = test_volume_change_interval(socket, Otis.Receivers, [id, volume])
+  def handle_in("volume-change", ["receiver", locked, channel_id, id, volume], socket) do
+    socket = test_volume_change_interval(socket, Otis.Receivers, [id, channel_id, volume, [lock: locked]])
     {:noreply, socket}
   end
-  def handle_in("volume-change", ["channel", id, volume], socket) do
-    socket = test_volume_change_interval(socket, Otis.Channels, [id, volume])
+  def handle_in("volume-change", ["channel", locked, _channel_id, id, volume], socket) do
+    socket = test_volume_change_interval(socket, Otis.Channels, [id, volume, [lock: locked]])
     {:noreply, socket}
   end
 

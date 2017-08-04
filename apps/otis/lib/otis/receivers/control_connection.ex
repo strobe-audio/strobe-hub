@@ -16,8 +16,8 @@ defmodule Otis.Receivers.ControlConnection do
     GenServer.call(connection, :get_volume)
   end
 
-  def set_volume_multiplier(connection, multiplier) do
-    GenServer.cast(connection, {:set_volume_multiplier, multiplier})
+  def set_volume_multiplier(connection, multiplier, opts) do
+    GenServer.cast(connection, {:set_volume_multiplier, multiplier, opts})
   end
 
   def get_volume_multiplier(connection) do
@@ -38,8 +38,9 @@ defmodule Otis.Receivers.ControlConnection do
     {:noreply, state}
   end
 
-  def handle_cast({:set_volume_multiplier, multiplier}, state) do
-    state = change_volume(state, [volume_multiplier: multiplier])
+  def handle_cast({:set_volume_multiplier, multiplier, opts}, state) do
+    lock = Keyword.get(opts, :lock, false)
+    state = change_volume(state, [volume_multiplier: multiplier, lock: lock])
     {:noreply, state}
   end
 
@@ -75,27 +76,54 @@ defmodule Otis.Receivers.ControlConnection do
   defp initial_settings, do: %{volume: 0.0, volume_multiplier: 1.0}
 
   defp change_volume(state, values) do
+    case Keyword.pop(values, :lock, false) do
+      {true, values} ->
+        change_volume_locked(state, values)
+      {false, values} ->
+        change_volume_unlocked(state, values)
+    end
+  end
+
+  defp change_volume_locked(state, values) do
+    v1 = Map.take(state.settings, [:volume, :volume_multiplier])
+    updated = Enum.into(values, state.settings)
+    v2 = Map.take(updated, [:volume, :volume_multiplier])
+    volume = (v1.volume_multiplier * v1.volume) / v2.volume_multiplier |> Otis.sanitize_volume
+    v2 = %{updated | volume: volume}
+    %S{state | settings: v2} |> monitor_volume(v1, v2)
+  end
+
+  defp change_volume_unlocked(state, values) do
     v1 = Map.take(state.settings, [:volume, :volume_multiplier])
     settings = Enum.into(values, state.settings)
     v2 = Map.take(settings, [:volume, :volume_multiplier])
-    %S{state | settings: settings} |> monitor_volume(values, v1, v2)
+    %S{state | settings: v2} |> monitor_volume(v1, v2)
   end
 
-  defp monitor_volume(state, _values, volume, volume) do
+  defp monitor_volume(state, settings, settings) do
     state
   end
-  defp monitor_volume(state, values, _initial_volume, final_volume) do
-    volume = calculated_volume(final_volume)
-    %{volume: volume} |> send_command(state)
-    notify_volume(state, values)
+  defp monitor_volume(state, initial_settings, final_settings) do
+    initial_volume = calculated_volume(initial_settings)
+    final_volume = calculated_volume(final_settings)
+    send_volume_command(state, initial_volume, final_volume)
+    notify_volume(state, initial_settings.volume, final_settings.volume)
   end
 
-  defp notify_volume(%S{settings: settings} = state, values) do
+  defp send_volume_command(state, volume, volume) do
+    state
+  end
+  defp send_volume_command(state, _old_volume, volume) do
+    %{volume: volume} |> send_command(state)
+  end
+
+  defp notify_volume(state, volume, volume) do
+    state
+  end
+  defp notify_volume(state, _initial_volume, volume) do
     # Don't send an event when changing the multiplier as the multiplier is a
     # channel-level property and events for it are emitted there.
-    if Keyword.has_key?(values, :volume) do
-      Strobe.Events.notify(:receiver, :volume, [state.id, settings.volume])
-    end
+    Strobe.Events.notify(:receiver, :volume, [state.id, volume])
     state
   end
 

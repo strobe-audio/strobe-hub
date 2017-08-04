@@ -25,7 +25,7 @@ control model =
             Receiver.sortByActive model.receivers
 
         receiverEntry receiver =
-            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver)
+            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached model receiver)
     in
         div [] (List.map receiverEntry receivers)
 
@@ -38,7 +38,7 @@ attached model channel =
                 |> Receiver.sortByActive
 
         receiverEntry receiver =
-            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached receiver)
+            Html.map (Msg.Receiver receiver.id) (Receiver.View.attached model receiver)
     in
         div [ class "receivers--list" ] (List.map receiverEntry receivers)
 

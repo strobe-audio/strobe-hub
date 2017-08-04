@@ -2,5 +2,5 @@ module Volume exposing (..)
 
 
 type Msg
-    = Change (Maybe Float)
+    = Change Bool (Maybe Float)
     | ToggleMute

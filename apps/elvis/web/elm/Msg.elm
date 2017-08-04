@@ -42,3 +42,4 @@ type Msg
     | BrowserViewport Int
     | BrowserScroll Int
     | AnimationScroll ( Time, Maybe Float, Float )
+    | ForcePress Bool
