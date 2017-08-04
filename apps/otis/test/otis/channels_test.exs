@@ -2,6 +2,7 @@ defmodule ChannelsTest do
   use ExUnit.Case
 
   alias Otis.State.Channel
+  alias Otis.Test.TestSource
 
   @moduletag :channels
 
@@ -14,8 +15,9 @@ defmodule ChannelsTest do
   end
 
   setup do
-    shutdown()
+    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     MessagingHandler.attach()
+    shutdown()
     on_exit &shutdown/0
     :ok
   end
@@ -73,5 +75,15 @@ defmodule ChannelsTest do
 
     assert channel_ids() == [id]
     assert Otis.Channels.ids() == [id]
+  end
+
+  test "playing status" do
+    id = Otis.uuid()
+    {:ok, channel} = Otis.Channels.create(id, "Something")
+    assert_receive {:__complete__, {:channel, :add, [^id, _]}, Otis.State.Persistence.Channels}
+    Otis.Channel.append(channel, [TestSource.new])
+    assert_receive {:__complete__, {:playlist, :append, [_, _]}, Otis.State.Persistence.Playlist}
+    {:ok, :play} = Otis.Channel.play_pause(channel)
+    assert Otis.Channels.playing?(id)
   end
 end
