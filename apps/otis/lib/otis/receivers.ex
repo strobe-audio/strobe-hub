@@ -48,14 +48,18 @@ defmodule Otis.Receivers do
     if Keyword.get(opts, :lock, false) do
       Strobe.Events.notify(:volume, :lock, [:receiver, channel_id, id, volume])
     else
-      case receiver(id) do
+      case receiver(id) |> IO.inspect do
         {:ok, receiver} ->
           Otis.Receiver.volume receiver, volume
         _error ->
-          Strobe.Events.notify(:receiver, :volume, [id, volume])
+          volume_event(id, volume)
       end
     end
     {:ok, volume}
+  end
+
+  def volume_event(id, volume) do
+    Strobe.Events.notify(:receiver, :volume, [id, volume])
   end
 
   def attach(receiver_id, channel_id)
