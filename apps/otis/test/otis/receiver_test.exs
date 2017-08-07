@@ -168,6 +168,26 @@ defmodule Otis.ReceiverTest do
     assert_in_delta volume, Receiver.perceptual_volume(0.05), 0.000001
   end
 
+  test "locked volume change on offline recevier", _context do
+    channel_id = Otis.uuid
+    id1 = Otis.uuid
+    id2 = Otis.uuid
+    Otis.Channels.create(channel_id, "Something")
+    assert_receive {:__complete__, {:channel, :add, [^channel_id, channel_record]}, Otis.State.Persistence.Channels}
+    # channel_record = Otis.Channel.find(channel_id)
+    _receiver_record1 = Otis.State.Receiver.create!(channel_record, id: id1, volume: 0.2)
+    _receiver_record2 = Otis.State.Receiver.create!(channel_record, id: id2, volume: 0.1)
+    # assert_receive {:receiver, :volume, [^id2, 0.1]}
+    mock = connect!(id1, 1234)
+    assert_receive {:receiver, :connect, [^id1, _]}
+    assert_receive {:receiver, :volume, [^id1, 0.2]}
+    ctrl_reset(mock)
+    Strobe.Events.notify(:volume, :lock, [:receiver, channel_id, id2, 0.2])
+    assert_receive {:receiver, :volume, [^id1, 0.4]}
+    assert_receive {:receiver, :volume, [^id2, 0.2]}
+    Otis.Channels.stop(channel_id)
+  end
+
   test "broadcasts an event on volume change" do
     id = Otis.uuid
     connect!(id, 1234)
