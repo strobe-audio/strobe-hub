@@ -168,16 +168,47 @@ playlist channel =
                         ]
 
                 _ ->
-                    div [ class "channel--playlist-actions" ]
-                        [ div [ class "channel--playlist-actions--label" ] [ text "Queued" ]
-                        , div [ class "channel--playlist-actions--space" ] []
-                        , div
-                            [ class "channel--playlist-actions--clear"
-                            , onClick (Channel.ClearPlaylist)
-                            , onSingleTouch (Channel.ClearPlaylist)
+                    let
+                        confirmationButtons =
+                            case channel.confirmClearPlaylist of
+                                True ->
+                                    [ div
+                                        [ class "channel--confirm-clear-playlist" ]
+                                        [ div
+                                            [ class "channel--confirm-clear-playlist--label" ]
+                                            [ text "Are you sure you want to clear this playlist?" ]
+                                        , div
+                                            [ class "channel--confirm-clear-playlist--btn channel--confirm-clear-playlist--confirm"
+                                            , onClick (Channel.ClearPlaylist)
+                                            , onSingleTouch (Channel.ClearPlaylist)
+                                            ]
+                                            []
+                                        , div
+                                            [ class "channel--confirm-clear-playlist--btn channel--confirm-clear-playlist--cancel"
+                                            , onClick (Channel.ShowConfirmClearPlaylist False)
+                                            , onSingleTouch (Channel.ShowConfirmClearPlaylist False)
+                                            ]
+                                            []
+                                        ]
+                                    ]
+
+                                False ->
+                                    []
+                    in
+                        div [ class "channel--playlist-actions" ]
+                            [ div
+                                [ class "channel--playlist-actions--toolbar" ]
+                                [ div [ class "channel--playlist-actions--label" ] [ text "Queued" ]
+                                , div [ class "channel--playlist-actions--space" ] []
+                                , div
+                                    [ class "channel--playlist-actions--clear"
+                                    , onClick (Channel.ShowConfirmClearPlaylist True)
+                                    , onSingleTouch (Channel.ShowConfirmClearPlaylist True)
+                                    ]
+                                    []
+                                ]
+                            , div [] confirmationButtons
                             ]
-                            []
-                        ]
 
         playlist =
             case List.length channel.playlist of
@@ -189,7 +220,13 @@ playlist channel =
                         [ class "channel--playlist--entries" ]
                         [ div [ class "channel--playlist--head" ] [ (playlistHead channel active) ]
                         , actionButtons
-                        , div [ class "channel--playlist--tail" ] (List.map entry pending)
+                        , div
+                            [ classList
+                                [ ( "channel--playlist--tail", True )
+                                , ( "channel--playlist--tail__confirm-delete", channel.confirmClearPlaylist )
+                                ]
+                            ]
+                            (List.map entry pending)
                         ]
     in
         div [ id "__scrolling__", class "channel--playlist" ] [ playlist ]

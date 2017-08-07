@@ -43,6 +43,7 @@ newChannel channelState =
     , showAddReceiver = False
     , editName = False
     , confirmDelete = False
+    , confirmClearPlaylist = False
     , removalInProgress = False
     , editNameInput = Input.State.blank
     , touches = Utils.Touch.null
@@ -180,8 +181,11 @@ update action channel =
             in
                 ( channel_, Cmd.none )
 
+        Channel.ShowConfirmClearPlaylist state ->
+            { channel | confirmClearPlaylist = state } ! []
+
         Channel.ClearPlaylist ->
-            ( channel, Channel.Cmd.clearPlaylist channel )
+            { channel | confirmClearPlaylist = False } ! [ Channel.Cmd.clearPlaylist channel ]
 
         Channel.Tap te ->
             let

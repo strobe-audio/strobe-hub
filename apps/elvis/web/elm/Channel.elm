@@ -21,6 +21,7 @@ type alias Model =
     , editName : Bool
     , editNameInput : Input.Model
     , confirmDelete : Bool
+    , confirmClearPlaylist : Bool
     , removalInProgress : Bool
     , touches : Utils.Touch.Model
     }
@@ -65,6 +66,7 @@ type Msg
     | EditName Input.Msg
     | Rename String
     | Renamed String
+    | ShowConfirmClearPlaylist Bool
     | ClearPlaylist
     | Tap (Utils.Touch.E Msg)
     | NoOp
