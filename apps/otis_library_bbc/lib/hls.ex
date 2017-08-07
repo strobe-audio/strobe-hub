@@ -9,7 +9,7 @@ defmodule HLS do
 
   def read_with_timeout(reader, url, timeout) do
     task = Task.async(fn -> read_handling_errors(reader, url) end)
-    Task.yield(task, timeout) || (fn() -> IO.inspect [:shutdown] ; Task.shutdown(task) end).()
+    Task.yield(task, timeout) || (fn() -> Task.shutdown(task) end).()
   end
 
   def read_handling_errors(reader, url) do
