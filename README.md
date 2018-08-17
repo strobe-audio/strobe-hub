@@ -191,13 +191,13 @@ to compile the bindings.
 
 macOS comes with SQLite 3 pre-installed.
 
-### Avconv
+### ffmpeg
 
-Strobe uses `avconv` to transcode all audio into 16-bit 44,100 kHz PCM streams:
+Strobe uses `ffmpeg` to transcode all audio into 16-bit 44,100 kHz PCM streams:
 
 #### Mac
 
-    brew install libav
+    brew install ffmpeg
 
 ### Mediainfo
 
@@ -222,7 +222,15 @@ No installation necessary -- macOS comes preinstalled with an mDNS framework.
 
     apt-get install avahi-daemon libavahi-compat-libdnssd-dev
 
-### Running migrations
+### Bootstrapping
+
+#### Dependencies
+
+You need to retrieve the Elixir dependencies:
+
+    mix deps.get
+
+#### Databases
 
 Strobe maintains two databases: the hub state and your music library.
 
@@ -231,7 +239,10 @@ Both of these databases require initialization.
 
 From the root of the project directory run
 
+    mix ecto.create -r Otis.State.Repo
     mix ecto.migrate -r Otis.State.Repo
+
+    mix ecto.create -r Peel.Repo
     mix ecto.migrate -r Peel.Repo
 
 
