@@ -19,6 +19,9 @@
 }
 
 .channel--playlist-actions {
+}
+
+.channel--playlist-actions--toolbar {
   display: flex;
   height: $button-size;
   background: #ddd;
@@ -226,4 +229,36 @@ $cover-size: 60vw;
   font-weight: 700;
   font-size: 0.9em;
   color: rgba(255, 255, 255, 0.7);
+}
+
+.channel--confirm-clear-playlist {
+  display: flex;
+  flex-direction: row;
+  border-bottom: solid 1px #eee;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.channel--confirm-clear-playlist--label {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  padding: 0 $padding;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.channel--confirm-clear-playlist--confirm {
+  @mixin fa-btn "\f00c"; /* fa-check */
+  flex: 0 0 $button-size;
+  border: solid 1px rgba(0, 0, 0, 0.1);
+  border-width: 0 1px 0 1px;
+}
+
+.channel--confirm-clear-playlist--cancel {
+  @mixin fa-btn "\f00d"; /* fa-ban */
+  flex: 0 0 $button-size;
+}
+
+.channel--playlist--tail__confirm-delete {
+  opacity: 0.3;
 }

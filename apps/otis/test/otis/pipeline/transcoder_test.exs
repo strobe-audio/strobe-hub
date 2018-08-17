@@ -40,7 +40,7 @@ defmodule Test.Otis.Pipeline.Transcoder do
       {acc <> data, md5}
     end)
 
-    assert byte_size(data) == 133632
+    assert byte_size(data) == 133_632
     md5 = :crypto.hash_final(hash) |> Base.encode16(case: :lower)
     assert md5 == "78e5aab4079be68850808d4bfe9f1101"
   end

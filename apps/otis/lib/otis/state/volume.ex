@@ -46,5 +46,4 @@ defmodule Otis.State.Volume do
         end
     end
   end
-
 end

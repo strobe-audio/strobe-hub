@@ -33,7 +33,6 @@ defmodule MusicBrainz do
     end)
   end
 
-
   def lookup_cover_art({:error, reason}) do
     {:error, reason}
   end

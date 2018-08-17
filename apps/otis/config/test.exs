@@ -15,11 +15,11 @@ config :otis, Otis.State.Repo,
   pool: Ecto.Adapters.SQL.Sandbox
 
 config :otis, Otis.SNTP,
-  port: 15045
+  port: 15_045
 
 config :otis, Otis.Receivers,
-  data_port: 15540,
-  ctrl_port: 15541
+  data_port: 15_540,
+  ctrl_port: 15_541
 
 config :otis, Otis.Media,
   root: Path.join([state_dir, "fs"]),

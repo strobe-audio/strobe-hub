@@ -74,7 +74,6 @@ defmodule Peel.Collection do
   def split_path(<< "/", path::binary>>), do: Path.split(path)
   def split_path(path), do: Path.split(path)
 
-
   defp assign_root(collection, root) do
     %{collection | path: root(collection, root)}
   end

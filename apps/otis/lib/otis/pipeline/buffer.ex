@@ -75,7 +75,12 @@ defmodule Otis.Pipeline.Buffer do
     {:ok, source_duration} = Source.duration(source)
     stream = Source.open!(source, rendition_id, state.packet_size)
     {:ok, transcoder} = transcoder(state, rendition, source, stream)
-    %S{state | source: source, source_duration: source_duration, stream: transcoder, start_position: rendition.playback_position}
+    %S{state
+      | source: source,
+      source_duration: source_duration,
+      stream: transcoder,
+      start_position: rendition.playback_position
+    }
   end
 
   defp transcoder(state, rendition, source, stream) do

@@ -21,7 +21,7 @@ defmodule Strobe.Server.Avahi do
   end
   def handle_info(:check_running, state) do
     IO.inspect [__MODULE__, :check_running]
-    if is_running?() do
+    if running?() do
       Strobe.Server.Events.notify({:running, [:avahi]})
     else
       Process.send_after(self(), :check_running, 1_000)
@@ -45,12 +45,12 @@ defmodule Strobe.Server.Avahi do
   def avahi_daemon_args(args \\ []) do
     [:stderr_to_stdout,
      :binary,
-     line: 4096,
+     line: 4_096,
      args: args,
     ]
   end
 
-  def is_running? do
+  def running? do
     case System.cmd(avahi_daemon(), ["--check"]) do
       {_, 0} ->
         true
@@ -59,4 +59,3 @@ defmodule Strobe.Server.Avahi do
     end
   end
 end
-

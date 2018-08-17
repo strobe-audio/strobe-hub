@@ -46,7 +46,6 @@ defmodule Plug.WebDAV.Handler.Propfind do
   defp to_atom(tag) when is_atom(tag), do: tag
   defp to_atom(tag) when is_list(tag), do: List.to_existing_atom(tag)
 
-
   defp match_allprops([], doc) do
     import SweetXml
     case xpath(doc, ~x"/d:propfind//d:allprop" |> add_namespace("d", "DAV:")) do

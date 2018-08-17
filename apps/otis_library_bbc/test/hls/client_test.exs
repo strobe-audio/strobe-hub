@@ -23,7 +23,7 @@ defmodule HLS.ClientTest do
   end
 
   test "keeps reloading the playlist file", context do
-    names =  Enum.map 226201865..226201872, fn(id) -> "#{id}.ts" end
+    names =  Enum.map 226_201_865..226_201_872, fn(id) -> "#{id}.ts" end
     files = Enum.map names, fn(filename) ->
       [context.root, "high", filename] |> Path.join |> File.read!
     end
@@ -43,7 +43,7 @@ defmodule HLS.ClientTest do
   end
 
   test "ignores playlists with duplicate sequence ids", context do
-    names =  Enum.map 226201865..226201872, fn(id) -> "#{id}.ts" end
+    names =  Enum.map 226_201_865..226_201_872, fn(id) -> "#{id}.ts" end
     files = Enum.map names, fn(filename) ->
       [context.root, "high", filename] |> Path.join |> File.read!
     end

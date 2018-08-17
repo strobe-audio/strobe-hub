@@ -116,7 +116,6 @@ defmodule MockReceiver do
   end
 end
 
-
 defmodule MessagingHandler do
   use GenStage
   use Strobe.Events.Handler, filter_complete: false
@@ -403,7 +402,6 @@ defmodule Test.Otis.Pipeline.Clock do
     {:noreply, {parent, time, broadcaster}}
   end
 end
-
 
 Ecto.Migrator.run(Otis.State.Repo, Path.join([__DIR__, "../priv/repo/migrations"]), :up, all: true)
 Ecto.Adapters.SQL.begin_test_transaction(Otis.State.Repo)
