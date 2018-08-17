@@ -13,12 +13,10 @@ defmodule HLS do
   end
 
   def read_handling_errors(reader, url) do
-    try do
-      HLS.Reader.read(reader, url)
-    rescue e ->
-      {:error, e}
-    catch e, r ->
-      {:error, {e, r}}
-    end
+    HLS.Reader.read(reader, url)
+  rescue e ->
+    {:error, e}
+  catch e, r ->
+    {:error, {e, r}}
   end
 end

@@ -117,7 +117,10 @@ defmodule Otis.Library.Airplay.Input do
   defp split_packets(buffer, packets) do
     case byte_size(buffer) do
       b when b >= @packet_size ->
-        split_packets(:binary.part(buffer, @packet_size, b - @packet_size), [:binary.part(buffer, 0, @packet_size) | packets])
+        split_packets(
+          :binary.part(buffer, @packet_size, b - @packet_size),
+          [:binary.part(buffer, 0, @packet_size) | packets]
+        )
       _ ->
         {buffer, Enum.reverse(packets)}
     end
@@ -141,7 +144,6 @@ defmodule Otis.Library.Airplay.Input do
     end
   end
 end
-
 
 defimpl Otis.Library.Source, for: Otis.Library.Airplay.Input do
   alias Otis.Library.Airplay

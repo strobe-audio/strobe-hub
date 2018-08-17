@@ -50,7 +50,7 @@ defmodule Strobe.Server.Avahi do
     ]
   end
 
-  def is_running? do
+  def running? do
     case System.cmd(avahi_daemon(), ["--check"]) do
       {_, 0} ->
         true

@@ -110,7 +110,10 @@ defmodule Otis.Receivers do
   end
 
   defp start_listener(name, port, protocol, pipeline_config) do
-    :ranch.start_listener(name, 10, :ranch_tcp, [port: port], protocol, [supervisor: @name, pipeline_config: pipeline_config])
+    :ranch.start_listener(name, 10, :ranch_tcp, [port: port], protocol, [
+      supervisor: @name,
+      pipeline_config: pipeline_config
+    ])
   end
 
   def handle_cast({:connect, type, id, {pid, socket}, params}, state) do

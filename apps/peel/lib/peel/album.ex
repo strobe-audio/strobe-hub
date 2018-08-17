@@ -115,6 +115,9 @@ defmodule Peel.Album do
 
   def search(query, %Collection{id: collection_id}) do
     pattern = "%#{Peel.String.normalize(query)}%"
-    from(album in Album, where: like(album.normalized_title, ^pattern)) |> where(collection_id: ^collection_id) |> Repo.all
+    album in Album
+    |> from(where: like(album.normalized_title, ^pattern))
+    |> where(collection_id: ^collection_id)
+    |> Repo.all
   end
 end

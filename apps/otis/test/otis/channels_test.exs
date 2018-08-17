@@ -7,7 +7,10 @@ defmodule ChannelsTest do
   @moduletag :channels
 
   def channel_ids() do
-    Enum.map(Otis.Channels.list!(), fn(pid) -> {:ok, id} = Otis.Channel.id(pid); id end)
+    Enum.map(Otis.Channels.list!(), fn(pid) ->
+      {:ok, id} = Otis.Channel.id(pid)
+      id
+    end)
   end
 
   def shutdown do

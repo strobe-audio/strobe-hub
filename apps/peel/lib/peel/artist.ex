@@ -82,7 +82,10 @@ defmodule Peel.Artist do
 
   def search(query, %Collection{id: collection_id}) do
     pattern = "%#{Peel.String.normalize(query)}%"
-    from(artist in Artist, where: like(artist.normalized_name, ^pattern)) |> where(collection_id: ^collection_id) |> Repo.all
+    artist in Artist
+    |> from(where: like(artist.normalized_name, ^pattern))
+    |> where(collection_id: ^collection_id)
+    |> Repo.all
   end
 
   def without_image do
@@ -99,4 +102,3 @@ defmodule Peel.Artist do
     Artist.change(artist, %{image: image_path}) |> Repo.update!
   end
 end
-

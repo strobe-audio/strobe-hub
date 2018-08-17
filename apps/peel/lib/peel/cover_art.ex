@@ -112,7 +112,6 @@ defmodule Peel.CoverArt do
     {:ok, %{}}
   end
 
-
   def handle_cast({:update, %Peel.Artist{} = artist, image_path}, state) do
     Logger.info "Image for #{ artist.name } ==> #{ image_path }"
     Peel.Repo.transaction fn ->
@@ -127,7 +126,6 @@ defmodule Peel.CoverArt do
     end
     {:noreply, state}
   end
-
 
   def extract(input_path, output_path) do
     case System.cmd(executable(), ["-v", "quiet", "-i", input_path, output_path]) do

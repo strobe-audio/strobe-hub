@@ -72,7 +72,6 @@ defmodule Plug.WebDAV.Lock do
     ]
   end
 
-
   def all do
     :ets.foldl(fn({_path, _id, _depth, _expiry, lock}, locks) -> [lock | locks] end, [], @table)
   end
@@ -204,7 +203,6 @@ defmodule Plug.WebDAV.Lock do
 
   defp validate_depth(depth) when depth in [0, :infinity], do: depth
   defp validate_depth(_), do: :infinity
-
 
   defp depth_property(:infinity), do: "Infinity"
   defp depth_property(0), do: "0"

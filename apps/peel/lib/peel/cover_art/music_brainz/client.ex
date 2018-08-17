@@ -109,7 +109,7 @@ defmodule MusicBrainz.Client do
       "?query=release:Something%20AND%20(artist:Famous%20OR%20artist:Infamous%20OR%20artist:Void)"
 
   """
-  def make_query() do
+  def make_query do
     make_query([])
   end
   def make_query([]) do

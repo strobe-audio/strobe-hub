@@ -59,7 +59,7 @@ defmodule Peel.DirWalker do
         dirw
       end ,
       fn(dirw) ->
-        case next(dirw,1) do
+        case next(dirw, 1) do
           data when is_list(data) -> {data, dirw}
           _ -> {:halt, dirw}
         end
@@ -85,7 +85,6 @@ defmodule Peel.DirWalker do
       GenServer.reply(from, :ok)
       {:stop, :normal, state}
   end
-
 
   # If the first element is a list, then it represents a
   # nested directory listing. We keep it as a list rather
@@ -142,7 +141,6 @@ defmodule Peel.DirWalker do
   end
 
   def ignore_error({:ok, list}, _path), do: list
-
 
   defp setup_mappers(opts) do
     %{

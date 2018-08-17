@@ -10,7 +10,7 @@ defmodule Elvis.Events.Startup do
     {:consumer, [], subscribe_to: Strobe.Events.producer}
   end
 
-  def handle_events([], _from,state) do
+  def handle_events([], _from, state) do
     {:noreply, [], state}
   end
   def handle_events([event|events], from, state) do

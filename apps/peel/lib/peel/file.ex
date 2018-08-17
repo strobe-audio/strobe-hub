@@ -134,4 +134,3 @@ defmodule Peel.File do
     date_time |> Enum.take_while(&(&1 != ?-))
   end
 end
-

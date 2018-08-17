@@ -16,7 +16,7 @@ defmodule Otis.Receivers.Logger do
     config = Application.get_env(:otis, :receiver_logger)
     Logger.info "Starting multicast logging on #{inspect config[:addr]}:#{config[:port]}"
     {:ok,socket} = :gen_udp.open(config[:port], [:binary, reuseaddr: true, ip: config[:addr], multicast_ttl: 4, multicast_loop: false, active: true])
-    :inet.setopts(socket,[add_membership: {config[:addr],{0,0,0,0}}])
+    :inet.setopts(socket, [add_membership: {config[:addr], {0, 0, 0, 0}}])
     {:ok, %{socket: socket, config: config}}
   end
 

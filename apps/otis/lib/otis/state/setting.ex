@@ -26,19 +26,17 @@ defmodule Otis.State.Setting do
 
   def put(app, ns, key, _value) when app == "" or ns == "" or key == "", do: :error
   def put(app, ns, key, value) do
-    try do
-      _put!(app, ns, key, value)
-    rescue
-      e in Sqlite.Ecto.Error ->
-        stacktrace = System.stacktrace
-        case e do
-          %Sqlite.Ecto.Error{sqlite: {:constraint, _}} ->
-            _delete(app, ns, key)
-            put(app, ns, key, value)
-          _ ->
-            reraise(e, stacktrace)
-        end
-    end
+    _put!(app, ns, key, value)
+  rescue
+    e in Sqlite.Ecto.Error ->
+      stacktrace = System.stacktrace
+      case e do
+        %Sqlite.Ecto.Error{sqlite: {:constraint, _}} ->
+          _delete(app, ns, key)
+          put(app, ns, key, value)
+        _ ->
+          reraise(e, stacktrace)
+      end
   end
 
   def get(app, ns, key) do

@@ -38,4 +38,3 @@ defmodule Otis.Library.UPNP.Server do
     end)
   end
 end
-
