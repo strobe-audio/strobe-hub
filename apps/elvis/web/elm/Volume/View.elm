@@ -41,7 +41,7 @@ control locked volume muted label =
                         ]
                         []
                     ]
-                , div (stateButton [ ( "volume--state volume--state__full", True ) ] (Volume.Change locked (Just 1.0))) []
+                , div (stateButton [ ( "volume--state volume--state__full", True ) ] (Volume.Change locked Nothing)) []
                 ]
             ]
 
