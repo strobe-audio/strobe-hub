@@ -42,6 +42,10 @@ defmodule Otis.Channel do
     GenServer.call(channel, {:play, playing})
   end
 
+  def flush(channel) do
+    GenServer.call(channel, :flush)
+  end
+
   def playlist(channel) do
     GenServer.call(channel, :get_playlist)
   end
@@ -143,6 +147,12 @@ defmodule Otis.Channel do
   def handle_call(:play_pause, _from, state) do
     state = state |> toggle_state
     {:reply, {:ok, state.state}, state}
+  end
+
+  def handle_call(:flush, _from, state) do
+    IO.inspect [__MODULE__, :flush, state.broadcaster]
+    Broadcaster.flush(state.broadcaster)
+    {:reply, :ok, state}
   end
 
   def handle_call(:get_state, _from, %S{state: status} = state) do

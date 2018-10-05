@@ -174,6 +174,14 @@ defimpl Otis.Library.Source, for: Peel.Track do
   def duration(%Track{duration_ms: duration_ms}) do
     {:ok, duration_ms}
   end
+
+  def activate(_track, _channel_id) do
+    :ok
+  end
+
+  def deactivate(_track, _channel_id) do
+    :ok
+  end
 end
 
 defimpl Otis.Library.Source.Origin, for: Peel.Track do

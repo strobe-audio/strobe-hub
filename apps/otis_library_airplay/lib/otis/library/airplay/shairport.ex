@@ -8,8 +8,14 @@ defmodule Otis.Library.Airplay.Shairport do
     end
   end
 
-  def executable do
+  def shairport_sync do
     System.find_executable(@exe)
+  end
+
+  def executable do
+    [priv_dir(), "bin", "pid.sh"]
+    |> Path.join()
+    |> Path.expand()
   end
 
   def version do
@@ -28,10 +34,10 @@ defmodule Otis.Library.Airplay.Shairport do
 
   def run(n, port) do
     # cmd = Enum.join([executable | args(n)], " ")
-    port = :erlang.open_port({:spawn_executable, executable()}, [:binary, :exit_status, :use_stdio, :stream, args: args(n, port)])
-    # Process.link(port)
+    port = :erlang.open_port({:spawn_executable, shairport_sync()}, [:binary, :exit_status, :use_stdio, :stream, args: args(n, port)])
+    # exe = Enum.join([executable(), "'" <> Enum.join(args(n, port), " ") <> "'"], " ")
+    # port = :erlang.open_port({:spawn, exe}, [:binary, :exit_status, :use_stdio, :stream])
     port
-    # ExternalProcess.spawn(executable(), args(n), [in: "", out: {:send, self()}, err: {:send, self()}])
   end
 
   def stop(process) do
@@ -50,14 +56,13 @@ defmodule Otis.Library.Airplay.Shairport do
   end
 
   def args(n, port) do
-    ["--configfile=#{config_file()}",
-     "--name=#{name(n)}",
-     "--output=stdout",
-     "--port=#{port(n)}",
-     "--on-start",
-     "#{on_start()} #{port} start",
-     "--on-stop",
-     "#{on_start()} #{port} stop"
+    [
+      # shairport_sync(),
+      "--configfile=#{config_file()}",
+      "--name=#{name(n)}",
+      "--output=stdout",
+      "--port=#{port(n)}",
+      "--metadata-pipename=/tmp/shairport-metadata-pipe-#{n}"
     ]
   end
 
@@ -66,7 +71,7 @@ defmodule Otis.Library.Airplay.Shairport do
   end
 
   def cmd(args) do
-    case System.cmd(executable(), args) do
+    case System.cmd(shairport_sync(), args) do
       {out, 0} ->
         {:ok, out}
       {error, _code} ->

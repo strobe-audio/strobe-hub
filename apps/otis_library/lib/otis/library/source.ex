@@ -41,4 +41,10 @@ defprotocol Otis.Library.Source do
 
   @spec duration(t) :: {:ok, integer} | {:ok, :infinity}
   def duration(source)
+
+  @spec activate(t, binary) :: :ok
+  def activate(source, channel_id)
+
+  @spec deactivate(t, binary) :: :ok
+  def deactivate(source, channel_id)
 end

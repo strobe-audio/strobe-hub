@@ -76,6 +76,14 @@ defimpl Otis.Library.Source, for: Otis.Library.UPNP.Item do
   def duration(%Item{media: media}) do
     {:ok, Media.duration_ms(media)}
   end
+
+  def activate(_item, _channel_id) do
+    :ok
+  end
+
+  def deactivate(_track, _channel_id) do
+    :ok
+  end
 end
 
 defimpl Poison.Encoder, for: Otis.Library.UPNP.Item do

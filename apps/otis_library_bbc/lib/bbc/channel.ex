@@ -96,6 +96,14 @@ defimpl Otis.Library.Source, for: BBC.Channel do
   def duration(channel) do
     {:ok, channel.duration}
   end
+
+  def activate(_channel, _channel_id) do
+    :ok
+  end
+
+  def deactivate(_channel, _channel_id) do
+    :ok
+  end
 end
 
 defimpl Otis.Library.Source.Origin, for: BBC.Channel do

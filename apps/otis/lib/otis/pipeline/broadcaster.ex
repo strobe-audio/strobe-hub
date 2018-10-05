@@ -42,11 +42,17 @@ defmodule Otis.Pipeline.Broadcaster do
     GenServer.cast(broadcaster, :pause)
   end
 
+  def flush(broadcaster) do
+    IO.inspect [__MODULE__, :cast, :flush, broadcaster]
+    GenServer.cast(broadcaster, :flush)
+  end
+
   def skip(broadcaster, rendition_id) do
     GenServer.cast(broadcaster, {:skip, rendition_id})
   end
 
   def init([id, channel, hub, clock, config]) do
+    IO.inspect [__MODULE__, self()]
     Otis.Receivers.Channels.subscribe(__MODULE__, id)
     {:ok, %S{
       id: id,
@@ -111,6 +117,12 @@ defmodule Otis.Pipeline.Broadcaster do
     {:noreply, state}
   end
 
+  def handle_cast(:flush, state) do
+    IO.inspect [__MODULE__, :flush, state.id]
+    Otis.Receivers.Channels.stop(state.id)
+    state = start(&clock_time/1, %S{state | buffer: []})
+    {:noreply, state}
+  end
 
   defp start(time, %S{buffer: []} = state) do
     case Producer.next(state.hub) do

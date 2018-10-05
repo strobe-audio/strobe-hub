@@ -35,7 +35,7 @@ defmodule Otis.State.Rendition do
   def source(record) do
     record
     |> type
-    |> Otis.Library.Source.Origin.load!
+    |> Otis.Library.Source.Origin.load!()
   end
 
   def for_source(type, id) when is_atom(type) do

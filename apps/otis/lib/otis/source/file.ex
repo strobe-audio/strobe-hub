@@ -68,6 +68,14 @@ defimpl Otis.Library.Source, for: Otis.Source.File do
   def duration(%File{metadata: metadata}) do
     {:ok, metadata.duration_ms}
   end
+
+  def activate(_track, _channel_id) do
+    :ok
+  end
+
+  def deactivate(_track, _channel_id) do
+    :ok
+  end
 end
 
 defimpl Otis.Library.Source.Origin, for: Otis.Source.File do

@@ -2,6 +2,8 @@ defmodule Otis.Library.Airplay.Input do
   use GenStage
 
   alias Otis.Library.Airplay
+  alias Otis.Library.Airplay.Input.Metadata
+
   alias Porcelain.Result, as: Result
   require Logger
 
@@ -12,8 +14,11 @@ defmodule Otis.Library.Airplay.Input do
   defmodule S do
     defstruct [
       :id,
+      :channel_id,
       :process,
       :config,
+      demand: 0,
+      playing: false,
       buffer: <<>>,
       queue: :queue.new(),
     ]
@@ -36,17 +41,9 @@ defmodule Otis.Library.Airplay.Input do
 
   def init([n, _config]) do
     state = %S{id: n}
-    process = run_shairport(state) |> IO.inspect
+    process = run_shairport(state)
     Process.flag(:trap_exit, true)
-    {:ok, socket} = :gen_udp.open(
-      udp_port(n),
-      [
-        mode: :binary,
-        ip: {127, 0, 0, 1},
-        active: true,
-        reuseaddr: true
-      ]
-    )
+    {:ok, metadata} = Metadata.start_link(n, self())
     {:producer, %{state | process: process}, buffer_size: 100}
   end
 
@@ -68,74 +65,156 @@ defmodule Otis.Library.Airplay.Input do
   def terminate(_reason, %S{process: nil}) do
     :ok
   end
+
   def terminate(_reason, %S{process: process}) do
     Airplay.Shairport.stop(process)
     :ok
   end
 
   def handle_demand(new_demand, state) when new_demand > 0 do
-    {events, state} = supply_demand(state, new_demand, [])
+    # IO.inspect [__MODULE__, :demand, new_demand]
+    {events, state} = supply_demand(state, state.demand + new_demand, [])
     {:noreply, events, state}
   end
 
   defp supply_demand(state, 0, events) do
-    {Enum.reverse(events), state}
+    {Enum.reverse(events), %{state | demand: 0}}
   end
+
   defp supply_demand(%S{queue: queue} = state, demand, events) do
     case :queue.out(queue) do
       {{:value, data}, queue} ->
         supply_demand(%S{state | queue: queue}, demand - 1, [data | events])
       {:empty, queue} ->
-        # We always want to send some audio data, even if there's none
-        # available from the airplay process because otherwise our broadcaster
-        # hangs
-        supply_demand(%S{state | queue: queue}, demand - 1, [@silence | events])
+        supply_demand(state, demand - 1, [@silence | events])
+        # {Enum.reverse(events), %{state | demand: demand}}
     end
+  end
+
+  # TODO: unit tests for activation when adding to playlist
+  def handle_call({:activate, channel_id}, _from, state) do
+    IO.inspect [__MODULE__, :activate, state.id, channel_id]
+    {:reply, :ok, [], %{state | channel_id: channel_id}}
+  end
+
+  def handle_call({:deactivate, channel_id}, _from, state) do
+    IO.inspect [__MODULE__, :deactivate, state.id, channel_id]
+    {:reply, :ok, [], %{state | channel_id: nil}}
   end
 
   def handle_cast(:stream_start, state) do
     {:noreply, [], state}
   end
+
   def handle_cast(:stream_stop, state) do
     {:noreply, [], %S{state | buffer: <<>>, queue: :queue.new}}
   end
 
-  def handle_info({_pid, :data, :out, data}, state) do
-    {:noreply, [], append_data(data, state)}
+  defp notify_data(%{channel_id: nil, playing: false} = state) do
+    %{state | playing: true}
   end
-  def handle_info({_pid, :data, :err, _data}, state) do
+
+  defp notify_data(%{playing: false} = state) do
+    Otis.Channels.play(state.channel_id, true)
+    %{state | playing: true}
+  end
+
+  defp notify_data(%{playing: true} = state) do
+    state
+  end
+
+  defp notify_flush(%{channel_id: nil} = state) do
+    state
+  end
+
+  defp notify_flush(state) do
+    IO.inspect [:channel, :flush]
+    Otis.Channels.flush(state.channel_id)
+    state
+  end
+
+  defp killer(pid) do
+    IO.inspect [:killer, pid]
+    receive do
+      _ ->
+        System.cmd("kill", ["-9", pid])
+    after
+      1_000 ->
+        killer(pid)
+    end
+  end
+
+  # def handle_info({_pid, :data, :out, data}, state) do
+  #   IO.inspect [:append_data, byte_size(data)]
+  #   {:noreply, [], append_data(data, state)}
+  # end
+
+  # def handle_info({_pid, :data, :err, _data}, state) do
+  #   {:noreply, [], state}
+  # end
+
+  def handle_info({process, {:data, "__pid__:" <> pid}}, %{process: process} = state) do
+    IO.inspect [:PID, pid]
+    input = self()
+    spawn(fn ->
+      Process.monitor(input)
+      pid
+      |> String.trim_trailing()
+      |> killer()
+    end)
     {:noreply, [], state}
   end
+
   def handle_info({process, {:data, data}}, %{process: process} = state) do
-    IO.inspect [:data, byte_size(data)]
-    {:noreply, [], state}
-  end
-
-  def handle_info({:udp, _socket, {127, 0, 0, 1}, _port, "start\n"}, state) do
-    Logger.info("Airplay #{state.id} start...")
-    {:noreply, [], state}
-  end
-
-  def handle_info({:udp, _socket, {127, 0, 0, 1}, _port, "stop\n"}, state) do
-    Logger.info("Airplay #{state.id} stop...")
-    {:noreply, [], state}
+    state = notify_data(state)
+    state = append_data(data, state)
+    {emit, state} = supply_demand(state, state.demand, [])
+    # IO.inspect [:append_data, byte_size(data), state.demand, length(emit)]
+    {:noreply, emit, state}
   end
 
   # Generated by a conflict with an already running shairport instance
   def handle_info({_pid, :result, %Result{status: 1}}, state) do
     {:stop, {:error, :address_in_use}, state}
   end
+
   def handle_info({_pid, :result, %Result{} = _result}, state) do
     {:noreply, [], state}
   end
+
   def handle_info({process, {:exit_status, status}}, %{process: process} = state) do
     %{id: n} = state
     Logger.warn("Shairport process died with status #{status}")
     process = run_shairport(state)
     {:noreply, [], %{state | process: process}}
   end
+
   def handle_info({:EXIT, _port, _reason}, state) do
     {:noreply, [], state}
+  end
+
+  def handle_info({:airplay, _event}, %{channel_id: nil} = state) do
+    {:noreply, [], state}
+  end
+
+  def handle_info({:airplay, :start}, state) do
+    # Otis.Channels.play(state.channel_id, true)
+    # TODO: set channel to playing
+    {:noreply, [], state}
+  end
+
+  def handle_info({:airplay, :flush}, state) do
+    IO.inspect [__MODULE__, :flush]
+    # TODO: flush channel
+    # TODO: set a timer to stop playback unless data received
+    state = notify_flush(state)
+    {:noreply, [], %{state | buffer: <<>>, queue: :queue.new()}}
+  end
+
+  def handle_info({:airplay, :stop}, state) do
+    Otis.Channels.play(state.channel_id, false)
+    # TODO: stop channel
+    {:noreply, [], %{state | playing: false}}
   end
 
   def handle_info(msg, state) do
@@ -154,6 +233,7 @@ defmodule Otis.Library.Airplay.Input do
   defp split_packets(buffer) do
     split_packets(buffer, [])
   end
+
   defp split_packets(buffer, packets) do
     case byte_size(buffer) do
       b when b >= @packet_size ->
@@ -240,12 +320,22 @@ defimpl Otis.Library.Source, for: Otis.Library.Airplay.Input do
   def duration(_input) do
     {:ok, :infinity}
   end
+
+  def activate(input, channel_id) do
+    GenServer.call(Airplay.producer_id(input.id), {:activate, channel_id})
+  end
+
+  def deactivate(input, channel_id) do
+    GenServer.call(Airplay.producer_id(input.id), {:deactivate, channel_id})
+  end
 end
 
 defimpl Otis.Library.Source.Origin, for: Otis.Library.Airplay.Input do
+  alias Otis.Library.Airplay
   alias Otis.Library.Airplay.Input
 
   def load!(%Input{} = input) do
+    # Airplay.Stream.start!(Airplay.producer_id(id), nil)
     input
   end
 end

@@ -201,10 +201,18 @@ defimpl Otis.Library.Source, for: Otis.Test.TestSource do
   def duration(track) do
     {:ok, track.duration}
   end
+
+  def activate(_track, _channel_id) do
+    :ok
+  end
+
+  def deactivate(_track, _channel_id) do
+    :ok
+  end
 end
 
 defimpl Otis.Library.Source.Origin, for: Otis.Test.TestSource do
-  def load!(source) do
+  def load!(source, _channel_id) do
     %Otis.Test.TestSource{source | loaded: true}
   end
 end
@@ -329,6 +337,14 @@ defimpl Otis.Library.Source, for: Test.CycleSource do
   end
   def duration(_source) do
     {:ok, 100_000}
+  end
+
+  def activate(_source, _channel_id) do
+    :ok
+  end
+
+  def deactivate(_source, _channel_id) do
+    :ok
   end
 end
 

@@ -106,6 +106,10 @@ defmodule Otis.Channels do
     Otis.Channel.play(via(id), playing)
   end
 
+  def flush(id) when is_binary(id) do
+    Otis.Channel.flush(via(id))
+  end
+
   def skip(id, source_id) do
     Otis.Channel.skip(via(id), source_id)
   end

@@ -16,6 +16,14 @@ defimpl Otis.Library.Source, for: Test.Otis.Pipeline.Source do
   def duration(_source) do
     {:ok, 1000}
   end
+
+  def activate(_source, _channel_id) do
+    :ok
+  end
+
+  def deactivate(_source, _channel_id) do
+    :ok
+  end
 end
 
 defimpl Otis.Library.Source.Origin, for: Test.Otis.Pipeline.Source do
