@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"<%= if Mix.env != :dev do %> manifest="/strobe.appcache"<% end %>>
+<html lang="en"<%= if false && Mix.env() != :dev do %> manifest="/strobe.appcache"<% end %>>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -12,12 +12,14 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black">
     <meta name="apple-mobile-web-app-title" content="Strobe">
+    <meta name="theme-color" content="#000000">
 
     <link rel="apple-touch-icon" sizes="120x120" href="/images/touch-icon@2x.png">
     <link rel="apple-touch-icon" sizes="180x180" href="/images/touch-icon@3x.png">
 
     <title>Strobe</title>
     <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <link rel="manifest" href="/manifest.json">
     <script>
       // https://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/
       document.addEventListener("touchstart", function() {},{passive: true});
@@ -29,5 +31,13 @@
 
   <body>
     <%= render @view_module, @view_template, assigns %>
+    <script>
+     if('serviceWorker' in navigator) {
+       navigator.serviceWorker.register('/js/sw.js')
+                .then(function() {
+                  console.log('Service Worker Registered');
+                });
+     }
+    </script>
   </body>
 </html>

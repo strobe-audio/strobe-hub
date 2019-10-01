@@ -21,6 +21,7 @@ defmodule Elvis.Router do
     pipe_through :browser # Use the default browser stack
 
     get "/strobe.appcache", ManifestController, :manifest
+    get "/manifest.json", ManifestController, :manifest_json
     get "/layout", PageController, :layout
     get "/*path", PageController, :index
   end

@@ -50,7 +50,7 @@ html {
 }
 
 body {
-  -webkit-overflow-scrolling: auto;
+  -webkit-overflow-scrolling: touch;
   height: 100vh;
   overflow: hidden;
   margin: 0;
@@ -76,5 +76,3 @@ input {
     flex-direction: row;
   }
 }
-
-
