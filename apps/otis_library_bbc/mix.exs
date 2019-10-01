@@ -8,7 +8,7 @@ defmodule HLS.Mixfile do
      config_path: "../../config/config.exs",
      deps_path: "../../deps",
      lockfile: "../../mix.lock",
-     elixir: "~> 1.4",
+     elixir: "~> 1.7",
      consolidate_protocols: Mix.env != :test,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -21,7 +21,8 @@ defmodule HLS.Mixfile do
   end
 
   defp deps do
-    [{:httpoison, "~> 0.11.1"},
+    [
+      {:httpoison, "~> 1.0"},
      {:gen_stage, "~> 0.12"},
      {:poison, "~> 1.5.0"},
      {:otis_library, in_umbrella: true},

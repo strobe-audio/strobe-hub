@@ -13,7 +13,7 @@ defmodule Strobe.Server.Mixfile do
   def project do
     [app: :strobe_server,
      version: "0.1.0",
-     elixir: "~> 1.4.0",
+     elixir: "~> 1.7.0",
      target: @target,
      archives: [nerves_bootstrap: "~> 0.3.0"],
      deps_path: "../../deps/#{@target}",

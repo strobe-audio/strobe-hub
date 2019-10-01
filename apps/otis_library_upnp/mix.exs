@@ -8,7 +8,7 @@ defmodule Otis.Library.UPNP.Mixfile do
      config_path: "../../config/config.exs",
      deps_path: "../../deps",
      lockfile: "../../mix.lock",
-     elixir: "~> 1.4",
+     elixir: "~> 1.7",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      consolidate_protocols: Mix.env != :test,
@@ -23,7 +23,7 @@ defmodule Otis.Library.UPNP.Mixfile do
   defp deps do
     [{:nerves_ssdp_client, "~> 0.1.3"},
      {:sweet_xml, "~> 0.6.5"},
-     {:httpoison, "~> 0.11.1"},
+     {:httpoison, "~> 1.0"},
      {:erlsom, github: "willemdj/erlsom"},
      {:xml_builder, "~> 0.0.9"},
      {:otis_library, in_umbrella: true},
