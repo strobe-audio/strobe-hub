@@ -140,29 +140,24 @@ Strobe requires the following dependencies to run.
 
 ### Prerequisites
 
-#### Mac
-
-An up-to-date homebrew installation is the easiest/recommended route to install
-the required dependencies.
+On a Mac, an up-to-date homebrew installation is the easiest/recommended route
+to install the required dependencies.
 
 https://brew.sh/
 
-be sure to `brew update` before installation to get the latest versions.
+Be sure to `brew update` before installation to get the latest versions.
 
 ### Erlang 19
 
-#### Mac
-
-    brew install erlang
+- Mac: `brew install erlang`
+- Ubuntu 18.04+: `sudo apt install erlang`
 
 ### Elixir 1.4
 
 Install the latest Elixir using the [installation instructions on the Elixir
 website](http://elixir-lang.org/install.html).
 
-
 ### Elm 0.18
-
 
 Follow the [instructions for your
 platform](https://guide.elm-lang.org/install.html) at the [elm-lang
@@ -187,26 +182,23 @@ The UI is compiled using Webpack. To install this and its dependencies use
 Strobe is backed by a SQLite database and you'll need the development libraries
 to compile the bindings.
 
-#### Mac
-
-macOS comes with SQLite 3 pre-installed.
+- Mac: macOS comes with SQLite 3 pre-installed.
+- Ubuntu: `sudo apt install libsqlite3-dev`
 
 ### ffmpeg
 
 Strobe uses `ffmpeg` to transcode all audio into 16-bit 44,100 kHz PCM streams:
 
-#### Mac
-
-    brew install ffmpeg
+- Mac: `brew install ffmpeg`
+- Ubuntu: `sudo apt install ffmpeg`
 
 ### Mediainfo
 
 Currently during music library import Strobe uses the `mediainfo` binary to
 extract music metadata.
 
-#### Mac
-
-    brew install mediainfo
+- Mac: `brew install mediainfo`
+- Ubuntu: `sudo apt install mediainfo`
 
 ### Bonjour/mDNS
 
@@ -214,13 +206,8 @@ Recievers use various techniques to discover the active hub. One of those
 techniques is to register a service using mDNS backed by Bonjour on macOS and
 Avahi on linux.
 
-#### Mac
-
-No installation necessary -- macOS comes preinstalled with an mDNS framework.
-
-#### Ubuntu
-
-    apt-get install avahi-daemon libavahi-compat-libdnssd-dev
+- Mac: No installation necessary -- macOS comes preinstalled with an mDNS framework.
+- Ubuntu: `sudo apt install avahi-daemon libavahi-compat-libdnssd-dev`
 
 ### Bootstrapping
 
