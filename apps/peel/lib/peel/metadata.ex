@@ -30,4 +30,3 @@ defmodule Peel.Metadata do
     {data.extension, data.mime_type}
   end
 end
-

@@ -25,16 +25,18 @@ defmodule Otis.Filesystem do
     ifexists?(path) do
       case directory_listing(path) do
         {:ok, paths} -> {:ok, sources(paths)}
-        _ = err      -> err
+        _ = err -> err
       end
     end
   end
 
   defp directory_listing(path) do
     case File.ls(path) do
-      {:error, _} = err -> err
+      {:error, _} = err ->
+        err
+
       {:ok, files} ->
-        {:ok, files |> Enum.sort |> map(&Path.join(path, &1))}
+        {:ok, files |> Enum.sort() |> map(&Path.join(path, &1))}
     end
   end
 

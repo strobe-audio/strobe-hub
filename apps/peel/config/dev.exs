@@ -1,10 +1,10 @@
 use Mix.Config
 
 root_dir = Path.expand("#{__DIR__}/../../..")
-state_dir = Path.join([root_dir, "_state", to_string(Mix.env)])
+state_dir = Path.join([root_dir, "_state", to_string(Mix.env())])
 
 config :peel, Peel.Repo,
-  adapter: Sqlite.Ecto,
+  adapter: Sqlite.Ecto2,
   database: Path.join([state_dir, "peel.dev.sqlite3"])
 
 config :peel, Peel.Collection,

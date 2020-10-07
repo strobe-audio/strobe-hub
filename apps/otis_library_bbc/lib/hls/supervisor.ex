@@ -8,8 +8,9 @@ defmodule HLS.Supervisor do
   def init(_opts) do
     children = [
       supervisor(HLS.Client.Supervisor, []),
-      supervisor(HLS.Reader.Async.Supervisor, []),
+      supervisor(HLS.Reader.Async.Supervisor, [])
     ]
+
     supervise(children, strategy: :one_for_one)
   end
 end

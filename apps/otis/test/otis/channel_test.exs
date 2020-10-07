@@ -1,5 +1,5 @@
 defmodule Otis.ChannelTest do
-  use    ExUnit.Case
+  use ExUnit.Case
 
   import MockReceiver
 
@@ -17,7 +17,7 @@ defmodule Otis.ChannelTest do
   end
 
   setup do
-    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Otis.State.Repo)
     MessagingHandler.attach()
     Otis.State.Receiver.delete_all()
     Otis.State.Channel.delete_all()
@@ -25,24 +25,30 @@ defmodule Otis.ChannelTest do
     receiver_id = Otis.uuid()
 
     config = %Otis.Pipeline.Config{
-      Otis.Pipeline.Config.new(20) |
-      clock: {Test.Otis.Pipeline.Clock, :start_link, [self(), 1_000_000]},
+      Otis.Pipeline.Config.new(20)
+      | clock: {Test.Otis.Pipeline.Clock, :start_link, [self(), 1_000_000]}
     }
+
     {:ok, channel} = Otis.Channels.create(channel_id, "Something", config)
     assert_receive {:__complete__, {:channel, :add, [^channel_id, _]}, Persistence.Channels}
     channel_record = Otis.State.Channel.find(channel_id)
-    _receiver_record = Otis.State.Receiver.create!(channel_record, id: receiver_id, name: "Roger", volume: 1.0)
+
+    _receiver_record =
+      Otis.State.Receiver.create!(channel_record, id: receiver_id, name: "Roger", volume: 1.0)
+
     mock = connect!(receiver_id, 1234)
-    assert_receive {:__complete__, {:receiver, :connect, [^receiver_id, _]}, Persistence.Receivers}
+
+    assert_receive {:__complete__, {:receiver, :connect, [^receiver_id, _]},
+                    Persistence.Receivers}
+
     {:ok, receiver} = Receivers.receiver(receiver_id)
 
     {:ok,
-      channel: channel,
-      receiver: receiver,
-      channel_id: channel_id,
-      channel: channel,
-      mock_receiver: mock,
-    }
+     channel: channel,
+     receiver: receiver,
+     channel_id: channel_id,
+     channel: channel,
+     mock_receiver: mock}
   end
 
   test "gives its id", %{channel: channel, channel_id: channel_id} do
@@ -57,7 +63,7 @@ defmodule Otis.ChannelTest do
 
   test "allows you to toggle the play pause state", %{channel: channel} = context do
     channel_id = context.channel_id
-    {:ok, _pl} = playlist(context, TestSource.new)
+    {:ok, _pl} = playlist(context, TestSource.new())
     {:ok, state} = Otis.Channel.play_pause(channel)
     assert state == :play
     assert_receive {:__complete__, {:channel, :play_pause, [^channel_id, :play]}, _}
@@ -73,16 +79,19 @@ defmodule Otis.ChannelTest do
   end
 
   test "can have its volume set", context do
-    Enum.each [context.channel, %Otis.Channel{pid: context.channel, id: context.channel_id}], fn(channel) ->
-      {:ok, 1.0} = Otis.Channel.volume(channel)
-      Otis.Channel.volume(channel, 0.5)
-      {:ok, 0.5} = Otis.Channel.volume(channel)
-      Otis.Channel.volume(channel, 1.5)
-      {:ok, 1.0} = Otis.Channel.volume(channel)
-      Otis.Channel.volume(channel, -1.5)
-      {:ok, 0.0} = Otis.Channel.volume(channel)
-      Otis.Channel.volume(channel, 1.0)
-    end
+    Enum.each(
+      [context.channel, %Otis.Channel{pid: context.channel, id: context.channel_id}],
+      fn channel ->
+        {:ok, 1.0} = Otis.Channel.volume(channel)
+        Otis.Channel.volume(channel, 0.5)
+        {:ok, 0.5} = Otis.Channel.volume(channel)
+        Otis.Channel.volume(channel, 1.5)
+        {:ok, 1.0} = Otis.Channel.volume(channel)
+        Otis.Channel.volume(channel, -1.5)
+        {:ok, 0.0} = Otis.Channel.volume(channel)
+        Otis.Channel.volume(channel, 1.0)
+      end
+    )
   end
 
   test "broadcasts an event when the volume is changed", context do
@@ -100,15 +109,15 @@ defmodule Otis.ChannelTest do
     event = {:channel, :volume, [context.channel_id, 0.5]}
     assert_receive ^event
     assert_receive {:__complete__, ^event, Persistence.Channels}
-    channel = Otis.State.Channel.find context.channel_id
+    channel = Otis.State.Channel.find(context.channel_id)
     assert channel.volume == 0.5
-    receiver = Otis.State.Receiver.find context.receiver.id
+    receiver = Otis.State.Receiver.find(context.receiver.id)
     assert receiver.volume == 1.0
   end
 
   test "broadcasting event when play state changes", context do
     # Need to add something to the playlist or the channel stops as soon as it starts
-    {:ok, _pl} = playlist(context, TestSource.new)
+    {:ok, _pl} = playlist(context, TestSource.new())
     channel_id = context.channel_id
     {:ok, :play} = Otis.Channel.play_pause(context.channel)
     assert_receive {:channel, :play_pause, [^channel_id, :play]}
@@ -127,7 +136,7 @@ defmodule Otis.ChannelTest do
   test "skipping renditions"
 
   test "removing renditions", %{channel_id: channel_id} = context do
-    {:ok, pl} = playlist(context, TestSource.new)
+    {:ok, pl} = playlist(context, TestSource.new())
     {:ok, [rendition_id]} = Otis.Pipeline.Playlist.list(pl)
     :ok = Otis.Channel.remove(context.channel, rendition_id)
     assert_receive {:rendition, :delete, [^rendition_id, ^channel_id]}
@@ -138,13 +147,13 @@ defmodule Otis.ChannelTest do
     {:ok, :play} = Otis.Channel.play_pause(context.channel)
     assert_receive {:channel, :play_pause, [^channel_id, :play]}
     pid = GenServer.whereis(context.channel)
-    send pid, :broadcaster_stop
+    send(pid, :broadcaster_stop)
     assert_receive {:channel, :play_pause, [^channel_id, :pause]}
   end
 
   test "clearing playlist", context do
     channel_id = context.channel_id
-    {:ok, pl} = playlist(context, TestSource.new)
+    {:ok, pl} = playlist(context, TestSource.new())
     {:ok, [rendition_id]} = Otis.Pipeline.Playlist.list(pl)
     :ok = Otis.Channel.clear(context.channel)
     assert_receive {:__complete__, {:playlist, :clear, [^channel_id, _]}, Persistence.Playlist}
@@ -152,7 +161,7 @@ defmodule Otis.ChannelTest do
   end
 
   test "appending sources via events", %{channel_id: channel_id} = context do
-    sources = [TestSource.new, TestSource.new]
+    sources = [TestSource.new(), TestSource.new()]
     Strobe.Events.notify(:library, :play, [channel_id, sources])
     evt = {:library, :play, [channel_id, sources]}
     assert_receive {:__complete__, ^evt, Otis.State.Library}

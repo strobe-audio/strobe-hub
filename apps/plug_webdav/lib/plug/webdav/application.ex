@@ -4,7 +4,7 @@ defmodule Plug.WebDAV.Application do
 
   def start(_type, _args) do
     children = [
-      worker(Plug.WebDAV.Lock, []),
+      worker(Plug.WebDAV.Lock, [])
     ]
 
     opts = [strategy: :one_for_one, name: Plug.WebDAV.Supervisor]

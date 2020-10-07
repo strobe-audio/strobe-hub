@@ -15,12 +15,15 @@ defmodule Test.Otis.Pipeline.Transcoder do
     stream = Source.open!(source, id, 64)
     config = Otis.Pipeline.Config.new(20)
     {:ok, transcoder} = Transcoder.start_link(source, stream, 0, config)
-    stream = Producer.stream(transcoder)# Stream.resource(start, next, stop)
+    # Stream.resource(start, next, stop)
+    stream = Producer.stream(transcoder)
     hash = :crypto.hash_init(:md5)
-    {data, hash} = Enum.reduce(stream, {<<>>, hash}, fn(data, {acc, md5}) ->
-      md5 = :crypto.hash_update(md5, data)
-      {acc <> data, md5}
-    end)
+
+    {data, hash} =
+      Enum.reduce(stream, {<<>>, hash}, fn data, {acc, md5} ->
+        md5 = :crypto.hash_update(md5, data)
+        {acc <> data, md5}
+      end)
 
     assert byte_size(data) == 9216
     md5 = :crypto.hash_final(hash) |> Base.encode16(case: :lower)
@@ -33,12 +36,15 @@ defmodule Test.Otis.Pipeline.Transcoder do
     stream = Source.open!(source, id, 64)
     config = Otis.Pipeline.Config.new(20)
     {:ok, transcoder} = Transcoder.start_link(source, stream, 0, config)
-    stream = Producer.stream(transcoder)# Stream.resource(start, next, stop)
+    # Stream.resource(start, next, stop)
+    stream = Producer.stream(transcoder)
     hash = :crypto.hash_init(:md5)
-    {data, hash} = Enum.reduce(stream, {<<>>, hash}, fn(data, {acc, md5}) ->
-      md5 = :crypto.hash_update(md5, data)
-      {acc <> data, md5}
-    end)
+
+    {data, hash} =
+      Enum.reduce(stream, {<<>>, hash}, fn data, {acc, md5} ->
+        md5 = :crypto.hash_update(md5, data)
+        {acc <> data, md5}
+      end)
 
     assert byte_size(data) == 133_632
     md5 = :crypto.hash_final(hash) |> Base.encode16(case: :lower)

@@ -1,5 +1,5 @@
 defmodule Strobe.Server.Ntp do
-  use     GenServer
+  use GenServer
   require Logger
 
   @name __MODULE__
@@ -15,11 +15,12 @@ defmodule Strobe.Server.Ntp do
   end
 
   def handle_info(:start, state) do
-    Logger.info "#{__MODULE__} starting #{ntpd_daemon()}"
+    Logger.info("#{__MODULE__} starting #{ntpd_daemon()}")
     port = Port.open({:spawn_executable, ntpd_daemon()}, ntpd_daemon_args())
     Strobe.Server.Events.notify({:running, [:ntpd]})
     {:noreply, %{state | port: port}}
   end
+
   def handle_info(_evt, state) do
     {:noreply, state}
   end
@@ -27,6 +28,7 @@ defmodule Strobe.Server.Ntp do
   def terminate(_reason, %{port: nil}) do
     :ok
   end
+
   def terminate(_reason, %{port: port}) do
     Port.close(port)
     :ok
@@ -37,11 +39,7 @@ defmodule Strobe.Server.Ntp do
   end
 
   def ntpd_daemon_args do
-    [:stderr_to_stdout,
-     :binary,
-     line: 4096,
-     args: args(),
-    ]
+    [:stderr_to_stdout, :binary, line: 4096, args: args()]
   end
 
   # -d       Verbose

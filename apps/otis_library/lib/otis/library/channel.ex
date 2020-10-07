@@ -12,9 +12,11 @@ defmodule Otis.Library.Channel do
   def play(nil, _channel_id) do
     nil
   end
+
   def play(sources, channel_id) when is_list(sources) do
     play_sources(sources, channel_id)
   end
+
   def play(track, channel_id) do
     play([track], channel_id)
   end

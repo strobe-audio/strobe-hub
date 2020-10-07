@@ -1,5 +1,4 @@
 defmodule Plug.WebDAV.Handler do
-
   import Plug.Conn
   import Plug.WebDAV.Handler.Common
 
@@ -17,6 +16,7 @@ defmodule Plug.WebDAV.Handler do
     case Keyword.pop(opts, :root) do
       {nil, _opts} ->
         raise ArgumentError, "WebDAV options must include a :root key"
+
       {root, opts} ->
         {Path.expand(root), opts}
     end
@@ -38,6 +38,7 @@ defmodule Plug.WebDAV.Handler do
     LOCK
     UNLOCK
   )
+
   # Unsupported?
   # PROPPATCH
   # ORDERPATCH
@@ -50,15 +51,18 @@ defmodule Plug.WebDAV.Handler do
   end
 
   defp file_path(conn, {root, _}) do
-    path = [root | Enum.map(conn.path_info, &URI.decode/1)] |> Path.join |> Path.expand
-    path_length = path |> Path.split |> length()
-    root_length = root |> Path.split |> length()
+    path = [root | Enum.map(conn.path_info, &URI.decode/1)] |> Path.join() |> Path.expand()
+    path_length = path |> Path.split() |> length()
+    root_length = root |> Path.split() |> length()
+
     cond do
       path_length > root_length ->
         {:ok, path, path_length - root_length}
+
       # Need to allow PROPFIND on root itself
       path == root ->
         {:ok, path, 0}
+
       true ->
         :forbidden
     end
@@ -78,23 +82,26 @@ defmodule Plug.WebDAV.Handler do
     case Propfind.call(conn, file_path, directory(file_path), opts) do
       {:ok, props, conn} ->
         send_resp(conn, 207, props)
+
       {:error, status, reason, conn} ->
-        Logger.warn "PROPFIND error #{conn.request_path} #{inspect status} #{reason}"
+        Logger.warn("PROPFIND error #{conn.request_path} #{inspect(status)} #{reason}")
         send_resp(conn, status, reason)
     end
   end
 
   # Don't allow MKCOL at the same level as the root
   defp match(conn, "MKCOL", {:ok, _file_path, 0}, _opts) do
-    Logger.warn "MKCOL error forbidden"
+    Logger.warn("MKCOL error forbidden")
     send_resp(conn, 403, "Forbidden")
   end
+
   defp match(conn, "MKCOL", {:ok, file_path, _depth}, opts) do
     case Mkcol.call(conn, file_path, opts) do
       {:ok, resp, conn} ->
         send_resp(conn, 201, resp)
+
       {:error, status, reason, conn} ->
-        Logger.warn "MKCOL error #{inspect status} #{inspect reason}"
+        Logger.warn("MKCOL error #{inspect(status)} #{inspect(reason)}")
         send_resp(conn, status, reason)
     end
   end
@@ -102,10 +109,12 @@ defmodule Plug.WebDAV.Handler do
   defp match(conn, "PUT", {:ok, _file_path, 0}, _opts) do
     send_resp(conn, 403, "Forbidden")
   end
+
   defp match(conn, "PUT", {:ok, file_path, _depth}, opts) do
     case Put.call(conn, file_path, opts) do
       {:ok, resp, conn} ->
         send_resp(conn, 200, resp)
+
       {:error, status, reason, conn} ->
         send_resp(conn, status, reason)
     end
@@ -115,11 +124,14 @@ defmodule Plug.WebDAV.Handler do
     # TODO: some kind of html page that would allow directory browsing?
     send_resp(conn, 405, "Method not allowed")
   end
+
   defp match(conn, "GET", {:ok, file_path, _depth}, opts) do
     case Get.call(conn, file_path, opts) do
       # we use Conn.send_file which delegates to the adapter so there's nothing
       # to do here
-      {:ok, conn} -> conn
+      {:ok, conn} ->
+        conn
+
       {:error, status, reason, conn} ->
         send_resp(conn, status, reason)
     end
@@ -129,10 +141,12 @@ defmodule Plug.WebDAV.Handler do
     # TODO: some kind of html page that would allow directory browsing?
     send_resp(conn, 400, "Invalid move")
   end
+
   defp match(conn, "MOVE", {:ok, file_path, _depth}, opts) do
     case Move.call(conn, file_path, opts) do
       {:ok, status, conn} ->
         send_resp(conn, status, "")
+
       {:error, status, reason, conn} ->
         send_resp(conn, status, reason)
     end
@@ -142,10 +156,12 @@ defmodule Plug.WebDAV.Handler do
     # TODO: some kind of html page that would allow directory browsing?
     send_resp(conn, 403, "Forbidden")
   end
+
   defp match(conn, "DELETE", {:ok, file_path, _depth}, opts) do
     case Delete.call(conn, file_path, opts) do
       {:ok, conn} ->
         send_resp(conn, 204, "")
+
       {:error, status, reason, conn} ->
         send_resp(conn, status, reason)
     end
@@ -155,14 +171,17 @@ defmodule Plug.WebDAV.Handler do
     case Lock.lock(conn, file_path, opts) do
       {:ok, body, conn} ->
         send_resp(conn, 200, body)
+
       {:error, status, reason, conn} ->
         send_resp(conn, status, reason)
     end
   end
+
   defp match(conn, "UNLOCK", {:ok, file_path, _depth}, opts) do
     case Lock.unlock(conn, file_path, opts) do
       {:ok, conn} ->
         send_resp(conn, 204, "")
+
       {:error, status, reason, conn} ->
         send_resp(conn, status, reason)
     end
@@ -172,5 +191,4 @@ defmodule Plug.WebDAV.Handler do
     conn
     |> send_resp(405, "Method #{method} not allowed")
   end
-
 end

@@ -1,5 +1,5 @@
 defmodule Strobe.Events.Producer do
-  use     GenStage
+  use GenStage
   require Logger
   require Strobe.Events
 
@@ -8,7 +8,7 @@ defmodule Strobe.Events.Producer do
   end
 
   def init(_opts) do
-    Logger.info "Starting #{__MODULE__}"
+    Logger.info("Starting #{__MODULE__}")
     {:producer, [], dispatcher: GenStage.BroadcastDispatcher}
   end
 

@@ -9,10 +9,11 @@ defmodule HLS.ProgrammableReaderTest do
   def fingerprint({:ok, data, _headers}) do
     fingerprint(data)
   end
+
   def fingerprint(data) do
     :crypto.hash_init(:md5)
     |> :crypto.hash_update(data)
-    |> :crypto.hash_final
+    |> :crypto.hash_final()
     |> Base.encode16(case: :lower)
   end
 
@@ -23,12 +24,15 @@ defmodule HLS.ProgrammableReaderTest do
   end
 
   test "it can override particular urls with a sequence", context do
-    urls = %{"/high/segment.m3u8" => [
-      "/high/segment-0.m3u8",
-      "/high/segment-1.m3u8",
-      "/high/segment-2.m3u8",
-      "/high/segment-3.m3u8",
-    ]}
+    urls = %{
+      "/high/segment.m3u8" => [
+        "/high/segment-0.m3u8",
+        "/high/segment-1.m3u8",
+        "/high/segment-2.m3u8",
+        "/high/segment-3.m3u8"
+      ]
+    }
+
     reader = HLS.Reader.Programmable.new(context.root, urls)
     md5 = HLS.Reader.read(reader, "http://something.io/high/226201867.ts") |> fingerprint
     assert md5 == "c96820e0b3af1e34b8a368a23b097a57"

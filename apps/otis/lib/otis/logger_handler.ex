@@ -1,6 +1,6 @@
 defmodule Otis.LoggerHandler do
-  use     GenStage
-  use     Strobe.Events.Handler
+  use GenStage
+  use Strobe.Events.Handler
   require Logger
 
   @log_progress_every 100
@@ -12,7 +12,7 @@ defmodule Otis.LoggerHandler do
     {:library, :request},
     {:library, :response},
     {:receiver, :mute},
-    {:receiver, :volume},
+    {:receiver, :volume}
   ]
 
   def start_link do
@@ -20,7 +20,7 @@ defmodule Otis.LoggerHandler do
   end
 
   def init(id) do
-    {:consumer, %{id: id, progress_count: 0}, subscribe_to: Strobe.Events.producer}
+    {:consumer, %{id: id, progress_count: 0}, subscribe_to: Strobe.Events.producer()}
   end
 
   for {category, event} <- @silent_events do
@@ -29,14 +29,19 @@ defmodule Otis.LoggerHandler do
     end
   end
 
-  def handle_event({:rendition, :progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
+  def handle_event(
+        {:rendition, :progress, [_channel_id, _rendition_id, _position, :infinity]},
+        state
+      ) do
     {:ok, state}
   end
+
   # Rate limit the source progress events to 1 out of @log_progress_every (or roughly every 10s)
   def handle_event({:rendition, :progress, _args} = event, %{progress_count: 0} = state) do
     log_event(event, state)
     {:ok, %{state | progress_count: @log_progress_every}}
   end
+
   def handle_event({:rendition, :progress, _args}, state) do
     {:ok, %{state | progress_count: state.progress_count - 1}}
   end
@@ -47,6 +52,6 @@ defmodule Otis.LoggerHandler do
   end
 
   def log_event(event, _state) do
-    Logger.debug "EVENT: #{ inspect event }"
+    Logger.debug("EVENT: #{inspect(event)}")
   end
 end

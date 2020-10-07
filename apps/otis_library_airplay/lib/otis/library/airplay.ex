@@ -4,7 +4,7 @@ defmodule Otis.Library.Airplay do
   def library_id, do: @library_id
 
   def ids do
-    if Otis.Library.Airplay.Shairport.installed? do
+    if Otis.Library.Airplay.Shairport.installed?() do
       instances = Application.get_env(:otis_library_airplay, :inputs) || 0
       Enum.take(1..instances, instances)
     else

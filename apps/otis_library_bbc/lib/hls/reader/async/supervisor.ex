@@ -15,8 +15,9 @@ defmodule HLS.Reader.Async.Supervisor do
 
   def init(:ok) do
     children = [
-      worker(HLS.Reader.Async, [], [restart: :transient])
+      worker(HLS.Reader.Async, [], restart: :transient)
     ]
+
     supervise(children, strategy: :simple_one_for_one)
   end
 end

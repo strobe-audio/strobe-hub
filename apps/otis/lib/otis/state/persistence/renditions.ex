@@ -1,6 +1,6 @@
 defmodule Otis.State.Persistence.Renditions do
-  use     GenStage
-  use     Strobe.Events.Handler
+  use GenStage
+  use Strobe.Events.Handler
   require Logger
 
   alias Otis.State
@@ -21,11 +21,17 @@ defmodule Otis.State.Persistence.Renditions do
     {:ok, state}
   end
 
-  def handle_event({:rendition, :progress, [_channel_id, _rendition_id, _position, :infinity]}, state) do
+  def handle_event(
+        {:rendition, :progress, [_channel_id, _rendition_id, _position, :infinity]},
+        state
+      ) do
     {:ok, state}
   end
 
-  def handle_event({:rendition, :progress, [_channel_id, rendition_id, position, _duration]}, state) do
+  def handle_event(
+        {:rendition, :progress, [_channel_id, rendition_id, position, _duration]},
+        state
+      ) do
     :ok = Otis.State.RenditionProgress.update(rendition_id, position)
     {:ok, state}
   end

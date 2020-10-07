@@ -27,9 +27,8 @@ use Mix.Config
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 
-config :peel, Peel.Modifications.Create, [
+config :peel, Peel.Modifications.Create,
   # wait between getting event and testing the file status (ms)
-  queue_delay: 0,
-]
+  queue_delay: 0
 
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"

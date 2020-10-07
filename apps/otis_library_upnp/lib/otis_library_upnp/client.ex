@@ -4,7 +4,7 @@ defmodule Otis.Library.UPNP.Client do
   @s_body "s:Body"
 
   def envelope(contents \\ [], action) do
-    {@s_envelope, @s_ns, body(contents, action)} |> XmlBuilder.generate
+    {@s_envelope, @s_ns, body(contents, action)} |> XmlBuilder.generate()
   end
 
   def body(contents, {urn, action}) do

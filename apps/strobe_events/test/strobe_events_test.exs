@@ -3,13 +3,13 @@ defmodule Strobe.EventsTest do
 
   describe "Handler not filtering :__complete__ events" do
     test "Messages get sent" do
-      ForwardingHandler.attach
+      ForwardingHandler.attach()
       Strobe.Events.notify(:something, :else, [:here])
       assert_receive {:something, :else, [:here]}
     end
 
     test "Completion messages get sent & forwarded" do
-      ForwardingHandler.attach
+      ForwardingHandler.attach()
       Strobe.Events.notify(:something, :else, [:here])
       assert_receive {:something, :else, [:here]}
       assert_receive {:__complete__, {:something, :else, [:here]}, ForwardingHandler}
@@ -22,6 +22,7 @@ defmodule Strobe.EventsTest do
         {:something, _, _} -> true
         _ -> false
       end
+
       FilteredForwardingHandler.attach(selector)
       Strobe.Events.notify(:something, :else, [:here])
       Strobe.Events.notify(:otherthing, :else, [:here])
@@ -30,7 +31,7 @@ defmodule Strobe.EventsTest do
     end
 
     test "Completion messages don't get forwarded" do
-      selector = fn(_) -> true end
+      selector = fn _ -> true end
       FilteredForwardingHandler.attach(selector)
       Strobe.Events.notify(:something, :else, [:here])
       assert_receive {:something, :else, [:here]}

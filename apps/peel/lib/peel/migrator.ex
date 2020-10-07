@@ -8,12 +8,11 @@ defmodule Peel.Migrator do
   end
 
   def init(_opts) do
-    Ecto.Migrator.run(Peel.Repo, migrations_path(), :up, [all: true, log: :debug])
+    Ecto.Migrator.run(Peel.Repo, migrations_path(), :up, all: true, log: :debug)
     :ignore
   end
 
   defp migrations_path do
-    [:code.priv_dir(:peel), "repo/migrations"] |> Path.join
+    [:code.priv_dir(:peel), "repo/migrations"] |> Path.join()
   end
 end
-

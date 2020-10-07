@@ -1,16 +1,15 @@
-
 defmodule Peel.String do
   def normalize(string) do
     string
     |> replace_ampersands
     |> String.normalize(:nfd)
-    |> String.codepoints
+    |> String.codepoints()
     |> Enum.map(&convert_punctuation/1)
     |> Enum.reject(&is_combining_mark?/1)
-    |> Enum.join
-    |> String.strip
+    |> Enum.join()
+    |> String.trim()
     |> normalize_whitespace
-    |> String.downcase
+    |> String.downcase()
   end
 
   @doc """

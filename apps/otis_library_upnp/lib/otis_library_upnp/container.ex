@@ -4,6 +4,6 @@ defmodule Otis.Library.UPNP.Container do
     :parent_id,
     :title,
     :child_count,
-    :album_art,
+    :album_art
   ]
 end

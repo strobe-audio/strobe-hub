@@ -10,7 +10,11 @@ defmodule Otis.Pipeline.Transcoder.Avconv do
   """
   def transcode(inputstream, input_args, offset_ms, config) do
     opts = [out: :stream, in: inputstream]
-    proc = %{out: outstream} = ExternalProcess.spawn(executable(), params(input_args, offset_ms, config), opts)
+
+    proc =
+      %{out: outstream} =
+      ExternalProcess.spawn(executable(), params(input_args, offset_ms, config), opts)
+
     {proc, outstream}
   end
 
@@ -19,10 +23,14 @@ defmodule Otis.Pipeline.Transcoder.Avconv do
   end
 
   defp params(config) do
-    ["-f", "s16le",
-     "-ar", Integer.to_string(config.sample_freq),
-     "-ac", Integer.to_string(config.channels),
-     "-"
+    [
+      "-f",
+      "s16le",
+      "-ar",
+      Integer.to_string(config.sample_freq),
+      "-ac",
+      Integer.to_string(config.channels),
+      "-"
     ]
   end
 

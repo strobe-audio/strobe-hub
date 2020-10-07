@@ -1,5 +1,4 @@
 defmodule Peel.Cli do
-
   def main(args) do
     args |> parse_args |> process
   end
@@ -10,9 +9,11 @@ defmodule Peel.Cli do
   end
 
   defp parse_args(args) do
-    {options, _, _} = OptionParser.parse(args,
-      switches: [path: :keep]
-    )
+    {options, _, _} =
+      OptionParser.parse(args,
+        switches: [path: :keep]
+      )
+
     options
   end
 end

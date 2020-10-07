@@ -9,8 +9,26 @@ defmodule Plug.WebDAV.LockTest do
   end
 
   test "creating a lock", cxt do
-    {:ok, %Lock{scope: :exclusive, type: :write, depth: :infinity, id: id1, path: "/something", timeout: 12_340} = lock1} = Lock.acquire_exclusive(cxt.root1, ["something"], timeout: 12_340)
-    {:ok, %Lock{scope: :exclusive, type: :write, depth: 0, id: id2, path: "/something-else", timeout: 3_600} = lock2} = Lock.acquire_exclusive(cxt.root1, ["something-else"], depth: 0)
+    {:ok,
+     %Lock{
+       scope: :exclusive,
+       type: :write,
+       depth: :infinity,
+       id: id1,
+       path: "/something",
+       timeout: 12_340
+     } = lock1} = Lock.acquire_exclusive(cxt.root1, ["something"], timeout: 12_340)
+
+    {:ok,
+     %Lock{
+       scope: :exclusive,
+       type: :write,
+       depth: 0,
+       id: id2,
+       path: "/something-else",
+       timeout: 3_600
+     } = lock2} = Lock.acquire_exclusive(cxt.root1, ["something-else"], depth: 0)
+
     assert id1 != id2
     assert [lock1] == Lock.locks(cxt.root1, ["something"])
     assert [lock2] == Lock.locks(cxt.root1, ["something-else"])
@@ -30,8 +48,12 @@ defmodule Plug.WebDAV.LockTest do
 
   test "creating a duplicate lock", cxt do
     {:ok, lock} = Lock.acquire_exclusive(cxt.root1, ["something"], timeout: 12_340)
-    {:error, :duplicate, [^lock]} = Lock.acquire_exclusive(cxt.root1, ["something"], timeout: 12_340)
-    {:error, :duplicate, [^lock]} = Lock.acquire_exclusive(cxt.root1, ["something", "below", "this"], timeout: 12_340)
+
+    {:error, :duplicate, [^lock]} =
+      Lock.acquire_exclusive(cxt.root1, ["something"], timeout: 12_340)
+
+    {:error, :duplicate, [^lock]} =
+      Lock.acquire_exclusive(cxt.root1, ["something", "below", "this"], timeout: 12_340)
   end
 
   test "creating a lock in different root", cxt do
@@ -66,6 +88,7 @@ defmodule Plug.WebDAV.LockTest do
     :ok = Lock.release(cxt.root1, ["something"], [lock.id, other_token])
     assert [] == Lock.all()
   end
+
   test "releasing locks with invalid token", cxt do
     {:ok, lock} = Lock.acquire_exclusive(cxt.root1, ["something"], timeout: 5)
     assert [lock] == Lock.all()

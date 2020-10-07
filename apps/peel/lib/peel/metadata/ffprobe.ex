@@ -12,29 +12,29 @@ defmodule Peel.Importer.Ffprobe do
 
   def read(path) do
     with {:ok, data} <- read_metadata(path),
-      {:ok, format} <- Map.fetch(data, "format"),
-      {:ok, streams} <- Map.fetch(data, "streams"),
-      {:ok, stream} <- audio_stream(streams),
-      {:ok, tags} <- Map.fetch(format, "tags")
-    do
-      {:ok, %Peel.Metadata{
-        bit_rate: to_int(format["bit_rate"]),
-        channels: stream["channels"],
-        duration_ms: round(String.to_float(stream["duration"]) * 1000),
-        extension: extension(path),
-        filename: Path.basename(path),
-        sample_rate: to_int(stream["sample_rate"]),
-        album: tags["album"],
-        composer: tags["composer"] || tags["artist"],
-        date: tags["date"],
-        disk_number: number(tags["disc"]),
-        disk_total: total(tags["disc"]),
-        genre: tags["genre"],
-        performer: tags["artist"],
-        title: tags["title"],
-        track_number: number(tags["track"]),
-        track_total: total(tags["track"]),
-      }}
+         {:ok, format} <- Map.fetch(data, "format"),
+         {:ok, streams} <- Map.fetch(data, "streams"),
+         {:ok, stream} <- audio_stream(streams),
+         {:ok, tags} <- Map.fetch(format, "tags") do
+      {:ok,
+       %Peel.Metadata{
+         bit_rate: to_int(format["bit_rate"]),
+         channels: stream["channels"],
+         duration_ms: round(String.to_float(stream["duration"]) * 1000),
+         extension: extension(path),
+         filename: Path.basename(path),
+         sample_rate: to_int(stream["sample_rate"]),
+         album: tags["album"],
+         composer: tags["composer"] || tags["artist"],
+         date: tags["date"],
+         disk_number: number(tags["disc"]),
+         disk_total: total(tags["disc"]),
+         genre: tags["genre"],
+         performer: tags["artist"],
+         title: tags["title"],
+         track_number: number(tags["track"]),
+         track_total: total(tags["track"])
+       }}
     else
       err -> err
     end
@@ -44,8 +44,9 @@ defmodule Peel.Importer.Ffprobe do
     case cmd(path) do
       {json, 0} ->
         parse(json)
+
       err ->
-        {:error, "Unable to extract metdata from #{path}: #{inspect err}"}
+        {:error, "Unable to extract metdata from #{path}: #{inspect(err)}"}
     end
   end
 
@@ -76,7 +77,7 @@ defmodule Peel.Importer.Ffprobe do
   """
   def extension(path) do
     case Path.extname(path) do
-      << ".", ext::binary >> -> ext
+      <<".", ext::binary>> -> ext
       ext -> ext
     end
   end
@@ -96,9 +97,11 @@ defmodule Peel.Importer.Ffprobe do
   """
   def number(nil), do: nil
   def number(n) when is_integer(n), do: n
+
   def number(s) when is_binary(s) do
     s |> String.split("/") |> number
   end
+
   def number([n, _total]), do: n |> to_int
   def number([n]), do: n |> to_int
 
@@ -114,9 +117,11 @@ defmodule Peel.Importer.Ffprobe do
 
   """
   def total(nil), do: nil
+
   def total(s) when is_binary(s) do
     s |> String.split("/") |> total
   end
+
   def total([_, total]), do: total |> to_int
   def total([_]), do: nil
 
@@ -125,8 +130,8 @@ defmodule Peel.Importer.Ffprobe do
   defp to_int(_), do: nil
 
   defp audio_stream(streams) do
-    case Enum.find(streams, fn(s) -> s["codec_type"] == "audio" end) do
-      nil    -> {:error, "No audio stream"}
+    case Enum.find(streams, fn s -> s["codec_type"] == "audio" end) do
+      nil -> {:error, "No audio stream"}
       stream -> {:ok, stream}
     end
   end

@@ -12,7 +12,7 @@ defmodule ForwardingHandler do
   end
 
   def init(parent) do
-    {:consumer, parent, subscribe_to: Strobe.Events.producer}
+    {:consumer, parent, subscribe_to: Strobe.Events.producer()}
   end
 
   def handle_event(event, parent) do

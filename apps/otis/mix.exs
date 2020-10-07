@@ -2,30 +2,26 @@ defmodule Otis.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :otis,
-     version: "0.0.1",
-     build_path: "../../_build",
-     config_path: "../../config/config.exs",
-     deps_path: "../../deps",
-     lockfile: "../../mix.lock",
-     elixir: "~> 1.7",
-     consolidate_protocols: Mix.env != :test,
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps()]
-  end
-
-  def application do
-    [extra_applications: [:logger],
-     mod: {Otis, []},
-     included_applications: included_applications(Mix.env),
-     env: env(),
+    [
+      app: :otis,
+      version: "0.0.1",
+      build_path: "../../_build",
+      config_path: "../../config/config.exs",
+      deps_path: "../../deps",
+      lockfile: "../../mix.lock",
+      elixir: "~> 1.10",
+      consolidate_protocols: Mix.env() != :test,
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      deps: deps()
     ]
   end
 
-  defp included_applications(:test), do: []
-  defp included_applications(_env) do
-    [:dnssd,
+  def application do
+    [
+      extra_applications: [:logger],
+      mod: {Otis, []},
+      env: env()
     ]
   end
 
@@ -34,25 +30,21 @@ defmodule Otis.Mixfile do
   end
 
   defp deps do
-    [{:poolboy, "~> 1.4"},
-     {:monotonic, github: "magnetised/monotonic.ex"},
-     {:erlsom, github: "willemdj/erlsom"},
-     {:uuid, "~> 1.1"},
-     {:sqlite_ecto, github: "magnetised/sqlite_ecto"},
-     {:ecto, "~> 1.0"},
-     {:ranch, "~> 1.0", [optional: false, hex: :ranch, manager: :rebar]},
-     {:otis_library, in_umbrella: true},
-     {:external_process, in_umbrella: true},
-     {:strobe_events, in_umbrella: true},
-     {:nerves_ssdp_server, "~> 0.2.1"},
-     {:mdns, "~> 0.1.5"},
-     {:gen_stage, "~> 0.12"},
-    ] ++ deps(Mix.env)
-  end
-
-  defp deps(:test), do: []
-  defp deps(_env) do
-    [{:dnssd, github: "benoitc/dnssd_erlang", manager: :rebar, runtime: false},
+    [
+      {:poolboy, "~> 1.4"},
+      {:monotonic, github: "magnetised/monotonic.ex"},
+      {:erlsom, github: "willemdj/erlsom"},
+      {:uuid, "~> 1.1"},
+      {:sqlite_ecto2, "~> 2.4"},
+      {:ecto, "~> 2.2"},
+      # {:ranch, "~> 1.3.2", [optional: false, hex: :ranch, manager: :rebar]},
+      {:ranch, "~> 1.3.2"},
+      {:otis_library, in_umbrella: true},
+      {:poison, "~> 3.0"},
+      {:external_process, in_umbrella: true},
+      {:strobe_events, in_umbrella: true},
+      {:nerves_ssdp_server, "~> 0.2.1"},
+      {:mdns, "~> 1.0.9"}
     ]
   end
 end

@@ -5,10 +5,10 @@ defmodule Otis.Source.File.Cache do
   lookup with a cache to avoid that problem.
   """
 
-  use     GenServer
+  use GenServer
   require Logger
 
-  @name  Otis.Source.File.Cache
+  @name Otis.Source.File.Cache
   @table Otis.Source.File.Cache
 
   def start_link do
@@ -18,8 +18,9 @@ defmodule Otis.Source.File.Cache do
   def lookup(path, lookup) do
     case :ets.lookup(@table, path) do
       [{^path, source}] ->
-        Logger.debug "Cache hit #{ inspect path }..."
+        Logger.debug("Cache hit #{inspect(path)}...")
         source
+
       [] ->
         create_insert(path, lookup)
     end
@@ -35,7 +36,7 @@ defmodule Otis.Source.File.Cache do
   end
 
   def handle_call({:create_insert, path, lookup}, _from, table) do
-    Logger.debug "Cache miss #{ inspect path }..."
+    Logger.debug("Cache miss #{inspect(path)}...")
     source = lookup.()
     :ets.insert(table, {path, source})
     {:reply, source, table}

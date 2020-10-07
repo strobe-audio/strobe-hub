@@ -2,11 +2,20 @@ defmodule Otis.Receivers.Protocol do
   @moduledoc false
   defmacro __using__(opts) do
     quote location: :keep do
-      use     GenServer
+      use GenServer
       require Logger
 
       defmodule S do
-        defstruct [:socket, :transport, :id, :supervisor, :settings, :monitor_timeout, muted: false, progress: {"", 0}]
+        defstruct [
+          :socket,
+          :transport,
+          :id,
+          :supervisor,
+          :settings,
+          :monitor_timeout,
+          muted: false,
+          progress: {"", 0}
+        ]
       end
 
       def start_link(ref, socket, transport, opts) do
@@ -18,13 +27,19 @@ defmodule Otis.Receivers.Protocol do
         :ok = :proc_lib.init_ack({:ok, self()})
         :ok = :ranch.accept_ack(ref)
         :ok = transport.setopts(socket, socket_opts(pipeline_config))
+
         state = %S{
           socket: socket,
           transport: transport,
           supervisor: opts[:supervisor],
-          settings: initial_settings(),
+          settings: initial_settings()
         }
+
         state = state |> start |> monitor_connection
+        init(state)
+      end
+
+      def init(state) do
         :gen_server.enter_loop(__MODULE__, [], state)
       end
 
@@ -34,7 +49,7 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def handle_info({:tcp, _socket, data}, state) do
-        state.transport.setopts(state.socket, [active: :once])
+        state.transport.setopts(state.socket, active: :once)
         state = data |> decode_message(state) |> process_message(state)
         {:noreply, state}
       end
@@ -42,6 +57,7 @@ defmodule Otis.Receivers.Protocol do
       def handle_info({:tcp_closed, _socket}, %S{id: nil} = state) do
         {:stop, :normal, state}
       end
+
       def handle_info({:tcp_closed, _socket}, %S{id: id} = state) do
         disconnect(state)
         {:stop, :normal, state}
@@ -63,11 +79,18 @@ defmodule Otis.Receivers.Protocol do
       def process_message({_id, %{"pong" => _pong}}, state) do
         receiver_alive(state)
       end
+
       def process_message({id, params}, state) do
-        Logger.info "Receiver connection #{unquote(opts[:type])} #{id} => #{ inspect params }"
-        GenServer.cast(state.supervisor, {:connect, unquote(opts[:type]), id, {self(), state.socket}, params})
+        Logger.info("Receiver connection #{unquote(opts[:type])} #{id} => #{inspect(params)}")
+
+        GenServer.cast(
+          state.supervisor,
+          {:connect, unquote(opts[:type]), id, {self(), state.socket}, params}
+        )
+
         %S{state | id: id}
       end
+
       def process_message(_msg, state) do
         state
       end
@@ -81,18 +104,19 @@ defmodule Otis.Receivers.Protocol do
       end
 
       def decode_message(data, state) do
-        data |> Poison.decode! |> Map.pop("id")
+        data |> Poison.decode!() |> Map.pop("id")
       end
 
       def send_command(data, state) do
-        data |> Poison.encode! |> send_data(state)
+        data |> Poison.encode!() |> send_data(state)
       end
 
       def send_data(packets, state) do
-        errors = packets
-        |> List.wrap
-        |> Enum.map(fn(data) -> state.transport.send(state.socket, data) end)
-        |> return_errors()
+        errors =
+          packets
+          |> List.wrap()
+          |> Enum.map(fn data -> state.transport.send(state.socket, data) end)
+          |> return_errors()
       end
 
       def return_errors(errors) do
@@ -113,12 +137,13 @@ defmodule Otis.Receivers.Protocol do
       end
 
       defp socket_opts(pipeline_config) do
-        [mode: :binary,
-         packet: 4,
-         active: :once,
-         keepalive: true,
-         nodelay: true,
-         send_timeout: 2_000 * pipeline_config.packet_duration_ms,
+        [
+          mode: :binary,
+          packet: 4,
+          active: :once,
+          keepalive: true,
+          nodelay: true,
+          send_timeout: 2_000 * pipeline_config.packet_duration_ms
         ]
       end
     end

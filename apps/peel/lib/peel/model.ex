@@ -2,11 +2,11 @@ defmodule Peel.Model do
   def search_version(string) do
     string
     |> String.normalize(:nfd)
-    |> String.codepoints
+    |> String.codepoints()
     |> Enum.reject(&search_version_strip?/1)
-    |> Enum.join
+    |> Enum.join()
     |> normalize_whitespace
-    |> String.downcase
+    |> String.downcase()
   end
 
   # http://www.regular-expressions.info/unicode.html
@@ -24,53 +24,54 @@ defmodule Peel.Model do
   defmacro __using__(_opts) do
     quote do
       import Ecto.Query
-      use    Ecto.Schema
+      use Ecto.Schema
 
       @primary_key {:id, :binary_id, autogenerate: true}
 
-      alias  Peel.Repo
-      alias  __MODULE__, as: M
+      alias Peel.Repo
+      alias __MODULE__, as: M
 
       def find!(id) do
         id |> find |> validate_record(id)
       end
 
       def find(id) do
-        M |> where(id: ^id) |> limit(1) |> Repo.one
+        M |> where(id: ^id) |> limit(1) |> Repo.one()
       end
 
       def first do
-        M |> order_by(:id) |> limit(1) |> Repo.one
+        M |> order_by(:id) |> limit(1) |> Repo.one()
       end
 
       def all do
-        M |> Repo.all
+        M |> Repo.all()
       end
 
       def delete_all do
-        M |> Repo.delete_all
+        M |> Repo.delete_all()
       end
 
       def delete(m) do
-        m |> Repo.delete!
+        m |> Repo.delete!()
       end
 
       # def search(title) do
-        # match = "%#{title}%"
-        # query = from(c in M,
-        # where: like(unquote("c.#{Keyword.get(opts, :title_column, :title)}"), ^match))
-        # query |> Repo.all
-        # M |> ilike(:title, "%#{title}%") |> Repo.all
+      # match = "%#{title}%"
+      # query = from(c in M,
+      # where: like(unquote("c.#{Keyword.get(opts, :title_column, :title)}"), ^match))
+      # query |> Repo.all
+      # M |> ilike(:title, "%#{title}%") |> Repo.all
       # end
 
       def validate_record(nil, id) do
         raise "not valid"
       end
+
       def validate_record(m, id) do
         m
       end
 
-      defoverridable [all: 0]
+      defoverridable all: 0
     end
   end
 end

@@ -5,7 +5,8 @@ defmodule Peel.WebDAV.Modifications do
 
   use GenStage
 
-  def start_link(opts) do GenStage.start_link(__MODULE__, opts, name: __MODULE__)
+  def start_link(opts) do
+    GenStage.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
   def notify(event) do

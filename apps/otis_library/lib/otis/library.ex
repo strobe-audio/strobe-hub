@@ -16,7 +16,7 @@ defmodule Otis.Library do
   def strip_leading_dot(<<".", ext::binary>>), do: ext
   def strip_leading_dot(ext), do: ext
 
-  defmacro __using__([namespace: namespace]) do
+  defmacro __using__(namespace: namespace) do
     quote location: :keep do
       @namespace "#{unquote(namespace)}"
       @protocol "#{unquote(namespace)}:"
@@ -37,7 +37,8 @@ defmodule Otis.Library do
       def handle_events([], _from, state) do
         {:noreply, [], state}
       end
-      def handle_events([event|events], from, state) do
+
+      def handle_events([event | events], from, state) do
         {:ok, state} = handle_event(event, state)
         handle_events(events, from, state)
       end
@@ -51,7 +52,10 @@ defmodule Otis.Library do
         {:ok, state}
       end
 
-      def handle_event({:library, :request, [channel_id, (@protocol <> path) = url, socket, query]}, state) do
+      def handle_event(
+            {:library, :request, [channel_id, @protocol <> path = url, socket, query]},
+            state
+          ) do
         response = handle_request(channel_id, path, query)
         notify_event(:response, [@namespace, url, response, socket])
         {:ok, state}
@@ -70,19 +74,21 @@ defmodule Otis.Library do
       end
 
       def library do
-        %{id: "invalid",
+        %{
+          id: "invalid",
           title: "Override me",
           icon: "",
           actions: %{
             click: %{url: url("root"), level: true},
             play: nil,
-            search: nil,
+            search: nil
           },
           metadata: nil
         }
       end
 
       def handle_request(channel_id, path, query \\ nil)
+
       def handle_request(channel_id, path, query) do
         route_library_request(channel_id, split(path), query, path)
       end
@@ -92,12 +98,13 @@ defmodule Otis.Library do
       end
 
       def library_link(title, action \\ nil)
+
       def library_link(title, action) do
         %{title: title, action: action}
       end
 
       def url(path) when is_list(path) do
-        path |> Enum.map(&encode/1) |> Path.join |> url()
+        path |> Enum.map(&encode/1) |> Path.join() |> url()
       end
 
       def url(path) do
@@ -105,7 +112,7 @@ defmodule Otis.Library do
       end
 
       def split(path) do
-        path |> Path.split |> Enum.map(&decode/1)
+        path |> Path.split() |> Enum.map(&decode/1)
       end
 
       defp encode(part), do: URI.encode(part, &URI.char_unreserved?/1)
@@ -121,19 +128,24 @@ defmodule Otis.Library do
 
       def namespaced(url), do: "#{@namespace}:#{url}"
 
-      @section_defaults %{title: "", actions: nil, metadata: nil, icon: nil, size: "s", children: []}
+      @section_defaults %{
+        title: "",
+        actions: nil,
+        metadata: nil,
+        icon: nil,
+        size: "s",
+        children: []
+      }
 
       def section(%{children: children} = section_data) do
         @section_defaults |> Map.merge(section_data) |> Map.merge(%{length: length(children)})
       end
+
       def section(section), do: section(Map.put(section, :children, []))
 
-      defoverridable [
-        setup: 1,
-        library: 0,
-        route_library_request: 4,
-      ]
+      defoverridable setup: 1,
+                     library: 0,
+                     route_library_request: 4
     end
   end
 end
-

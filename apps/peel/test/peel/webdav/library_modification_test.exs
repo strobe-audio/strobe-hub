@@ -1,5 +1,5 @@
 defmodule Peel.WebDAV.LibraryModificationTest do
-  use   ExUnit.Case
+  use ExUnit.Case
 
   alias Peel.WebDAV.LibraryModification, as: M
 
@@ -16,12 +16,13 @@ defmodule Peel.WebDAV.LibraryModificationTest do
     tests = [
       {"/path1/something.mp3", "/path1"},
       {"/path1/path2/something.mp3", "/path1/path2"},
-      {"/path1/path2/path3/something.mp3", "/path1/path2"},
+      {"/path1/path2/path3/something.mp3", "/path1/path2"}
     ]
-    Enum.each tests, fn({path, expected}) ->
+
+    Enum.each(tests, fn {path, expected} ->
       m = M.update(new(2), path)
       assert M.paths(m) == [expected]
-    end
+    end)
   end
 
   test "paths sharing a common directory" do
@@ -29,11 +30,14 @@ defmodule Peel.WebDAV.LibraryModificationTest do
       "/path1/path2/path3/a.mp3",
       "/path1/path2/path3/b.mp3",
       "/path1/path2/path3/c.mp3",
-      "/path1/path2/path3/d.mp3",
+      "/path1/path2/path3/d.mp3"
     ]
-    m = Enum.reduce paths, new(2), fn(path, m) ->
-      M.update(m, path)
-    end
+
+    m =
+      Enum.reduce(paths, new(2), fn path, m ->
+        M.update(m, path)
+      end)
+
     assert M.paths(m) == ["/path1/path2"]
   end
 
@@ -42,11 +46,14 @@ defmodule Peel.WebDAV.LibraryModificationTest do
       "/path1/path2/path3/a.mp3",
       "/path1/path2/path4/b.mp3",
       "/path1/path2/path5/c.mp3",
-      "/path1/path2/path6/d.mp3",
+      "/path1/path2/path6/d.mp3"
     ]
-    m = Enum.reduce paths, new(2), fn(path, m) ->
-      M.update(m, path)
-    end
+
+    m =
+      Enum.reduce(paths, new(2), fn path, m ->
+        M.update(m, path)
+      end)
+
     assert M.paths(m) == ["/path1/path2"]
   end
 
@@ -55,16 +62,19 @@ defmodule Peel.WebDAV.LibraryModificationTest do
       "/path1/path2/path3/a.mp3",
       "/path1/path3/path3/b.mp3",
       "/path1/path4/path3/c.mp3",
-      "/path1/path3/path3/d.mp3",
+      "/path1/path3/path3/d.mp3"
     ]
-    m = Enum.reduce paths, new(2), fn(path, m) ->
-      M.update(m, path)
-    end
+
+    m =
+      Enum.reduce(paths, new(2), fn path, m ->
+        M.update(m, path)
+      end)
+
     assert M.paths(m) == [
-      "/path1/path2",
-      "/path1/path3",
-      "/path1/path4",
-    ]
+             "/path1/path2",
+             "/path1/path3",
+             "/path1/path4"
+           ]
   end
 
   test "relative paths without a common root" do
@@ -72,16 +82,19 @@ defmodule Peel.WebDAV.LibraryModificationTest do
       "path1/path2/path3/a.mp3",
       "path1/path3/path3/b.mp3",
       "path1/path4/path3/c.mp3",
-      "path1/path3/path3/d.mp3",
+      "path1/path3/path3/d.mp3"
     ]
-    m = Enum.reduce paths, new(2), fn(path, m) ->
-      M.update(m, path)
-    end
+
+    m =
+      Enum.reduce(paths, new(2), fn path, m ->
+        M.update(m, path)
+      end)
+
     assert M.paths(m) == [
-      "path1/path2",
-      "path1/path3",
-      "path1/path4",
-    ]
+             "path1/path2",
+             "path1/path3",
+             "path1/path4"
+           ]
   end
 
   test "paths without a common root at higher depth" do
@@ -89,15 +102,18 @@ defmodule Peel.WebDAV.LibraryModificationTest do
       "/path0/path1/path2/path3/a.mp3",
       "/path0/path1/path3/path3/b.mp3",
       "/path0/path1/path4/path3/c.mp3",
-      "/path0/path1/path3/path3/d.mp3",
+      "/path0/path1/path3/path3/d.mp3"
     ]
-    m = Enum.reduce paths, new(3), fn(path, m) ->
-      M.update(m, path)
-    end
+
+    m =
+      Enum.reduce(paths, new(3), fn path, m ->
+        M.update(m, path)
+      end)
+
     assert M.paths(m) == [
-      "/path0/path1/path2",
-      "/path0/path1/path3",
-      "/path0/path1/path4",
-    ]
+             "/path0/path1/path2",
+             "/path0/path1/path3",
+             "/path0/path1/path4"
+           ]
   end
 end

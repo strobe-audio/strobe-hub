@@ -3,16 +3,20 @@ defmodule BBC.Channel do
 
   alias __MODULE__
 
-  if Code.ensure_compiled?(Otis.Media) do
-    def cover_image(channel, size \\ :large)
-    def cover_image(channel, size) do
-      Otis.Media.url(BBC.library_id, logo(channel, size))
-    end
-  else
-    def cover_image(_channel, _size \\ :large), do: ""
+  case Code.ensure_compiled(Otis.Media) do
+    {:module, _} ->
+      def cover_image(channel, size \\ :large)
+
+      def cover_image(channel, size) do
+        Otis.Media.url(BBC.library_id(), logo(channel, size))
+      end
+
+    {:error, _} ->
+      def cover_image(_channel, _size \\ :large), do: ""
   end
 
   def logo(channel, size \\ :large)
+
   def logo(%Channel{id: id}, size) do
     "#{id}.#{size}.svg"
   end
@@ -39,12 +43,12 @@ defimpl Poison.Encoder, for: BBC.Channel do
     :title,
     :track_number,
     :track_total,
-    :cover_image,
+    :cover_image
   ]
 
   # Elm is expecting these fields to be present so let's start with a struct
   # that contains a blank version of everything.
-  @prototype Enum.map(@fields, fn(key) -> {key, nil} end) |> Enum.into(%{})
+  @prototype Enum.map(@fields, fn key -> {key, nil} end) |> Enum.into(%{})
 
   def encode(channel, opts) do
     channel
@@ -74,7 +78,7 @@ defimpl Otis.Library.Source, for: BBC.Channel do
   end
 
   defp stream(channel) do
-    channel |> BBC.playlist |> HLS.Stream.new(%HLS.Reader.Http{})
+    channel |> BBC.playlist() |> HLS.Stream.new(%HLS.Reader.Http{})
   end
 
   def pause(_channel, _stream_id, _stream) do

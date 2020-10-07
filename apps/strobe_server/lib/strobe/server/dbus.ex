@@ -1,5 +1,5 @@
 defmodule Strobe.Server.Dbus do
-  use     GenServer
+  use GenServer
   require Logger
 
   @name __MODULE__
@@ -14,7 +14,7 @@ defmodule Strobe.Server.Dbus do
   end
 
   def handle_info(:start, state) do
-    Logger.info "#{__MODULE__} starting #{dbus_daemon()}"
+    Logger.info("#{__MODULE__} starting #{dbus_daemon()}")
     File.mkdir_p("/var/run/dbus")
     port = Port.open({:spawn_executable, dbus_daemon()}, dbus_daemon_args())
     Strobe.Server.Events.notify({:running, [:dbus]})
@@ -22,11 +22,12 @@ defmodule Strobe.Server.Dbus do
   end
 
   def handle_info({port, {:data, {:eol, msg}}}, %{port: port} = state) do
-    IO.inspect [__MODULE__, String.trim(msg)]
+    IO.inspect([__MODULE__, String.trim(msg)])
     {:noreply, state}
   end
+
   def handle_info(evt, state) do
-    IO.inspect [__MODULE__, evt]
+    IO.inspect([__MODULE__, evt])
     {:noreply, state}
   end
 
@@ -35,11 +36,12 @@ defmodule Strobe.Server.Dbus do
   end
 
   def dbus_daemon_args do
-    [:stderr_to_stdout,
-     :binary,
-     line: 4096,
-     # args: ["--system", "--address", dbus_address(), "--nofork", "--nopidfile"],
-     args: ["--system", "--nofork", "--nopidfile"],
+    [
+      :stderr_to_stdout,
+      :binary,
+      line: 4096,
+      # args: ["--system", "--address", dbus_address(), "--nofork", "--nopidfile"],
+      args: ["--system", "--nofork", "--nopidfile"]
     ]
   end
 
@@ -51,4 +53,3 @@ defmodule Strobe.Server.Dbus do
     "unix:path=#{dbus_socket()}"
   end
 end
-

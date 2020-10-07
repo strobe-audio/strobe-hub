@@ -1,7 +1,7 @@
 defmodule TestEventHandler do
   use GenStage
 
-  def attach(producer \\ Strobe.Events.producer) do
+  def attach(producer \\ Strobe.Events.producer()) do
     {:ok, _pid} = start_link(self(), producer)
     :ok
   end
@@ -17,7 +17,8 @@ defmodule TestEventHandler do
   def handle_events([], _from, state) do
     {:noreply, [], state}
   end
-  def handle_events([event|events], from, state) do
+
+  def handle_events([event | events], from, state) do
     {:ok, state} = handle_event(event, state)
     handle_events(events, from, state)
   end

@@ -15,8 +15,9 @@ defmodule HLS.Client.Supervisor do
 
   def init(_opts) do
     children = [
-      worker(HLS.Client, [], [restart: :transient])
+      worker(HLS.Client, [], restart: :transient)
     ]
+
     supervise(children, strategy: :simple_one_for_one)
   end
 end

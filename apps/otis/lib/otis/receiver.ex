@@ -4,7 +4,7 @@ defmodule Otis.Receiver do
   """
 
   require Logger
-  alias   __MODULE__, as: R
+  alias __MODULE__, as: R
 
   defstruct [:id, :data, :ctrl, :latency, :latch]
 
@@ -20,10 +20,12 @@ defmodule Otis.Receiver do
     receiver = Enum.reduce([:ctrl, :data], receiver, &update_closing(&1, &2, values))
     struct(receiver, values)
   end
+
   defp update_closing(type, receiver, values) do
     case Keyword.get(values, type) do
       nil ->
         receiver
+
       {_pid, _sock} ->
         Map.get(receiver, type) |> disconnect
         Map.put(receiver, type, nil)
@@ -35,6 +37,7 @@ defmodule Otis.Receiver do
     disconnect(ctrl)
     receiver
   end
+
   def disconnect({pid, _socket}) when is_pid(pid) do
     try do
       GenServer.cast(pid, :disconnect)
@@ -42,6 +45,7 @@ defmodule Otis.Receiver do
       :exit, _ -> :ok
     end
   end
+
   def disconnect(nil), do: nil
 
   def id!(receiver) do
@@ -63,17 +67,20 @@ defmodule Otis.Receiver do
   end
 
   def release_latch(nil), do: nil
+
   def release_latch(%R{latch: pid} = receiver) do
     send(pid, @latch_exit_signal)
     create_latch(receiver)
   end
 
   defp start_latch_process do
-    pid = spawn(fn ->
-      receive do
-        @latch_exit_signal -> nil
-      end
-    end)
+    pid =
+      spawn(fn ->
+        receive do
+          @latch_exit_signal -> nil
+        end
+      end)
+
     Process.monitor(pid)
     pid
   end
@@ -82,9 +89,10 @@ defmodule Otis.Receiver do
   An alive receiver has an id, and both a data & control connection
   """
   def alive?(%R{id: id, data: data, ctrl: ctrl})
-  when is_binary(id) and not is_nil(data) and not is_nil(ctrl) do
+      when is_binary(id) and not is_nil(data) and not is_nil(ctrl) do
     true
   end
+
   def alive?(_receiver) do
     false
   end
@@ -93,9 +101,10 @@ defmodule Otis.Receiver do
   An zombie receiver still has one valid connection, either data or control
   """
   def zombie?(%R{id: id, data: data, ctrl: ctrl})
-  when is_binary(id) and (not(is_nil(data)) or not(is_nil(ctrl))) do
+      when is_binary(id) and (not is_nil(data) or not is_nil(ctrl)) do
     true
   end
+
   def zombie?(_receiver) do
     false
   end
@@ -104,9 +113,10 @@ defmodule Otis.Receiver do
   A dead receiver has neither a data nor control connection
   """
   def dead?(%R{data: data, ctrl: ctrl})
-  when (is_nil(data) and is_nil(ctrl)) do
+      when is_nil(data) and is_nil(ctrl) do
     true
   end
+
   def dead?(_receiver) do
     false
   end
@@ -134,9 +144,11 @@ defmodule Otis.Receiver do
   def matches_pid?({id, receiver}, pid) when is_binary(id) do
     matches_pid?(receiver, pid)
   end
+
   def matches_pid?(%R{data: data, ctrl: ctrl, latch: lpid}, pid) do
     _match_pid?(data, pid) || _match_pid?(ctrl, pid) || _match_pid?(lpid, pid)
   end
+
   def _match_pid?(nil, _pid), do: false
   def _match_pid?({cpid, _}, pid), do: _match_pid?(cpid, pid)
   def _match_pid?(cpid, pid) when is_pid(cpid), do: cpid == pid
@@ -150,9 +162,10 @@ defmodule Otis.Receiver do
   end
 
   defp set_volume(%R{ctrl: nil} = receiver, _volume, _multiplier) do
-    Logger.warn "Attempt to set volume of receiver with no control connection #{receiver}"
+    Logger.warn("Attempt to set volume of receiver with no control connection #{receiver}")
     receiver
   end
+
   defp set_volume(%R{ctrl: {pid, _socket}} = receiver, volume, multiplier) do
     Otis.Receivers.ControlConnection.set_volume(pid, volume, multiplier)
     receiver
@@ -163,9 +176,10 @@ defmodule Otis.Receiver do
   end
 
   defp set_volume(%R{ctrl: nil} = receiver, _volume) do
-    Logger.warn "Attempt to set volume of receiver with no control connection #{receiver}"
+    Logger.warn("Attempt to set volume of receiver with no control connection #{receiver}")
     receiver
   end
+
   defp set_volume(%R{ctrl: {pid, _socket}} = receiver, volume) do
     Otis.Receivers.ControlConnection.set_volume(pid, volume)
     receiver
@@ -189,7 +203,8 @@ defmodule Otis.Receiver do
       1.0 -> 1.0
       v when v < 0.1 -> logarithmic_volume(v) * (v * 10)
       v -> logarithmic_volume(v)
-    end |> Otis.sanitize_volume
+    end
+    |> Otis.sanitize_volume()
   end
 
   @exponent_factor :math.log(1000.0)
@@ -242,11 +257,13 @@ defmodule Otis.Receiver do
   Configure the receiver from the db and join it to the channel
   """
   def configure_and_join_channel(nil, _state, _channel) do
-    Logger.warn "Configuring nil receiver"
+    Logger.warn("Configuring nil receiver")
   end
+
   def configure_and_join_channel(_receiver, _state, nil) do
-    Logger.warn "Configuring receiver to join non-existant channel"
+    Logger.warn("Configuring receiver to join non-existant channel")
   end
+
   def configure_and_join_channel(receiver, state, channel) do
     mute(receiver, state.muted)
     set_volume(receiver, state.volume, channel.volume)
@@ -256,6 +273,7 @@ defmodule Otis.Receiver do
   def configure(%R{ctrl: {pid, _socket}}, settings) do
     Otis.Receivers.ControlConnection.configure(pid, settings)
   end
+
   def configure(_receiver, _settings) do
   end
 
@@ -269,12 +287,15 @@ defmodule Otis.Receiver do
   end
 
   def ip_address({_id, receiver}), do: ip_address(receiver)
+
   def ip_address(%R{ctrl: {_pid, socket}}) do
     _ip_address(socket)
   end
+
   def ip_address(%R{data: {_pid, socket}}) do
     _ip_address(socket)
   end
+
   def ip_address(_receiver), do: :error
 
   defp _ip_address(socket) do
@@ -285,28 +306,33 @@ defmodule Otis.Receiver do
   def send_packets(%R{data: {pid, _socket}}, packets) do
     GenServer.cast(pid, {:packets, packets})
   end
+
   def send_packets(%R{data: nil}, _packets) do
   end
 
   def send_data(%{data: {pid, _socket}}, data) do
     GenServer.cast(pid, {:data, data})
   end
+
   def send_data(%{data: nil}, _data) do
   end
 
   def send_command(%{ctrl: {pid, _socket}}, command) do
     GenServer.cast(pid, {:command, command})
   end
+
   def send_command(%{ctrl: nil}, _command) do
   end
 
   def mute(%R{data: nil} = receiver, _muted) do
     receiver
   end
+
   def mute(%R{data: {pid, _socket}} = receiver, muted) do
     if muted do
       stop(receiver)
     end
+
     GenServer.cast(pid, {:mute, muted})
     receiver
   end
@@ -318,10 +344,11 @@ defmodule Otis.Receiver do
   defp merge_params({nil, values}) do
     values
   end
+
   defp merge_params({params, values}) do
     case Map.get(params, "latency") do
-      nil     -> values
-      latency -> Keyword.merge(values, [latency: latency])
+      nil -> values
+      latency -> Keyword.merge(values, latency: latency)
     end
   end
 end

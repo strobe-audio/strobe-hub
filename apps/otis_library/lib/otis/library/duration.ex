@@ -23,11 +23,11 @@ defmodule Otis.Library.Duration do
   end
 
   def pad(v) when is_float(v) do
-    v |> round |> pad
+    v |> round() |> pad()
   end
 
   def pad(v) when is_integer(v) do
-    v |> to_string |> pad
+    v |> to_string() |> pad()
   end
 
   def pad(v) when is_binary(v) do

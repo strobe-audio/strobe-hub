@@ -1,6 +1,5 @@
-
 defmodule Peel.Test.ImporterTest do
-  use   ExUnit.Case
+  use ExUnit.Case
 
   alias Peel.Collection
   alias Peel.Importer
@@ -13,9 +12,10 @@ defmodule Peel.Test.ImporterTest do
 
   setup do
     Ecto.Adapters.SQL.restart_test_transaction(Peel.Repo)
-    Collection.delete_all
-    Enum.each [Track, Album, Artist], fn(m) -> m.delete_all end
+    Collection.delete_all()
+    Enum.each([Track, Album, Artist], fn m -> m.delete_all end)
     root = Path.expand(Path.join(__DIR__, "../fixtures/music"))
+
     metadata = %Metadata{
       album: "Fresh Cream",
       bit_rate: 288_000,
@@ -60,31 +60,30 @@ defmodule Peel.Test.ImporterTest do
     paths = ["silent.mp3"]
 
     {:ok,
-      track_count: 1,
-      root: root,
-      path: List.first(paths),
-      paths: paths,
-      metadata: metadata,
-      collection: collection,
-    }
+     track_count: 1,
+     root: root,
+     path: List.first(paths),
+     paths: paths,
+     metadata: metadata,
+     collection: collection}
   end
 
   test "it creates a track for each song file", context do
     Importer.create_track(context.collection, context.path, context.metadata)
-    tracks = Track.all
+    tracks = Track.all()
     assert length(tracks) == context.track_count
   end
 
   test "it assigns a UUID as the primary key", context do
     Importer.create_track(context.collection, context.path, context.metadata)
-    [track] = Track.all
+    [track] = Track.all()
     assert is_binary(track.id)
     assert String.length(track.id) == 36
   end
 
   test "it sets the track data from the file", context do
     Importer.create_track(context.collection, context.path, context.metadata)
-    [track] = Track.all
+    [track] = Track.all()
     assert track.title == "I Feel Free"
     assert track.normalized_title == "i feel free"
     assert track.album_title == "Fresh Cream"
@@ -104,23 +103,26 @@ defmodule Peel.Test.ImporterTest do
 
   test "it correctly sets the track duration", context do
     Importer.create_track(context.collection, context.path, context.metadata)
-    [track] = Track.all
+    [track] = Track.all()
     assert track.duration_ms == 173_662
   end
 
   test "it correctly sets the track mime type", context do
     Importer.create_track(context.collection, context.path, context.metadata)
-    [track] = Track.all
+    [track] = Track.all()
     assert track.mime_type == "audio/mp4"
   end
 
   test "it creates an album when one isn't available", context do
-    assert length(Album.all) == 0
+    assert length(Album.all()) == 0
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Album.all) == 1
-    track = List.first(context.paths)
-            |> Track.by_path(context.collection)
-            |> Repo.preload(:album)
+    assert length(Album.all()) == 1
+
+    track =
+      List.first(context.paths)
+      |> Track.by_path(context.collection)
+      |> Repo.preload(:album)
+
     album = track.album
     assert album.title == "Fresh Cream"
     assert album.normalized_title == "fresh cream"
@@ -131,52 +133,66 @@ defmodule Peel.Test.ImporterTest do
     assert album.title == "Fresh Cream"
     assert album.track_total == 11
     album = album |> Repo.preload(:tracks)
-    assert Enum.map(album.tracks, fn(t) -> t.id end) == [track.id]
+    assert Enum.map(album.tracks, fn t -> t.id end) == [track.id]
   end
 
   test "it uses an existing album", context do
-    assert length(Album.all) == 0
+    assert length(Album.all()) == 0
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Album.all) == 1
-    album = Album.first
+    assert length(Album.all()) == 1
+    album = Album.first()
     album_id = album.id
-    Track.delete_all
+    Track.delete_all()
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Album.all) == 1
-    track = List.first(context.paths)
-            |> Track.by_path(context.collection)
-            |> Repo.preload(:album)
+    assert length(Album.all()) == 1
+
+    track =
+      List.first(context.paths)
+      |> Track.by_path(context.collection)
+      |> Repo.preload(:album)
+
     album = track.album |> Repo.preload(:tracks)
     assert album.id == album_id
 
-    assert Enum.map(album.tracks, fn(t) -> t.album_id end) == [album.id]
+    assert Enum.map(album.tracks, fn t -> t.album_id end) == [album.id]
   end
 
   test "it uses an existing album based on normalized title", context do
-    assert length(Album.all) == 0
+    assert length(Album.all()) == 0
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Album.all) == 1
-    album = Album.first
+    assert length(Album.all()) == 1
+    album = Album.first()
     album_id = album.id
-    Track.delete_all
-    Importer.create_track(context.collection, context.path, %Metadata{context.metadata | album: "fresh  cream"})
-    assert length(Album.all) == 1
-    track = List.first(context.paths)
-            |> Track.by_path(context.collection)
-            |> Repo.preload(:album)
+    Track.delete_all()
+
+    Importer.create_track(context.collection, context.path, %Metadata{
+      context.metadata
+      | album: "fresh  cream"
+    })
+
+    assert length(Album.all()) == 1
+
+    track =
+      List.first(context.paths)
+      |> Track.by_path(context.collection)
+      |> Repo.preload(:album)
+
     album = track.album |> Repo.preload(:tracks)
     assert album.id == album_id
 
-    assert Enum.map(album.tracks, fn(t) -> t.album_id end) == [album.id]
+    assert Enum.map(album.tracks, fn t -> t.album_id end) == [album.id]
   end
 
   test "it creates an artist when one isn't available", context do
-    assert length(Artist.all) == 0
+    assert length(Artist.all()) == 0
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Artist.all) == 1
-    track = List.first(context.paths)
-            |> Track.by_path(context.collection)
-            |> Repo.preload([:artist, :album])
+    assert length(Artist.all()) == 1
+
+    track =
+      List.first(context.paths)
+      |> Track.by_path(context.collection)
+      |> Repo.preload([:artist, :album])
+
     artist = track.artist
     assert artist.name == "Cream"
     assert artist.normalized_name == "cream"
@@ -185,34 +201,47 @@ defmodule Peel.Test.ImporterTest do
   end
 
   test "it uses an existing artist", context do
-    assert length(Artist.all) == 0
+    assert length(Artist.all()) == 0
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Artist.all) == 1
-    artist = Artist.first
-    Track.delete_all
-    Album.delete_all
-    Importer.create_track(context.collection, context.path, %Metadata{context.metadata | title: "White Room", track_number: 2})
-    assert length(Artist.all) == 1
-    album = Album.first |> Repo.preload(:tracks)
+    assert length(Artist.all()) == 1
+    artist = Artist.first()
+    Track.delete_all()
+    Album.delete_all()
+
+    Importer.create_track(context.collection, context.path, %Metadata{
+      context.metadata
+      | title: "White Room",
+        track_number: 2
+    })
+
+    assert length(Artist.all()) == 1
+    album = Album.first() |> Repo.preload(:tracks)
     assert Album.artists(album) == [artist]
   end
 
   test "it uses an existing artist based on normalized name", context do
-    assert length(Artist.all) == 0
+    assert length(Artist.all()) == 0
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Artist.all) == 1
-    artist = Artist.first
-    Track.delete_all
+    assert length(Artist.all()) == 1
+    artist = Artist.first()
+    Track.delete_all()
     # Album.delete_all
-    Importer.create_track(context.collection, context.path, %Metadata{context.metadata | performer: "cream", title: "White Room", track_number: 2})
-    assert length(Artist.all) == 1
-    assert length(Album.all) == 1
-    album = Album.first |> Repo.preload(:tracks)
+    Importer.create_track(context.collection, context.path, %Metadata{
+      context.metadata
+      | performer: "cream",
+        title: "White Room",
+        track_number: 2
+    })
+
+    assert length(Artist.all()) == 1
+    assert length(Album.all()) == 1
+    album = Album.first() |> Repo.preload(:tracks)
     assert Album.artists(album) == [artist]
   end
 
   test "it handles tracks with blank artists", context do
     path = Path.join(context.root, "silent.mp3")
+
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
       bit_rate: 128_000,
@@ -233,8 +262,9 @@ defmodule Peel.Test.ImporterTest do
       track_number: 1,
       track_total: 11
     }
+
     Importer.create_track(context.collection, path, metadata)
-    tracks = Track.all
+    tracks = Track.all()
     assert length(tracks) == 1
     [track] = tracks
     assert track.performer == "Unknown artist"
@@ -242,6 +272,7 @@ defmodule Peel.Test.ImporterTest do
 
   test "it handles tracks with blank titles", context do
     path = Path.join(context.root, "silent.mp3")
+
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
       bit_rate: 128_000,
@@ -262,8 +293,9 @@ defmodule Peel.Test.ImporterTest do
       track_number: 1,
       track_total: 11
     }
+
     Importer.create_track(context.collection, path, metadata)
-    tracks = Track.all
+    tracks = Track.all()
     assert length(tracks) == 1
     [track] = tracks
     assert track.title == "Untitled"
@@ -271,6 +303,7 @@ defmodule Peel.Test.ImporterTest do
 
   test "it handles tracks with no disk number", context do
     path = Path.join(context.root, "silent.mp3")
+
     metadata = %Metadata{
       album: "the world of Thomas Tallis",
       bit_rate: 128_000,
@@ -291,14 +324,16 @@ defmodule Peel.Test.ImporterTest do
       track_number: 1,
       track_total: 11
     }
+
     Importer.create_track(context.collection, path, metadata)
-    assert length(Track.all) == 1
-    track = Track.first |> Repo.preload(:album)
+    assert length(Track.all()) == 1
+    track = Track.first() |> Repo.preload(:album)
     assert track.album.disk_number == 1
   end
 
   test "it handles tracks with an unknown artist", context do
     path = Path.join(context.root, "silent.mp3")
+
     metadata = %Metadata{
       album: "14 Classic Carols",
       bit_rate: 281_594,
@@ -313,9 +348,10 @@ defmodule Peel.Test.ImporterTest do
       track_number: 1,
       track_total: 14
     }
+
     Importer.create_track(context.collection, path, metadata)
-    assert length(Track.all) == 1
-    track = Track.first |> Repo.preload(:album)
+    assert length(Track.all()) == 1
+    track = Track.first() |> Repo.preload(:album)
     album = track.album
     assert track.performer == "Unknown artist"
     assert album.performer == "Unknown artist"
@@ -325,18 +361,22 @@ defmodule Peel.Test.ImporterTest do
 
   test "it assigns the album cover image to new tracks", context do
     Importer.create_track(context.collection, context.path, context.metadata)
-    album = Album.first
-    Album.change(album, %{cover_image: "/path/to/cover.jpg"}) |> Peel.Repo.update
-    Track.delete_all
+    album = Album.first()
+    Album.change(album, %{cover_image: "/path/to/cover.jpg"}) |> Peel.Repo.update()
+    Track.delete_all()
     Importer.create_track(context.collection, context.path, context.metadata)
-    assert length(Album.all) == 1
-    track = List.first(context.paths)
-            |> Track.by_path(context.collection)
+    assert length(Album.all()) == 1
+
+    track =
+      List.first(context.paths)
+      |> Track.by_path(context.collection)
+
     assert track.cover_image == "/path/to/cover.jpg"
   end
 
   test "it strips whitespace from all fields", context do
     path = Path.join(context.root, "silent.mp3")
+
     metadata = %Metadata{
       album: " Fresh Cream ",
       bit_rate: 288_000,
@@ -357,9 +397,10 @@ defmodule Peel.Test.ImporterTest do
       track_number: 1,
       track_total: 11
     }
+
     Importer.create_track(context.collection, path, metadata)
-    assert length(Track.all) == 1
-    track = Track.first |> Repo.preload(:album)
+    assert length(Track.all()) == 1
+    track = Track.first() |> Repo.preload(:album)
     assert track.performer == "Cream"
     assert track.album_title == "Fresh Cream"
     assert track.composer == "Peter Brown & Jack Bruce"
@@ -373,6 +414,7 @@ defmodule Peel.Test.ImporterTest do
 
   test "it strips leading 'the' from performer names", context do
     path = Path.join(context.root, "silent.mp3")
+
     metadata = %Metadata{
       album: " Fresh Cream ",
       bit_rate: 288_000,
@@ -393,9 +435,10 @@ defmodule Peel.Test.ImporterTest do
       track_number: 1,
       track_total: 11
     }
+
     Importer.create_track(context.collection, path, metadata)
-    assert length(Track.all) == 1
-    track = Track.first |> Repo.preload(:album)
+    assert length(Track.all()) == 1
+    track = Track.first() |> Repo.preload(:album)
     assert track.performer == "The Beatles"
     album = track.album
     [artist] = Album.artists(album)
@@ -403,4 +446,3 @@ defmodule Peel.Test.ImporterTest do
     assert artist.normalized_name == "beatles"
   end
 end
-

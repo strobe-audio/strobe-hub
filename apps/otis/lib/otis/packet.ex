@@ -3,22 +3,26 @@ defmodule Otis.Packet do
   Represents a single chunk of audio as it moves through the pipeline.
   """
 
-  defstruct [
-    rendition_id:    nil,
-    source_duration: 0,
-    source_index:  0,
-    offset_ms:     0,
-    duration_ms:   0,
-    packet_size:   0, # the size of each packet in bytes
-    packet_number: 0,
-    timestamp:     0,
-    data:          nil,
-  ]
+  defstruct rendition_id: nil,
+            source_duration: 0,
+            source_index: 0,
+            offset_ms: 0,
+            duration_ms: 0,
+            # the size of each packet in bytes
+            packet_size: 0,
+            packet_number: 0,
+            timestamp: 0,
+            data: nil
 
   alias __MODULE__, as: P
 
   def new(rendition_id, offset_ms, duration_ms, packet_size) do
-    %P{rendition_id: rendition_id, offset_ms: offset_ms, duration_ms: duration_ms, packet_size: packet_size}
+    %P{
+      rendition_id: rendition_id,
+      offset_ms: offset_ms,
+      duration_ms: duration_ms,
+      packet_size: packet_size
+    }
   end
 
   @doc ~S"""
@@ -123,22 +127,19 @@ defmodule Otis.Packet do
 
   """
   def reset!(packet) do
-    struct P, Map.drop(packet, [:timestamp, :packet_number, :__struct__])
+    struct(P, Map.drop(packet, [:timestamp, :packet_number, :__struct__]))
   end
 
   @doc "Marshals a packet into a binary blob for sending over the wire"
   def marshal(%P{timestamp: timestamp, packet_number: n, data: data} = _packet) do
-    << n         :: size(64)-little-unsigned-integer,
-       timestamp :: size(64)-little-signed-integer,
-       data      :: binary
-    >>
+    <<n::size(64)-little-unsigned-integer, timestamp::size(64)-little-signed-integer,
+      data::binary>>
   end
 
   def unmarshal(data) do
-    << n         :: size(64)-little-unsigned-integer,
-       timestamp :: size(64)-little-signed-integer,
-       audio     :: binary
-    >> = data
+    <<n::size(64)-little-unsigned-integer, timestamp::size(64)-little-signed-integer,
+      audio::binary>> = data
+
     %P{packet_size: byte_size(audio), timestamp: timestamp, packet_number: n, data: audio}
   end
 

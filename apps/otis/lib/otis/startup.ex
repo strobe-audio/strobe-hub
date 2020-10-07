@@ -1,8 +1,9 @@
 defmodule Otis.Startup do
-  use     GenServer
+  use GenServer
   require Logger
 
   def start_link(state \\ Otis.State, channels_supervisor \\ Otis.Channels)
+
   def start_link(state, channels_supervisor) do
     GenServer.start_link(__MODULE__, [state, channels_supervisor], [])
   end
@@ -16,21 +17,22 @@ defmodule Otis.Startup do
   end
 
   def start_channels(_state, channels_supervisor) do
-    ignoring_errors_in_tests fn ->
-      channels = Otis.State.Channel.all
+    ignoring_errors_in_tests(fn ->
+      channels = Otis.State.Channel.all()
       channels |> guarantee_channel |> start_channel(channels_supervisor)
-    end
+    end)
   end
 
   defp guarantee_channel([]) do
-    [Otis.State.Channel.create_default!]
+    [Otis.State.Channel.create_default!()]
   end
+
   defp guarantee_channel(channels) do
     channels
   end
 
   defp start_channel([channel | rest], channels_supervisor) do
-    Logger.info "===> Starting channel #{ channel.id } #{ inspect channel.name }"
+    Logger.info("===> Starting channel #{channel.id} #{inspect(channel.name)}")
     Otis.Channels.start(channels_supervisor, channel, Otis.Pipeline.config())
     start_channel(rest, channels_supervisor)
   end
@@ -40,14 +42,16 @@ defmodule Otis.Startup do
   end
 
   def restore_source_lists(_state, channels_supervisor) do
-    ignoring_errors_in_tests fn ->
+    ignoring_errors_in_tests(fn ->
       {:ok, channels} = Otis.Channels.list(channels_supervisor)
       channels |> restore_source_list
-    end
+    end)
   end
+
   defp restore_source_list([]) do
     :ok
   end
+
   defp restore_source_list([channel | channels]) do
     {:ok, channel_id} = Otis.Channel.id(channel)
     {:ok, playlist} = Otis.Channel.playlist(channel)
@@ -63,18 +67,22 @@ defmodule Otis.Startup do
     try do
       action.()
     rescue
-      Sqlite.Ecto.Error ->
+      Sqlite.Ecto2.Error ->
         case Application.get_env(:otis, :environment) do
-          :test -> nil
+          :test ->
+            nil
+
           _ ->
-            Logger.error "Invalid db schema"
+            Logger.error("Invalid db schema")
         end
+
         :ok
     end
   end
 
   defp ensure_db_path(nil) do
   end
+
   defp ensure_db_path(path) when is_binary(path) do
     :ok = path |> Path.dirname() |> File.mkdir_p()
   end

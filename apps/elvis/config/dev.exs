@@ -15,9 +15,12 @@ config :elvis, Elvis.Endpoint,
   watchers: [
     node: [
       "node_modules/.bin/webpack",
-      "--watch", "--progress", "--colors",
-      "--config", "config/webpack.config.js"
-   ],
+      "--watch",
+      "--progress",
+      "--colors",
+      "--config",
+      "config/webpack.config.js"
+    ]
   ]
 
 # Watch static and templates for browser reloading.

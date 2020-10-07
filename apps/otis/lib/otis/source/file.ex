@@ -18,7 +18,7 @@ defmodule Otis.Source.File do
   end
 
   def new(path) do
-    path |> Path.expand |> validate
+    path |> Path.expand() |> validate
   end
 
   def extension(%__MODULE__{path: path}) do
@@ -50,7 +50,8 @@ defimpl Otis.Library.Source, for: Otis.Source.File do
   end
 
   def pause(_file, _id, _stream) do
-    :ok # no-op
+    # no-op
+    :ok
   end
 
   def close(_file, _id, stream) do
@@ -58,7 +59,7 @@ defimpl Otis.Library.Source, for: Otis.Source.File do
   end
 
   def transcoder_args(%File{path: path}) do
-    ["-f", path |> Path.extname |> Otis.Library.strip_leading_dot]
+    ["-f", path |> Path.extname() |> Otis.Library.strip_leading_dot()]
   end
 
   def metadata(_file) do

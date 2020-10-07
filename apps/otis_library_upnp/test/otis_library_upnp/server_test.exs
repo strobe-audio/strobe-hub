@@ -30,17 +30,21 @@ defmodule Otis.Library.UPNP.ServerTest do
       </root>
     """
 
-    assert Server.parse(doc, "uuid:4d696e69-444c-164e-9d41-001c42fc0db6", "http://192.168.1.99:8347/sdfoij/") == %Server{
-      id: "uuid:4d696e69-444c-164e-9d41-001c42fc0db6",
-      name: "some server",
-      location: "http://192.168.1.99:8347/sdfoij/",
-      directory: %Service{
-        type: "urn:schemas-upnp-org:service:ContentDirectory:1",
-        id: "urn:upnp-org:serviceId:ContentDirectory",
-        control_url: "http://192.168.1.99:8347/ctl/ContentDir",
-        event_sub_url: "http://192.168.1.99:8347/evt/ContentDir",
-        scpd_url: "http://192.168.1.99:8347/ContentDir.xml",
-      },
-    }
+    assert Server.parse(
+             doc,
+             "uuid:4d696e69-444c-164e-9d41-001c42fc0db6",
+             "http://192.168.1.99:8347/sdfoij/"
+           ) == %Server{
+             id: "uuid:4d696e69-444c-164e-9d41-001c42fc0db6",
+             name: "some server",
+             location: "http://192.168.1.99:8347/sdfoij/",
+             directory: %Service{
+               type: "urn:schemas-upnp-org:service:ContentDirectory:1",
+               id: "urn:upnp-org:serviceId:ContentDirectory",
+               control_url: "http://192.168.1.99:8347/ctl/ContentDir",
+               event_sub_url: "http://192.168.1.99:8347/evt/ContentDir",
+               scpd_url: "http://192.168.1.99:8347/ContentDir.xml"
+             }
+           }
   end
 end

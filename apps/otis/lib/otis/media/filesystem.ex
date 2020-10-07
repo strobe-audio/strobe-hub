@@ -1,20 +1,21 @@
 defmodule Otis.Media.Filesystem do
   defmacro __using__(opts) do
     quote location: :keep do
-      {root, at} = case unquote(opts) do
-        path when is_binary(path) ->
-          path
-        [root: root, at: at] ->
-          {root, at}
-        [app: app, mod: mod] ->
-          options = Application.get_env(app, mod)
-          {Keyword.get(options, :root, "_state/fs"),
-           Keyword.get(options, :at, "/fs")
-          }
-      end
+      {root, at} =
+        case unquote(opts) do
+          path when is_binary(path) ->
+            path
+
+          [root: root, at: at] ->
+            {root, at}
+
+          [app: app, mod: mod] ->
+            options = Application.get_env(app, mod)
+            {Keyword.get(options, :root, "_state/fs"), Keyword.get(options, :at, "/fs")}
+        end
 
       @root Path.expand(root)
-      @at   at
+      @at at
 
       import Path, only: [join: 1]
 
@@ -40,9 +41,10 @@ defmodule Otis.Media.Filesystem do
       end
 
       def location(ns, filename, opts \\ [optimize: false])
+
       def location(ns, filename, opts) do
         path = path!(ns, filename, opts)
-        url  = url(ns, filename, opts)
+        url = url(ns, filename, opts)
         {:ok, path, url}
       end
 
@@ -55,6 +57,7 @@ defmodule Otis.Media.Filesystem do
       end
 
       def url(ns, filename, opts \\ [optimize: false])
+
       def url(ns, filename, opts) do
         optimized_path(@at, ns, filename, opts)
       end
@@ -64,9 +67,11 @@ defmodule Otis.Media.Filesystem do
       end
 
       defp optimize(filename, optimize: true), do: optimize(filename, optimize: 1)
-      defp optimize(filename, optimize: n) when is_integer(n) and (n > 0) do
+
+      defp optimize(filename, optimize: n) when is_integer(n) and n > 0 do
         _optimize(filename, n, [])
       end
+
       defp optimize(_filename, _opts) do
         []
       end
@@ -74,7 +79,8 @@ defmodule Otis.Media.Filesystem do
       defp _optimize(_filename, 0, acc) do
         Enum.reverse(acc)
       end
-      defp _optimize(<< c::binary-size(1), filename :: binary>>, levels, acc) do
+
+      defp _optimize(<<c::binary-size(1), filename::binary>>, levels, acc) do
         _optimize(filename, levels - 1, [c | acc])
       end
 
@@ -89,15 +95,14 @@ defmodule Otis.Media.Filesystem do
       end
 
       defp mkpath(path) do
-        :ok = path |> Path.dirname |> File.mkdir_p
+        :ok = path |> Path.dirname() |> File.mkdir_p()
         path
       end
 
       defp mkdir(dir) do
-        :ok = dir |> File.mkdir_p
+        :ok = dir |> File.mkdir_p()
         dir
       end
     end
   end
 end
-

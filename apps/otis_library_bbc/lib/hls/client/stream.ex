@@ -18,7 +18,7 @@ defmodule HLS.Client.Stream do
   end
 
   def handle_call(:stream, _from, {stream, id, opts} = state) do
-    {:ok, pid} =  HLS.Client.start_link(stream, id, opts)
+    {:ok, pid} = HLS.Client.start_link(stream, id, opts)
     stream = GenStage.stream([pid])
     {:reply, {:ok, stream}, state}
   end

@@ -19,11 +19,16 @@ defmodule Otis.Library.Airplay.Shairport do
   def version_major, do: version() |> elem(0)
 
   def config_file do
-    Path.join([:code.priv_dir(:otis_library_airplay), "conf/shairport-v#{version_major()}.conf"]) |> Path.expand()
+    Path.join([:code.priv_dir(:otis_library_airplay), "conf/shairport-v#{version_major()}.conf"])
+    |> Path.expand()
   end
 
   def run(n) do
-    ExternalProcess.spawn(executable(), args(n), [in: "", out: {:send, self()}, err: {:send, self()}])
+    ExternalProcess.spawn(executable(), args(n),
+      in: "",
+      out: {:send, self()},
+      err: {:send, self()}
+    )
   end
 
   def stop(process) do
@@ -41,17 +46,14 @@ defmodule Otis.Library.Airplay.Shairport do
   end
 
   def args(n) do
-    ["--configfile=#{config_file()}",
-     "--name=#{name(n)}",
-     "--output=stdout",
-     "--port=#{port(n)}",
-    ]
+    ["--configfile=#{config_file()}", "--name=#{name(n)}", "--output=stdout", "--port=#{port(n)}"]
   end
 
   def cmd(args) do
     case System.cmd(executable(), args) do
       {out, 0} ->
         {:ok, out}
+
       {error, _code} ->
         {:error, error}
     end
@@ -62,8 +64,8 @@ defmodule Otis.Library.Airplay.Shairport do
   defp parse_version({_status, version_output}) do
     version_output
     |> String.split("-")
-    |> List.first
+    |> List.first()
     |> String.split(".")
-    |> List.to_tuple
+    |> List.to_tuple()
   end
 end

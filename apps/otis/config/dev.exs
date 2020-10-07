@@ -1,7 +1,7 @@
 use Mix.Config
 
 root_dir = Path.expand("#{__DIR__}/../../..")
-state_dir = Path.join([root_dir, "_state", to_string(Mix.env)])
+state_dir = Path.join([root_dir, "_state", to_string(Mix.env())]) |> IO.inspect(label: :state_dir)
 
 config :logger, :debug_log,
   path: "log/otis.debug.log",
@@ -17,12 +17,11 @@ config :logger, :console,
 config :otis, :environment, :dev
 
 config :otis, Otis.State.Repo,
-  adapter: Sqlite.Ecto,
+  adapter: Sqlite.Ecto2,
   database: Path.join([state_dir, "otis.dev.sqlite3"]),
   pragma: []
 
-config :otis, Otis.SNTP,
-  port: 5045
+config :otis, Otis.SNTP, port: 5045
 
 config :otis, Otis.Receivers,
   data_port: 5540,
@@ -31,4 +30,3 @@ config :otis, Otis.Receivers,
 config :otis, Otis.Media,
   root: Path.join([state_dir, "fs"]),
   at: "/fs"
-

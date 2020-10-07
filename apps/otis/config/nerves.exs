@@ -14,12 +14,11 @@ config :logger, :console,
 config :otis, :environment, :prod
 
 config :otis, Otis.State.Repo,
-  adapter: Sqlite.Ecto,
+  adapter: Sqlite.Ecto2,
   database: "/state/db/current/otis.sqlite",
   pragma: [temp_store: 2]
 
-config :otis, Otis.SNTP,
-  port: 5145
+config :otis, Otis.SNTP, port: 5145
 
 config :otis, Otis.Receivers,
   data_port: 5640,
@@ -29,7 +28,6 @@ config :otis, Otis.Media,
   root: "/state/fs/current",
   at: "/fs"
 
-config :otis, Otis.State.Persistence, [
+config :otis, Otis.State.Persistence,
   # save receiver volumes every this ms...
-  volume_save_period: 1_000,
-]
+  volume_save_period: 1_000

@@ -3,6 +3,7 @@ defmodule Peel.Scanner do
 
   def start(path) do
     collection = collection_from_path(path)
+
     path
     |> stream
     |> Enum.each(&scan(collection, &1))
@@ -11,8 +12,8 @@ defmodule Peel.Scanner do
 
   def stream(path) do
     path
-    |> List.wrap
-    |> Peel.DirWalker.stream
+    |> List.wrap()
+    |> Peel.DirWalker.stream()
     |> Stream.filter(&Peel.Importer.is_audio?/1)
   end
 
@@ -29,6 +30,7 @@ defmodule Peel.Scanner do
     case Peel.Collection.from_path(path) do
       {:ok, collection, _} ->
         collection
+
       _err ->
         name = Path.basename(path)
         root = Path.dirname(path)

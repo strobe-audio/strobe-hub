@@ -9,7 +9,7 @@ defmodule Strobe.Events.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(Strobe.Events.Producer, []),
+      worker(Strobe.Events.Producer, [])
     ]
 
     opts = [strategy: :one_for_one, name: Strobe.Events.Supervisor]

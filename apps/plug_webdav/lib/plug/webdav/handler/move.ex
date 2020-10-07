@@ -9,12 +9,15 @@ defmodule Plug.WebDAV.Handler.Move do
   defp move(conn, _src, false, _dst, _opts) do
     {:error, 404, "Not Found", conn}
   end
+
   defp move(conn, _src, true, {:error, reason}, _opts) do
     {:error, 409, reason, conn}
   end
+
   defp move(conn, src, true, {:ok, rel_dst}, {root, _} = opts) do
     # TODO: protect against root traversal in dest
-    dst = [root, rel_dst] |> Path.join |> Path.expand
+    dst = [root, rel_dst] |> Path.join() |> Path.expand()
+
     conn
     |> assign(:destination, rel_dst)
     |> do_move(src, dst, opts)
@@ -23,6 +26,7 @@ defmodule Plug.WebDAV.Handler.Move do
   defp do_move(conn, src, src, _opts) do
     {:error, 403, "Forbidden", conn}
   end
+
   defp do_move(conn, src, dst, {root, _} = _opts) do
     case validate_tree(dst, root) do
       {:ok, _root, _child} ->
@@ -32,12 +36,15 @@ defmodule Plug.WebDAV.Handler.Move do
           else
             201
           end
+
         case File.rename(src, dst) do
           :ok ->
             {:ok, status, conn}
+
           {:error, err} ->
             {:error, 500, to_string(err), conn}
         end
+
       {:error, _root} ->
         {:error, 409, "Conflict", conn}
     end
@@ -51,6 +58,7 @@ defmodule Plug.WebDAV.Handler.Move do
     case get_req_header(conn, "destination") do
       [destination | _] ->
         parse_destination(conn, destination)
+
       [] ->
         {:error, 400, "Missing destination header", conn}
     end
@@ -66,7 +74,7 @@ defmodule Plug.WebDAV.Handler.Move do
     dst = URI.merge(src, uri)
 
     if src.host == dst.host && src.port == dst.port do
-      scope = ["/" | conn.script_name] |> Path.join
+      scope = ["/" | conn.script_name] |> Path.join()
       path = URI.decode(dst.path) |> Path.relative_to(scope)
       {:ok, "/#{path}"}
     else
@@ -79,7 +87,7 @@ defmodule Plug.WebDAV.Handler.Move do
       authority: "#{conn.host}:#{conn.port}",
       scheme: conn.scheme,
       host: conn.host,
-      path: ["/"|conn.path_info] |> Path.join,
+      path: ["/" | conn.path_info] |> Path.join(),
       port: conn.port
     }
   end

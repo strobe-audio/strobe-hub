@@ -19,16 +19,16 @@ config :elvis, Elvis.Endpoint,
   cache_static_manifest: "priv/static/manifest.json"
 
 papertrail_host = System.get_env("PAPERTRAIL_SYSTEM_HOST")
-papertrail_system_name = System.get_env |> Map.get("PAPERTRAIL_SYSTEM_NAME", "unknown")
+papertrail_system_name = System.get_env() |> Map.get("PAPERTRAIL_SYSTEM_NAME", "unknown")
 
-IO.puts "===> Logging to papertrail: #{papertrail_host}/#{papertrail_system_name}"
+IO.puts("===> Logging to papertrail: #{papertrail_host}/#{papertrail_system_name}")
 
 config :logger,
   backends: [:console, LoggerPapertrailBackend.Logger],
   level: :info
 
 config :logger, :logger_papertrail_backend,
-  host:  papertrail_host,
+  host: papertrail_host,
   system_name: papertrail_system_name,
   level: :debug,
   format: "$date $time $metadata [$level]$levelpad $message\n",

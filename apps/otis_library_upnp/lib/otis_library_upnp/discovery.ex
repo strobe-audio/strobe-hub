@@ -7,12 +7,13 @@ defmodule Otis.Library.UPNP.Discovery do
   @name Otis.Library.UPNP.Discovery
 
   defmodule S do
-    defstruct [devices: %{}]
+    defstruct devices: %{}
   end
 
   def all do
     GenServer.call(@name, :list)
   end
+
   def all! do
     {:ok, devices} = GenServer.call(@name, :list)
     devices
@@ -57,17 +58,22 @@ defmodule Otis.Library.UPNP.Discovery do
 
   defp update_devices(results, %S{devices: devices} = state) do
     updated_devices =
-      Enum.reduce(results, %{}, fn({uuid, server}, d) ->
+      Enum.reduce(results, %{}, fn {uuid, server}, d ->
         device = Map.get(devices, uuid) || new_server(uuid, server)
         Map.put(d, uuid, device)
       end)
+
     %S{state | devices: updated_devices}
   end
 
   defp new_server(uuid, %{location: location}) do
     response = http(:get, location)
     spec = response.body |> Server.parse(uuid, location)
-    Logger.info "New UPnP server #{uuid} #{spec.name} [#{spec.location}] #{inspect spec.directory}"
+
+    Logger.info(
+      "New UPnP server #{uuid} #{spec.name} [#{spec.location}] #{inspect(spec.directory)}"
+    )
+
     spec
   end
 

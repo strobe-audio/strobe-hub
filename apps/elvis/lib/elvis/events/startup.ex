@@ -1,5 +1,5 @@
 defmodule Elvis.Events.Startup do
-  use     GenStage
+  use GenStage
   require Logger
 
   def start_link do
@@ -7,13 +7,14 @@ defmodule Elvis.Events.Startup do
   end
 
   def init(_opts) do
-    {:consumer, [], subscribe_to: Strobe.Events.producer}
+    {:consumer, [], subscribe_to: Strobe.Events.producer()}
   end
 
   def handle_events([], _from, state) do
     {:noreply, [], state}
   end
-  def handle_events([event|events], from, state) do
+
+  def handle_events([event | events], from, state) do
     {:ok, state} = handle_event(event, state)
     handle_events(events, from, state)
   end

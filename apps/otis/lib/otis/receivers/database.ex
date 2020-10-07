@@ -7,7 +7,7 @@ defmodule Otis.Receivers.Database do
   an explanation of the pattern.
   """
 
-  use     GenServer
+  use GenServer
   require Logger
 
   @name Otis.Receivers.Database
@@ -21,12 +21,14 @@ defmodule Otis.Receivers.Database do
   end
 
   def init([]) do
-    table = :ets.new(:receivers_registry, [
-      :named_table,
-      :set,
-      {:read_concurrency, true},
-      {:heir, self(), {}}
-    ])
+    table =
+      :ets.new(:receivers_registry, [
+        :named_table,
+        :set,
+        {:read_concurrency, true},
+        {:heir, self(), {}}
+      ])
+
     Process.flag(:trap_exit, true)
     {:ok, table}
   end
@@ -38,7 +40,7 @@ defmodule Otis.Receivers.Database do
   end
 
   def handle_info({:EXIT, _from, _reason}, table) do
-    Logger.info "Receivers process has crashed..."
+    Logger.info("Receivers process has crashed...")
     {:noreply, table}
   end
 

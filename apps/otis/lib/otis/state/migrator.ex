@@ -8,11 +8,11 @@ defmodule Otis.State.Migrator do
   end
 
   def init(_opts) do
-    Ecto.Migrator.run(Otis.State.Repo, migrations_path(), :up, [all: true, log: :debug])
+    Ecto.Migrator.run(Otis.State.Repo, migrations_path(), :up, all: true, log: :debug)
     :ignore
   end
 
   defp migrations_path do
-    [:code.priv_dir(:otis), "repo/migrations"] |> Path.join
+    [:code.priv_dir(:otis), "repo/migrations"] |> Path.join()
   end
 end

@@ -26,7 +26,7 @@ defmodule Strobe.Events do
   """
   @spec producer :: [pid]
   def producer do
-    name() |> GenServer.whereis |> List.wrap
+    name() |> GenServer.whereis() |> List.wrap()
   end
 
   @doc """
@@ -34,8 +34,9 @@ defmodule Strobe.Events do
   """
   @spec notify(atom, atom, list) :: :ok
   def notify(category, event, args \\ [])
+
   def notify(category, event, args)
-  when is_atom(category) and is_atom(event) and is_list(args) do
+      when is_atom(category) and is_atom(event) and is_list(args) do
     GenStage.cast(name(), {:notify, {category, event, args}})
   end
 
@@ -47,8 +48,9 @@ defmodule Strobe.Events do
   with test assertions.
   """
   defmacro complete(event) do
-    if Mix.env == :test do
+    if Mix.env() == :test do
       quote do
+        IO.inspect(complete: {unquote(event), __MODULE__})
         GenStage.cast(unquote(name()), {:notify, {:__complete__, unquote(event), __MODULE__}})
       end
     end

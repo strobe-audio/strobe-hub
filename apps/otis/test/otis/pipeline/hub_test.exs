@@ -16,12 +16,14 @@ defmodule Test.Otis.Pipeline.Hub do
   setup do
     Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
     channel = @channel_id |> Otis.State.Channel.create!("Test Channel")
+
     config = %Otis.Pipeline.Config{
       packet_size: 64,
       packet_duration_ms: 20,
       buffer_packets: 10,
-      transcoder: Test.PassthroughTranscoder,
+      transcoder: Test.PassthroughTranscoder
     }
+
     {:ok, config: config, channel: channel}
   end
 
@@ -39,11 +41,12 @@ defmodule Test.Otis.Pipeline.Hub do
     r1 = CycleSource.rendition!(@channel_id, [<<"1">>], 1024)
     renditions = [r1]
     Playlist.replace(pl, renditions)
-    Enum.each 0..15, fn(_) ->
+
+    Enum.each(0..15, fn _ ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("1", 64)
       assert p.rendition_id == r1.id
-    end
+    end)
   end
 
   test "streaming", context do
@@ -54,36 +57,41 @@ defmodule Test.Otis.Pipeline.Hub do
     renditions = [r1, r2, r3]
     {:ok, pl} = Playlist.start_link(@channel_id)
     Playlist.replace(pl, renditions)
-    {:ok, _} = Playlist.list(pl) # make sure the playlist is synced
-
+    # make sure the playlist is synced
+    {:ok, _} = Playlist.list(pl)
 
     {:ok, hub} = Hub.start_link(pl, context.config)
-    Enum.each 0..15, fn(_) ->
+
+    Enum.each(0..15, fn _ ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("1", 64)
       assert p.rendition_id == r1.id
-    end
-    Enum.each 0..15, fn(_) ->
+    end)
+
+    Enum.each(0..15, fn _ ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("2", 64)
       assert p.rendition_id == r2.id
-    end
-    Enum.each 0..15, fn(_) ->
+    end)
+
+    Enum.each(0..15, fn _ ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("3", 64)
       assert p.rendition_id == r3.id
-    end
+    end)
+
     assert :done == Producer.next(hub)
     assert :done == Producer.next(hub)
 
     # Now make sure that the hub starts playing again if we add a source
     r4 = CycleSource.rendition!(@channel_id, [<<"4">>], 1024)
     Playlist.replace(pl, [r4])
-    Enum.each 0..15, fn(_) ->
+
+    Enum.each(0..15, fn _ ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("4", 64)
       assert p.rendition_id == r4.id
-    end
+    end)
 
     assert :done == Producer.next(hub)
 
@@ -91,16 +99,19 @@ defmodule Test.Otis.Pipeline.Hub do
     r5 = CycleSource.rendition!(@channel_id, [<<"5">>], 1024)
     r6 = CycleSource.rendition!(@channel_id, [<<"6">>], 1024)
     Playlist.replace(pl, [r5, r6])
-    Enum.each 0..15, fn(_) ->
+
+    Enum.each(0..15, fn _ ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("5", 64)
       assert p.rendition_id == r5.id
-    end
-    Enum.each 0..15, fn(_) ->
+    end)
+
+    Enum.each(0..15, fn _ ->
       {:ok, p} = Producer.next(hub)
       assert p.data == String.duplicate("6", 64)
       assert p.rendition_id == r6.id
-    end
+    end)
+
     assert :done == Producer.next(hub)
   end
 
@@ -112,7 +123,8 @@ defmodule Test.Otis.Pipeline.Hub do
     renditions = [r1, r2, r3]
     {:ok, pl} = Playlist.start_link(@channel_id)
     Playlist.replace(pl, renditions)
-    {:ok, _} = Playlist.list(pl) # make sure the playlist is synced
+    # make sure the playlist is synced
+    {:ok, _} = Playlist.list(pl)
 
     {:ok, hub} = Hub.start_link(pl, context.config)
     {:ok, p} = Producer.next(hub)
@@ -139,16 +151,19 @@ defmodule Test.Otis.Pipeline.Hub do
   end
 
   test "pausing/resuming file sources", context do
-    c1 = [d1, d2, _] = [
-      <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
-      <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
-      <<"a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436">>,
-    ]
+    c1 =
+      [d1, d2, _] = [
+        <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
+        <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
+        <<"a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436">>
+      ]
+
     r1 = CycleSource.rendition!(@channel_id, c1, 1024)
     renditions = [r1]
     {:ok, pl} = Playlist.start_link(@channel_id)
     Playlist.replace(pl, renditions)
-    {:ok, _} = Playlist.list(pl) # make sure the playlist is synced
+    # make sure the playlist is synced
+    {:ok, _} = Playlist.list(pl)
 
     {:ok, hub} = Hub.start_link(pl, context.config)
     {:ok, p} = Producer.next(hub)
@@ -163,17 +178,20 @@ defmodule Test.Otis.Pipeline.Hub do
   end
 
   test "pausing & resuming live sources", context do
-    c1 = [d1 | _] = [
-      <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
-      <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
-      <<"a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436">>,
-    ]
+    c1 =
+      [d1 | _] = [
+        <<"50ab93fdebd6c2c3da8fb2abd8e80e65738f1f3a9616d615f5249fe3cdf7c97f">>,
+        <<"b813a98e8f69a76420fe0e880b2aacfae50ac20c0f7e5a74b8c36d2544bc6f82">>,
+        <<"a854348945279178e8468312448caef2e49e3466a55a3bdce6844dfaf6400436">>
+      ]
+
     r1 = CycleSource.rendition!(@channel_id, c1, 1024, :live)
 
     renditions = [r1]
     {:ok, pl} = Playlist.start_link(@channel_id)
     Playlist.replace(pl, renditions)
-    {:ok, _} = Playlist.list(pl) # make sure the playlist is synced
+    # make sure the playlist is synced
+    {:ok, _} = Playlist.list(pl)
 
     {:ok, hub} = Hub.start_link(pl, context.config)
     {:ok, p} = Producer.next(hub)

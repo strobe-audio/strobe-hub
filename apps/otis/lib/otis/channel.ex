@@ -1,16 +1,14 @@
 defmodule Otis.Channel do
-  use     GenServer
+  use GenServer
   require Logger
 
   defmodule S do
     @moduledoc "The state struct for Channel processes"
-    defstruct [
-      id:          nil,
-      playlist:    nil,
-      state:       :pause,
-      broadcaster: nil,
-      volume:      1.0,
-    ]
+    defstruct id: nil,
+              playlist: nil,
+              state: :pause,
+              broadcaster: nil,
+              volume: 1.0
   end
 
   defstruct [:id, :pid]
@@ -23,6 +21,7 @@ defmodule Otis.Channel do
   def id(%__MODULE__{id: id}) do
     {:ok, id}
   end
+
   def id(channel) do
     GenServer.call(channel, :id)
   end
@@ -38,6 +37,7 @@ defmodule Otis.Channel do
   def play(%__MODULE__{pid: pid}, playing) do
     play(pid, playing)
   end
+
   def play(channel, playing) do
     GenServer.call(channel, {:play, playing})
   end
@@ -58,14 +58,17 @@ defmodule Otis.Channel do
   def volume(%__MODULE__{pid: pid}) do
     volume(pid)
   end
+
   def volume(channel) do
     GenServer.call(channel, :volume)
   end
 
   def volume(channel, volume, opts \\ [])
+
   def volume(%__MODULE__{pid: pid}, volume, opts) do
     volume(pid, volume, opts)
   end
+
   def volume(channel, volume, opts) do
     GenServer.call(channel, {:volume, volume, opts})
   end
@@ -73,6 +76,7 @@ defmodule Otis.Channel do
   def playing?(%__MODULE__{pid: pid}) do
     playing?(pid)
   end
+
   def playing?(channel) do
     GenServer.call(channel, :playing)
   end
@@ -81,6 +85,7 @@ defmodule Otis.Channel do
   def skip(%__MODULE__{pid: pid}, source_id) do
     skip(pid, source_id)
   end
+
   def skip(channel, source_id) do
     GenServer.cast(channel, {:skip, source_id})
   end
@@ -88,6 +93,7 @@ defmodule Otis.Channel do
   def clear(%__MODULE__{pid: pid}) do
     clear(pid)
   end
+
   def clear(channel) do
     GenServer.cast(channel, :clear)
   end
@@ -95,6 +101,7 @@ defmodule Otis.Channel do
   def append(%__MODULE__{pid: pid}, sources) do
     append(pid, sources)
   end
+
   def append(channel, sources) do
     GenServer.call(channel, {:append_sources, sources})
   end
@@ -102,6 +109,7 @@ defmodule Otis.Channel do
   def remove(%__MODULE__{pid: pid}, rendition_id) do
     remove(pid, rendition_id)
   end
+
   def remove(channel, rendition_id) do
     GenServer.call(channel, {:remove_rendition, rendition_id})
   end
@@ -113,18 +121,19 @@ defmodule Otis.Channel do
   alias Otis.Pipeline.{Playlist, Hub, Broadcaster}
 
   def init([channel, config]) do
-    Logger.info "#{__MODULE__} starting... #{ channel.id }"
+    Logger.info("#{__MODULE__} starting... #{channel.id}")
     {:ok, playlist} = Playlist.start_link(channel.id)
     {:ok, hub} = Hub.start_link(playlist, config)
     {:ok, clock} = Otis.Pipeline.Config.start_clock(config)
     {:ok, broadcaster} = Broadcaster.start_link(channel.id, self(), hub, clock, config)
-    {:ok, %S{
-        id: channel.id,
-        playlist: playlist,
-        broadcaster: broadcaster,
-        volume: Map.get(channel, :volume, 1.0)
-      }
-    }
+
+    {:ok,
+     %S{
+       id: channel.id,
+       playlist: playlist,
+       broadcaster: broadcaster,
+       volume: Map.get(channel, :volume, 1.0)
+     }}
   end
 
   def handle_call(:id, _from, %S{id: id} = state) do
@@ -135,6 +144,7 @@ defmodule Otis.Channel do
     state = state |> set_state(:pause)
     {:reply, {:ok, state.state}, state}
   end
+
   def handle_call({:play, true}, _from, state) do
     state = state |> set_state(:play)
     {:reply, {:ok, state.state}, state}
@@ -160,6 +170,7 @@ defmodule Otis.Channel do
   def handle_call(:volume, _from, %S{volume: volume} = state) do
     {:reply, {:ok, volume}, state}
   end
+
   def handle_call({:volume, volume, opts}, _from, state) do
     volume = Otis.sanitize_volume(volume)
     Otis.Receivers.Channels.volume_multiplier(state.id, volume, opts)
@@ -196,6 +207,7 @@ defmodule Otis.Channel do
   def handle_info(:broadcaster_start, state) do
     {:noreply, state}
   end
+
   # Stop events come when the audio has actually finished as well as when we
   # send a stop event
   def handle_info(:broadcaster_stop, state) do
@@ -218,6 +230,7 @@ defmodule Otis.Channel do
   defp set_state(%S{state: status} = state, status) do
     state
   end
+
   defp set_state(channel, state) do
     %S{channel | state: state} |> change_state
   end
@@ -227,6 +240,7 @@ defmodule Otis.Channel do
     event!(state, :play_pause, [:play])
     state
   end
+
   defp change_state(%S{state: :pause} = state) do
     Broadcaster.pause(state.broadcaster)
     event!(state, :play_pause, [:pause])

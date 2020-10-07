@@ -8,8 +8,7 @@ defmodule Peel.CoverArt.EventHandler do
   @timeout 5_000
 
   def init(_opts) do
-    {:consumer, %{timer: nil},
-      subscribe_to: [{Peel.WebDAV.Modifications, selector: &selector/1}]}
+    {:consumer, %{timer: nil}, subscribe_to: [{Peel.WebDAV.Modifications, selector: &selector/1}]}
   end
 
   defp selector({:complete, {:create, _args}}), do: true
@@ -31,6 +30,7 @@ defmodule Peel.CoverArt.EventHandler do
   defp reset(%{timer: nil} = state) do
     state
   end
+
   defp reset(%{timer: timer} = state) do
     Process.cancel_timer(timer)
     %{state | timer: nil}

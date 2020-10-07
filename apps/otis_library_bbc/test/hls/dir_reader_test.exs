@@ -10,10 +10,11 @@ defmodule HLS.DirReaderTest do
   def fingerprint({:ok, data, _headers}) do
     fingerprint(data)
   end
+
   def fingerprint(data) do
     :crypto.hash_init(:md5)
     |> :crypto.hash_update(data)
-    |> :crypto.hash_final
+    |> :crypto.hash_final()
     |> Base.encode16(case: :lower)
   end
 

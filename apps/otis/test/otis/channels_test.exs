@@ -1,5 +1,5 @@
 defmodule ChannelsTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: false
 
   alias Otis.State.Channel
   alias Otis.Test.TestSource
@@ -7,21 +7,23 @@ defmodule ChannelsTest do
   @moduletag :channels
 
   def channel_ids() do
-    Enum.map(Otis.Channels.list!(), fn(pid) ->
+    Enum.map(Otis.Channels.list!(), fn pid ->
       {:ok, id} = Otis.Channel.id(pid)
       id
     end)
   end
 
   def shutdown do
-    Otis.Channels.ids() |> Enum.each(&Otis.Channels.destroy!/1)
+    Otis.Channels.ids() |> Enum.each(&Otis.Channels.stop/1)
+    # :ok = Otis.State.Repo.Writer.__sync__()
   end
 
   setup do
-    Ecto.Adapters.SQL.restart_test_transaction(Otis.State.Repo)
+    :ok = Ecto.Adapters.SQL.Sandbox.checkout(Otis.State.Repo)
+    Ecto.Adapters.SQL.Sandbox.mode(Otis.State.Repo, {:shared, self()})
     MessagingHandler.attach()
     shutdown()
-    on_exit &shutdown/0
+    on_exit(&shutdown/0)
     :ok
   end
 
@@ -83,8 +85,11 @@ defmodule ChannelsTest do
   test "playing status" do
     id = Otis.uuid()
     {:ok, channel} = Otis.Channels.create(id, "Something")
-    assert_receive {:__complete__, {:channel, :add, [^id, _]}, Otis.State.Persistence.Channels}
-    Otis.Channel.append(channel, [TestSource.new])
+
+    assert_receive {:__complete__, {:channel, :add, [^id, _]}, Otis.State.Persistence.Channels},
+                   1_500
+
+    Otis.Channel.append(channel, [TestSource.new()])
     assert_receive {:__complete__, {:playlist, :append, [_, _]}, Otis.State.Persistence.Playlist}
     {:ok, :play} = Otis.Channel.play_pause(channel)
     assert Otis.Channels.playing?(id)

@@ -13,10 +13,12 @@ defmodule Plug.WebDAV.Handler.Put do
     case File.open(path, [:binary, :write, :raw]) do
       {:ok, file} ->
         write(conn, file, read(conn), path, opts)
+
       {:error, reason} ->
         {:error, 500, to_string(reason), conn}
     end
   end
+
   defp put(false, conn, _path, _opts) do
     {:error, 409, "Conflict", conn}
   end
@@ -26,28 +28,32 @@ defmodule Plug.WebDAV.Handler.Put do
     File.close(file)
     {:ok, "", conn}
   end
+
   defp write(_conn, file, {:more, data, conn}, path, opts) do
     case :file.write(file, data) do
       :ok ->
         write(conn, file, read(conn), path, opts)
+
       {:error, :enospc} ->
         File.close(file)
         {:error, 507, "Insufficient Storage", conn}
+
       {:error, reason} ->
         File.close(file)
         {:error, 500, to_string(reason), conn}
     end
   end
+
   defp write(conn, file, {:error, reason}, _path, _opts) do
     File.close(file)
     {:error, 500, to_string(reason), conn}
   end
 
   defp valid?(path) do
-    path |> Path.dirname |> File.dir?
+    path |> Path.dirname() |> File.dir?()
   end
 
   defp read(conn) do
-    read_body(conn, [length: 1_000_000, read_length: 64_000])
+    read_body(conn, length: 1_000_000, read_length: 64_000)
   end
 end

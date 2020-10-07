@@ -1,6 +1,6 @@
 defmodule Peel.DirWalker do
   require Logger
-  use     GenServer
+  use GenServer
 
   def start_link(path, opts \\ %{})
 
@@ -11,6 +11,10 @@ defmodule Peel.DirWalker do
 
   def start_link(path, opts) when is_binary(path) do
     start_link([path], opts)
+  end
+
+  def init(state) do
+    {:ok, state}
   end
 
   @doc """
@@ -54,17 +58,18 @@ defmodule Peel.DirWalker do
   """
 
   def stream(path_list) do
-    Stream.resource(fn ->
+    Stream.resource(
+      fn ->
         {:ok, dirw} = __MODULE__.start_link(path_list)
         dirw
-      end ,
-      fn(dirw) ->
+      end,
+      fn dirw ->
         case next(dirw, 1) do
           data when is_list(data) -> {data, dirw}
           _ -> {:halt, dirw}
         end
       end,
-      fn(dirw) -> stop(dirw) end
+      fn dirw -> stop(dirw) end
     )
   end
 
@@ -82,57 +87,60 @@ defmodule Peel.DirWalker do
   end
 
   def handle_call(:stop, from, state) do
-      GenServer.reply(from, :ok)
-      {:stop, :normal, state}
+    GenServer.reply(from, :ok)
+    {:stop, :normal, state}
   end
 
   # If the first element is a list, then it represents a
   # nested directory listing. We keep it as a list rather
   # than flatten it in order to keep performance up.
 
-  defp first_n([[] | rest], n, mappers, result)  do
+  defp first_n([[] | rest], n, mappers, result) do
     first_n(rest, n, mappers, result)
   end
 
-  defp first_n([[first] | rest], n, mappers, result)  do
+  defp first_n([[first] | rest], n, mappers, result) do
     first_n([first | rest], n, mappers, result)
   end
 
-  defp first_n([[first | nested] | rest], n, mappers, result)  do
+  defp first_n([[first | nested] | rest], n, mappers, result) do
     first_n([first | [nested | rest]], n, mappers, result)
   end
 
   # Otherwise just a path as the first entry
 
   defp first_n(path_list, 0, _mappers, result), do: {result, path_list}
-  defp first_n([], _n, _mappers, result),       do: {result, []}
+  defp first_n([], _n, _mappers, result), do: {result, []}
 
   defp first_n([path | rest], n, mappers, result) do
     stat = File.stat!(path)
+
     case stat.type do
-    :directory ->
-      first_n([files_in(path) | rest],
-              n,
-              mappers,
-              mappers.include_dir_names.(mappers.include_stat.(path, stat), result))
+      :directory ->
+        first_n(
+          [files_in(path) | rest],
+          n,
+          mappers,
+          mappers.include_dir_names.(mappers.include_stat.(path, stat), result)
+        )
 
-    :regular ->
+      :regular ->
         if mappers.matching.(path) do
-        first_n(rest, n - 1, mappers, [mappers.include_stat.(path, stat) | result])
-      else
-        first_n(rest, n, mappers, result)
-      end
+          first_n(rest, n - 1, mappers, [mappers.include_stat.(path, stat) | result])
+        else
+          first_n(rest, n, mappers, result)
+        end
 
-    true ->
-      first_n(rest, n, mappers, result)
+      true ->
+        first_n(rest, n, mappers, result)
     end
   end
 
   defp files_in(path) do
     path
-    |> :file.list_dir
+    |> :file.list_dir()
     |> ignore_error(path)
-    |> Enum.map(fn(rel) -> Path.join(path, rel) end)
+    |> Enum.map(fn rel -> Path.join(path, rel) end)
   end
 
   def ignore_error({:error, type}, path) do
@@ -145,21 +153,26 @@ defmodule Peel.DirWalker do
   defp setup_mappers(opts) do
     %{
       include_stat:
-        one_of(opts[:include_stat],
-               fn (path, _stat) -> path end,
-               fn (path, stat)  -> {path, stat} end),
-
+        one_of(
+          opts[:include_stat],
+          fn path, _stat -> path end,
+          fn path, stat -> {path, stat} end
+        ),
       include_dir_names:
-        one_of(opts[:include_dir_names],
-               fn (_path, result) -> result end,
-               fn (path, result)  -> [path | result] end),
+        one_of(
+          opts[:include_dir_names],
+          fn _path, result -> result end,
+          fn path, result -> [path | result] end
+        ),
       matching:
-        one_of(!!opts[:matching],
-             fn _path -> true end,
-             fn path  -> String.match?(path, opts[:matching]) end),
+        one_of(
+          !!opts[:matching],
+          fn _path -> true end,
+          fn path -> String.match?(path, opts[:matching]) end
+        )
     }
   end
 
   defp one_of(bool, _if_false, if_true) when bool, do: if_true
-  defp one_of(_bool, if_false, _if_true),          do: if_false
+  defp one_of(_bool, if_false, _if_true), do: if_false
 end

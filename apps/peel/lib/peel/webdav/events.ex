@@ -3,6 +3,7 @@ defmodule Peel.WebDAV.Events do
     case Keyword.pop(opts, :root) do
       {nil, _opts} ->
         raise ArgumentError, "WebDAV options must include a :root key"
+
       {root, opts} ->
         {Path.expand(root), opts}
     end
@@ -18,12 +19,12 @@ defmodule Peel.WebDAV.Events do
   end
 
   defp handle_request(conn, path_info, "PUT", ok, _opts)
-  when ok in [200, 201, 204] do
+       when ok in [200, 201, 204] do
     emit_event({:create, [conn.assigns[:type], path(path_info)]})
   end
 
   defp handle_request(conn, path_info, "MOVE", ok, _opts)
-  when ok in [201, 204] do
+       when ok in [201, 204] do
     emit_event({:move, [conn.assigns[:type], path(path_info), conn.assigns[:destination]]})
   end
 
@@ -35,9 +36,9 @@ defmodule Peel.WebDAV.Events do
   end
 
   defp emit_event(event) do
-    IO.inspect [__MODULE__, event]
-    event |> Peel.WebDAV.Modifications.notify
+    IO.inspect([__MODULE__, event])
+    event |> Peel.WebDAV.Modifications.notify()
   end
 
-  defp path(path_info), do: ["/" | path_info] |> Path.join
+  defp path(path_info), do: ["/" | path_info] |> Path.join()
 end

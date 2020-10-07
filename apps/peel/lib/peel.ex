@@ -1,5 +1,5 @@
 defmodule Peel do
-  use     Application
+  use Application
   require Logger
 
   @library_id "peel"
@@ -10,6 +10,7 @@ defmodule Peel do
     import Supervisor.Spec, warn: false
 
     webdav_conf = Application.get_env(:peel, Peel.Collection)
+
     children = [
       # Define workers and child supervisors to be supervised
       # worker(Peel.Worker, [arg1, arg2, arg3]),
@@ -25,7 +26,7 @@ defmodule Peel do
       worker(Peel.Modifications.Create.FileStatusCheck, [webdav_conf]),
       worker(Peel.Modifications.Create, [webdav_conf]),
       worker(MusicBrainz.Client, []),
-      worker(Peel.CoverArt.ITunes.Client, []),
+      worker(Peel.CoverArt.ITunes.Client, [])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
@@ -39,8 +40,9 @@ defmodule Peel do
   def scan([]) do
     Logger.info("Scan done...")
   end
-  def scan([path|paths]) do
-    Logger.info("Starting scan of #{ inspect path}")
+
+  def scan([path | paths]) do
+    Logger.info("Starting scan of #{inspect(path)}")
     Peel.Scanner.start(path)
     scan(paths)
   end

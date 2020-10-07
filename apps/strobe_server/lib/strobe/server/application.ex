@@ -6,7 +6,6 @@ defmodule Strobe.Server.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-
     # Define workers and child supervisors to be supervised
     children = [
       worker(Strobe.Server.Events, []),
@@ -15,7 +14,7 @@ defmodule Strobe.Server.Application do
       worker(Strobe.Server.Ntp, []),
       worker(Strobe.Server.Fs, [["/dev/sda1", "/state"]], restart: :transient),
       worker(Strobe.Server.Dbus, []),
-      worker(Strobe.Server.Avahi, ["eth0"]),
+      worker(Strobe.Server.Avahi, ["eth0"])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

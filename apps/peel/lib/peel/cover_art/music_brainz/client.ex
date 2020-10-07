@@ -1,8 +1,8 @@
 defmodule MusicBrainz.Client do
   use GenServer
 
-  @mb_uri URI.parse "http://musicbrainz.org"
-  @ca_uri URI.parse "http://coverartarchive.org"
+  @mb_uri URI.parse("http://musicbrainz.org")
+  @ca_uri URI.parse("http://coverartarchive.org")
 
   def start_link do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
@@ -18,11 +18,13 @@ defmodule MusicBrainz.Client do
   # Rate limited api calls, max 1 per second
   def handle_call({:get, uri}, _from, last_call) do
     time = now() - last_call
-    if time < @period  do
-      IO.inspect [:sleeping, @period - time]
+
+    if time < @period do
+      IO.inspect([:sleeping, @period - time])
       Process.sleep(@period - time)
     end
-    resp = HTTPoison.get(uri, [], [follow_redirect: true])
+
+    resp = HTTPoison.get(uri, [], follow_redirect: true)
     {:reply, resp, now()}
   end
 
@@ -36,7 +38,7 @@ defmodule MusicBrainz.Client do
   end
 
   def release_cover_art(%MusicBrainz.Release{id: id}) do
-    uri = URI.merge(@ca_uri, "/release/#{id}") |> URI.to_string |> IO.inspect
+    uri = URI.merge(@ca_uri, "/release/#{id}") |> URI.to_string() |> IO.inspect()
     get!(uri) |> parse_cover_art_lookup
   end
 
@@ -48,9 +50,11 @@ defmodule MusicBrainz.Client do
     response = Poison.decode!(body)
     response["images"]
   end
+
   def parse_cover_art_lookup({:ok, %HTTPoison.Response{}}) do
     []
   end
+
   def parse_cover_art_lookup({:error, _}) do
     []
   end
@@ -58,6 +62,7 @@ defmodule MusicBrainz.Client do
   def parse_release_search({:ok, %HTTPoison.Response{body: body}}) do
     Floki.find(body, "metadata > release-list > release") |> build_releases
   end
+
   def parse_release_search({:error, _reason}) do
     []
   end
@@ -65,9 +70,11 @@ defmodule MusicBrainz.Client do
   def build_releases(result) do
     build_releases(result, [])
   end
+
   def build_releases([], releases) do
     Enum.reverse(releases)
   end
+
   def build_releases([{"release", attrs, _children} | rest], releases) do
     id = get_attr(attrs, "id")
     release = %MusicBrainz.Release{id: id}
@@ -81,7 +88,7 @@ defmodule MusicBrainz.Client do
 
   """
   def get_attr(attrs, name) do
-    attrs |> Enum.find(fn({k, _v}) -> k == name end) |> elem(1)
+    attrs |> Enum.find(fn {k, _v} -> k == name end) |> elem(1)
   end
 
   @doc ~S"""
@@ -94,7 +101,7 @@ defmodule MusicBrainz.Client do
   """
   def search_url(resource, query \\ []) do
     params = make_query(query)
-    URI.merge(@mb_uri, "/ws/2/#{resource}#{params}") |> URI.to_string |> IO.inspect
+    URI.merge(@mb_uri, "/ws/2/#{resource}#{params}") |> URI.to_string() |> IO.inspect()
   end
 
   @doc ~S"""
@@ -112,16 +119,20 @@ defmodule MusicBrainz.Client do
   def make_query do
     make_query([])
   end
+
   def make_query([]) do
     ""
   end
+
   def make_query(query) do
     make_query(query, [])
   end
+
   def make_query([], query) do
-    params = query |> Enum.reverse |> Enum.join(" AND ") |> URI.encode
+    params = query |> Enum.reverse() |> Enum.join(" AND ") |> URI.encode()
     "?query=#{params}"
   end
+
   def make_query([{field, value} | rest], query) do
     make_query(rest, [make_parameter(field, value) | query])
   end
@@ -130,6 +141,7 @@ defmodule MusicBrainz.Client do
     matches = value |> Enum.map(&make_parameter(field, &1)) |> Enum.join(" OR ")
     "(#{matches})"
   end
+
   def make_parameter(field, value) do
     "#{field}:#{value}"
   end

@@ -6,17 +6,17 @@ defmodule HLS.Stream do
   alias HLS.Stream
   alias M3.Playlist
 
-  defstruct [
-    playlist: nil,
-    reader: nil,
-  ]
+  defstruct playlist: nil,
+            reader: nil
 
   def new(playlist, reader \\ %HLS.Reader.Http{})
+
   def new(playlist, reader) do
     %Stream{playlist: playlist, reader: reader}
   end
 
   def resolve(stream, opts \\ [bandwidth: :highest])
+
   def resolve(%Stream{playlist: playlist, reader: reader} = stream, [bandwidth: bandwidth] = opts) do
     case playlist do
       %M3.Playlist.Live{} ->
@@ -31,11 +31,11 @@ defmodule HLS.Stream do
   end
 
   def highest(%Stream{playlist: playlist}) do
-    playlist |> Playlist.sort |> List.last
+    playlist |> Playlist.sort() |> List.last()
   end
 
   def lowest(%Stream{playlist: playlist}) do
-    playlist |> Playlist.sort |> List.first
+    playlist |> Playlist.sort() |> List.first()
   end
 
   @doc """
@@ -44,9 +44,10 @@ defmodule HLS.Stream do
   """
   def upgrade(%Stream{playlist: playlist} = stream, %M3.Variant{bandwidth: bandwidth}) do
     high = highest(stream)
+
     playlist
-    |> Playlist.sort
-    |> Enum.find(high, fn(%M3.Variant{bandwidth: b}) ->
+    |> Playlist.sort()
+    |> Enum.find(high, fn %M3.Variant{bandwidth: b} ->
       b > bandwidth
     end)
   end
@@ -57,10 +58,11 @@ defmodule HLS.Stream do
   """
   def downgrade(%Stream{playlist: playlist} = stream, %M3.Variant{bandwidth: bandwidth}) do
     low = lowest(stream)
+
     playlist
-    |> Playlist.sort
-    |> Enum.reverse
-    |> Enum.find(low, fn(%M3.Variant{bandwidth: b}) ->
+    |> Playlist.sort()
+    |> Enum.reverse()
+    |> Enum.find(low, fn %M3.Variant{bandwidth: b} ->
       b < bandwidth
     end)
   end

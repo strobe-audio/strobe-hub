@@ -1,5 +1,5 @@
 defmodule Otis.Pipeline.Clock do
-  use     GenServer
+  use GenServer
   require Monotonic
 
   defmodule S do
@@ -15,9 +15,11 @@ defmodule Otis.Pipeline.Clock do
   def start(clock, broadcaster, interval_ms) do
     GenServer.call(clock, {:start, broadcaster, interval_ms})
   end
+
   def stop(clock) do
     GenServer.call(clock, :stop)
   end
+
   def time(clock) do
     GenServer.call(clock, :time)
   end
@@ -27,15 +29,17 @@ defmodule Otis.Pipeline.Clock do
   end
 
   def init([]) do
-    {:ok, %S{
-      d: 0,
-    }}
+    {:ok,
+     %S{
+       d: 0
+     }}
   end
 
   def handle_call({:start, broadcaster, interval_ms}, _from, state) do
     state = send_after({:tick, interval_ms}, interval_ms, state)
     {:reply, {:ok, now()}, %S{state | broadcaster: broadcaster, t: now()}}
   end
+
   def handle_call(:time, _from, state) do
     {:reply, {:ok, now()}, state}
   end
@@ -45,6 +49,7 @@ defmodule Otis.Pipeline.Clock do
       nil -> nil
       t -> Process.cancel_timer(t)
     end
+
     {:reply, {:ok, now()}, %S{state | timer: nil, broadcaster: nil}}
   end
 
@@ -63,17 +68,19 @@ defmodule Otis.Pipeline.Clock do
   # frequent bursts. This algorithm tends to result in extraneous tick calls
   # rather than requiring > 1 packets per interval.
   defp schedule_tick(interval_ms, t, %S{d: d} = state) do
-    delta = (t - state.t) - (interval_ms * 1000)
+    delta = t - state.t - interval_ms * 1000
 
-    d = case delta do
-      _ when delta > 0 -> d + 1
-      _ when delta < 0 -> d - 1
-      _ -> d
-    end
+    d =
+      case delta do
+        _ when delta > 0 -> d + 1
+        _ when delta < 0 -> d - 1
+        _ -> d
+      end
 
     state = %S{state | d: d}
     send_after({:tick, interval_ms}, interval_ms - d, state)
   end
+
   defp send_after(msg, interval_ms, state) do
     timer = Process.send_after(self(), msg, interval_ms)
     %S{state | timer: timer}

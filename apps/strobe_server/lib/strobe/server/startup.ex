@@ -4,9 +4,7 @@ defmodule Strobe.Server.Startup do
   defmodule S do
     @moduledoc false
 
-    defstruct [
-      run: %{mount: false, avahi: false, dbus: false, ntpd: false}
-    ]
+    defstruct run: %{mount: false, avahi: false, dbus: false, ntpd: false}
   end
 
   @name __MODULE__
@@ -16,13 +14,14 @@ defmodule Strobe.Server.Startup do
   end
 
   def init(_opts) do
-    {:consumer, %S{}, subscribe_to: Strobe.Server.Events.producer}
+    {:consumer, %S{}, subscribe_to: Strobe.Server.Events.producer()}
   end
 
   def handle_events([], _from, state) do
     {:noreply, [], state}
   end
-  def handle_events([event|events], from, state) do
+
+  def handle_events([event | events], from, state) do
     {:ok, state} = handle_event(event, state)
     handle_events(events, from, state)
   end
@@ -40,12 +39,15 @@ defmodule Strobe.Server.Startup do
   defp running([:mount, _device, _mount_point], %S{run: run} = state) do
     %S{state | run: %{run | mount: true}}
   end
+
   defp running([:dbus], %S{run: run} = state) do
     %S{state | run: %{run | dbus: true}}
   end
+
   defp running([:avahi], %S{run: run} = state) do
     %S{state | run: %{run | avahi: true}}
   end
+
   defp running([:ntpd], %S{run: run} = state) do
     %S{state | run: %{run | ntpd: true}}
   end
@@ -56,8 +58,8 @@ defmodule Strobe.Server.Startup do
 
   defp offline(%S{run: run}) do
     run
-    |> Enum.filter(fn({_, s}) -> !s end)
-    |> Enum.map(fn({k, _}) -> k end)
+    |> Enum.filter(fn {_, s} -> !s end)
+    |> Enum.map(fn {k, _} -> k end)
   end
 
   defp launch(false) do

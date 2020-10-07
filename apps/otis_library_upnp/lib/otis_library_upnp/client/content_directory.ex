@@ -4,7 +4,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
   """
 
   import Otis.Library.UPNP.Client, only: [envelope: 2, headers: 1]
-  import  SweetXml
+  import SweetXml
 
   require Logger
 
@@ -26,62 +26,78 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
     {:ok, item}
   end
 
-  def browse(%Server{directory: %Service{control_url: addr}} = server, object_id \\ "0", flag \\ @browse_direct_children, filter \\ "*", starting_index \\ 0, requested_count \\ 0, sort_criteria \\ "") do
+  def browse(
+        %Server{directory: %Service{control_url: addr}} = server,
+        object_id \\ "0",
+        flag \\ @browse_direct_children,
+        filter \\ "*",
+        starting_index \\ 0,
+        requested_count \\ 0,
+        sort_criteria \\ ""
+      ) do
     args = [
       {"ObjectID", %{}, object_id},
       {"BrowseFlag", %{}, flag},
       {"Filter", %{}, filter},
       {"StartingIndex", %{}, starting_index},
       {"RequestedCount", %{}, requested_count},
-      {"SortCriteria", %{}, sort_criteria},
+      {"SortCriteria", %{}, sort_criteria}
     ]
+
     make_soap_request(addr, @browse_action, args) |> parse_browse_response(server)
   end
 
   def make_soap_request(addr, action, attrs) do
     body = envelope(attrs, action)
-    Logger.info "SOAP #{addr} -> #{inspect action} -> #{inspect attrs}"
+    Logger.info("SOAP #{addr} -> #{inspect(action)} -> #{inspect(attrs)}")
     HTTPoison.post(addr, body, headers(action))
   end
 
   def parse_browse_response({:ok, %HTTPoison.Response{status_code: 200, body: body}}, server) do
     parse_browse_response(body, server)
   end
+
   def parse_browse_response(body, server) when is_binary(body) do
-    #http://erlang.org/pipermail/erlang-questions/2009-September/046312.html
+    # http://erlang.org/pipermail/erlang-questions/2009-September/046312.html
     safe_body =
       body
-      |> String.codepoints
+      |> String.codepoints()
       |> Enum.map(&escape_illegal_chars/1)
       |> :unicode.characters_to_binary(:unicode)
-      |> :erlang.binary_to_list
+      |> :erlang.binary_to_list()
 
     # SweetXml chokes on encoded xml within Result tag
     {:ok, dom, _tail} = :erlsom.simple_form(safe_body)
     {'{http://schemas.xmlsoap.org/soap/envelope/}Envelope', _attrs, [envelope]} = dom
     {'{http://schemas.xmlsoap.org/soap/envelope/}Body', _attrs, [body]} = envelope
     {'{urn:schemas-upnp-org:service:ContentDirectory:1}BrowseResponse', _attrs, response} = body
-    {'Result', _attrs, [encoded_didl]} = Enum.find(response, fn
-      {'Result', _, _} -> true
-      _ -> false
-    end)
+
+    {'Result', _attrs, [encoded_didl]} =
+      Enum.find(response, fn
+        {'Result', _, _} -> true
+        _ -> false
+      end)
+
     response =
-      encoded_didl |> xmap(
+      encoded_didl
+      |> xmap(
         containers: ~x"/DIDL-Lite//container"l |> transform_by(&parse_containers(&1, server)),
-        items: ~x"/DIDL-Lite//item"l |> transform_by(&parse_items(&1, server)),
+        items: ~x"/DIDL-Lite//item"l |> transform_by(&parse_items(&1, server))
       )
+
     {:ok, response}
   end
+
   def parse_browse_response(resp) do
-    Logger.warn "Error response #{inspect resp}"
+    Logger.warn("Error response #{inspect(resp)}")
     {:error, resp}
   end
 
   # http://stackoverflow.com/a/9123673
-  defp escape_illegal_chars(<<c>>) when c in [0x9, 0xa, 0xd], do: c
-  defp escape_illegal_chars(<<c>>) when c >= 0x20 and c <= 0xd7ff, do: c
-  defp escape_illegal_chars(<<c>>) when c >= 0xe000 and c <= 0xfffd, do: c
-  defp escape_illegal_chars(<<c>>) when c >= 0x10000 and c <= 0x10ffff, do: c
+  defp escape_illegal_chars(<<c>>) when c in [0x9, 0xA, 0xD], do: c
+  defp escape_illegal_chars(<<c>>) when c >= 0x20 and c <= 0xD7FF, do: c
+  defp escape_illegal_chars(<<c>>) when c >= 0xE000 and c <= 0xFFFD, do: c
+  defp escape_illegal_chars(<<c>>) when c >= 0x10000 and c <= 0x10FFFF, do: c
   # i.e. a single byte that isn't in the allowed list above
   defp escape_illegal_chars(<<_c>>), do: ""
   defp escape_illegal_chars(c), do: c
@@ -91,7 +107,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
     parent_id: ~x"./@parentId"s,
     title: ~x"./dc:title/text()"s,
     child_count: ~x"./@childCount"I,
-    album_art: ~x"./upnp:albumArtURI/text()"s,
+    album_art: ~x"./upnp:albumArtURI/text()"s
   ]
 
   @item_map [
@@ -103,7 +119,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
     date: ~x"./dc:date/text()"s,
     genre: ~x"./upnp:genre/text()"s,
     artist: ~x"./upnp:artist/text()"s,
-    album_art: ~x"./upnp:albumArtURI/text()"s,
+    album_art: ~x"./upnp:albumArtURI/text()"s
   ]
 
   @media_map [
@@ -112,7 +128,7 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
     bitrate: ~x"./@bitrate"I,
     sample_freq: ~x"./@sampleFrequency"I,
     channels: ~x"./@nrAudioChannels"I,
-    info: ~x"./@protocolInfo"s,
+    info: ~x"./@protocolInfo"s
   ]
 
   def parse_containers(nodes, server) do
@@ -145,12 +161,17 @@ defmodule Otis.Library.UPNP.Client.ContentDirectory do
 
   def calculate_duration(duration) do
     [h, m, s] = String.split(duration, ":")
-    (1000 * (String.to_integer(h) * 3600 + String.to_integer(m) * 60 + String.to_float(s))) |> round
+
+    (1000 * (String.to_integer(h) * 3600 + String.to_integer(m) * 60 + String.to_float(s)))
+    |> round
   end
 
-  def parse_search_capabilities_response({:ok, %HTTPoison.Response{status_code: 200, body: _body}}) do
+  def parse_search_capabilities_response(
+        {:ok, %HTTPoison.Response{status_code: 200, body: _body}}
+      ) do
   end
+
   def parse_search_capabilities_response(resp) do
-    Logger.warn "Error response #{inspect resp}"
+    Logger.warn("Error response #{inspect(resp)}")
   end
 end

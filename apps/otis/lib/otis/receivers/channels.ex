@@ -52,25 +52,25 @@ defmodule Otis.Receivers.Channels do
   end
 
   def send_packets(channel_id, packets) do
-    Enum.each(lookup(channel_id), fn(r) ->
+    Enum.each(lookup(channel_id), fn r ->
       Receiver.send_packets(r, packets)
     end)
   end
 
   def send_data(channel_id, data) do
-    Enum.each(lookup(channel_id), fn(r) ->
+    Enum.each(lookup(channel_id), fn r ->
       Receiver.send_data(r, data)
     end)
   end
 
   def volume_multiplier(channel_id, volume, opts \\ []) do
-    Enum.each(lookup(channel_id), fn(r) ->
+    Enum.each(lookup(channel_id), fn r ->
       Receiver.volume_multiplier(r, volume, opts)
     end)
   end
 
   def stop(channel_id) do
-    Enum.each(lookup(channel_id), fn(r) ->
+    Enum.each(lookup(channel_id), fn r ->
       Receiver.stop(r)
     end)
   end
@@ -80,14 +80,15 @@ defmodule Otis.Receivers.Channels do
   end
 
   defp notify_subscribers(receiver, channel, msg) do
-    Enum.each(subscribers(channel.id), fn({pid, _name}) ->
-      send pid, {msg, [receiver.id, receiver]}
+    Enum.each(subscribers(channel.id), fn {pid, _name} ->
+      send(pid, {msg, [receiver.id, receiver]})
     end)
   end
 
   defp max_latency([]) do
     0
   end
+
   defp max_latency(r) do
     Enum.max(r)
   end
@@ -98,8 +99,9 @@ defmodule Otis.Receivers.Channels do
 
   def init(:ok) do
     children = [
-      worker(Otis.Receivers.Proxy, [], [restart: :temporary])
+      worker(Otis.Receivers.Proxy, [], restart: :temporary)
     ]
+
     supervise(children, strategy: :simple_one_for_one)
   end
 end

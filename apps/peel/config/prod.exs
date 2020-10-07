@@ -1,7 +1,7 @@
 use Mix.Config
 
 config :peel, Peel.Repo,
-  adapter: Sqlite.Ecto,
+  adapter: Sqlite.Ecto2,
   database: "/var/db/peep/peel.dev.sqlite3"
 
 config :peel, Peel.Collection,

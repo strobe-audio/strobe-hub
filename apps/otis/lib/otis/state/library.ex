@@ -1,6 +1,6 @@
 defmodule Otis.State.Library do
-  use     GenStage
-  use     Strobe.Events.Handler
+  use GenStage
+  use Strobe.Events.Handler
 
   require Logger
 
@@ -21,6 +21,7 @@ defmodule Otis.State.Library do
     else
       err -> Logger.error(err)
     end
+
     {:ok, state}
   end
 

@@ -1,5 +1,5 @@
 defmodule Strobe.Server.Ethernet do
-  use     GenServer
+  use GenServer
   require Logger
 
   @name __MODULE__
@@ -14,24 +14,30 @@ defmodule Strobe.Server.Ethernet do
     {:ok, dev}
   end
 
-  if Code.ensure_compiled?(Nerves.Networking) do
-    def handle_info(:start, dev) do
-      {:ok, _pid} = Nerves.Networking.setup(String.to_atom(dev), [mode: "dhcp"])
-      {:noreply, dev}
-    end
-  else
-    def handle_info(:start, dev) do
-      {:noreply, dev}
-    end
+  case Code.ensure_compiled(Nerves.Networking) do
+    {:module, _module} ->
+      def handle_info(:start, dev) do
+        {:ok, _pid} = Nerves.Networking.setup(String.to_atom(dev), mode: "dhcp")
+        {:noreply, dev}
+      end
+
+    {:error, _} ->
+      def handle_info(:start, dev) do
+        {:noreply, dev}
+      end
   end
 
-  def handle_info({Nerves.NetworkInterface, :ifchanged, %{ifname: dev, operstate: :up} = event}, dev) do
-    Logger.debug "nerves_network_interface:ifchanged #{dev} #{inspect event}"
+  def handle_info(
+        {Nerves.NetworkInterface, :ifchanged, %{ifname: dev, operstate: :up} = event},
+        dev
+      ) do
+    Logger.debug("nerves_network_interface:ifchanged #{dev} #{inspect(event)}")
     # device_changed(dev, ethernet_carrier?(), event)
     {:noreply, dev}
   end
+
   def handle_info(event, dev) do
-    Logger.debug "nerves_network_interface:handle_info #{dev} #{inspect event}"
+    Logger.debug("nerves_network_interface:handle_info #{dev} #{inspect(event)}")
     {:noreply, dev}
   end
 end

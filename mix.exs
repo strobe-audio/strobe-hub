@@ -2,11 +2,13 @@ defmodule PeepUmbrella.Mixfile do
   use Mix.Project
 
   def project do
-    [apps_path: "apps",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     consolidate_protocols: Mix.env != :test,
-     deps: deps()]
+    [
+      apps_path: "apps",
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      consolidate_protocols: Mix.env() != :test,
+      deps: deps()
+    ]
   end
 
   # Dependencies can be Hex packages:
@@ -22,7 +24,6 @@ defmodule PeepUmbrella.Mixfile do
   # Dependencies listed here are available only for this project
   # and cannot be accessed from applications inside the apps folder
   defp deps do
-    [ {:credo, "~> 0.8", only: [:dev, :test], runtime: false}
-    ]
+    [{:credo, "~> 1.4", only: [:dev, :test], runtime: false}]
   end
 end

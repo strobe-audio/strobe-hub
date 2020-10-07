@@ -1,9 +1,9 @@
 defmodule Plug.WebDAV.Xml do
   def encode(string) do
     string
-    |> String.graphemes
+    |> String.graphemes()
     |> Enum.map(&encode_grapheme/1)
-    |> Enum.join
+    |> Enum.join()
   end
 
   def encode_grapheme("&"), do: "&amp;"

@@ -1,6 +1,6 @@
 defmodule HLS.Reader.Http do
   require Logger
-  alias   HTTPoison.Response
+  alias HTTPoison.Response
 
   defstruct []
 
@@ -10,6 +10,7 @@ defmodule HLS.Reader.Http do
     case _read(url) do
       {:ok, response} ->
         {:ok, response.body, response.headers}
+
       {:error, response} ->
         {:error, response}
     end
@@ -22,6 +23,7 @@ defmodule HLS.Reader.Http do
   end
 
   defp _read(url, tries \\ 5, delay \\ 50)
+
   defp _read(url, tries, delay) do
     HTTPoison.get(url, [], [])
     |> validate_response
@@ -32,19 +34,22 @@ defmodule HLS.Reader.Http do
   defp validate_response({:error, _} = error) do
     error
   end
+
   defp validate_response({:ok, %Response{status_code: 200} = response}) do
     {:ok, response}
   end
+
   defp validate_response({:ok, response}) do
-    Logger.warn "Invalid response #{ inspect response }"
+    Logger.warn("Invalid response #{inspect(response)}")
     {:error, response}
   end
 
   defp delay_errors({:ok, _} = response, _url) do
     response
   end
+
   defp delay_errors(response, url) do
-    Logger.warn "Error retreiving #{url} #{inspect response}"
+    Logger.warn("Error retreiving #{url} #{inspect(response)}")
     # wait a bit before our supervisor restarts us
     Process.sleep(100)
     response
@@ -53,18 +58,21 @@ defmodule HLS.Reader.Http do
   defp retry({:ok, _} = response, _url, _tries, _delay) do
     response
   end
+
   defp retry({:error, error} = response, url, 0, _delay) do
-    Logger.error "Read failed #{url} #{ inspect error }"
+    Logger.error("Read failed #{url} #{inspect(error)}")
     response
   end
+
   defp retry({:error, _}, url, tries, delay) do
-    Logger.warn "Retrying #{url}; attempts remaining: #{tries}"
+    Logger.warn("Retrying #{url}; attempts remaining: #{tries}")
     _read(url, tries, delay)
   end
 
   defp read_expiry(nil, default) do
     default
   end
+
   defp read_expiry(header, default) when is_binary(header) do
     header
     |> String.split(",")
@@ -73,9 +81,10 @@ defmodule HLS.Reader.Http do
   end
 
   defp cache_control_header(headers) do
-    case Enum.find(headers, fn({k, _}) -> k == @cache_control_header end) do
+    case Enum.find(headers, fn {k, _} -> k == @cache_control_header end) do
       {@cache_control_header, value} ->
         value
+
       _ ->
         nil
     end
@@ -84,9 +93,11 @@ defmodule HLS.Reader.Http do
   defp extract_expiry([], default) do
     default
   end
+
   defp extract_expiry(["max-age=" <> age | _parts], _default) do
-    age |> String.trim() |> String.to_integer
+    age |> String.trim() |> String.to_integer()
   end
+
   defp extract_expiry([_ | parts], default) do
     extract_expiry(parts, default)
   end
@@ -96,6 +107,7 @@ defimpl HLS.Reader, for: HLS.Reader.Http do
   def read(_reader, "file://" <> path) do
     {:ok, File.read!(path), []}
   end
+
   def read(_reader, url) do
     HLS.Reader.Http.read(url)
   end

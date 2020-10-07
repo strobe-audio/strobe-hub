@@ -1,17 +1,18 @@
 defmodule HLS.Client.Playlist do
   require Logger
 
-  use     GenStage
+  use GenStage
 
   defmodule S do
     defstruct [
-      :stream, :opts,
+      :stream,
+      :opts,
       :playlist,
       :reader,
       :url,
       media: [],
       demand: 0,
-      reloading: false,
+      reloading: false
     ]
   end
 
@@ -21,14 +22,21 @@ defmodule HLS.Client.Playlist do
 
   def handle_demand(demand, %S{url: nil, stream: stream} = state) do
     playlist = HLS.Stream.resolve(stream, state.opts)
+
     state = %S{
-      state | playlist: playlist, url: to_string(playlist.uri), media: playlist.media
+      state
+      | playlist: playlist,
+        url: to_string(playlist.uri),
+        media: playlist.media
     }
+
     handle_demand(demand, state)
   end
+
   def handle_demand(demand, %S{media: []} = state) do
     {:noreply, [], reload(%S{state | demand: demand})}
   end
+
   def handle_demand(demand, state) do
     {events, media} = Enum.split(state.media, demand)
     {:noreply, events, %S{state | media: media}}
@@ -38,6 +46,7 @@ defmodule HLS.Client.Playlist do
     # TODO: call Stream.upgrade
     {:noreply, [], state}
   end
+
   def handle_cast(:downgrade, state) do
     # TODO: call Stream.downgrade
     {:noreply, [], state}
@@ -48,10 +57,11 @@ defmodule HLS.Client.Playlist do
   end
 
   def handle_info({:playlist, {:error, _reason}}, state) do
-    Logger.warn "Failed to load playlist, using white-noise fallback"
+    Logger.warn("Failed to load playlist, using white-noise fallback")
     noise = %M3.Media{duration: state.playlist.target_duration, url: HLS.whitenoise_url()}
     handle_media([noise], 4, %S{state | reloading: false})
   end
+
   def handle_info({:playlist, {:ok, data, headers}}, state) do
     playlist = M3.Parser.parse!(data, state.url)
     expiry = HLS.Reader.Http.expiry(headers)
@@ -62,9 +72,11 @@ defmodule HLS.Client.Playlist do
   defp handle_media([], _expiry, %S{demand: 0} = state) do
     {:noreply, [], state}
   end
+
   defp handle_media([], expiry, state) do
     {:noreply, [], reload(state, expiry)}
   end
+
   defp handle_media(media, _expiry, state) do
     # Logger.info "New media #{length(media)}/#{state.demand} - #{state.playlist.media_sequence_number}"
     {events, media} = Enum.split(media, state.demand)
@@ -75,18 +87,28 @@ defmodule HLS.Client.Playlist do
   defp reload(%S{reloading: true} = state) do
     state
   end
+
   defp reload(%S{reloading: false} = state) do
     read(state)
   end
+
   defp reload(%S{reloading: true} = state, _wait) do
     state
   end
+
   defp reload(%S{reloading: false} = state, wait) do
     read(state, wait)
   end
 
   defp read(state) do
-    HLS.Reader.Async.read(state.reader, state.url, self(), :playlist, M3.Playlist.read_timeout(state.playlist))
+    HLS.Reader.Async.read(
+      state.reader,
+      state.url,
+      self(),
+      :playlist,
+      M3.Playlist.read_timeout(state.playlist)
+    )
+
     %S{state | reloading: true}
   end
 

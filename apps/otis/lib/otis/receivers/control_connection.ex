@@ -29,18 +29,18 @@ defmodule Otis.Receivers.ControlConnection do
   end
 
   def handle_cast({:set_volume, volume}, state) do
-    state = change_volume(state, [volume: volume])
+    state = change_volume(state, volume: volume)
     {:noreply, state}
   end
 
   def handle_cast({:set_volume, volume, multiplier}, state) do
-    state = change_volume(state, [volume: volume, volume_multiplier: multiplier])
+    state = change_volume(state, volume: volume, volume_multiplier: multiplier)
     {:noreply, state}
   end
 
   def handle_cast({:set_volume_multiplier, multiplier, opts}, state) do
     lock = Keyword.get(opts, :lock, false)
-    state = change_volume(state, [volume_multiplier: multiplier, lock: lock])
+    state = change_volume(state, volume_multiplier: multiplier, lock: lock)
     {:noreply, state}
   end
 
@@ -79,6 +79,7 @@ defmodule Otis.Receivers.ControlConnection do
     case Keyword.pop(values, :lock, false) do
       {true, values} ->
         change_volume_locked(state, values)
+
       {false, values} ->
         change_volume_unlocked(state, values)
     end
@@ -88,7 +89,7 @@ defmodule Otis.Receivers.ControlConnection do
     v1 = Map.take(state.settings, [:volume, :volume_multiplier])
     updated = Enum.into(values, state.settings)
     v2 = Map.take(updated, [:volume, :volume_multiplier])
-    volume = (v1.volume_multiplier * v1.volume) / v2.volume_multiplier |> Otis.sanitize_volume
+    volume = (v1.volume_multiplier * v1.volume / v2.volume_multiplier) |> Otis.sanitize_volume()
     v2 = %{updated | volume: volume}
     %S{state | settings: v2} |> monitor_volume(v1, v2)
   end
@@ -103,6 +104,7 @@ defmodule Otis.Receivers.ControlConnection do
   defp monitor_volume(state, settings, settings) do
     state
   end
+
   defp monitor_volume(state, initial_settings, final_settings) do
     initial_volume = calculated_volume(initial_settings)
     final_volume = calculated_volume(final_settings)
@@ -113,6 +115,7 @@ defmodule Otis.Receivers.ControlConnection do
   defp send_volume_command(state, volume, volume) do
     state
   end
+
   defp send_volume_command(state, _old_volume, volume) do
     %{volume: volume} |> send_command(state)
   end
@@ -120,6 +123,7 @@ defmodule Otis.Receivers.ControlConnection do
   defp notify_volume(state, volume, volume) do
     state
   end
+
   defp notify_volume(state, _initial_volume, volume) do
     # Don't send an event when changing the multiplier as the multiplier is a
     # channel-level property and events for it are emitted there.
@@ -154,6 +158,7 @@ defmodule Otis.Receivers.ControlConnection do
   defp cancel_timeout(%S{monitor_timeout: nil} = state) do
     state
   end
+
   defp cancel_timeout(%S{monitor_timeout: ref} = state) do
     Process.cancel_timer(ref)
     %S{state | monitor_timeout: nil}

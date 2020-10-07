@@ -14,7 +14,7 @@ defmodule Otis.Library.UPNP.Source do
   end
 
   def decode_id(id) do
-    id |> URI.decode
+    id |> URI.decode()
   end
 
   def encode_id(id) do
@@ -30,8 +30,7 @@ defimpl Otis.Library.Source.Origin, for: Otis.Library.UPNP.Source do
   def load!(%Source{id: id}) do
     [device_id, item_id] = Source.split_id(id)
     device = UPNP.Discovery.lookup!(device_id)
-    {:ok, %Item{} = item} =
-      device |> UPNP.Client.ContentDirectory.retreive(item_id)
+    {:ok, %Item{} = item} = device |> UPNP.Client.ContentDirectory.retreive(item_id)
     item
   end
 end

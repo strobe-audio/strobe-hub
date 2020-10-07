@@ -1,5 +1,5 @@
 defmodule Strobe.Server.Avahi do
-  use     GenServer
+  use GenServer
   require Logger
 
   @name __MODULE__
@@ -14,27 +14,31 @@ defmodule Strobe.Server.Avahi do
   end
 
   def handle_info({Nerves.NetworkInterface, :ifchanged, %{operstate: :up}}, %{port: nil} = state) do
-    Logger.info "#{__MODULE__} starting #{avahi_daemon()}"
+    Logger.info("#{__MODULE__} starting #{avahi_daemon()}")
     port = Port.open({:spawn_executable, avahi_daemon()}, avahi_daemon_args())
     Process.send_after(self(), :check_running, 1_000)
     {:noreply, %{state | port: port}}
   end
+
   def handle_info(:check_running, state) do
-    IO.inspect [__MODULE__, :check_running]
+    IO.inspect([__MODULE__, :check_running])
+
     if running?() do
       Strobe.Server.Events.notify({:running, [:avahi]})
     else
       Process.send_after(self(), :check_running, 1_000)
     end
+
     {:noreply, state}
   end
 
   def handle_info({port, {:data, {:eol, msg}}}, %{port: port} = state) do
-    IO.inspect [__MODULE__, String.trim(msg)]
+    IO.inspect([__MODULE__, String.trim(msg)])
     {:noreply, state}
   end
+
   def handle_info(evt, state) do
-    IO.inspect [__MODULE__, evt]
+    IO.inspect([__MODULE__, evt])
     {:noreply, state}
   end
 
@@ -43,17 +47,14 @@ defmodule Strobe.Server.Avahi do
   end
 
   def avahi_daemon_args(args \\ []) do
-    [:stderr_to_stdout,
-     :binary,
-     line: 4_096,
-     args: args,
-    ]
+    [:stderr_to_stdout, :binary, line: 4_096, args: args]
   end
 
   def running? do
     case System.cmd(avahi_daemon(), ["--check"]) do
       {_, 0} ->
         true
+
       _ ->
         false
     end

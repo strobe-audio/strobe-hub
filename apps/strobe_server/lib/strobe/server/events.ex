@@ -1,5 +1,5 @@
 defmodule Strobe.Server.Events do
-  use     GenStage
+  use GenStage
   require Logger
 
   @name __MODULE__
@@ -9,7 +9,7 @@ defmodule Strobe.Server.Events do
   end
 
   def producer do
-    @name |> GenServer.whereis |> List.wrap
+    @name |> GenServer.whereis() |> List.wrap()
   end
 
   def notify({name, args} = event) when is_atom(name) and is_list(args) do
@@ -25,12 +25,12 @@ defmodule Strobe.Server.Events do
   end
 
   def handle_call({:notify, event}, _from, state) do
-    Logger.debug "EVENT #{__MODULE__}"
+    Logger.debug("EVENT #{__MODULE__}")
     {:reply, :ok, [event], state}
   end
 
   def handle_cast({:notify, event}, state) do
-    Logger.debug "EVENT #{__MODULE__}"
+    Logger.debug("EVENT #{__MODULE__}")
     {:noreply, [event], state}
   end
 end

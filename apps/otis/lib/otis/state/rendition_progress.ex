@@ -29,6 +29,7 @@ defmodule Otis.State.RenditionProgress do
   def handle_call({:progress, rendition_id, progress}, _from, state) do
     {:reply, :ok, Map.put(state, rendition_id, progress)}
   end
+
   def handle_call(:save, _from, state) do
     save(state)
     {:reply, :ok, %{}}
@@ -38,6 +39,7 @@ defmodule Otis.State.RenditionProgress do
     schedule()
     {:noreply, %{}}
   end
+
   def handle_info(:flush, state) do
     save(state)
     schedule()
@@ -54,12 +56,12 @@ defmodule Otis.State.RenditionProgress do
   end
 
   defp save(state) do
-    Writer.transaction fn ->
+    Writer.transaction(fn ->
       Enum.each(state, &save_progress/1)
-    end
+    end)
   end
 
-  @update_query  "UPDATE OR IGNORE renditions SET playback_position = $1 WHERE id = $2"
+  @update_query "UPDATE OR IGNORE renditions SET playback_position = $1 WHERE id = $2"
 
   defp save_progress({rendition_id, position}) do
     {:ok, id} = Ecto.UUID.dump(rendition_id)

@@ -14,20 +14,22 @@ defmodule Otis.StateTest do
 
   describe "renditions" do
     setup do
-      channels = Enum.map(0..1, fn(n) ->
-        {:ok, channel} = Otis.Channels.create("Channel #{n}")
-        sources = [TestSource.new, TestSource.new, TestSource.new]
-        Otis.Channel.append(channel, sources)
-        assert_receive {:rendition, :create, _}, 500
-        assert_receive {:rendition, :create, _}, 500
-        assert_receive {:rendition, :create, _}, 500
-        channel
-      end)
+      channels =
+        Enum.map(0..1, fn n ->
+          {:ok, channel} = Otis.Channels.create("Channel #{n}")
+          sources = [TestSource.new(), TestSource.new(), TestSource.new()]
+          Otis.Channel.append(channel, sources)
+          assert_receive {:rendition, :create, _}, 500
+          assert_receive {:rendition, :create, _}, 500
+          assert_receive {:rendition, :create, _}, 500
+          channel
+        end)
 
-      playlists = for c <- channels do
-        {:ok, playlist} = Otis.Channel.playlist(c)
-        playlist
-      end
+      playlists =
+        for c <- channels do
+          {:ok, playlist} = Otis.Channel.playlist(c)
+          playlist
+        end
 
       {:ok, channels: channels, playlists: playlists}
     end
@@ -38,7 +40,7 @@ defmodule Otis.StateTest do
       {:ok, renditions1} = Otis.Pipeline.Playlist.list(playlist1)
       {:ok, renditions2} = Otis.Pipeline.Playlist.list(playlist2)
 
-      [state1, state2] = Otis.State.renditions() |> Enum.chunk_by(&(&1.channel_id))
+      [state1, state2] = Otis.State.renditions() |> Enum.chunk_by(& &1.channel_id)
 
       assert ids(state1) == renditions1
       assert ids(state2) == renditions2
@@ -50,7 +52,8 @@ defmodule Otis.StateTest do
       {:ok, active1} = Otis.Pipeline.Playlist.next(playlist1)
       {:ok, active2} = Otis.Pipeline.Playlist.next(playlist2)
 
-      [[first1 | rest1], [first2 | rest2]] = Otis.State.renditions() |> Enum.chunk_by(&(&1.channel_id))
+      [[first1 | rest1], [first2 | rest2]] =
+        Otis.State.renditions() |> Enum.chunk_by(& &1.channel_id)
 
       assert first1.id == active1
       assert first2.id == active2
@@ -58,8 +61,8 @@ defmodule Otis.StateTest do
       assert first1.active
       assert first2.active
 
-      for r <- rest1, do: refute r.active
-      for r <- rest2, do: refute r.active
+      for r <- rest1, do: refute(r.active)
+      for r <- rest2, do: refute(r.active)
     end
 
     test "active status serialisation", cxt do
