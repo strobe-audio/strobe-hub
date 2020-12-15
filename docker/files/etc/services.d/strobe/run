@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv sh
+
+exec 2>&1
+
+cd /strobe/
+
+exec ./apps/elvis/bin/run-production

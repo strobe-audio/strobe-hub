@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv sh
+
+if [ -x /opt/local/bin/librespot ]; then
+    exec /opt/local/bin/librespot --verbose --backend pipe --device "$LIBRESPOT_PIPE" --name "$LIBRESPOT_NAME"
+else
+    exit 0
+fi
