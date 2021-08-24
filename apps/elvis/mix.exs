@@ -40,6 +40,7 @@ defmodule Elvis.Mixfile do
       {:phoenix_html, "~> 2.11"},
       {:phoenix_live_reload, "~> 1.2", only: :dev},
       {:cowboy, "~> 1.1"},
+      {:plug_cowboy, "~> 1.0"},
       {:otis, in_umbrella: true},
       {:peel, in_umbrella: true},
       {:otis_library_bbc, in_umbrella: true},
