@@ -166,6 +166,6 @@ defmodule Otis.Channels do
       worker(Otis.Channel, [])
     ]
 
-    supervise(children, strategy: :simple_one_for_one)
+    Supervisor.init(children, strategy: :simple_one_for_one)
   end
 end

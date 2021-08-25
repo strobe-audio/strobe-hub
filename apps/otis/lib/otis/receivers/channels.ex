@@ -102,6 +102,6 @@ defmodule Otis.Receivers.Channels do
       worker(Otis.Receivers.Proxy, [], restart: :temporary)
     ]
 
-    supervise(children, strategy: :simple_one_for_one)
+    Supervisor.init(children, strategy: :simple_one_for_one)
   end
 end

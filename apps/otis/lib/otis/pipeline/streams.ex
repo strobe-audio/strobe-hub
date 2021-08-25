@@ -29,6 +29,6 @@ defmodule Otis.Pipeline.Streams do
       worker(Otis.Pipeline.Buffer, [], restart: :transient)
     ]
 
-    supervise(children, strategy: :simple_one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

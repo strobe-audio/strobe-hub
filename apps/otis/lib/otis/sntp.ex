@@ -21,7 +21,7 @@ defmodule Otis.SNTP do
       worker(Otis.SNTP.Listener, [port, Otis.SNTPPool], [])
     ]
 
-    supervise(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 
   defmodule Listener do

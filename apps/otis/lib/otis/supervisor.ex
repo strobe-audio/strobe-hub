@@ -30,7 +30,7 @@ defmodule Otis.Supervisor do
       # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)
     ]
 
-    supervise(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 
   def config(mod) do
