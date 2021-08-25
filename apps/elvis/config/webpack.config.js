@@ -71,7 +71,7 @@ var config = [
         {
           test: /\.elm$/,
           exclude: [/elm-stuff/, /node_modules/],
-          loader: 'elm-webpack?pathToMake=node_modules/elm/binwrappers/elm-make',
+          loader: 'elm-webpack',
         },
       ],
       noParse: /\.elm$/,

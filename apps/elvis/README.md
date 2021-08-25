@@ -7,6 +7,15 @@ libraries to your channels to your receivers.
 
 When you run the Strobe hub, it's really Elvis that you're launching.
 
+## Setup
+
+To develop locally, you need Elm
+
+``` sh
+asdf plugin-add elm https://github.com/asdf-community/asdf-elm.git
+asdf install
+```
+
 ## TODO
 
 ### Short
