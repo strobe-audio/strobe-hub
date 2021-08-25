@@ -11,10 +11,7 @@ defmodule Otis.Pipeline do
 
   def init(pipeline_config) do
     children = [
-      supervisor(Registry, [:unique, Otis.Pipeline.Streams.namespace()],
-        id: Otis.Pipeline.Streams.namespace()
-      ),
-      supervisor(Otis.Pipeline.Streams, []),
+      {Otis.Pipeline.Streams, []},
       supervisor(Registry, [:duplicate, Otis.Receivers.Channels.channel_namespace()],
         id: Otis.Receivers.Channels.channel_namespace()
       ),

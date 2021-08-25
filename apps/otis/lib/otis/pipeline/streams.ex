@@ -4,29 +4,29 @@ defmodule Otis.Pipeline.Streams do
   @supervisor_name Otis.Pipeline.Streams
   @namespace Otis.Pipeline.StreamRegistry
 
-  def namespace, do: @namespace
-
   def name(rendition_id) do
     {:via, Registry, {@namespace, rendition_id}}
   end
 
   def start_stream(rendition_id, config) do
     name = name(rendition_id)
-    {:ok, _pid} = Supervisor.start_child(@supervisor_name, [name, rendition_id, config])
-    {:ok, name}
+    with {:ok, _pid} <- DynamicSupervisor.start_child(@supervisor_name, {Otis.Pipeline.Buffer, [name, rendition_id, config]}) do
+      {:ok, name}
+    end
   end
 
   def streams do
     Supervisor.which_children(@supervisor_name)
   end
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, :ok, name: @supervisor_name)
+  def start_link(_args \\ []) do
+    Supervisor.start_link(__MODULE__, :ok)
   end
 
   def init(:ok) do
     children = [
-      worker(Otis.Pipeline.Buffer, [], restart: :transient)
+      {DynamicSupervisor, strategy: :one_for_one, name: @supervisor_name},
+      {Registry, keys: :unique, name: @namespace},
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

@@ -1,5 +1,5 @@
 defmodule Otis.Pipeline.Buffer do
-  use GenServer
+  use GenServer, restart: :transient
 
   alias Otis.State.Rendition
   alias Otis.Library.Source
@@ -27,11 +27,16 @@ defmodule Otis.Pipeline.Buffer do
     ]
   end
 
+  def start_link([name, rendition_id, config]) do
+    start_link(name, rendition_id, config)
+  end
+
   def start_link(name, rendition_id, config) do
     GenServer.start_link(__MODULE__, [rendition_id, config], name: name)
   end
 
   def init([rendition_id, config]) do
+    Logger.info(fn -> ["init, ", inspect(rendition: rendition_id)] end)
     # Start our stream after returning from this init call so that our parent
     # isn't tied up waiting for sources to open
     GenServer.cast(self(), {:init, rendition_id})
