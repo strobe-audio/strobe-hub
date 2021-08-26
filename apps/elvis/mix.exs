@@ -36,11 +36,12 @@ defmodule Elvis.Mixfile do
   # Type `mix help deps` for examples and options
   defp deps do
     [
-      {:phoenix, "~> 1.4"},
-      {:phoenix_html, "~> 2.11"},
-      {:phoenix_live_reload, "~> 1.2", only: :dev},
+      {:phoenix, "~> 1.5"},
+      {:phoenix_html, "~> 3.0"},
+      {:phoenix_pubsub, "~> 2.0"},
+      {:phoenix_live_reload, "~> 1.3", only: :dev},
       {:plug, "~> 1.7"},
-      {:plug_cowboy, "~> 2.0"},
+      {:plug_cowboy, "~> 2.1"},
       {:otis, in_umbrella: true},
       {:peel, in_umbrella: true},
       {:otis_library_bbc, in_umbrella: true},

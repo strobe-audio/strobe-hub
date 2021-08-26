@@ -11,7 +11,7 @@ config :elvis, Elvis.Endpoint,
   root: Path.dirname(__DIR__),
   secret_key_base: "XsNj8q0ieY/1JciZhtF6y1YX8fZLwrrD2AnCZ3LAPfcv1q0wXJjV9qXKyZ/hPYr3",
   render_errors: [accepts: ~w(html json)],
-  pubsub: [name: Elvis.PubSub, adapter: Phoenix.PubSub.PG2]
+  pubsub_server: Elvis.PubSub
 
 # Configures Elixir's Logger
 # config :logger, :console,
@@ -26,6 +26,8 @@ config :logger, :console,
   colors: [info: :green]
 
 config :elvis, sentry_dsn: System.get_env("SENTRY_DSN")
+
+config :phoenix, :json_library, Poison
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

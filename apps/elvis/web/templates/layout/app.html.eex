@@ -30,7 +30,7 @@
   </head>
 
   <body>
-    <%= render @view_module, @view_template, assigns %>
+    <%= @inner_content %>
     <script>
      if('serviceWorker' in navigator) {
          navigator.serviceWorker.register('/js/sw.js')

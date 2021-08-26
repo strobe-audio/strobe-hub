@@ -12,11 +12,10 @@ defmodule Elvis do
 
     children =
       [
-        # Start the endpoint when the application starts
+        {Phoenix.PubSub, name: Elvis.PubSub},
         {Elvis.Endpoint, []},
-        # worker(Elvis.Events, []),
         {Elvis.Events.Broadcast, []},
-        {Elvis.Events.Startup, []}
+        {Elvis.Events.Startup, []},
         # XXX: Needs to be last
       ] ++ startup
 
