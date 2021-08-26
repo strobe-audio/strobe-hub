@@ -16,8 +16,8 @@ CACHE:
 /fonts/fontawesome-webfont.woff2
 /fonts/fontawesome-webfont.woff
 /fonts/fontawesome-webfont.ttf
-<%= static_path(@conn, "/css/app.css") %>
-<%= static_path(@conn, "/js/app.js") %>
+<%= Routes.static_path(@conn, "/css/app.css") %>
+<%= Routes.static_path(@conn, "/js/app.js") %>
 
 NETWORK:
 *

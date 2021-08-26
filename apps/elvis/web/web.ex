@@ -26,7 +26,7 @@ defmodule Elvis.Web do
     quote do
       use Phoenix.Controller
 
-      import Elvis.Router.Helpers
+      alias Elvis.Router.Helpers, as: Routes
     end
   end
 
@@ -40,7 +40,7 @@ defmodule Elvis.Web do
       # Use all HTML functionality (forms, tags, etc)
       use Phoenix.HTML
 
-      import Elvis.Router.Helpers
+      alias Elvis.Router.Helpers, as: Routes
     end
   end
 

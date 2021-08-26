@@ -23,8 +23,8 @@ defmodule Plug.WebDAV.Mixfile do
 
   defp deps do
     [
-      {:plug, "~> 1.3"},
-      {:cowboy, "~> 1.1.2"},
+      {:plug, "~> 1.7"},
+      {:cowboy, "~> 2.0"},
       {:sweet_xml, "~> 0.6.5"},
       {:mime, "~> 1.1"},
       {:timex, "~> 3.0", only: :test},

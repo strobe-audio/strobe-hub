@@ -18,7 +18,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/images/touch-icon@3x.png">
 
     <title>Strobe</title>
-    <link rel="stylesheet" href="<%= static_path(@conn, "/css/app.css") %>">
+    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>">
     <link rel="manifest" href="/manifest.json">
     <script>
       // https://alxgbsn.co.uk/2011/10/17/enable-css-active-pseudo-styles-in-mobile-safari/
@@ -33,9 +33,11 @@
     <%= render @view_module, @view_template, assigns %>
     <script>
      if('serviceWorker' in navigator) {
-       navigator.serviceWorker.register('/js/sw.js')
+         navigator.serviceWorker.register('/js/sw.js')
                 .then(function() {
-                  console.log('Service Worker Registered');
+                    console.log('Service Worker Registered');
+                }).catch(function(err) {
+                    console.log('unable to register service worker', err)
                 });
      }
     </script>

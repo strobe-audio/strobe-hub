@@ -1,8 +1,7 @@
 defmodule Elvis.Endpoint do
   use Phoenix.Endpoint, otp_app: :elvis
 
-  # socket "/socket", Elvis.UserSocket
-  socket("/controller", Elvis.ControllerSocket)
+  socket "/controller", Elvis.ControllerSocket, websocket: true
 
   # Serve at "/" the static files from "priv/static" directory.
   #

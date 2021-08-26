@@ -38,7 +38,7 @@ defmodule Otis.Mixfile do
       {:sqlite_ecto2, "~> 2.4"},
       {:ecto, "~> 2.2"},
       # {:ranch, "~> 1.3.2", [optional: false, hex: :ranch, manager: :rebar]},
-      {:ranch, "~> 1.3.2"},
+      {:ranch, "~> 1.8"},
       {:otis_library, in_umbrella: true},
       {:poison, "~> 3.0"},
       {:external_process, in_umbrella: true},
