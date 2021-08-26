@@ -1,19 +1,13 @@
 defmodule Otis.Startup do
-  use GenServer, restart: :transient
   require Logger
 
-  def start_link(state \\ Otis.State, channels_supervisor \\ Otis.Channels)
-
-  def start_link(state, channels_supervisor) do
-    GenServer.start_link(__MODULE__, [state, channels_supervisor], [])
-  end
-
-  def init([state, channels_supervisor] = args) do
+  def run(state \\ Otis.State, channels_supervisor \\ Otis.Channels) do
+    Logger.info("=> Initialising Channels...")
     Application.get_env(:otis, Otis.State.Repo) |> Keyword.get(:database) |> ensure_db_path()
     :ok = state |> start_channels(channels_supervisor)
     :ok = state |> restore_source_lists(channels_supervisor)
     Strobe.Events.notify(:strobe, :start, [])
-    :ignore
+    :ok
   end
 
   def start_channels(_state, channels_supervisor) do

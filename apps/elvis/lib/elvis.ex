@@ -4,12 +4,6 @@ defmodule Elvis do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    startup =
-      case Mix.env() do
-        :test -> []
-        _env -> [Otis.Startup]
-      end
-
     children =
       [
         {Phoenix.PubSub, name: Elvis.PubSub},
@@ -17,7 +11,7 @@ defmodule Elvis do
         {Elvis.Events.Broadcast, []},
         {Elvis.Events.Startup, []}
         # XXX: Needs to be last
-      ] ++ startup
+      ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
@@ -30,5 +24,15 @@ defmodule Elvis do
   def config_change(changed, _new, removed) do
     Elvis.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  if Mix.env() == :test  do
+    def start_phase(:initialise_channels, _start_type, _args) do
+      :ok
+    end
+  else
+    def start_phase(:initialise_channels, _start_type, _args) do
+      Otis.Startup.run()
+    end
   end
 end

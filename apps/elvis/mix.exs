@@ -24,7 +24,12 @@ defmodule Elvis.Mixfile do
   def application do
     # `socket` is a dependency from another app that doesn't have it in its
     # applications list so I need to include it here
-    [extra_applications: [:logger, :socket], mod: {Elvis, []}]
+    [
+      extra_applications: [:logger, :socket], mod: {Elvis, []},
+      start_phases: [
+        initialise_channels: []
+      ]
+    ]
   end
 
   # Specifies which paths to compile per environment
