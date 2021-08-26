@@ -12,8 +12,8 @@ defmodule Elvis.Events.Broadcast do
   # * 100 ms intervals
   @progress_interval 5
 
-  def start_link do
-    GenStage.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(args) do
+    GenStage.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   def init(_opts) do

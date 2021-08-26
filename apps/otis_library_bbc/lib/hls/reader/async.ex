@@ -1,10 +1,14 @@
 defmodule HLS.Reader.Async do
-  use GenServer
+  use GenServer, restart: :transient
 
   import HLS, only: [now: 0, read_with_timeout: 3]
 
   def read(reader, url, parent, id, timeout \\ 5_000) do
     HLS.Reader.Async.Supervisor.start_reader(reader, url, parent, id, now() + timeout)
+  end
+
+  def start_link([reader, url, parent, id, deadline]) do
+    start_link(reader, url, parent, id, deadline)
   end
 
   def start_link(reader, url, parent, id, deadline) do

@@ -1,7 +1,7 @@
 defmodule HLS.Client do
   require Logger
 
-  use GenStage
+  use GenStage, restart: :transient
 
   import HLS, only: [read_with_timeout: 3]
 
@@ -9,6 +9,10 @@ defmodule HLS.Client do
 
   def open!(%HLS.Stream{} = stream, id, opts) do
     HLS.Client.Stream.open(stream, id, opts)
+  end
+
+  def start_link([stream, id, opts]) do
+    start_link(stream, id, opts)
   end
 
   def start_link(stream, id, opts) do

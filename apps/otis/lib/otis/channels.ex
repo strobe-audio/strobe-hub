@@ -151,21 +151,23 @@ defmodule Otis.Channels do
 
   defp start_channel(supervisor, channel, config) do
     process_name = via(channel.id) |> IO.inspect()
-    Supervisor.start_child(supervisor, [channel, config, process_name])
+    IO.inspect start_channel: supervisor
+    DynamicSupervisor.start_child(supervisor, {Otis.Channel, [channel, config, process_name]})
     {:ok, process_name}
   end
 
   ############# Supervisor
 
   def start_link do
-    Supervisor.start_link(__MODULE__, :ok, name: @supervisor)
+    Supervisor.start_link(__MODULE__, :ok)
   end
 
   def init(:ok) do
     children = [
-      worker(Otis.Channel, [])
+      # worker(Otis.Channel, [])
+      {DynamicSupervisor, strategy: :one_for_one, name: @supervisor}
     ]
 
-    Supervisor.init(children, strategy: :simple_one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

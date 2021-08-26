@@ -4,21 +4,19 @@ defmodule Elvis do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
     startup =
       case Mix.env() do
         :test -> []
-        _env -> [worker(Otis.Startup, [], restart: :transient)]
+        _env -> [Otis.Startup]
       end
 
     children =
       [
         # Start the endpoint when the application starts
-        supervisor(Elvis.Endpoint, []),
+        {Elvis.Endpoint, []},
         # worker(Elvis.Events, []),
-        worker(Elvis.Events.Broadcast, []),
-        worker(Elvis.Events.Startup, [])
+        {Elvis.Events.Broadcast, []},
+        {Elvis.Events.Startup, []}
         # XXX: Needs to be last
       ] ++ startup
 

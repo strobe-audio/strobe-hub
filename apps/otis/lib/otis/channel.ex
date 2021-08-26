@@ -114,6 +114,10 @@ defmodule Otis.Channel do
     GenServer.call(channel, {:remove_rendition, rendition_id})
   end
 
+  def start_link([channel, config, name]) do
+    start_link(channel, config, name)
+  end
+
   def start_link(channel, config, name) do
     GenServer.start_link(__MODULE__, [channel, config], name: name)
   end

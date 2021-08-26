@@ -17,7 +17,7 @@ defmodule Otis.Receivers.Channels do
     # broadcasters to send buffer packets to new receiver before existing
     # stream packets are sent automatically.
     notify_add_receiver(receiver, channel)
-    {:ok, _proxy} = Supervisor.start_child(@supervisor_name, [receiver, channel])
+    {:ok, _proxy} = DynamicSupervisor.start_child(@supervisor_name, {Otis.Receivers.Proxy, [receiver, channel]})
   end
 
   def buffer_receiver(receiver, channel) do
@@ -94,14 +94,15 @@ defmodule Otis.Receivers.Channels do
   end
 
   def start_link do
-    Supervisor.start_link(__MODULE__, :ok, name: @supervisor_name)
+    Supervisor.start_link(__MODULE__, :ok)
   end
 
   def init(:ok) do
     children = [
-      worker(Otis.Receivers.Proxy, [], restart: :temporary)
+      # worker(Otis.Receivers.Proxy, [], restart: :temporary)
+      {DynamicSupervisor, strategy: :one_for_one, name: @supervisor_name}
     ]
 
-    Supervisor.init(children, strategy: :simple_one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

@@ -5,11 +5,15 @@ defmodule Otis.Receivers.Proxy do
   hence removed from the registry.
   """
 
-  use GenServer
+  use GenServer, restart: :temporary
 
   require Logger
 
   alias Otis.Receiver
+
+  def start_link([receiver, channel]) do
+    start_link(receiver, channel)
+  end
 
   def start_link(receiver, channel) do
     GenServer.start_link(__MODULE__, [receiver, channel])
