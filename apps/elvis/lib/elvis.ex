@@ -15,7 +15,7 @@ defmodule Elvis do
         {Phoenix.PubSub, name: Elvis.PubSub},
         {Elvis.Endpoint, []},
         {Elvis.Events.Broadcast, []},
-        {Elvis.Events.Startup, []},
+        {Elvis.Events.Startup, []}
         # XXX: Needs to be last
       ] ++ startup
 
