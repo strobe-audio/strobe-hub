@@ -26,7 +26,7 @@ defmodule Plug.WebDAV.Mixfile do
       {:plug, "~> 1.7"},
       {:cowboy, "~> 2.0"},
       {:sweet_xml, "~> 0.6.5"},
-      {:mime, "~> 1.1"},
+      {:mime, "~> 2.0"},
       {:timex, "~> 3.0", only: :test},
       {:uuid, "~> 1.1"}
     ]

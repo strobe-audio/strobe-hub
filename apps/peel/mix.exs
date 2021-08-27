@@ -51,7 +51,7 @@ defmodule Peel.Mixfile do
       {:uuid, "~> 1.1"},
       {:work_queue, github: "magnetised/work_queue"},
       {:plug, "~> 1.3"},
-      # {:plug_webdav, in_umbrella: true},
+      {:plug_webdav, in_umbrella: true},
       {:strobe_events, in_umbrella: true}
     ]
   end
