@@ -21,7 +21,10 @@ defmodule Otis.Mixfile do
     [
       extra_applications: [:logger],
       mod: {Otis, []},
-      env: env()
+      env: env(),
+      start_phases: [
+        run_migrations: []
+      ]
     ]
   end
 
@@ -32,7 +35,7 @@ defmodule Otis.Mixfile do
   defp deps do
     [
       {:poolboy, "~> 1.4"},
-      {:monotonic, github: "magnetised/monotonic.ex"},
+      {:monotonic, github: "strobe-audio/monotonic", branch: "remove-erlang-application"},
       {:erlsom, github: "willemdj/erlsom"},
       {:uuid, "~> 1.1"},
       {:sqlite_ecto2, "~> 2.4"},

@@ -21,4 +21,8 @@ defmodule Otis do
   def sanitize_volume(volume) when volume > 1.0, do: 1.0
   def sanitize_volume(volume) when volume < 0.0, do: 0.0
   def sanitize_volume(volume), do: volume
+
+  def start_phase(:run_migrations, _start_type, _args) do
+    Otis.State.Migrator.run()
+  end
 end
