@@ -4,7 +4,7 @@ defmodule MusicBrainz.Client do
   @mb_uri URI.parse("http://musicbrainz.org")
   @ca_uri URI.parse("http://coverartarchive.org")
 
-  def start_link do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
   end
 
@@ -24,8 +24,13 @@ defmodule MusicBrainz.Client do
       Process.sleep(@period - time)
     end
 
-    resp = HTTPoison.get(uri, [], follow_redirect: true)
+    resp = http_get(uri)
     {:reply, resp, now()}
+  end
+
+  defp http_get(url, headers \\ []) do
+    Finch.build(:get, url, headers)
+    |> Finch.request(Peel.Finch)
   end
 
   defp now do
@@ -46,12 +51,12 @@ defmodule MusicBrainz.Client do
     GenServer.call(__MODULE__, {:get, uri}, :infinity)
   end
 
-  def parse_cover_art_lookup({:ok, %HTTPoison.Response{status_code: 200, body: body}}) do
+  def parse_cover_art_lookup({:ok, %Finch.Response{status: 200, body: body}}) do
     response = Poison.decode!(body)
     response["images"]
   end
 
-  def parse_cover_art_lookup({:ok, %HTTPoison.Response{}}) do
+  def parse_cover_art_lookup({:ok, %Finch.Response{}}) do
     []
   end
 
@@ -59,7 +64,7 @@ defmodule MusicBrainz.Client do
     []
   end
 
-  def parse_release_search({:ok, %HTTPoison.Response{body: body}}) do
+  def parse_release_search({:ok, %Finch.Response{body: body}}) do
     Floki.find(body, "metadata > release-list > release") |> build_releases
   end
 

@@ -44,7 +44,7 @@ defmodule Peel.Mixfile do
       {:erlsom, github: "willemdj/erlsom"},
       {:floki, "~> 0.11.0"},
       {:flow, "~> 1.0"},
-      {:httpoison, "~> 1.0"},
+      {:finch, "~> 0.10"},
       {:otis_library, in_umbrella: true},
       {:poison, "~> 3.0"},
       {:sqlite_ecto2, "~> 2.4"},

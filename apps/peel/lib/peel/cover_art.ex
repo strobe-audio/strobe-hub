@@ -105,7 +105,7 @@ defmodule Peel.CoverArt do
     [Peel.library_id(), type]
   end
 
-  def start_link do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, [], name: @name)
   end
 

@@ -7,11 +7,11 @@ defmodule Otis.Receivers.Logger do
   use GenServer
   require Logger
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  def init(_opts) do
+  def init(_args) do
     Process.flag(:trap_exit, true)
     config = Application.get_env(:otis, :receiver_logger)
     Logger.info("Starting multicast logging on #{inspect(config[:addr])}:#{config[:port]}")

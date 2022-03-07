@@ -1,7 +1,7 @@
 defmodule HLS.Client.Supervisor do
   use Supervisor
 
-  def start_link do
+  def start_link(_args) do
     Supervisor.start_link(__MODULE__, [])
   end
 

@@ -1,16 +1,16 @@
 defmodule HLS.Supervisor do
   use Supervisor
 
-  def start_link() do
+  def start_link(_args) do
     Supervisor.start_link(__MODULE__, [], [])
   end
 
   def init(_opts) do
     children = [
-      supervisor(HLS.Client.Supervisor, []),
-      supervisor(HLS.Reader.Async.Supervisor, [])
+      HLS.Client.Supervisor,
+      HLS.Reader.Async.Supervisor
     ]
 
-    supervise(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 end

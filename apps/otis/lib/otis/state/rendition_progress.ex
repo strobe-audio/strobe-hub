@@ -8,8 +8,8 @@ defmodule Otis.State.RenditionProgress do
 
   @name __MODULE__
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: @name)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: @name)
   end
 
   def update(rendition_id, progress) do

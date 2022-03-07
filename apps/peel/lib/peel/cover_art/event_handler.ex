@@ -1,7 +1,7 @@
 defmodule Peel.CoverArt.EventHandler do
   use GenStage
 
-  def start_link do
+  def start_link(_args) do
     GenStage.start_link(__MODULE__, [], name: __MODULE__)
   end
 

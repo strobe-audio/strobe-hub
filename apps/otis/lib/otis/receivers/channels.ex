@@ -93,11 +93,11 @@ defmodule Otis.Receivers.Channels do
     Enum.max(r)
   end
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, :ok)
+  def start_link(args) do
+    Supervisor.start_link(__MODULE__, args)
   end
 
-  def init(:ok) do
+  def init(_args) do
     children = [
       # worker(Otis.Receivers.Proxy, [], restart: :temporary)
       {DynamicSupervisor, strategy: :one_for_one, name: @supervisor_name}

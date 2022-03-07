@@ -21,11 +21,11 @@ defmodule Otis.Library do
       @namespace "#{unquote(namespace)}"
       @protocol "#{unquote(namespace)}:"
 
-      def start_link do
-        GenStage.start_link(__MODULE__, [], name: __MODULE__)
+      def start_link(args \\ []) do
+        GenStage.start_link(__MODULE__, args, name: __MODULE__)
       end
 
-      def init(_opts) do
+      def init(_args) do
         {:consumer, [], subscribe_to: Strobe.Events.producer(&selector/1)}
       end
 

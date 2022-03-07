@@ -1,6 +1,7 @@
 defmodule HLS.Reader.Http do
   require Logger
-  alias HTTPoison.Response
+
+  alias Finch.Response
 
   defstruct []
 
@@ -25,8 +26,11 @@ defmodule HLS.Reader.Http do
   defp _read(url, tries \\ 5, delay \\ 50)
 
   defp _read(url, tries, delay) do
-    HTTPoison.get(url, [], [])
-    |> validate_response
+    Logger.debug(fn -> ["GET ", url, " try: ", to_string(tries)] end)
+
+    Finch.build(:get, url)
+    |> Finch.request(BBC.Finch)
+    |> validate_response()
     |> delay_errors(url)
     |> retry(url, tries - 1, delay * 2)
   end
@@ -35,7 +39,7 @@ defmodule HLS.Reader.Http do
     error
   end
 
-  defp validate_response({:ok, %Response{status_code: 200} = response}) do
+  defp validate_response({:ok, %Response{status: 200} = response}) do
     {:ok, response}
   end
 

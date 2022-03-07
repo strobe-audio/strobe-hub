@@ -7,26 +7,23 @@ defmodule Peel do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    import Supervisor.Spec, warn: false
-
     webdav_conf = Application.get_env(:peel, Peel.Collection)
 
     children = [
-      # Define workers and child supervisors to be supervised
-      # worker(Peel.Worker, [arg1, arg2, arg3]),
-      worker(Peel.Repo, []),
-      worker(Peel.Migrator, [], restart: :transient),
-      worker(Peel.Events.Library, []),
-      supervisor(Peel.WebDAV.Supervisor, [webdav_conf]),
-      worker(Peel.CoverArt, []),
-      worker(Peel.CoverArt.EventHandler, []),
-      worker(Peel.CoverArt.Importer, []),
-      worker(Peel.Modifications.Delete, [webdav_conf]),
-      worker(Peel.Modifications.Move, [webdav_conf]),
-      worker(Peel.Modifications.Create.FileStatusCheck, [webdav_conf]),
-      worker(Peel.Modifications.Create, [webdav_conf]),
-      worker(MusicBrainz.Client, []),
-      worker(Peel.CoverArt.ITunes.Client, [])
+      {Finch, name: Peel.Finch},
+      Peel.Repo,
+      Peel.Migrator,
+      Peel.Events.Library,
+      {Peel.WebDAV.Supervisor, webdav_conf},
+      Peel.CoverArt,
+      Peel.CoverArt.EventHandler,
+      Peel.CoverArt.Importer,
+      {Peel.Modifications.Delete, webdav_conf},
+      {Peel.Modifications.Move, webdav_conf},
+      {Peel.Modifications.Create.FileStatusCheck, webdav_conf},
+      {Peel.Modifications.Create, webdav_conf},
+      MusicBrainz.Client,
+      Peel.CoverArt.ITunes.Client
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

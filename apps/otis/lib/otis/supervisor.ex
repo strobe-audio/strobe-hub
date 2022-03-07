@@ -7,25 +7,24 @@ defmodule Otis.Supervisor do
 
   def init(pipeline_config) do
     children = [
-      supervisor(Registry, [:unique, Otis.Registry], id: Otis.Registry),
-      worker(Otis.Mdns, [pipeline_config]),
-      worker(Otis.SSDP, [pipeline_config]),
-      worker(Otis.SNTP, [config(Otis.SNTP)[:port]]),
-      worker(Otis.Source.File.Cache, []),
-      worker(Otis.State.Repo, []),
-      worker(Otis.State.Repo.Writer, [Otis.State.Repo]),
-      worker(Otis.State.Migrator, [], restart: :transient),
-      worker(Otis.LoggerHandler, []),
-      worker(Otis.State.Library, []),
-      worker(Otis.State.Volume, []),
-      worker(Otis.State.RenditionProgress, []),
-      worker(Otis.State.Persistence.Channels, []),
-      worker(Otis.State.Persistence.Receivers, []),
-      worker(Otis.State.Persistence.Renditions, []),
-      worker(Otis.State.Persistence.Playlist, []),
-      worker(Otis.State.Persistence.Configuration, []),
-      worker(Otis.Librespot.Listener, []),
-      supervisor(Otis.Pipeline, [pipeline_config])
+      {Registry, [keys: :unique, name: Otis.Registry]},
+      {Otis.Mdns, pipeline_config},
+      {Otis.SSDP, pipeline_config},
+      {Otis.SNTP, config(Otis.SNTP)[:port]},
+      Otis.Source.File.Cache,
+      Otis.State.Repo,
+      {Otis.State.Repo.Writer, Otis.State.Repo},
+      Otis.LoggerHandler,
+      Otis.State.Library,
+      Otis.State.Volume,
+      Otis.State.RenditionProgress,
+      Otis.State.Persistence.Channels,
+      Otis.State.Persistence.Receivers,
+      Otis.State.Persistence.Renditions,
+      Otis.State.Persistence.Playlist,
+      Otis.State.Persistence.Configuration,
+      Otis.Librespot.Listener,
+      {Otis.Pipeline, pipeline_config}
       # This needs to be called by the app hosting the application
       # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)
     ]

@@ -23,7 +23,7 @@ defmodule HLS.Mixfile do
 
   defp deps do
     [
-      {:httpoison, "~> 1.0"},
+      {:finch, "~> 0.10"},
       {:poison, "~> 3.0"},
       {:otis_library, in_umbrella: true}
     ]

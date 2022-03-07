@@ -11,18 +11,14 @@ defmodule Otis.Pipeline do
 
   def init(pipeline_config) do
     children = [
-      {Otis.Pipeline.Streams, []},
-      supervisor(Registry, [:duplicate, Otis.Receivers.Channels.channel_namespace()],
-        id: Otis.Receivers.Channels.channel_namespace()
-      ),
-      supervisor(Registry, [:duplicate, Otis.Receivers.Channels.subscriber_namespace()],
-        id: Otis.Receivers.Channels.subscriber_namespace()
-      ),
-      supervisor(Otis.Receivers.Channels, []),
-      worker(Otis.Receivers.Database, []),
-      worker(Otis.Receivers, [pipeline_config]),
-      worker(Otis.Receivers.Logger, []),
-      supervisor(Otis.Channels, [])
+      Otis.Pipeline.Streams,
+      {Registry, keys: :duplicate, name: Otis.Receivers.Channels.channel_namespace()},
+      {Registry, keys: :duplicate, name: Otis.Receivers.Channels.subscriber_namespace()},
+      Otis.Receivers.Channels,
+      Otis.Receivers.Database,
+      {Otis.Receivers, [pipeline_config]},
+      Otis.Receivers.Logger,
+      Otis.Channels
     ]
 
     Supervisor.init(children, strategy: :one_for_all)

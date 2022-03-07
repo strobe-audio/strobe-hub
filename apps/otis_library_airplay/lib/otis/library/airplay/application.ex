@@ -9,7 +9,7 @@ defmodule Otis.Library.Airplay.Application do
     inputs = Enum.map(Airplay.ids(), &input(&1))
 
     other_children = [
-      worker(Otis.Library.Airplay.Events.Library, [])
+      Otis.Library.Airplay.Events.Library
     ]
 
     opts = [strategy: :one_for_one, name: Airplay.Supervisor]
@@ -18,6 +18,7 @@ defmodule Otis.Library.Airplay.Application do
 
   defp input(n) do
     # TODO: pass inputs a valid pipeline config
-    worker(Airplay.Input, [n, :config], id: Airplay.producer_id(n))
+    # worker(Airplay.Input, [n, :config], id: Airplay.producer_id(n))
+    {Airplay.Input, [n, :config]}
   end
 end

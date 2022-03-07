@@ -1,7 +1,7 @@
 defmodule HLS.Reader.Async.Supervisor do
   use Supervisor
 
-  def start_link do
+  def start_link(_args) do
     Supervisor.start_link(__MODULE__, :ok)
   end
 
@@ -10,7 +10,11 @@ defmodule HLS.Reader.Async.Supervisor do
   end
 
   def start_reader(supervisor, reader, url, parent, id, deadline) do
-    {:ok, _pid} = DynamicSupervisor.start_child(supervisor, {HLS.Reader.Async, [reader, url, parent, id, deadline]})
+    {:ok, _pid} =
+      DynamicSupervisor.start_child(
+        supervisor,
+        {HLS.Reader.Async, [reader, url, parent, id, deadline]}
+      )
   end
 
   def init(:ok) do

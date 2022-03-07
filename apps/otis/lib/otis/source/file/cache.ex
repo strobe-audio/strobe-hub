@@ -11,8 +11,8 @@ defmodule Otis.Source.File.Cache do
   @name Otis.Source.File.Cache
   @table Otis.Source.File.Cache
 
-  def start_link do
-    GenServer.start_link(__MODULE__, [], name: @name)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: @name)
   end
 
   def lookup(path, lookup) do

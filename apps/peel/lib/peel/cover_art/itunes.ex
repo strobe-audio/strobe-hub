@@ -56,11 +56,16 @@ defmodule Peel.CoverArt.ITunes do
     with {:ok, [match | _]} <- Client.search_artist(artist.name),
          {:ok, image} <- Client.artist_image(match),
          sized_image <- Peel.CoverArt.ITunes.ImageURL.with_size(image, 500, 500) do
-      HTTPoison.get(sized_image, [], follow_redirect: true) |> save_cover_art(path)
+      http_get(sized_image) |> save_cover_art(path)
     else
       {:error, _reason} = err -> err
       err -> {:error, err}
     end
+  end
+
+  defp http_get(url, headers \\ []) do
+    Finch.build(:get, url, headers)
+    |> Finch.request(Peel.Finch)
   end
 
   def cover_art(%Peel.Album{} = album, path) do
@@ -136,15 +141,15 @@ defmodule Peel.CoverArt.ITunes do
 
   def download_cover_art({:ok, %Album{} = album}, path) do
     url = Album.cover_art(album, 500, 500)
-    HTTPoison.get(url, [], follow_redirect: true) |> save_cover_art(path)
+    http_get(url) |> save_cover_art(path)
   end
 
-  def save_cover_art({:ok, %HTTPoison.Response{status_code: 200, body: body}}, path) do
+  def save_cover_art({:ok, %Finch.Response{status: 200, body: body}}, path) do
     File.write(path, body)
   end
 
-  def save_cover_art({:ok, %HTTPoison.Response{status_code: status_code}}, _path) do
-    {:error, status_code}
+  def save_cover_art({:ok, %Finch.Response{status: status}}, _path) do
+    {:error, status}
   end
 
   def save_cover_art({:error, reason}, _path) do

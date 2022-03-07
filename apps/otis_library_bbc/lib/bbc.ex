@@ -9,8 +9,9 @@ defmodule BBC do
     import Supervisor.Spec, warn: false
 
     children = [
-      supervisor(HLS.Supervisor, [], []),
-      worker(BBC.Events.Library, [])
+      {Finch, name: BBC.Finch},
+      HLS.Supervisor,
+      BBC.Events.Library
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

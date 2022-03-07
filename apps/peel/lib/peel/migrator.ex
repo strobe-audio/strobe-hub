@@ -2,8 +2,9 @@ defmodule Peel.Migrator do
   @moduledoc """
   Ensures that all migrations are run on the Peel library db at startup.
   """
+  use GenServer, restart: :transient
 
-  def start_link do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 

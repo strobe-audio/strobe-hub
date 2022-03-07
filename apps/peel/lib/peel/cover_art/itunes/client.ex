@@ -17,7 +17,7 @@ defmodule Peel.CoverArt.ITunes.Client do
   @period 500
 
   @doc false
-  def start_link do
+  def start_link(_args) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -99,18 +99,23 @@ defmodule Peel.CoverArt.ITunes.Client do
 
   # TODO: add retries etc
   def artist_image(%Artist{artistLinkUrl: url}) do
-    case HTTPoison.get(url, [], follow_redirect: true) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+    case http_get(url) do
+      {:ok, %Finch.Response{status: 200, body: body}} ->
         extract_artist_image(body)
 
       {:ok, resp} ->
         Logger.error("Got error response from iTunes #{url} => #{inspect(resp)}")
         {:error, :invalid_request}
 
-      {:error, %HTTPoison.Error{reason: reason} = resp} ->
+      {:error, %Finch.Error{reason: reason} = resp} ->
         Logger.error("Got error response from iTunes #{url} => #{inspect(resp)}")
         {:error, reason}
     end
+  end
+
+  defp http_get(url, headers \\ []) do
+    Finch.build(:get, url, headers)
+    |> Finch.request(Peel.Finch)
   end
 
   @image_meta_re ~r{<meta.*?property="og:image".*?>}
@@ -141,10 +146,8 @@ defmodule Peel.CoverArt.ITunes.Client do
     # TODO: perhaps make iTunes country a config setting, with an initial value
     # derived from ipinfo
     country =
-      case HTTPoison.get("https://ipinfo.io", [{"accept", "application/json"}],
-             follow_redirect: true
-           ) do
-        {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+      case http_get("https://ipinfo.io", [{"accept", "application/json"}]) do
+        {:ok, %Finch.Response{status: 200, body: body}} ->
           location = body |> Poison.decode!()
           location["country"]
 
@@ -166,7 +169,7 @@ defmodule Peel.CoverArt.ITunes.Client do
       Process.sleep(@period - gap)
     end
 
-    resp = uri |> URI.to_string() |> HTTPoison.get([], follow_redirect: true)
+    resp = uri |> URI.to_string() |> http_get()
     {:reply, resp, {country, now()}}
   end
 
@@ -192,17 +195,17 @@ defmodule Peel.CoverArt.ITunes.Client do
 
   defp request_with_retries(_path, _params, 0, last_resp) do
     case last_resp do
-      %HTTPoison.Response{status_code: status} ->
+      %Finch.Response{status: status} ->
         {:error, :"status_#{status}"}
 
-      %HTTPoison.Error{reason: reason} ->
-        {:error, reason}
+      error ->
+        {:error, error}
     end
   end
 
   defp request_with_retries(path, params, tries, _last_resp) do
     case request(path, params) do
-      {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
+      {:ok, %Finch.Response{status: 200, body: body}} ->
         {:ok, body}
 
       {_, resp} ->

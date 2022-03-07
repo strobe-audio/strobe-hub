@@ -58,15 +58,17 @@ defmodule MusicBrainz do
   end
 
   def download_cover_art({:ok, url}, path) do
-    HTTPoison.get(url, [], follow_redirect: true) |> save_cover_art(path)
+    Finch.build(:get, url, [])
+    |> Finch.request(BBC.Finch)
+    |> save_cover_art(path)
   end
 
-  def save_cover_art({:ok, %HTTPoison.Response{status_code: 200, body: body}}, path) do
+  def save_cover_art({:ok, %Finch.Response{status: 200, body: body}}, path) do
     File.write(path, body)
   end
 
-  def save_cover_art({:ok, %HTTPoison.Response{status_code: status_code}}, _path) do
-    {:error, status_code}
+  def save_cover_art({:ok, %Finch.Response{status: status}}, _path) do
+    {:error, status}
   end
 
   def save_cover_art({:error, reason}, _path) do

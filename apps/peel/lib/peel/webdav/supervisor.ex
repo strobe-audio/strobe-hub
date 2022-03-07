@@ -18,10 +18,10 @@ defmodule Peel.WebDAV.Supervisor do
       # We can run the Peel webdav on a separate port like this, but instead
       # I'm mounting it into the over-arching app using a "collections" scope
       # Plug.Adapters.Cowboy.child_spec(:http, Peel.WebDAV, [], [port: opts[:port]]),
-      worker(Peel.WebDAV.Modifications, [opts])
+      {Peel.WebDAV.Modifications, opts}
     ]
 
-    supervise(children, strategy: :one_for_one, name: __MODULE__)
+    Supervisor.init(children, strategy: :one_for_one, name: __MODULE__)
   end
 
   defp ensure_docroot(opts) do

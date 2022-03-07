@@ -7,8 +7,8 @@ defmodule Otis.Library.UPNP.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      worker(Otis.Library.UPNP.Discovery, []),
-      worker(Otis.Library.UPNP.Events.Library, [])
+      Otis.Library.UPNP.Discovery,
+      Otis.Library.UPNP.Events.Library
     ]
 
     opts = [strategy: :one_for_one, name: Otis.Library.UPNP.Supervisor]

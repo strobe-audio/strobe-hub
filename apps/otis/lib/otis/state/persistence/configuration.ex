@@ -7,8 +7,8 @@ defmodule Otis.State.Persistence.Configuration do
 
   @keys [:wifi]
 
-  def start_link do
-    GenStage.start_link(__MODULE__, [], name: __MODULE__)
+  def start_link(args) do
+    GenStage.start_link(__MODULE__, args, name: __MODULE__)
   end
 
   def init(_opts) do

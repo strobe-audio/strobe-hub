@@ -12,15 +12,15 @@ defmodule Otis.Receivers.Database do
 
   @name Otis.Receivers.Database
 
-  def start_link() do
-    GenServer.start_link(__MODULE__, [], name: @name)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: @name)
   end
 
   def attach(registry) do
     GenServer.cast(@name, {:attach, registry})
   end
 
-  def init([]) do
+  def init(_args) do
     table =
       :ets.new(:receivers_registry, [
         :named_table,

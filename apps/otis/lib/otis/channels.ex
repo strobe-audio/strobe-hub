@@ -158,11 +158,11 @@ defmodule Otis.Channels do
 
   ############# Supervisor
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, :ok)
+  def start_link(args) do
+    Supervisor.start_link(__MODULE__, args)
   end
 
-  def init(:ok) do
+  def init(_args) do
     children = [
       # worker(Otis.Channel, [])
       {DynamicSupervisor, strategy: :one_for_one, name: @supervisor}
