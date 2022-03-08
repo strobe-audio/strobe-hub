@@ -6,7 +6,7 @@ set -e
 
 export MIX_ENV=prod
 
-mix do hex.local --force, rebar.local --force
+mix do local.hex --force, local.rebar --force
 
 mix deps.get --only prod
 
