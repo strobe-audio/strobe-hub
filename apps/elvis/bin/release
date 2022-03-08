@@ -15,6 +15,7 @@ mix compile
 npm install
 
 elm package install -y
+elm make
 
 npm run deploy
 
