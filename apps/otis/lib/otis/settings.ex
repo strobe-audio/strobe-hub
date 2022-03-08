@@ -17,7 +17,7 @@ defmodule Otis.Settings do
   def application, do: @application
 
   def current do
-    @application |> Otis.State.Setting.application() |> current_settings
+    @application |> Otis.State.Setting.application() |> IO.inspect |> current_settings
   end
 
   def save_fields([]) do

@@ -25,7 +25,7 @@ defmodule Otis.State.Persistence.Configuration do
   end
 
   def handle_event({:settings, :retrieve, ["otis", socket]}, state) do
-    {:ok, settings} = Otis.Settings.current()
+    {:ok, settings} = Otis.Settings.current() |> IO.inspect(label: :settings)
     Strobe.Events.notify(:settings, :application, [:otis, settings, socket])
     {:ok, state}
   end
