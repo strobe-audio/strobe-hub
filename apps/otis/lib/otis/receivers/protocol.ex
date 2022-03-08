@@ -35,7 +35,7 @@ defmodule Otis.Receivers.Protocol do
           settings: initial_settings()
         }
 
-        state = state |> start |> monitor_connection
+        state = state |> start() |> monitor_connection()
         init(state)
       end
 

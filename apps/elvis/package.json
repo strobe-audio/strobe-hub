@@ -15,6 +15,9 @@
     "webpack": "^1.12.14"
   },
   "name": "elvis",
+  "scripts": {
+    "deploy": "webpack --mode production --config config/webpack.config.js"
+  },
   "version": "1.0.0",
   "main": "index.js",
   "repository": {

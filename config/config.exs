@@ -2,6 +2,12 @@
 # and its dependencies with the aid of the Mix.Config module.
 import Config
 
+secret_key_base =
+  System.get_env(
+    "SECRET_KEY_BASE",
+    "XsNj8q0ieY/1JciZhtF6y1YX8fZLwrrD2AnCZ3LAPfcv1q0wXJjV9qXKyZ/hPYr3"
+  )
+
 config :logger, :console,
   level: :debug,
   format: "$date $time $metadata [$level]$levelpad $message\n",
@@ -15,7 +21,7 @@ config :porcelain, :driver, Porcelain.Driver.Basic
 config :elvis, Elvis.Endpoint,
   url: [host: "localhost"],
   root: Path.dirname(__DIR__),
-  secret_key_base: "XsNj8q0ieY/1JciZhtF6y1YX8fZLwrrD2AnCZ3LAPfcv1q0wXJjV9qXKyZ/hPYr3",
+  secret_key_base: secret_key_base,
   render_errors: [accepts: ~w(html json)],
   pubsub_server: Elvis.PubSub
 

@@ -14,7 +14,8 @@ defmodule Elvis.Mixfile do
       compilers: [:phoenix] ++ Mix.compilers(),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      releases: releases()
     ]
   end
 
@@ -25,7 +26,8 @@ defmodule Elvis.Mixfile do
     # `socket` is a dependency from another app that doesn't have it in its
     # applications list so I need to include it here
     [
-      extra_applications: [:logger, :socket], mod: {Elvis, []},
+      extra_applications: [:logger, :socket],
+      mod: {Elvis, []},
       start_phases: [
         initialise_channels: []
       ]
@@ -55,7 +57,17 @@ defmodule Elvis.Mixfile do
       # Needs to be compatible with that specified by nerves
       {:distillery, "== 1.2.2", runtime: false},
       {:logger_papertrail_backend, "~> 0.1.0"},
-      {:strobe_events, in_umbrella: true}
+      {:strobe_events, in_umbrella: true},
+      {:bakeware, "~> 0.2.3", runtime: false}
+    ]
+  end
+
+  def releases do
+    [
+      strobe: [
+        bakeware: [],
+        steps: [:assemble, &Bakeware.assemble/1]
+      ]
     ]
   end
 end

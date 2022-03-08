@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+# based on https://hexdocs.pm/phoenix/1.5.12/releases.html
+
+set -e
+
+mix deps.get --only prod
+
+MIX_ENV=prod mix compile
+
+npm install
+
+npm run deploy
+
+mix phx.digest
+
+MIX_ENV=prod mix release strobe

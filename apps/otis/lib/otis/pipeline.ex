@@ -16,7 +16,7 @@ defmodule Otis.Pipeline do
       {Registry, keys: :duplicate, name: Otis.Receivers.Channels.subscriber_namespace()},
       Otis.Receivers.Channels,
       Otis.Receivers.Database,
-      {Otis.Receivers, [pipeline_config]},
+      {Otis.Receivers, pipeline_config},
       Otis.Receivers.Logger,
       Otis.Channels
     ]
