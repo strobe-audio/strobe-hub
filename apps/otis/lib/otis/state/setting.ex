@@ -13,7 +13,14 @@ defmodule Otis.State.Setting do
     def cast(value), do: {:ok, value}
     def blank?(_), do: false
 
-    def load(value), do: Poison.decode(value)
+    def load("") do
+      {:ok, ""}
+    end
+
+    def load(value) do
+      Poison.decode(value)
+    end
+
     def dump(value), do: Poison.encode(value)
   end
 
@@ -95,7 +102,7 @@ defmodule Otis.State.Setting do
   defp value_of(%Setting{value: value}), do: {:ok, value}
 
   defp put_changeset(values) do
-    Changeset.cast(%Setting{}, values, ~w(application namespace key), ~w(value))
+    Changeset.cast(%Setting{}, values, ~w(application namespace key value)a)
   end
 
   defp to_application_map(nil), do: :error
