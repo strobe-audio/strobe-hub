@@ -4,14 +4,20 @@
 
 set -e
 
+mix do hex.local --force, rebar.local --force
+
 mix deps.get --only prod
 
-MIX_ENV=prod mix compile
+export MIX_ENV=prod
+
+mix compile
 
 npm install
+
+elm package install -y
 
 npm run deploy
 
 mix phx.digest
 
-MIX_ENV=prod mix release strobe
+mix release strobe
