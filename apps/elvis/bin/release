@@ -17,7 +17,7 @@ npm install
 elm package install -y
 elm make
 
-npm run deploy
+./node_modules/.bin/webpack --production --config config/webpack.config.js
 
 mix phx.digest
 
