@@ -4,11 +4,11 @@
 
 set -e
 
+export MIX_ENV=prod
+
 mix do hex.local --force, rebar.local --force
 
 mix deps.get --only prod
-
-export MIX_ENV=prod
 
 mix compile
 
