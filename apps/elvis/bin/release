@@ -21,4 +21,4 @@ npm run deploy
 
 mix phx.digest
 
-mix release strobe
+mix release strobe --overwrite
