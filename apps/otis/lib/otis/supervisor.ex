@@ -23,7 +23,7 @@ defmodule Otis.Supervisor do
       Otis.State.Persistence.Renditions,
       Otis.State.Persistence.Playlist,
       Otis.State.Persistence.Configuration,
-      Otis.Librespot.Listener,
+      # Otis.Librespot.Listener,
       {Otis.Pipeline, pipeline_config}
       # This needs to be called by the app hosting the application
       # worker(Otis.Startup, [Otis.State, Otis.Channels], restart: :transient)
