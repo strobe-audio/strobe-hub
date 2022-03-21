@@ -47,7 +47,8 @@ defmodule Otis.Mixfile do
       {:external_process, in_umbrella: true},
       {:strobe_events, in_umbrella: true},
       {:nerves_ssdp_server, "~> 0.2.1"},
-      {:mdns, "~> 1.0.9"}
+      # {:mdns, "~> 1.0.9"}
+      {:madam, path: "/Users/garry/strobe/madam"}
     ]
   end
 end
