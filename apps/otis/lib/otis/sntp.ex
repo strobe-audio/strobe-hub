@@ -3,101 +3,103 @@ defmodule Otis.SNTP do
   use Supervisor
 
   @name Otis.SNTP
+  @default_port 5045
 
-  def start_link(port \\ 5045) do
-    Supervisor.start_link(__MODULE__, port, name: @name)
+  def start_link(args) do
+    Supervisor.start_link(__MODULE__, args, name: @name)
   end
 
-  def init(port) do
-    listener_pool_options = [
-      name: {:local, Otis.SNTPPool},
-      worker_module: Otis.SNTP.Worker,
-      size: 6,
-      max_overflow: 2
-    ]
+  def init(args) do
+    port = Keyword.get(args, :port, @default_port)
+    listeners = Keyword.get(args, :listeners, 20)
 
-    children = [
-      :poolboy.child_spec(Otis.SNTPPool, listener_pool_options, pool: Otis.SNTPPool),
-      worker(Otis.SNTP.Listener, [port, Otis.SNTPPool], [])
-    ]
+    children = Enum.map(1..listeners, &{Otis.SNTP.Listener, port: port, id: &1})
 
     Supervisor.init(children, strategy: :one_for_one)
   end
 
   defmodule Listener do
     use Monotonic
-    use GenServer
+
     require Logger
 
-    def start_link(port, pool) do
-      GenServer.start_link(__MODULE__, [port, pool])
+    def child_spec(args) do
+      {:ok, id} = Keyword.fetch(args, :id)
+
+      default = %{
+        id: {__MODULE__, id},
+        start: {__MODULE__, :start_link, [args]}
+      }
+
+      Supervisor.child_spec(default, [])
     end
 
-    def init([port, pool]) do
-      Logger.info("Starting SNTP socket listener on port #{port}...")
+    def start_link(args) do
+      pid = spawn_link(__MODULE__, :init, [args])
+      {:ok, pid}
+    end
 
-      {:ok, socket} =
-        :gen_udp.open(port,
-          mode: :binary,
-          ip: {0, 0, 0, 0},
-          active: :once,
-          reuseaddr: true
-        )
+    def init(args) do
+      {:ok, port} = Keyword.fetch(args, :port)
+      {:ok, id} = Keyword.fetch(args, :id)
+      Logger.info("Starting SNTP socket listener #{id} on port #{port}...")
+
+      {:ok, socket} = :socket.open(:inet, :dgram, :udp)
+
+      :ok = :socket.setopt(socket, :socket, :reuseport, true)
+      :ok = :socket.setopt(socket, :socket, :reuseaddr, true)
+      :ok = :socket.bind(socket, %{family: :inet, port: port, addr: :any})
 
       Process.flag(:priority, :high)
-      {:ok, {socket, pool}}
+
+      loop(socket, id, monotonic_microseconds(), 0)
     end
 
-    def terminate(_reason, {socket, _pool}) do
-      Logger.info("Closing SNTP socket listener...")
-      :gen_udp.close(socket)
-      :ok
+    # simulate a bad clock that's fast or slow
+    # @drift_us_per_day 2_000_000
+    @drift_us_per_day 0
+
+    @compile {:inline, now: 2}
+
+    if @drift_us_per_day != 0 do
+      @us_per_day 1_000_000 * 3600 * 24
+
+      defp now(now, t0) do
+        drift = (now - t0) / @us_per_day * @drift_us_per_day
+        round(now + drift)
+      end
+    else
+      defp now(now, _t0) do
+        now
+      end
     end
 
-    def handle_info({:udp, socket, address, port, packet}, {_socket, pool} = state) do
-      now = monotonic_microseconds()
-      worker = :poolboy.checkout(pool)
-      GenServer.cast(worker, {:reply, socket, address, port, packet, now})
-      :inet.setopts(socket, active: :once)
-      {:noreply, state}
-    end
-  end
+    defp loop(socket, id, t0, n) do
+      {:ok, {source, packet}} = :socket.recvfrom(socket, [], :infinity)
 
-  defmodule Worker do
-    use GenServer
-    use Monotonic
-    require Logger
+      receive_ts =
+        monotonic_microseconds()
+        |> now(t0)
 
-    def start_link(pool: pool) do
-      GenServer.start_link(__MODULE__, [pool])
-    end
-
-    def init([pool]) do
-      Logger.info("Starting SNTP worker in pool #{pool}...")
-      Process.flag(:priority, :high)
-      {:ok, pool}
-    end
-
-    def handle_cast({:reply, socket, address, port, packet, receive_ts}, pool) do
-      reply(socket, address, port, packet, receive_ts)
-      :poolboy.checkin(pool, self())
-      {:noreply, pool}
-    end
-
-    defp reply(socket, address, port, packet, receive_ts) do
       <<
         count::size(64)-little-unsigned-integer,
         originate_ts::size(64)-little-signed-integer
       >> = packet
 
+      reply_ts =
+        monotonic_microseconds()
+        |> now(t0)
+
       reply = <<
         count::size(64)-little-unsigned-integer,
         originate_ts::size(64)-little-signed-integer,
         receive_ts::size(64)-little-signed-integer,
-        monotonic_microseconds()::size(64)-little-signed-integer
+        reply_ts::size(64)-little-signed-integer
       >>
 
-      :gen_udp.send(socket, address, port, reply)
+      :socket.sendto(socket, reply, source)
+
+      loop(socket, id, t0, n + 1)
     end
   end
 end
