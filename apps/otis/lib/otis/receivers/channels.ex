@@ -17,7 +17,9 @@ defmodule Otis.Receivers.Channels do
     # broadcasters to send buffer packets to new receiver before existing
     # stream packets are sent automatically.
     notify_add_receiver(receiver, channel)
-    {:ok, _proxy} = DynamicSupervisor.start_child(@supervisor_name, {Otis.Receivers.Proxy, [receiver, channel]})
+
+    {:ok, _proxy} =
+      DynamicSupervisor.start_child(@supervisor_name, {Otis.Receivers.Proxy, [receiver, channel]})
   end
 
   def buffer_receiver(receiver, channel) do

@@ -35,7 +35,8 @@ defmodule Otis.Mixfile do
   defp deps do
     [
       {:poolboy, "~> 1.4"},
-      {:monotonic, github: "strobe-audio/monotonic", branch: "remove-erlang-application"},
+      # {:monotonic, github: "strobe-audio/monotonic", branch: "remove-erlang-application"},
+      {:monotonic, path: "/Users/garry/strobe/monotonic"},
       {:erlsom, github: "willemdj/erlsom"},
       {:uuid, "~> 1.1"},
       {:sqlite_ecto2, "~> 2.4"},

@@ -10,6 +10,7 @@ defmodule Otis.Mdns do
     Logger.info("Starting mDNS server")
     # MOve this into some nerves app
     Mdns.Server.start()
+
     ptr = %Mdns.Server.Service{
       domain: service_name(),
       data: data(pipeline_config),

@@ -151,7 +151,7 @@ defmodule Otis.Channels do
 
   defp start_channel(supervisor, channel, config) do
     process_name = via(channel.id) |> IO.inspect()
-    IO.inspect start_channel: supervisor
+    IO.inspect(start_channel: supervisor)
     DynamicSupervisor.start_child(supervisor, {Otis.Channel, [channel, config, process_name]})
     {:ok, process_name}
   end

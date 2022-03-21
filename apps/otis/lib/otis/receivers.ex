@@ -303,9 +303,7 @@ defmodule Otis.Receivers do
 
   def after_disconnect(state, receiver) do
     Logger.info(
-      "Receivers after_disconnect dead: #{inspect(Receiver.dead?(receiver))}; zombie: #{
-        inspect(Receiver.zombie?(receiver))
-      } #{inspect(receiver)}"
+      "Receivers after_disconnect dead: #{inspect(Receiver.dead?(receiver))}; zombie: #{inspect(Receiver.zombie?(receiver))} #{inspect(receiver)}"
     )
 
     state
