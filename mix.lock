@@ -41,6 +41,7 @@
   "jason": {:hex, :jason, "1.2.2", "ba43e3f2709fd1aa1dce90aaabfd039d000469c05c56f0b8e31978e03fa39052", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "18a228f5f0058ee183f29f9eae0805c6e59d61c3b006760668d8d18ff0d12179"},
   "jsx": {:hex, :jsx, "2.8.3", "a05252d381885240744d955fbe3cf810504eb2567164824e19303ea59eef62cf", [:mix, :rebar3], [], "hexpm", "fc3499fed7a726995aa659143a248534adc754ebd16ccd437cd93b649a95091f"},
   "logger_papertrail_backend": {:hex, :logger_papertrail_backend, "0.1.2", "3b3034bc3dbc168cb546330dd42bd9b5d2216edf88513a6ae73142a68f18d9a2", [:mix], [], "hexpm", "9e9c44b3943d28f1cfd1a8f5d4971682909ab2458fb93727c83968dd4fc3fd02"},
+  "madam": {:git, "https://github.com/strobe-audio/madam.git", "9d2e8ff1b0004474c39c27f28a2173dc4187899c", [branch: "refactor-update"]},
   "mdns": {:hex, :mdns, "1.0.12", "b5437fb940dea64c867832dd99255da981a4b98404e586e53cc332a973c209f1", [:mix], [{:dns, "~> 2.2", [hex: :dns, repo: "hexpm", optional: false]}], "hexpm", "643c9d1ca6f408a7eb13cf693719814c93d18f4ec96f97bc23d25aa28f4d95fa"},
   "metrics": {:hex, :metrics, "1.0.1", "25f094dea2cda98213cecc3aeff09e940299d950904393b2a29d191c346a8486", [:rebar3], [], "hexpm", "69b09adddc4f74a40716ae54d140f93beb0fb8978d8636eaded0c31b6f099f16"},
   "mime": {:hex, :mime, "2.0.2", "0b9e1a4c840eafb68d820b0e2158ef5c49385d17fb36855ac6e7e087d4b1dcc5", [:mix], [], "hexpm", "e6a3f76b4c277739e36c2e21a2c640778ba4c3846189d5ab19f97f126df5f9b7"},

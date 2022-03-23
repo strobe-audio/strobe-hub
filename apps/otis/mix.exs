@@ -49,7 +49,8 @@ defmodule Otis.Mixfile do
       {:strobe_events, in_umbrella: true},
       {:nerves_ssdp_server, "~> 0.2.1"},
       # {:mdns, "~> 1.0.9"}
-      {:madam, path: "/Users/garry/strobe/madam"}
+      # {:madam, path: "/Users/garry/strobe/madam"}
+      {:madam, github: "strobe-audio/madam", branch: "refactor-update"}
     ]
   end
 end
