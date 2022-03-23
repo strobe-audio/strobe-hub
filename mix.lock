@@ -48,7 +48,7 @@
   "mimerl": {:hex, :mimerl, "1.2.0", "67e2d3f571088d5cfd3e550c383094b47159f3eee8ffa08e64106cdf5e981be3", [:rebar3], [], "hexpm", "f278585650aa581986264638ebf698f8bb19df297f66ad91b18910dfc6e19323"},
   "mint": {:hex, :mint, "1.4.1", "49b3b6ea35a9a38836d2ad745251b01ca9ec062f7cb66f546bf22e6699137126", [:mix], [{:castore, "~> 0.1.0", [hex: :castore, repo: "hexpm", optional: true]}, {:hpax, "~> 0.1.1", [hex: :hpax, repo: "hexpm", optional: false]}], "hexpm", "cd261766e61011a9079cccf8fa9d826e7a397c24fbedf0e11b49312bea629b58"},
   "mochiweb": {:hex, :mochiweb, "2.15.0", "e1daac474df07651e5d17cc1e642c4069c7850dc4508d3db7263a0651330aacc", [:rebar3], [], "hexpm", "b960d1cbcf40a30963eeee90ab7aeae074cbfa9a238561fb4434add1afc3075c"},
-  "monotonic": {:git, "https://github.com/strobe-audio/monotonic.git", "0f58e5e2fc09bdebc34d4d2e473e428c8d6314bd", [branch: "remove-erlang-application"]},
+  "monotonic": {:git, "https://github.com/strobe-audio/monotonic.git", "0085d1e0f31c9c3b7bcebeefe2134733cc3a7dcf", [branch: "remove-erlang-application"]},
   "nerves": {:hex, :nerves, "0.5.2", "ce89fb603ae58076fc48ff88323eafe71d302d031393c78a3883002c8d3176ba", [], [{:distillery, "~> 1.2", [hex: :distillery, repo: "hexpm", optional: false]}], "hexpm"},
   "nerves_network_interface": {:hex, :nerves_network_interface, "0.4.0", "a8e7662cd56fb4fe9060c891d35c43bbbff692ee6fd2d5efd538717da0cd96b8", [], [{:elixir_make, "~> 0.3", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm"},
   "nerves_networking": {:git, "https://github.com/nerves-project/nerves_networking.git", "e4398e6be3b02f912f96dec6e13f0ec36d6d1a31", []},
