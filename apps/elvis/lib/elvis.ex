@@ -4,14 +4,13 @@ defmodule Elvis do
   # See http://elixir-lang.org/docs/stable/elixir/Application.html
   # for more information on OTP Applications
   def start(_type, _args) do
-    children =
-      [
-        {Phoenix.PubSub, name: Elvis.PubSub},
-        {Elvis.Endpoint, []},
-        {Elvis.Events.Broadcast, []},
-        {Elvis.Events.Startup, []}
-        # XXX: Needs to be last
-      ]
+    children = [
+      {Phoenix.PubSub, name: Elvis.PubSub},
+      {Elvis.Endpoint, []},
+      {Elvis.Events.Broadcast, []},
+      {Elvis.Events.Startup, []}
+      # XXX: Needs to be last
+    ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
     # for other strategies and supported options
@@ -26,7 +25,7 @@ defmodule Elvis do
     :ok
   end
 
-  if Mix.env() == :test  do
+  if Mix.env() == :test do
     def start_phase(:initialise_channels, _start_type, _args) do
       :ok
     end

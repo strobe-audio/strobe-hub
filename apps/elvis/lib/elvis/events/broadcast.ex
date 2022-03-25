@@ -17,7 +17,6 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def init(_opts) do
-    IO.inspect init: __MODULE__
     {:consumer, %{progress_count: %{}}, subscribe_to: Strobe.Events.producer()}
   end
 
@@ -175,7 +174,6 @@ defmodule Elvis.Events.Broadcast do
   end
 
   def handle_event({:settings, :application, [app, settings, socket]}, state) do
-    IO.inspect {:settings, :application, app, settings}
     Phoenix.Channel.push(socket, "settings-application", %{application: app, settings: settings})
     {:ok, state}
   end

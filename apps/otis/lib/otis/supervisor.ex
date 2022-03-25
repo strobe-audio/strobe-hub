@@ -15,22 +15,19 @@ defmodule Otis.Supervisor do
       stream_interval: to_string(pipeline_config.packet_duration_ms * 1000),
       packet_size: to_string(pipeline_config.packet_size)
     }
-    |> IO.inspect()
   end
 
   def init(pipeline_config) do
     {:ok, port} = Keyword.fetch(Application.get_env(:otis, Otis.SNTP), :port) |> IO.inspect()
 
-    service =
-      %Madam.Service{
-        name: "strobe-hub",
-        port: port,
-        service: "peep-broadcaster",
+    service = %Madam.Service{
+      name: "strobe-hub",
+      port: port,
+      service: "peep-broadcaster",
 
-        # optional data for service consumers
-        data: service_texts(pipeline_config, port)
-      }
-      |> IO.inspect()
+      # optional data for service consumers
+      data: service_texts(pipeline_config, port)
+    }
 
     children = [
       {Registry, [keys: :unique, name: Otis.Registry]},
